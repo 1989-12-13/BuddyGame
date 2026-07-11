@@ -2,7 +2,8 @@
 // 零点接线台 — 调度主界面（双线程：电话+终端）
 // ============================================================
 
-import React, { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
@@ -1552,7 +1553,7 @@ function DeterminantSelector({
 // 样式
 // ============================================================
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: Record<string, CSSProperties> = {
   container: {
     width: '100vw',
     height: '100vh',

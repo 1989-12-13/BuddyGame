@@ -451,6 +451,8 @@ export interface TerminalState {
 // -------------------- 游戏全局状态 --------------------
 export type GameScreen = 'title' | 'briefing' | 'playing' | 'ending'
 
+import type { FleetState } from './core/fleet'
+
 export interface WorldState {
   screen: GameScreen
 
@@ -462,6 +464,9 @@ export interface WorldState {
 
   // 全局计时（秒）
   shiftElapsed: number
+
+  // 车队
+  fleet: FleetState
 
   // 当前通话
   currentCall: EmergencyScenario | null

@@ -5,6 +5,7 @@
 import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId } from '../types'
 import { stressToLevel } from '../types'
 import { SCENARIO_IDS } from '../events/templates'
+import { createDefaultFleet } from './fleet'
 
 /** 创建空白的来电者追踪状态 */
 export function createCallerState(callerId: CallerId, initialStress = 40): CallerState {
@@ -89,6 +90,7 @@ export function createInitialState(): WorldState {
     totalCalls: 5,
     scenarioQueue: [],
     shiftElapsed: 0,
+    fleet: createDefaultFleet(),
     currentCall: null,
     callPhase: 'ringing',
     callStartTime: 0,

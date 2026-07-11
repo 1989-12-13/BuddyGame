@@ -101,6 +101,11 @@ export function createInitialState(): WorldState {
     totalScore: 0,
     callScores: [],
     endingId: null,
+    lastCallId: null,
+    lastCallTitle: null,
+    lastCallIsPrank: false,
+    debriefShown: false,
+    paused: false,
   }
 }
 

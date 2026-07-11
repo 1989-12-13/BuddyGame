@@ -909,6 +909,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         callScores: [...state.callScores, total],
         dialogueLog: [...state.dialogueLog, summaryLine],
         screen: isShiftOver ? 'ending' : 'playing',
+        lastCallId: call.id,
+        lastCallTitle: call.title,
+        lastCallIsPrank: call.isPrank,
+        debriefShown: false,
       }
     }
 
@@ -973,6 +977,23 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     // ==========================================
     case 'SHOW_ENDING': {
       return { ...state, screen: 'ending' }
+    }
+
+    // ==========================================
+    // DISMISS_DEBRIEF — 关闭通话结算报告
+    // ==========================================
+    case 'DISMISS_DEBRIEF': {
+      return { ...state, debriefShown: true }
+    }
+
+    // ==========================================
+    // PAUSE / RESUME — 暂停/继续
+    // ==========================================
+    case 'PAUSE': {
+      return { ...state, paused: true }
+    }
+    case 'RESUME': {
+      return { ...state, paused: false }
     }
 
     // ==========================================

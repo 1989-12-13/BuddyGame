@@ -351,6 +351,14 @@ export interface WorldState {
 
   // 结算
   endingId: string | null
+
+  /** 最后结束的通话快照（用于结算报告，END_CALL 时由 reducer 设置） */
+  lastCallId: string | null
+  lastCallTitle: string | null
+  lastCallIsPrank: boolean
+  /** 是否已为当前 callIndex 显示过结算报告 */
+  debriefShown: boolean
+  paused: boolean
 }
 
 export interface DialogueLine {

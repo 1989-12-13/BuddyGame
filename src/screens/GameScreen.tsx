@@ -9,10 +9,15 @@ import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { createInitialState } from '../game/core/initialState'
 import { getCaller } from '../game/npc/personas'
+import { getScenario } from '../game/events/templates'
 import { detectEnding } from '../game/endings/endings'
 import { Hud } from '../components/hud/Hud'
 import { AudioControl } from '../audio/AudioControl'
 import { useGameAudio } from '../audio/useGameAudio'
+import { CallDebrief } from '../components/call/CallDebrief'
+import { buildDebrief } from '../game/core/debrief'
+import { CprRhythm } from '../components/minigames/CprRhythm'
+import type { MiniGameResult } from '../game/core/minigameTypes'
 import {
   crossedDispatchWarning,
   formatPlayerDeterminantCode,
@@ -49,12 +54,12 @@ export function GameScreen({ onNavigate }: Props) {
     if (!state.currentCall) setTerminalModalOpen(false)
   }, [state.currentCall])
 
-  // --- 计时器 ---
+  // --- 计时器（暂停时停止） ---
   useEffect(() => {
-    if (state.screen !== 'playing') return
+    if (state.screen !== 'playing' || state.paused) return
     const id = setInterval(() => dispatch({ type: 'TICK' }), 1000)
     return () => clearInterval(id)
-  }, [state.screen])
+  }, [state.screen, state.paused])
 
   useEffect(() => {
     const elapsed = state.shiftElapsed - state.callStartTime
@@ -79,6 +84,79 @@ export function GameScreen({ onNavigate }: Props) {
     if (previous > 0 && state.ambulanceRemaining === 0) audio.play('arrival')
     previousAmbulanceRemaining.current = state.ambulanceRemaining
   }, [audio, state.ambulanceRemaining])
+
+  // --- 通话结束结算报告：每当有新的通话结束(callIndex增加)时显示 ---
+  const prevCallIndex = useRef(0)
+
+  const handleDismissDebrief = useCallback(() => {
+    dispatch({ type: 'DISMISS_DEBRIEF' })
+  }, [])
+
+  useEffect(() => {
+    if (state.callIndex > prevCallIndex.current && state.callIndex > 0) {
+      audio.play('hangup')
+      prevCallIndex.current = state.callIndex
+    }
+    if (state.callIndex === 0) prevCallIndex.current = 0
+  }, [audio, state.callIndex])
+
+  const showDebrief = state.lastCallId !== null && !state.debriefShown && state.callIndex > 0
+
+  // --- 全局键盘快捷键 ---
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault()
+        dispatch({ type: state.paused ? 'RESUME' : 'PAUSE' })
+        return
+      }
+      if (state.paused) return
+
+      const call = state.currentCall
+      const cs = state.callerState
+      const isQuestioning = state.callPhase === 'questioning' || state.callPhase === 'connected'
+      const protocolSteps = ['step1_location', 'step2_event', 'step3_count', 'step4_age', 'step5_vitals']
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault()
+          if (!call && state.callPhase === 'completed' && state.callIndex < state.totalCalls) {
+            dispatch({ type: 'ANSWER_CALL' })
+          } else if (state.callPhase === 'closing') {
+            dispatch({ type: 'END_CALL' })
+          } else if (!call && state.callIndex < state.totalCalls) {
+            // do nothing, waiting for answer button
+          }
+          break
+        case '1': case '2': case '3': case '4': case '5': {
+          e.preventDefault()
+          if (!isQuestioning || !cs) break
+          const idx = Number(e.key) - 1
+          const qId = protocolSteps[idx]
+          if (qId && !cs.askedMPDS.includes(qId)) {
+            dispatch({ type: 'ASK_QUESTION', questionId: qId })
+          }
+          break
+        }
+        case 'c':
+        case 'C':
+          e.preventDefault()
+          if (isQuestioning && cs && cs.stress >= 15) {
+            dispatch({ type: 'CALM_CALLER' })
+          }
+          break
+        case 't':
+        case 'T':
+          e.preventDefault()
+          if (call && isQuestioning) setTerminalModalOpen(true)
+          break
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [state.currentCall, state.callerState, state.callPhase, state.callIndex, state.totalCalls, state.paused])
+
+  // --- 暂停覆盖层 ---
 
   // --- 检测结局 ---
   useEffect(() => {
@@ -232,6 +310,17 @@ export function GameScreen({ onNavigate }: Props) {
     dispatch({ type: 'ANSWER_GUIDANCE', stepIndex, selectedIndex })
   }, [audio])
 
+  const handleMiniGameComplete = useCallback((result: MiniGameResult) => {
+    if (!state.currentCall?.guidance) return
+    const steps = state.currentCall.guidance.steps
+    for (let i = 0; i < steps.length; i++) {
+      const selectedIndex = result.passed ? steps[i].correctIndex : (steps[i].correctIndex + 1) % steps[i].options.length
+      dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: i, selectedIndex })
+    }
+  }, [state.currentCall])
+
+  const hasMiniGame = state.currentCall?.id === 'cardiac_arrest'
+
   const handleEndCall = useCallback(() => {
     audio.play('hangup')
     dispatch({ type: 'END_CALL' })
@@ -246,10 +335,31 @@ export function GameScreen({ onNavigate }: Props) {
     />
   )
 
+  // 通话结束后显示结算报告
+  const callScenario = state.lastCallId ? getScenario(state.lastCallId) : null
+  const debriefEntry = state.lastCallId && callScenario
+    ? buildDebrief(state, callScenario)
+    : null
+
+  if (showDebrief && debriefEntry) {
+    return (
+      <div style={styles.container}>
+        {state.paused && <PauseOverlay />}
+        <Hud state={state} actions={audioControl} />
+        <CallDebrief
+          state={state}
+          debrief={debriefEntry}
+          onNext={handleDismissDebrief}
+        />
+      </div>
+    )
+  }
+
   // 无活跃通话时 — 准备接听
   if (!state.currentCall && state.callIndex < state.totalCalls) {
     return (
       <div style={styles.container}>
+        {state.paused && <PauseOverlay />}
         <Hud state={state} actions={audioControl} />
         <CallWaiting
           callIndex={state.callIndex}
@@ -267,6 +377,7 @@ export function GameScreen({ onNavigate }: Props) {
   if (!state.currentCall && state.callIndex >= state.totalCalls) {
     return (
       <div style={styles.container}>
+        {state.paused && <PauseOverlay />}
         <Hud state={state} actions={audioControl} />
         <div style={styles.centerMessage}>
           <h2 style={{ color: '#e2e8f0' }}>本班次所有通话已处理完毕</h2>
@@ -283,6 +394,7 @@ export function GameScreen({ onNavigate }: Props) {
 
   return (
     <div style={styles.container}>
+      {state.paused && <PauseOverlay />}
       <Hud state={state} actions={audioControl} />
 
       {/* ====== 电话面板（全宽） ====== */}
@@ -336,14 +448,17 @@ export function GameScreen({ onNavigate }: Props) {
           })}
         </div>
 
-        {/* 急救指导面板 */}
-        {state.callPhase === 'guidance' && call.guidance && (
+        {/* 急救指导面板 — 心脏骤停场景使用 CPR 节拍小游戏 */}
+        {state.callPhase === 'guidance' && call.guidance && !hasMiniGame && (
           <GuidancePanel
             guidance={call.guidance}
             stepIndex={state.guidanceStepIndex}
             results={state.guidanceResults}
             onAnswer={handleGuidanceAnswer}
           />
+        )}
+        {state.callPhase === 'guidance' && hasMiniGame && (
+          <CprRhythm onComplete={handleMiniGameComplete} />
         )}
 
         {/* 问询按钮区 */}
@@ -410,6 +525,27 @@ export function GameScreen({ onNavigate }: Props) {
 // ============================================================
 // 子组件
 // ============================================================
+
+/** 暂停覆盖层 */
+function PauseOverlay() {
+  return (
+    <div style={{
+      position: 'fixed' as const,
+      inset: 0,
+      zIndex: 9999,
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      gap: 16,
+    }}>
+      <div style={{ fontSize: 64 }}>⏸</div>
+      <div style={{ fontSize: 28, fontWeight: 'bold', color: '#e2e8f0' }}>已暂停</div>
+      <div style={{ fontSize: 14, color: '#94a3b8' }}>按 P 键继续游戏</div>
+    </div>
+  )
+}
 
 /** 等待接听界面 */
 function CallWaiting({
@@ -504,7 +640,7 @@ function PhoneHeader({
           color: urgent ? '#f87171' : '#facc15',
           borderColor: urgent ? '#f87171' : '#facc15',
         }}>
-          {overdue ? '⚠ 超时' : urgent ? '⚠ 即将超时' : '目标 60秒派车'}
+          {overdue ? '⚠ 超时' : urgent ? '⚠ 接近时限' : '目标 60秒派车'}
         </span>
       </div>
 

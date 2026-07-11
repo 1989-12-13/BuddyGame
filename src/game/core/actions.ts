@@ -22,3 +22,6 @@ export type GameAction =
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }
   | { type: 'BACK_TO_TITLE' }
+  | { type: 'DISMISS_DEBRIEF' }
+  | { type: 'PAUSE' }
+  | { type: 'RESUME' }

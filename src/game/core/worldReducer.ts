@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt } from '../types'
-import { stressToLevel } from '../types'
+import { stressToLevel, determinantToTriage, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
   createInitialState,
@@ -178,8 +178,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // 终端不再自动填入 — 玩家从对话中提取
       const terminal = createTerminalState()
-      terminal.protocolNumber = scenario.mpdsCard.number
-      terminal.hotCold = scenario.mpdsCard.hotCold
 
       return {
         ...state,
@@ -286,6 +284,28 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         if (call.fourElements.condition.gender !== '不详') {
           newTerminal = { ...newTerminal, patientGender: call.fourElements.condition.gender }
         }
+
+        // 生成协议判断选择题
+        const correctProtocol = call.mpdsCard.number
+        // 从全部33个协议中随机取3个不同的干扰项
+        const allProtocols = PROTOCOL_REF.map(([n]) => n)
+        const distractorProtocols = allProtocols.filter(n => n !== correctProtocol)
+        const shuffledDists = distractorProtocols.sort(() => Math.random() - 0.5).slice(0, 3)
+        const options = [correctProtocol, ...shuffledDists].sort(() => Math.random() - 0.5)
+        const protoNameMap = Object.fromEntries(PROTOCOL_REF)
+        const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
+        newJudgments.push({
+          id: `judge_step2_protocol_${Date.now()}`,
+          questionId: 'step2_event',
+          dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
+          question: '根据来电者描述，此情况最可能对应哪个 MPDS 协议？',
+          options: options.map(n => ({
+            label: `${n} — ${protoNameMap[n] ?? '未知'}`,
+            fills: [{ field: 'protocolNumber' as const, value: String(n) }],
+            isCorrect: n === correctProtocol,
+          })),
+          chosenOptionIndex: null,
+        })
       }
 
       // --- 步骤3：患者人数 ---
@@ -551,6 +571,32 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     }
 
     // ==========================================
+    // SET_DETERMINANT_SUBCODE — 设置判定码最后一位子编码
+    // ==========================================
+    case 'SET_DETERMINANT_SUBCODE': {
+      return {
+        ...state,
+        terminal: {
+          ...state.terminal,
+          determinantSubcode: action.subcode,
+        },
+      }
+    }
+
+    // ==========================================
+    // SET_PROTOCOL — 设置MPDS协议编号
+    // ==========================================
+    case 'SET_PROTOCOL': {
+      return {
+        ...state,
+        terminal: {
+          ...state.terminal,
+          protocolNumber: action.protocolNumber,
+        },
+      }
+    }
+
+    // ==========================================
     // SET_TRIAGE — 设置分诊等级
     // ==========================================
     case 'SET_TRIAGE': {
@@ -584,6 +630,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
             newTerminal = { ...newTerminal, conscious: fill.value as boolean }
           } else if (fill.field === 'breathing') {
             newTerminal = { ...newTerminal, breathing: fill.value as boolean }
+          } else if (fill.field === 'protocolNumber') {
+            newTerminal = { ...newTerminal, protocolNumber: parseInt(fill.value as string, 10) || null }
           } else {
             newTerminal = { ...newTerminal, [fill.field]: fill.value }
           }
@@ -609,8 +657,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const addressCompleteness: 'vague' | 'partial' | 'full' =
         rawAddress === 'none' ? 'vague' : rawAddress
 
-      // 如果没选分诊，默认用场景预设
-      const triage = state.terminal.triage || state.currentCall.correctTriage
+      // 从MPDS判定码自动推导分诊等级（现场分诊由急救人员执行，调度员无需手动选择）
+      const derivedTriage = state.terminal.determinant
+        ? determinantToTriage(state.terminal.determinant)
+        : null
+      const triage = derivedTriage || state.currentCall.correctTriage
 
       const eta = calcAmbulanceETA(dispatchTime, addressCompleteness)
 
@@ -705,19 +756,18 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let speed = 0
       let info = 0
       let triageScore = 0
+      let decisionScore = 0
       let guidanceScore = 0
 
       // 恶作剧电话特殊评分
       if (call.isPrank) {
         if (!didDispatch) {
-          // 正确识别恶作剧 → 满分
           total = 100
-          speed = 40
+          speed = 35
           info = 30
           triageScore = 20
           guidanceScore = 10
         } else {
-          // 错误派车 → 0分
           total = 0
           speed = 0
           info = 0
@@ -729,6 +779,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         const qualityCount = Object.values(cs.infoQuality)
         const clearCount = qualityCount.filter(q => q === 'clear').length
         const qualityBonus = Math.min(5, clearCount)
+
+        // 解析场景的预期判定码（如 "9-E-1" → 协议9, 字母E, 子码1）
+        const detParts = call.mpdsCard.determinantCode.split('-')
+        const correctProto = parseInt(detParts[0], 10) || 0
+        const correctSub = parseInt(detParts[2], 10) || 0
 
         const result = scoreCall(
           dispatchRecord?.dispatchTime ?? null,
@@ -742,12 +797,19 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           state.guidanceResults.length,
           state.questionCost,
           qualityBonus,
+          state.terminal.protocolNumber,
+          correctProto,
+          state.terminal.determinant,
+          call.mpdsCard.determinantCode,
+          state.terminal.determinantSubcode,
+          correctSub,
         )
         total = result.total
         speed = result.speed
         info = result.info
         triageScore = result.triage
         guidanceScore = result.guidance
+        const decisionScore = result.decision
       }
 
       const nextCallIndex = state.callIndex + 1
@@ -756,7 +818,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       // 通话结束的总结行
       const summaryLine: DialogueLine = {
         speaker: 'system',
-        text: `【通话结束 | 得分: ${total}/100 — 派车速度:${speed} 信息:${info} 分诊:${triageScore} 指导:${guidanceScore}】`,
+        text: `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore}】`,
         timestamp: state.shiftElapsed,
       }
 

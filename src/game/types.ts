@@ -4,7 +4,17 @@
 // ============================================================
 
 // -------------------- 来电者 --------------------
-export type CallerId = string
+export type CallerId =
+  | 'li_jianguo' | 'wang_xiao' | 'zhang_xiulan' | 'zhao_lei'
+  | 'chen_ming' | 'xiao_pang'
+  | 'liu_fang' | 'sun_wei' | 'zhou_ming' | 'wu_lili'
+  | 'huang_qiang' | 'lin_mei' | 'ma_tao' | 'ye_xin'
+  | 'lu_jie' | 'fang_yu'
+  | 'xu_dawei' | 'song_na' | 'he_lin' | 'tian_feng'
+  | 'cheng_xin' | 'luo_wei' | 'gao_yan' | 'fan_tao'
+  | 'long_jie' | 'deng_yu' | 'jiang_wen' | 'han_lei'
+  | 'xu_mei' | 'lei_gang' | 'zhong_qi'
+  | 'wei_qiang' | 'zheng_yu'
 
 /** 来电者画像 */
 export interface CallerProfile {
@@ -15,7 +25,7 @@ export interface CallerProfile {
   speechStyle: string    // 说话风格描述
 }
 
-export type CallerTone = 'panic' | 'anxious' | 'calm' | 'confused' | 'hysterical' | 'angry'
+export type CallerTone = 'panic' | 'panicked' | 'anxious' | 'calm' | 'confused' | 'hysterical' | 'angry'
 
 // -------------------- MPDS 判定等级 --------------------
 // MPDS使用ECHO/DELTA/CHARLIE/BRAVO/ALPHA五级判定，映射到响应资源：
@@ -51,6 +61,10 @@ export function determinantToTriage(d: MpdsDeterminant): TriageLevel {
     ALPHA:   'green',
   }
   return map[d]
+}
+
+export function determinantToHotCold(d: MpdsDeterminant): 'HOT' | 'COLD' {
+  return d === 'ECHO' || d === 'DELTA' ? 'HOT' : 'COLD'
 }
 
 // -------------------- 通话阶段 --------------------
@@ -121,6 +135,7 @@ export type TerminalJudgmentField =
   | 'address' | 'contact' | 'chiefComplaint'
   | 'patientAge' | 'patientGender'
   | 'conscious' | 'breathing' | 'conditionNote'
+  | 'protocolNumber'
 
 // -------------------- 信息碎片（已弃用，保留类型兼容） --------------------
 /** @deprecated 已改为 JudgmentPrompt 系统 */
@@ -281,6 +296,27 @@ export function stressToLevel(stress: number): CalleeStressLevel {
   return 'hysterical'
 }
 
+/** MPDS 协议编号与名称对照表（33个标准协议） */
+export const PROTOCOL_REF: [number, string][] = [
+  [1, '腹痛/背痛'],        [2, '过敏/输液反应'],
+  [3, '动物咬伤'],         [4, '攻击/性侵'],
+  [5, '腰背痛/非创伤'],    [6, '呼吸问题'],
+  [7, '烧伤/烫伤/爆炸'],   [8, '一氧化碳/吸入'],
+  [9, '心脏/呼吸骤停'],   [10, '胸痛'],
+  [11, '抽搐'],            [12, '糖尿病'],
+  [13, '溺死/潜水'],      [14, '触电'],
+  [15, '眼部问题'],        [16, '坠落伤'],
+  [17, '头痛'],            [18, '心脏病'],
+  [19, '高温/低温'],       [20, '妊娠/分娩'],
+  [21, '出血不止'],        [22, '中毒/误食'],
+  [23, '精神状态异常'],    [24, '产科/流产'],
+  [25, '中风/CVA'],        [26, '外伤/车辆事故'],
+  [27, '昏迷/晕厥'],       [28, '卒中/脑血管'],
+  [29, '交通/运输事故'],   [30, '创伤'],
+  [31, '无意识/晕厥'],     [32, '其他/特殊'],
+  [33, '感染/发热'],
+]
+
 // -------------------- 终端登记状态（MPDS调度卡） --------------------
 export interface TerminalState {
   // — Case Entry（病例录入） —
@@ -295,9 +331,9 @@ export interface TerminalState {
   // — 协议判定 —
   protocolNumber: number | null  // 选定的MPDS协议号
   determinant: MpdsDeterminant | null
+  determinantSubcode: number | null  // 判定码最后一位细分编码 (1-4)
   // — 响应 —
   triage: TriageLevel | null
-  hotCold: 'HOT' | 'COLD' | null
   // 自由备注
   conditionNote: string
 }

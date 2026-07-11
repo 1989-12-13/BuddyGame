@@ -42,8 +42,8 @@ export function createTerminalState(): TerminalState {
     breathing: null,
     protocolNumber: null,
     determinant: null,
+    determinantSubcode: null,
     triage: null,
-    hotCold: null,
     conditionNote: '',
   }
 }
@@ -61,9 +61,23 @@ function shuffle<T>(arr: T[]): T[] {
 /** 获取本班次的场景队列（随机打乱顺序） */
 export function buildScenarioQueue(_shiftNumber: number): string[] {
   // 每个班次5通电话，从所有场景中随机选5个
-  const pool = [...SCENARIO_IDS]
-  const shuffled = shuffle(pool)
-  return shuffled.slice(0, 5)
+  const prankId = 'prank_call'
+  // 分离恶作剧场景和普通场景
+  const normalScenarios = SCENARIO_IDS.filter(id => id !== prankId)
+  const shuffled = shuffle(normalScenarios)
+  // 选4个普通场景 + 20%概率加入恶作剧
+  const selected = shuffled.slice(0, 5)
+  if (selected.length >= 5 && Math.random() < 0.2) {
+    selected[Math.floor(Math.random() * selected.length)] = prankId
+  }
+  // 确保恶作剧不出现为首通或末通
+  if (selected[0] === prankId || selected[selected.length - 1] === prankId) {
+    const swapIdx = Math.random() < 0.5 ? 1 : selected.length - 2
+    const temp = selected[0]
+    selected[0] = selected[swapIdx]
+    selected[swapIdx] = temp
+  }
+  return selected
 }
 
 /** 创建初始世界状态 */
@@ -135,9 +149,10 @@ export function calcAmbulanceETA(
 // ============================================================
 
 export interface CallScore {
-  speed: number       // 派车速度分（0-40）
+  speed: number       // 派车速度分（0-35）
   info: number        // 四要素完整度分（0-30）
   triage: number      // 分诊准确度分（0-20）
+  decision: number    // 协议/判定码正确度分（0-5）
   guidance: number    // 急救指导分（0-10）
   total: number
 }
@@ -154,15 +169,22 @@ export function scoreCall(
   guidanceTotal: number,
   questionCost = 0,
   infoQualityBonus = 0,
+  // 协议/判定码参数
+  chosenProtocol: number | null = null,
+  correctProtocol = 0,
+  chosenDeterminant: string | null = null,
+  correctDeterminant = '',
+  chosenSubcode: number | null = null,
+  correctSubcode = 0,
 ): CallScore {
-  // 1. 派车速度分（0-40）— 扣除问询耗时后评估"净决策速度"
+  // 1. 派车速度分（0-35）— 扣除问询耗时后评估"净决策速度"
   const netTime = dispatchTime !== null ? Math.max(10, dispatchTime - Math.min(questionCost, 30)) : null
   let speed = 0
   if (netTime !== null) {
-    if (netTime <= 27) speed = 40
-    else if (netTime <= 43) speed = 35
-    else if (netTime <= 60) speed = 25
-    else if (netTime <= 90) speed = 15
+    if (netTime <= 27) speed = 35
+    else if (netTime <= 43) speed = 30
+    else if (netTime <= 60) speed = 20
+    else if (netTime <= 90) speed = 10
     else speed = 5
   }
 
@@ -189,12 +211,23 @@ export function scoreCall(
     else triage = 0
   }
 
-  // 4. 急救指导分（0-10）
+  // 4. 协议/判定码正确度分（0-5）
+  let decision = 0
+  if (chosenProtocol && chosenProtocol === correctProtocol) decision += 2
+  if (chosenDeterminant && correctDeterminant) {
+    const parts = correctDeterminant.split('-')
+    const correctLetter = parts[1] ?? ''
+    const correctSub = parts[2] ? parseInt(parts[2], 10) : 0
+    if (chosenDeterminant[0] === correctLetter) decision += 2
+    if (chosenSubcode && correctSub && chosenSubcode === correctSub) decision += 1
+  }
+
+  // 5. 急救指导分（0-10）
   let guidance = 0
   if (guidanceTotal > 0) {
     guidance = Math.round((guidanceCorrect / guidanceTotal) * 10)
   }
 
-  const total = speed + info + triage + guidance
-  return { speed, info, triage, guidance, total }
+  const total = speed + info + triage + decision + guidance
+  return { speed, info, triage, decision, guidance, total }
 }

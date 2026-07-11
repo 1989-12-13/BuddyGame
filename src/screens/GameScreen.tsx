@@ -3,8 +3,13 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+<<<<<<< Updated upstream
 import type { TriageLevel, MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO } from '../game/types'
+=======
+import type { TriageLevel, MpdsDeterminant, CallPhase, TerminalState, InfoQuality, CalleeStressLevel } from '../game/types'
+import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
+>>>>>>> Stashed changes
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { createInitialState } from '../game/core/initialState'
@@ -16,13 +21,6 @@ import type { EndingDef } from '../game/types'
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number) => void
 }
-
-const TRIAGE_OPTIONS: { level: TriageLevel; label: string; color: string; desc: string }[] = [
-  { level: 'red', label: '红色', color: '#e74c3c', desc: '濒危——即刻派车' },
-  { level: 'yellow', label: '黄色', color: '#f39c12', desc: '危重——优先派车' },
-  { level: 'green', label: '绿色', color: '#27ae60', desc: '轻伤——常规派车' },
-  { level: 'black', label: '黑色', color: '#7f8c8d', desc: '死亡/无需抢救' },
-]
 
 export function GameScreen({ onNavigate }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
@@ -132,10 +130,10 @@ export function GameScreen({ onNavigate }: Props) {
   // --- 处理派车（从模态框调用）---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
-    if (!state.terminal.triage) return // 模态框内已有校验
+    if (!state.terminal.determinant) return // 必须选择判定码才能派车
     setTerminalModalOpen(false)
     dispatch({ type: 'DISPATCH' })
-  }, [state.currentCall, state.terminal.triage])
+  }, [state.currentCall, state.terminal.determinant])
 
   // --- 处理临床判断选择 ---
   const handleJudgment = useCallback((judgmentId: string, optionIndex: number) => {
@@ -289,7 +287,12 @@ export function GameScreen({ onNavigate }: Props) {
           onSetDeterminant={(d) =>
             dispatch({ type: 'SET_MPDS_DETERMINANT', determinant: d })
           }
-          onTriage={(level) => dispatch({ type: 'SET_TRIAGE', level })}
+          onSetDeterminantSubcode={(subcode) =>
+            dispatch({ type: 'SET_DETERMINANT_SUBCODE', subcode })
+          }
+          onSetProtocol={(protocol) =>
+            dispatch({ type: 'SET_PROTOCOL', protocolNumber: protocol })
+          }
           onDispatch={handleDispatch}
           onClose={() => setTerminalModalOpen(false)}
           onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
@@ -637,27 +640,6 @@ function QuestionPanel({
 
   return (
     <div style={styles.questionArea}>
-      {/* ====== 协议卡参考 (折叠式) ====== */}
-      <details style={styles.qRefCard} open={false}>
-        <summary style={styles.qRefHeader}>
-          <span style={styles.qRefProto}>协议 {call.mpdsCard.number} 参考</span>
-          <span style={{
-            ...styles.qRefBadge,
-            backgroundColor: call.mpdsCard.hotCold === 'HOT' ? '#c0392b' : '#2e86c1',
-          }}>
-            {call.mpdsCard.hotCold}
-          </span>
-        </summary>
-        <div style={styles.qRefList}>
-          {call.mpdsCard.keyQuestions.map((kq, i) => (
-            <div key={i} style={styles.qRefItem}>
-              <span style={styles.qRefDot}>•</span>
-              {kq}
-            </div>
-          ))}
-        </div>
-      </details>
-
       {/* ====== 5步标准协议 ====== */}
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
@@ -921,7 +903,8 @@ function TerminalModal({
   onChange,
   onSetStatus,
   onSetDeterminant,
-  onTriage,
+  onSetDeterminantSubcode,
+  onSetProtocol,
   onDispatch,
   onClose,
   onEndCall,
@@ -934,16 +917,12 @@ function TerminalModal({
   onChange: (field: TerminalField, value: string) => void
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
-  onTriage: (level: TriageLevel) => void
+  onSetDeterminantSubcode: (subcode: number) => void
+  onSetProtocol: (protocol: number) => void
   onDispatch: () => void
   onClose: () => void
   onEndCall: () => void
 }) {
-  const protocolNum = terminal.protocolNumber ?? mpdsCard.number
-  const detCode = terminal.determinant
-    ? `${protocolNum}-${terminal.determinant[0]}-?`
-    : mpdsCard.determinantCode
-  const hasTriage = terminal.triage !== null
 
   return (
     <div style={styles.modalOverlay} onClick={onClose}>
@@ -951,27 +930,21 @@ function TerminalModal({
         {/* 模态框头部 */}
         <div style={styles.modalHeader}>
           <div style={styles.modalHeaderLeft}>
-            <span style={styles.mpdsModalBadge}>协议 {protocolNum}</span>
+            <span style={styles.mpdsModalBadge}>
+              协议 {terminal.protocolNumber ?? '?'}
+            </span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 'bold', color: '#e2e8f0' }}>
                 MPDS 调度终端
               </div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>
-                {mpdsCard.title} | 判定码：{detCode}
+                判定码：{terminal.determinant
+                  ? `${terminal.protocolNumber ?? '?'}-${terminal.determinant[0]}-${terminal.determinantSubcode ?? '?'}`
+                  : '未选择'}
               </div>
             </div>
           </div>
           <div style={styles.modalHeaderRight}>
-            <span style={{
-              padding: '3px 12px',
-              borderRadius: 12,
-              fontSize: 12,
-              fontWeight: 'bold',
-              backgroundColor: terminal.hotCold === 'HOT' ? '#c0392b' : '#2e86c1',
-              color: '#fff',
-            }}>
-              {terminal.hotCold ?? mpdsCard.hotCold}
-            </span>
             <button style={styles.modalCloseBtn} onClick={onClose} title="关闭调度卡">
               ✕
             </button>
@@ -980,20 +953,6 @@ function TerminalModal({
 
         {/* 模态框内容 */}
         <div style={styles.modalBody}>
-          {/* 协议参考 */}
-          <details style={styles.modalProtocolRef} open={false}>
-            <summary style={{ fontSize: 11, color: '#38bdf8', cursor: 'pointer', fontWeight: 'bold' }}>
-              📖 协议 {mpdsCard.number} 关键问题参考
-            </summary>
-            <div style={{ marginTop: 4 }}>
-              {mpdsCard.keyQuestions.map((kq, i) => (
-                <div key={i} style={{ fontSize: 11, color: '#94a3b8', padding: '2px 0' }}>
-                  • {kq}
-                </div>
-              ))}
-            </div>
-          </details>
-
           {/* 终端登记表单 */}
           <div style={{ marginTop: 8 }}>
             <TerminalForm
@@ -1001,7 +960,8 @@ function TerminalModal({
               onChange={onChange}
               onSetStatus={onSetStatus}
               onSetDeterminant={onSetDeterminant}
-              onTriage={onTriage}
+              onSetDeterminantSubcode={onSetDeterminantSubcode}
+              onSetProtocol={onSetProtocol}
             />
           </div>
         </div>
@@ -1018,17 +978,11 @@ function TerminalModal({
                 📋 暂存关闭
               </button>
               <button
-                style={{
-                  ...styles.modalDispatchBtn,
-                  opacity: hasTriage ? 1 : 0.5,
-                  cursor: hasTriage ? 'pointer' : 'not-allowed',
-                }}
+                style={styles.modalDispatchBtn}
                 onClick={onDispatch}
-                disabled={!hasTriage}
-                title={!hasTriage ? '请先选择分诊等级' : '确认派车'}
+                title="确认派车"
               >
                 🚑 确认派车
-                {!hasTriage && <span style={{ display: 'block', fontSize: 10, opacity: 0.8 }}>← 请先分诊</span>}
               </button>
             </>
           ) : (
@@ -1051,12 +1005,7 @@ function TerminalModal({
           )}
         </div>
 
-        {/* 未选分诊提示 */}
-        {!hasTriage && !dispatchSent && canDispatch && (
-          <div style={styles.modalWarning}>
-            ⚠️ 请在下方选择分诊等级后，才能派出救护车
-          </div>
-        )}
+
       </div>
     </div>
   )
@@ -1130,18 +1079,20 @@ function TerminalForm({
   onChange,
   onSetStatus,
   onSetDeterminant,
-  onTriage,
+  onSetDeterminantSubcode,
+  onSetProtocol,
 }: {
   terminal: TerminalState
   onChange: (field: TerminalField, value: string) => void
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
-  onTriage: (level: TriageLevel) => void
+  onSetDeterminantSubcode: (subcode: number) => void
+  onSetProtocol: (protocol: number) => void
 }) {
   return (
     <div style={styles.terminalForm}>
+      {/* ====== 协议号 ====== */}
       {/* ====== Case Entry（病例录入） ====== */}
-      <SectionTitle icon="📋" text="病例录入 (Protocol 0)" />
 
       {/* 地址 */}
       <FieldRow icon="📍" label="事件地址">
@@ -1225,32 +1176,75 @@ function TerminalForm({
         onToggle={onSetStatus}
       />
 
+      {/* ====== 协议号 ====== */}
+      <SectionTitle icon="📋" text="MPDS 协议" />
+      <FieldRow icon="🔢" label="协议编号 (1-33)">
+        <input
+          type="number"
+          min={1}
+          max={33}
+          style={{ ...styles.formInput, height: 30, width: 80 }}
+          value={terminal.protocolNumber ?? ''}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10)
+            if (v >= 1 && v <= 33) onSetProtocol(v)
+          }}
+          placeholder="?"
+        />
+      </FieldRow>
+
+      {/* 协议号对照参考（折叠） */}
+      <details style={{ margin: '-4px 0 8px 22px', fontSize: 11 }}>
+        <summary style={{ color: '#64748b', cursor: 'pointer', userSelect: 'none' }}>
+          📖 协议编号对照
+        </summary>
+        <div style={{
+          marginTop: 4,
+          padding: 6,
+          backgroundColor: '#1e293b',
+          borderRadius: 4,
+          maxHeight: 160,
+          overflowY: 'auto',
+          color: '#94a3b8',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '1px 12px',
+          fontSize: 10.5,
+        }}>
+          {PROTOCOL_REF.map(([num, name]) => (
+            <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
+              <span style={{ color: '#38bdf8', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
+              <span>{name}</span>
+            </div>
+          ))}
+        </div>
+      </details>
+
       {/* ====== 判定码 (Determinant) ====== */}
       <SectionTitle icon="🎯" text="MPDS 判定码" />
       <DeterminantSelector
         current={terminal.determinant}
         onSelect={onSetDeterminant}
       />
-
-      {/* ====== 分诊等级 — 四色映射 ====== */}
-      <SectionTitle icon="🚨" text="现场分诊等级" />
-      <div style={styles.triageGrid}>
-        {TRIAGE_OPTIONS.map((opt) => (
-          <button
-            key={opt.level}
-            style={{
-              ...styles.triageBtn,
-              borderColor: opt.color,
-              backgroundColor: terminal.triage === opt.level ? opt.color : 'transparent',
-              color: terminal.triage === opt.level ? '#fff' : opt.color,
+      <FieldRow icon="🔢" label="子编码 (1-4)">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="number"
+            min={1}
+            max={4}
+            style={{ ...styles.formInput, height: 28, width: 60 }}
+            value={terminal.determinantSubcode ?? ''}
+            onChange={(e) => {
+              const v = parseInt(e.target.value, 10)
+              if (v >= 1 && v <= 4) onSetDeterminantSubcode(v)
             }}
-            onClick={() => onTriage(opt.level)}
-          >
-            <div style={{ fontWeight: 'bold', fontSize: 14 }}>{opt.label}</div>
-            <div style={{ fontSize: 10 }}>{opt.desc}</div>
-          </button>
-        ))}
-      </div>
+            placeholder="?"
+          />
+          <span style={{ fontSize: 10, color: '#64748b', lineHeight: 1.3 }}>
+            1=危重伤 2=重伤 3=轻伤 4=非紧急
+          </span>
+        </div>
+      </FieldRow>
 
       {/* ====== 备注 ====== */}
       <SectionTitle icon="📝" text="事件备注" />
@@ -1590,49 +1584,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     whiteSpace: 'nowrap' as const,
   },
-  // 协议卡参考清单
-  qRefCard: {
-    backgroundColor: '#1e293b',
-    border: '1px solid #334155',
-    borderRadius: 6,
-    padding: '6px 10px',
-    marginBottom: 6,
-  },
-  qRefHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  qRefProto: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#38bdf8',
-    fontFamily: 'monospace',
-  },
-  qRefBadge: {
-    padding: '1px 8px',
-    borderRadius: 10,
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
-    fontFamily: 'monospace',
-  },
-  qRefList: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: 1,
-  },
-  qRefItem: {
-    fontSize: 11,
-    color: '#94a3b8',
-    lineHeight: '1.4',
-    paddingLeft: 4,
-  },
-  qRefDot: {
-    color: '#38bdf8',
-    marginRight: 4,
-  },
+
   qSection: {
     marginBottom: 6,
   },
@@ -1838,12 +1790,7 @@ const styles: Record<string, React.CSSProperties> = {
     overflowY: 'auto' as const,
     minHeight: 0,
   },
-  modalProtocolRef: {
-    backgroundColor: '#1a2233',
-    border: '1px solid #334155',
-    borderRadius: 6,
-    padding: '6px 10px',
-  },
+
   // ---------- 临床判断卡（内联在对话旁）----------
   judgmentCard: {
     marginLeft: 32,
@@ -1986,20 +1933,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'monospace',
     resize: 'vertical' as const,
     boxSizing: 'border-box' as const,
-  },
-
-  triageGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: 4,
-  },
-  triageBtn: {
-    padding: '6px 8px',
-    borderRadius: 4,
-    border: '2px solid',
-    cursor: 'pointer',
-    fontSize: 12,
-    transition: 'all 0.15s',
   },
 
   // ---------- 等待接听 — 紧急调度台 ----------

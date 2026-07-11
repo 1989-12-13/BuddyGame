@@ -15,6 +15,8 @@ export type GameAction =
   | { type: 'UPDATE_TERMINAL'; field: TerminalField | FragmentTargetField; value: string }
   | { type: 'SET_PATIENT_STATUS'; field: 'conscious' | 'breathing'; value: boolean }
   | { type: 'SET_MPDS_DETERMINANT'; determinant: MpdsDeterminant }
+  | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
+  | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
   | { type: 'DISPATCH' }
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }

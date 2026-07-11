@@ -44,7 +44,7 @@ export const entrapmentCard: EmergencyScenario = {
       gender: '女性',
       consciousness: '清醒但脸色很差',
       breathing: '说喘不上气呼吸急促',
-      patientCount: '4人（其中1名孕妇）',
+      patientCount: '1人',
       additional: [
         '电梯卡在3楼和4楼之间',
         '孕妇怀孕大概7个月',

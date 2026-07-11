@@ -25,7 +25,7 @@ export interface CallerProfile {
   speechStyle: string    // 说话风格描述
 }
 
-export type CallerTone = 'panic' | 'panicked' | 'anxious' | 'calm' | 'confused' | 'hysterical' | 'angry'
+export type CallerTone = '镇定' | '紧张' | '恐慌' | '失控'
 
 // -------------------- MPDS 判定等级 --------------------
 // MPDS使用ECHO/DELTA/CHARLIE/BRAVO/ALPHA五级判定，映射到响应资源：
@@ -33,11 +33,11 @@ export type CallerTone = 'panic' | 'panicked' | 'anxious' | 'calm' | 'confused' 
 export type MpdsDeterminant = 'ECHO' | 'DELTA' | 'CHARLIE' | 'BRAVO' | 'ALPHA'
 
 export const MPDS_DETERMINANT_INFO: Record<MpdsDeterminant, { label: string; color: string; responseCode: string }> = {
-  ECHO:    { label: 'E — 即刻生命威胁',         color: '#c0392b', responseCode: 'HOT (灯闪警笛)' },
-  DELTA:   { label: 'D — 高危/潜在致命',         color: '#e74c3c', responseCode: 'HOT (灯闪警笛)' },
-  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#f39c12', responseCode: 'COLD (安静接近)' },
-  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#2ecc71', responseCode: 'COLD (安静接近)' },
-  ALPHA:   { label: 'A — 低危/常规转运',         color: '#3498db', responseCode: 'COLD (安静接近)' },
+  ECHO:    { label: 'E — 即刻生命威胁',         color: '#c0392b', responseCode: '灯闪警笛' },
+  DELTA:   { label: 'D — 高危/潜在致命',         color: '#dc2626', responseCode: '灯闪警笛' },
+  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#f39c12', responseCode: '安静接近' },
+  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#22c55e', responseCode: '安静接近' },
+  ALPHA:   { label: 'A — 低危/常规转运',         color: '#3498db', responseCode: '安静接近' },
 }
 
 // -------------------- 分诊等级（颜色四色法 — 急救现场分诊） --------------------
@@ -45,9 +45,9 @@ export type TriageLevel = 'red' | 'yellow' | 'green' | 'black'
 // red = 濒危（即刻派车）, yellow = 危重, green = 轻伤, black = 死亡/无需抢救
 
 export const TRIAGE_LABELS: Record<TriageLevel, string> = {
-  red:    '红色 — 濒危（即刻派车）',
-  yellow: '黄色 — 危重（优先派车）',
-  green:  '绿色 — 轻伤（常规派车）',
+  red:    '红色 — 濒危',
+  yellow: '黄色 — 危重',
+  green:  '绿色 — 轻伤',
   black:  '黑色 — 死亡/无需抢救',
 }
 
@@ -177,12 +177,13 @@ export interface FirstAidGuidance {
 
 // -------------------- 互动小游戏（急救指导实操环节） --------------------
 export type MiniGameKind =
-  | 'rhythmPress'   // 节奏按压：目标 BPM
+  | 'rhythmPress'   // 胸外按压：目标 BPM
   | 'blowInflate'   // 吹气充胀
   | 'aimForce'      // 瞄准施力
-  | 'holdPressure'  // 持续按压
-  | 'positionDrag'  // 摆位拖拽
+  | 'holdPressure'  // 按压止血
+  | 'positionDrag'  // 摆位拖拽（已弃用）
   | 'timedShock'    // 时机识别除颤
+  | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
 
 /** 小游戏公共字段 */
 export interface BaseMiniGame {
@@ -193,7 +194,7 @@ export interface BaseMiniGame {
   feedback: { good: string; bad: string }  // 操作结束后来电者视角描述
 }
 
-/** 节奏按压：目标 BPM，空格/点击，检测频率与稳定度 */
+/** 胸外按压：目标 BPM，空格/点击，检测频率与稳定度 */
 export interface RhythmPressSpec extends BaseMiniGame {
   kind: 'rhythmPress'
   targetBpm: number         // 目标按压频率
@@ -211,20 +212,21 @@ export interface BlowInflateSpec extends BaseMiniGame {
   durationSec: number       // 总时长（秒）
 }
 
-/** 瞄准施力：拖拽标记到解剖位，再冲击，位置+时机计分 */
+/** 瞄准施力：拖拽标记到解剖位，再冲击/按压，位置+力度计分 */
 export interface AimForceSpec extends BaseMiniGame {
   kind: 'aimForce'
   targetX: number           // 目标中心 X（0-100 归一坐标）
   targetY: number           // 目标中心 Y（0-100 归一坐标）
   aimTolerance: number      // 命中容差（归一半径）
-  thrusts: number           // 需要施力/按压次数
-  thrustWindowMs: number    // 每次施力的目标节奏窗口（毫秒）
+  thrusts?: number           // 需要施力/按压次数（与 holdSec 二选一）
+  thrustWindowMs?: number    // 每次施力的目标节奏窗口（毫秒）
+  holdSec?: number           // 持续按压时长（秒）（与 thrusts 二选一）
   showSideView?: boolean    // 显示侧面视图（海姆立克用）
   hideTargetGuide?: boolean // 隐藏目标提示圈（不显示瞄准辅助线）
-  bodyDiagram?: 'full' | 'arm' | 'leg'  // 身体示意图类型（止血用：显示具体部位）
+  bodyDiagram?: 'full' | 'arm' | 'leg' | 'head' | 'chest'  // 身体示意图类型（止血用：显示具体部位）
 }
 
-/** 持续按压：长按保持压力 N 秒，松手血量回升 */
+/** 按压止血：长按保持压力 N 秒，松手血量回升 */
 export interface HoldPressureSpec extends BaseMiniGame {
   kind: 'holdPressure'
   holdSec: number           // 需维持的秒数
@@ -250,6 +252,12 @@ export interface TimedShockSpec extends BaseMiniGame {
   falsePenalty: number      // 误击扣分（0-1 每次）
 }
 
+/** 步骤排序：将打乱的步骤按正确顺序逐一选中 */
+export interface StepOrderSpec extends BaseMiniGame {
+  kind: 'stepOrder'
+  steps: string[]           // 正确顺序的步骤列表
+}
+
 export type MiniGameSpec =
   | RhythmPressSpec
   | BlowInflateSpec
@@ -257,6 +265,7 @@ export type MiniGameSpec =
   | HoldPressureSpec
   | PositionDragSpec
   | TimedShockSpec
+  | StepOrderSpec
 
 /** 小游戏组件统一契约 */
 export interface MiniGameProps {
@@ -368,22 +377,22 @@ export interface CallerState {
   questionCount: number      // 已问问题数（用于压力累加）
 }
 
-export type CalleeStressLevel = 'calm' | 'anxious' | 'panicked' | 'hysterical'
+export type CalleeStressLevel = '镇定' | '紧张' | '恐慌' | '失控'
 
 /** 压力 → 文字 + 颜色映射 */
 export const STRESS_INFO: Record<CalleeStressLevel, { label: string; color: string; emoji: string; answerQuality: number }> = {
-  calm:       { label: '平静',     color: '#4ade80', emoji: '😌', answerQuality: 1.0 },
-  anxious:    { label: '紧张',     color: '#facc15', emoji: '😰', answerQuality: 0.9 },
-  panicked:   { label: '恐慌',     color: '#f97316', emoji: '😱', answerQuality: 0.65 },
-  hysterical: { label: '失控',     color: '#ef4444', emoji: '🤯', answerQuality: 0.35 },
+  镇定: { label: '镇定',     color: '#4ade80', emoji: '😌', answerQuality: 1.0 },
+  紧张: { label: '紧张',     color: '#facc15', emoji: '😰', answerQuality: 0.9 },
+  恐慌: { label: '恐慌',     color: '#f97316', emoji: '😱', answerQuality: 0.65 },
+  失控: { label: '失控',     color: '#ef4444', emoji: '🤯', answerQuality: 0.35 },
 }
 
 /** 由压力值推导等级 */
 export function stressToLevel(stress: number): CalleeStressLevel {
-  if (stress < 25) return 'calm'
-  if (stress < 50) return 'anxious'
-  if (stress < 75) return 'panicked'
-  return 'hysterical'
+  if (stress < 25) return '镇定'
+  if (stress < 50) return '紧张'
+  if (stress < 75) return '恐慌'
+  return '失控'
 }
 
 /** MPDS 协议编号与名称对照表（33个标准协议） */
@@ -449,8 +458,7 @@ export interface WorldState {
   callStartTime: number       // 接通时的shiftElapsed
   callerState: CallerState | null
 
-  // 问询策略
-  questionCost: number        // 问询累计消耗的游戏时间（影响派车速度评分）
+
 
   // 终端（计算机登记）
   terminal: TerminalState

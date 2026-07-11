@@ -10,14 +10,15 @@
 }
 
 html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-size: 17px;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
 }
 
 body {
   font-family: var(--font-body);
-  background: var(--bg-night);
+  font-weight: 500;
+  background: var(--bg-light);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;

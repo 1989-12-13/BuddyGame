@@ -17,7 +17,7 @@ export const carbonMonoxideCard: EmergencyScenario = {
   mpdsCard: {
     number: 8,
     title: '一氧化碳/吸入/危险品',
-    chiefComplaint: '一家三口在家中煤炉取暖后出现头晕恶心意识模糊',
+    chiefComplaint: '在家中煤炉取暖后出现头晕恶心意识模糊',
     determinantCode: '8-D-2',
     hotCold: 'HOT',
     keyQuestions: [
@@ -39,12 +39,12 @@ export const carbonMonoxideCard: EmergencyScenario = {
     },
     contact: '185****6666',
     condition: {
-      chiefComplaint: '全家三人头晕恶心浑身无力其中一人已经意识不清',
+      chiefComplaint: '煤炉取暖后头晕恶心浑身无力意识模糊',
       age: '28岁',
       gender: '男性',
       consciousness: '我自己还醒着但晕乎乎的我女朋友已经叫不醒了',
       breathing: '呼吸好像正常',
-      patientCount: '3人',
+      patientCount: '1人',
       additional: [
         '家里生了煤炉取暖',
         '窗户关得很严',
@@ -70,7 +70,7 @@ export const carbonMonoxideCard: EmergencyScenario = {
       panickedAnswer: '煤炉！烧了一晚上了！窗户都关着！我女朋友叫不醒了怎么办！',
       reveals: ['additional'],
       judgment: {
-        question: '密闭空间煤炉燃烧 + 多人症状 = ？',
+        question: '密闭空间煤炉燃烧，多人出现相似症状，考虑什么？',
         options: [
           { label: '一氧化碳中毒，立即开窗通风', fills: [{ field: 'conditionNote', value: '一氧化碳中毒，密闭空间煤炉燃烧' }], isCorrect: true },
           { label: '食物中毒，需询问吃了什么', fills: [{ field: 'conditionNote', value: '可能是食物中毒' }], isCorrect: false },
@@ -170,13 +170,17 @@ export const carbonMonoxideCard: EmergencyScenario = {
           callerIncorrect: '我摆的位置不太对，他好像更难受了……',
         },
         miniGame: {
-          kind: 'positionDrag',
+          kind: 'stepOrder',
           title: '侧卧复苏体位',
-          instruction: '将患者摆成侧卧复苏体位，头偏向一侧保持呼吸道通畅。',
+          instruction: '将患者摆成侧卧复苏体位。请按正确顺序点击操作步骤。',
           passThreshold: 0.5,
-          targetAngle: 90,
-          angleTolerance: 12,
-          bodyLabel: '侧卧复苏体位',
+          steps: [
+            '将患者靠近自己一侧的手臂向上弯曲呈直角',
+            '将患者另一侧手臂横放胸前',
+            '将患者远侧腿的膝盖弯曲',
+            '抓住远侧肩膀和膝盖，向自己一侧缓缓翻转',
+            '调整头部后仰，保持气道通畅',
+          ],
           feedback: { good: '我把他侧过来了，头也偏了！他呼吸声好像大了！', bad: '我摆的位置不太对，他好像更难受了……' },
         },
       },

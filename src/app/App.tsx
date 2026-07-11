@@ -8,18 +8,19 @@ import { TitleScreen } from '../screens/TitleScreen'
 import { GameScreen } from '../screens/GameScreen'
 import { EndingScreen } from '../screens/EndingScreen'
 import { LevelSelectScreen } from '../screens/LevelSelectScreen'
+import { KnowledgeScreen } from '../screens/KnowledgeScreen'
 
-type AppScreen = 'title' | 'level_select' | 'game' | 'ending'
+type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('title')
   const [ending, setEnding] = useState<EndingDef | null>(null)
   const [finalScore, setFinalScore] = useState(0)
   const [gameKey, setGameKey] = useState(0)
-  const [debugScenarioId, setDebugScenarioId] = useState<string | undefined>(undefined)
+  const [selectedScenario, setSelectedScenario] = useState<string | undefined>(undefined)
 
   const handleStart = useCallback((scenarioId?: string) => {
-    setDebugScenarioId(scenarioId)
+    setSelectedScenario(scenarioId)
     setGameKey(k => k + 1)
     setScreen('game')
     setEnding(null)
@@ -31,6 +32,7 @@ export default function App() {
       if (target === 'title') {
         setScreen('title')
         setEnding(null)
+        setSelectedScenario(undefined)
       } else {
         setScreen('ending')
         if (end) setEnding(end)
@@ -49,9 +51,11 @@ export default function App() {
 
   switch (screen) {
     case 'title':
-      return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
+      return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} onKnowledge={() => setScreen('knowledge')} />
     case 'level_select':
       return <LevelSelectScreen onStart={handleStart} onBack={() => setScreen('title')} />
+    case 'knowledge':
+      return <KnowledgeScreen onBack={() => setScreen('title')} />
     case 'ending':
       return ending ? (
         <EndingScreen ending={ending} totalScore={finalScore} onRestart={handleRestart} />
@@ -60,6 +64,6 @@ export default function App() {
       )
     case 'game':
     default:
-      return <GameScreen key={gameKey} onNavigate={handleNavigate} debugScenarioId={debugScenarioId} />
+      return <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
   }
 }

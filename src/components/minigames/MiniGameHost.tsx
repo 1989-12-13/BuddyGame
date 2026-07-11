@@ -9,6 +9,7 @@ import { AimForce } from './engines/AimForce'
 import { HoldPressure } from './engines/HoldPressure'
 import { PositionDrag } from './engines/PositionDrag'
 import { TimedShock } from './engines/TimedShock'
+import { StepOrder } from './engines/StepOrder'
 
 interface Props {
   spec: MiniGameSpec
@@ -16,9 +17,9 @@ interface Props {
 }
 
 const SHELL: React.CSSProperties = {
-  borderTop: '2px solid #38bdf8',
+  borderTop: '2px solid #3b82f6',
   padding: '12px 14px',
-  backgroundColor: '#0a0f1f',
+  backgroundColor: '#f8fafc',
   maxHeight: 360,
   overflowY: 'auto',
 }
@@ -26,13 +27,13 @@ const SHELL: React.CSSProperties = {
 const TITLE: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 'bold',
-  color: '#38bdf8',
+  color: '#3b82f6',
   marginBottom: 4,
 }
 
 const INSTR: React.CSSProperties = {
   fontSize: 12,
-  color: '#94a3b8',
+  color: '#64748b',
   marginBottom: 10,
   lineHeight: 1.5,
 }
@@ -48,6 +49,7 @@ export function MiniGameHost({ spec, onComplete }: Props) {
       {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} />}
       {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
       {spec.kind === 'timedShock' && <TimedShock spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}
     </div>
   )
 }

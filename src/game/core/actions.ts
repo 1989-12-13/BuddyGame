@@ -19,7 +19,6 @@ export type GameAction =
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
   | { type: 'DISPATCH' }
-  | { type: 'DEBUG_AUTO_DISPATCH' }
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL' }

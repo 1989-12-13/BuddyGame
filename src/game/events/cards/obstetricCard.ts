@@ -44,7 +44,7 @@ export const obstetricCard: EmergencyScenario = {
       gender: '女性',
       consciousness: '人是清醒的，但疼得话都说不全了',
       breathing: '呼吸很急促，一直在喘',
-      patientCount: '1个人（肚子里还有个孩子）',
+      patientCount: '1人',
       additional: [
         '预产期还有2周',
         '羊水已破，大约5分钟前',

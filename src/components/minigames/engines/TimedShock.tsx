@@ -63,7 +63,7 @@ export function TimedShock({ spec, onComplete }: MiniGameProps) {
       if (samples.length > W) samples.shift()
 
       ctx.clearRect(0, 0, W, H)
-      ctx.strokeStyle = wi >= 0 ? '#ef4444' : '#27ae60'
+      ctx.strokeStyle = wi >= 0 ? '#ef4444' : '#16a34a'
       ctx.lineWidth = 2
       ctx.beginPath()
       for (let x = 0; x < samples.length; x++) {
@@ -105,9 +105,9 @@ export function TimedShock({ spec, onComplete }: MiniGameProps) {
 
   return (
     <div style={wrap}>
-      <canvas ref={canvasRef} width={260} height={70} style={{ backgroundColor: '#0a0e17', borderRadius: 8, border: '1px solid #334155', width: 260, height: 70 }} />
+      <canvas ref={canvasRef} width={260} height={70} style={{ backgroundColor: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', width: 260, height: 70 }} />
       <div style={{ display: 'flex', gap: 16, fontFamily: 'monospace', alignItems: 'center' }}>
-        <Readout label="除颤" value={`${delivered}/${s.windows}`} color="#27ae60" />
+        <Readout label="除颤" value={`${delivered}/${s.windows}`} color="#16a34a" />
         <Readout label="误击" value={String(falseClicks)} color="#ef4444" />
         <div style={{ fontSize: 12, color: inWindow ? '#ef4444' : '#64748b', fontWeight: 'bold' }}>
           {inWindow ? '⚡ 可电击！' : '分析中…'}
@@ -115,7 +115,7 @@ export function TimedShock({ spec, onComplete }: MiniGameProps) {
       </div>
       <button
         onClick={shock}
-        style={{ padding: '10px 28px', borderRadius: 8, border: 'none', backgroundColor: inWindow ? '#ef4444' : '#334155', color: '#fff', fontSize: 15, fontWeight: 'bold', cursor: 'pointer', boxShadow: inWindow ? '0 0 20px #ef4444' : 'none', animation: inWindow ? 'pulse-live 0.6s ease-in-out infinite' : 'none' }}
+        style={{ padding: '10px 28px', borderRadius: 8, border: 'none', backgroundColor: inWindow ? '#dc2626' : '#cbd5e1', color: '#fff', fontSize: 15, fontWeight: 'bold', cursor: 'pointer', boxShadow: inWindow ? '0 0 20px #dc2626' : 'none', animation: inWindow ? 'pulse-live 0.6s ease-in-out infinite' : 'none' }}
       >
         ⚡ SHOCK 除颤
       </button>

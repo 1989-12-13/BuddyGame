@@ -89,7 +89,7 @@ export const chokingCard: EmergencyScenario = {
         instruction: '把孩子面朝下放在您膝盖上头低脚高用手掌根部拍后背5次',
         prompt: '第一步：海姆立克',
         options: [
-          '拍背5次 + 腹部冲击',
+          '拍背5次，腹部冲击',
           '抠喉咙',
           '倒过来抖',
         ],

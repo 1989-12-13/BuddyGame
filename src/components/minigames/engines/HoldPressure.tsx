@@ -1,5 +1,5 @@
 // ============================================================
-// HoldPressure — 持续按压（止血）
+// HoldPressure — 按压止血
 // 按住保持压力，血量下降；松手血量回升，需维持到目标秒数
 // ============================================================
 
@@ -76,17 +76,17 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
     setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
   }
 
-  const bloodColor = blood < 30 ? '#27ae60' : blood < 70 ? '#fbbf24' : '#ef4444'
+  const bloodColor = blood < 30 ? '#16a34a' : blood < 70 ? '#d97706' : '#ef4444'
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
         <Readout label="血量" value={blood.toFixed(0)} color={bloodColor} />
-        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="#38bdf8" />
+        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="#3b82f6" />
         <Readout label="目标" value={s.holdSec + 's'} color="#94a3b8" />
       </div>
 
-      <div style={{ width: 240, height: 26, backgroundColor: '#1e293b', borderRadius: 13, border: '1px solid #334155', overflow: 'hidden' }}>
+      <div style={{ width: 240, height: 26, backgroundColor: '#f1f5f9', borderRadius: 13, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
         <div style={{ width: `${blood}%`, height: '100%', backgroundColor: bloodColor, transition: 'width 0.05s linear', boxShadow: `0 0 12px ${bloodColor}` }} />
       </div>
 
@@ -94,9 +94,9 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
         onPointerDown={() => press(true)}
         onPointerUp={() => press(false)}
         onPointerLeave={() => press(false)}
-        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: '#1e293b', border: `3px solid ${holding ? '#27ae60' : '#ef4444'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
+        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: '#f1f5f9', border: `3px solid ${holding ? '#16a34a' : '#dc2626'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
       >
-        <span style={{ fontSize: 13, color: '#fca5a5', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
+        <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
       </div>
       <div style={{ fontSize: 11, color: '#64748b' }}>保持按压直到血量降至安全区并维持</div>
     </div>

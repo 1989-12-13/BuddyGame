@@ -1,5 +1,5 @@
 // ============================================================
-// RhythmPress — 节奏按压（心肺复苏）
+// RhythmPress — 胸外按压（心肺复苏）
 // 按空格/点击模拟按压，检测频率与稳定度
 // ============================================================
 
@@ -105,9 +105,9 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#27ae60' : '#fbbf24'} />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#16a34a' : '#d97706'} />
         <Readout label="目标" value={String(s.targetBpm)} color="#94a3b8" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#38bdf8" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />
         <Readout label="按压" value={String(presses)} color="#e2e8f0" />
       </div>
 
@@ -117,8 +117,8 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           width: 160,
           height: 160,
           borderRadius: '50%',
-          backgroundColor: '#1e293b',
-          border: '3px solid #ef4444',
+          backgroundColor: '#f1f5f9',
+          border: '3px solid #dc2626',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

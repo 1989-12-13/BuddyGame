@@ -24,21 +24,26 @@ function pickNarrativeAnswer(
   ramblingAnswer: string,
   panickedAnswer: string,
 ): { text: string; quality: InfoQuality; distorted: boolean } {
+  // 失控（75+）：语无伦次，完全无法提供信息
   if (stress >= 75) return { text: panickedAnswer, quality: 'vague', distorted: true }
-  if (stress >= 50) return { text: ramblingAnswer, quality: 'partial', distorted: true }
+  // 恐慌（50-74）：有概率完全无法提供信息或只能提供部分信息
+  if (stress >= 50) {
+    if (Math.random() < 0.35) return { text: panickedAnswer, quality: 'vague', distorted: true }
+    return { text: ramblingAnswer, quality: 'partial', distorted: true }
+  }
+  // 紧张（25-49）：只能提供部分信息
   if (stress >= 25) return { text: ramblingAnswer, quality: 'partial', distorted: false }
+  // 镇定（0-24）：能给出完整信息
   return { text: cleanAnswer, quality: 'clear', distorted: false }
 }
 
 /** 由来电者tone映射初始压力值 */
 function toneToInitialStress(tone: string): number {
   const map: Record<string, number> = {
-    panic: 70,
-    anxious: 50,
-    calm: 25,
-    confused: 40,
-    hysterical: 85,
-    angry: 60,
+    镇定: 25,
+    紧张: 50,
+    恐慌: 65,
+    失控: 85,
   }
   return map[tone] ?? 40
 }
@@ -102,15 +107,7 @@ function generateEventNarrative(
   return { text: chiefComplaint, quality: 'clear', distorted: false }
 }
 
-/** 生成步骤3（患者人数）的叙述式回答 */
-function generateCountNarrative(count: string, stress: number): string {
-  if (stress >= 75) return `${count}！！！就${count}！！我不知道还有没有别的！！！`
-  if (stress >= 50) return `${count}...应该就是${count}吧，没有别人了...应该...我太慌了没注意看周围。`
-  if (stress >= 25) return `${count}，就是${count}。没别人了。`
-  return `${count}。`
-}
-
-/** 生成步骤4（患者年龄）的叙述式回答 */
+/** 生成步骤3（患者年龄）的叙述式回答 */
 function generateAgeNarrative(age: string, stress: number, gender: string): string {
   const pronoun = gender === '女性' ? '她' : gender === '男性' ? '他' : 'TA'
   // 防御性剥离：确保 age 字段不混入性别/称谓
@@ -186,7 +183,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         currentCall: scenario,
         callPhase: 'questioning',
         callStartTime: state.shiftElapsed,
-        questionCost: 0,
         callerState,
         terminal,
         dispatchSent: false,
@@ -219,7 +215,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const newAskedMPDS = [...cs.askedMPDS]
       let newAddress: 'none' | 'vague' | 'partial' | 'full' = newRevealed.address
       let newStress = cs.stress
-      let timeCost = 0
       let stressEffect = 0
       let newJudgments: JudgmentPrompt[] = [...(state.pendingJudgments ?? [])]
       let newTerminal = { ...state.terminal }
@@ -230,7 +225,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // --- 步骤1：位置确认 ---
       if (questionId === 'step1_location') {
-        timeCost = 2; stressEffect = -5
+        stressEffect = -5
         newDialogue.push({ speaker: 'operator', text: '请问事发的确切地址是哪里？', timestamp: now })
         const nq = generateLocationNarrative(
           call.fourElements.address.partial,
@@ -246,7 +241,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // --- 步骤1b：标志建筑（补充精确地址）---
       else if (questionId === 'ask_landmark') {
-        timeCost = 2; stressEffect = -3
+        stressEffect = -3
         newDialogue.push({ speaker: 'operator', text: '旁边有什么标志性建筑或者明显的店铺吗？', timestamp: now })
         const nq = pickNarrativeAnswer(
           newStress,
@@ -263,7 +258,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // --- 步骤2：事件简述 ---
       else if (questionId === 'step2_event') {
-        timeCost = 3; stressEffect = -8
+        stressEffect = -8
         newDialogue.push({ speaker: 'operator', text: '好的，请告诉我具体发生了什么事？', timestamp: now })
         const caller = getCaller(call.callerId)
         const nq = generateEventNarrative(
@@ -311,19 +306,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         })
       }
 
-      // --- 步骤3：患者人数 ---
-      else if (questionId === 'step3_count') {
-        timeCost = 2; stressEffect = -3
-        newDialogue.push({ speaker: 'operator', text: '一共有几个人受伤/不适？', timestamp: now })
-        const count = call.fourElements.condition.patientCount
-        const countText = generateCountNarrative(count, newStress)
-        newDialogue.push({ speaker: 'caller', text: countText, timestamp: now })
-        newInfoQuality['patientCount'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
-      }
-
-      // --- 步骤4：患者年龄 ---
-      else if (questionId === 'step4_age') {
-        timeCost = 2; stressEffect = -4
+      // --- 步骤3：患者年龄 ---
+      else if (questionId === 'step3_age') {
+        stressEffect = -4
         newDialogue.push({ speaker: 'operator', text: '患者多大年龄了？', timestamp: now })
         const age = call.fourElements.condition.age
         const ageText = generateAgeNarrative(age, newStress, call.fourElements.condition.gender)
@@ -336,8 +321,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         const isAgePrecise = ageStripped === age
         const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
         newJudgments.push({
-          id: `judge_step4_${Date.now()}`,
-          questionId: 'step4_age',
+          id: `judge_step3_${Date.now()}`,
+          questionId: 'step3_age',
           dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
           question: '来电者描述的年龄信息，你应该如何记录？',
           options: [
@@ -349,9 +334,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         })
       }
 
-      // --- 步骤5：意识与呼吸（最关键评估）---
-      else if (questionId === 'step5_vitals') {
-        timeCost = 3; stressEffect = -10
+      // --- 步骤4：意识与呼吸（最关键评估）---
+      else if (questionId === 'step4_vitals') {
+        stressEffect = -10
         newDialogue.push({ speaker: 'operator', text: '患者清醒吗？他/她还有呼吸吗？', timestamp: now })
         const consciousness = call.fourElements.condition.consciousness
         const breathing = call.fourElements.condition.breathing
@@ -368,15 +353,15 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         const isBreathingAbnormal = breathing.includes('急促') || breathing.includes('喘') || breathing.includes('异常')
         const callerIdx2 = newDialogue.findIndex(d => d.speaker === 'caller')
         newJudgments.push({
-          id: `judge_step5_${Date.now()}`,
-          questionId: 'step5_vitals',
+          id: `judge_step4_${Date.now()}`,
+          questionId: 'step4_vitals',
           dialogueIndex: state.dialogueLog.length + (callerIdx2 >= 0 ? callerIdx2 : 1),
           question: '根据来电者描述，请判断患者意识与呼吸状态：',
           options: [
-            { label: '有意识+呼吸正常', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: true }], isCorrect: !isUnconscious && !isNotBreathing && !isBreathingAbnormal },
-            { label: '有意识+呼吸困难/急促', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: false }, { field: 'conditionNote', value: '呼吸异常' }], isCorrect: !isUnconscious && isBreathingAbnormal },
-            { label: '无意识+无呼吸/无效呼吸', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: false }], isCorrect: isUnconscious && isNotBreathing },
-            { label: '无意识+有呼吸', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: true }], isCorrect: isUnconscious && !isNotBreathing },
+            { label: '有意识，呼吸正常', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: false }], isCorrect: !isUnconscious && !isNotBreathing && !isBreathingAbnormal },
+            { label: '有意识，呼吸困难', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: true }, { field: 'conditionNote', value: '呼吸异常' }], isCorrect: !isUnconscious && isBreathingAbnormal },
+            { label: '无意识，无呼吸', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: true }], isCorrect: isUnconscious && isNotBreathing },
+            { label: '无意识，有呼吸', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: false }], isCorrect: isUnconscious && !isNotBreathing },
           ],
           chosenOptionIndex: null,
         })
@@ -384,7 +369,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // --- 联系电话（补充信息，随时可问）---
       else if (questionId === 'ask_contact') {
-        timeCost = 1; stressEffect = -2
+        stressEffect = -2
         newDialogue.push({ speaker: 'operator', text: '您的联系电话是多少？我记一下。', timestamp: now })
         const contactAnswer = newStress >= 50
           ? '就是我这个手机吧...哎我现在脑子都是乱的...你打我这个号就行...这个是...等一下我看看...'
@@ -408,7 +393,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         const mpdsQ = call.mpdsQuestions.find(q => q.id === questionId)
         if (!mpdsQ) return state
 
-        timeCost = mpdsQ.timeCost
         stressEffect = mpdsQ.stressEffect
 
         newDialogue.push({ speaker: 'operator', text: mpdsQ.questionText, timestamp: now })
@@ -464,11 +448,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const newStressLevel = stressToLevel(newStress)
 
       // 情绪爆发
-      if (cs.stressLevel !== 'hysterical' && newStressLevel === 'hysterical') {
+      if (cs.stressLevel !== '失控' && newStressLevel === '失控') {
         newDialogue.push({
           speaker: 'caller', text: '我...我真的不行了！你们到底能不能来？！', timestamp: now,
         })
-      } else if (cs.stressLevel === 'calm' && newStressLevel === 'panicked') {
+      } else if (cs.stressLevel === '镇定' && newStressLevel === '恐慌') {
         newDialogue.push({
           speaker: 'caller', text: '你能不能快点……我感觉越来越不好了……', timestamp: now,
         })
@@ -479,7 +463,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return {
         ...state,
         callPhase: 'questioning',
-        questionCost: state.questionCost + timeCost,
         pendingJudgments: newJudgments,
         terminal: newTerminal,
         callerState: {
@@ -524,7 +507,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       return {
         ...state,
-        questionCost: state.questionCost + 2,   // 安抚消耗2秒
+
         callerState: {
           ...cs,
           stress: newStress,
@@ -645,84 +628,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         ...state,
         pendingJudgments: newJudgments,
         terminal: newTerminal,
-      }
-    }
-
-    // ==========================================
-    // DEBUG_AUTO_DISPATCH — 调试模式：自动填充并派车（仅供测试入口使用）
-    // ==========================================
-    case 'DEBUG_AUTO_DISPATCH': {
-      if (!state.currentCall || !state.callerState) return state
-      if (state.dispatchSent) return state
-
-      const call = state.currentCall
-      const detParts = call.mpdsCard.determinantCode.split('-')
-
-      // 解析判定码
-      const detChars = ['ECHO','DELTA','CHARLIE','BRAVO','ALPHA'] as const
-      let determinant: MpdsDeterminant = 'ALPHA'
-      const detChar = detParts[1]?.[0]?.toUpperCase()
-      for (const d of detChars) {
-        if (d[0] === detChar) { determinant = d; break }
-      }
-
-      // 构建增强状态：reveal 全部信息 + 填写正确终端
-      const enhancedCaller = {
-        ...state.callerState,
-        revealedInfo: {
-          address: 'full' as const,
-          contact: true,
-          chiefComplaint: true,
-          purpose: true,
-          age: true,
-          gender: true,
-          consciousness: true,
-          breathing: true,
-          additional: [] as string[],
-        },
-      }
-      const enhancedTerminal = {
-        ...state.terminal,
-        protocolNumber: parseInt(detParts[0], 10) || 0,
-        determinant,
-        determinantSubcode: parseInt(detParts[2], 10) || 0,
-      }
-
-      const dispatchTime = state.shiftElapsed - state.callStartTime
-      const derivedTriage = determinantToTriage(determinant)
-      const triage = derivedTriage || call.correctTriage
-      const eta = calcAmbulanceETA(dispatchTime, 'full')
-      const hasGuidance = call.guidance !== null
-
-      const systemLine: DialogueLine = {
-        speaker: 'system',
-        text: `【🚑 测试派车 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒】`,
-        timestamp: state.shiftElapsed,
-      }
-
-      return {
-        ...state,
-        callerState: enhancedCaller,
-        terminal: enhancedTerminal,
-        dispatchSent: true,
-        dispatchRecord: {
-          callId: call.id,
-          dispatchTime,
-          triage,
-          addressCompleteness: 'full',
-          ambulanceETA: eta,
-        },
-        ambulanceRemaining: eta,
-        callPhase: hasGuidance ? 'guidance' : 'closing',
-        guidanceActive: hasGuidance,
-        guidanceStepIndex: 0,
-        guidanceResults: hasGuidance
-          ? new Array(call.guidance!.steps.length).fill(null)
-          : [],
-        guidanceMinigameScores: hasGuidance
-          ? new Array(call.guidance!.steps.length).fill(null)
-          : [],
-        dialogueLog: [...state.dialogueLog, systemLine],
       }
     }
 
@@ -926,7 +831,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           state.guidanceResults.filter(r => r === 'correct').length,
           choiceStepTotal,
           miniGameAvg,
-          state.questionCost,
           qualityBonus,
           state.terminal.protocolNumber,
           correctProto,

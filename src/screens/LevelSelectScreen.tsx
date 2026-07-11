@@ -20,11 +20,11 @@ interface ScenarioEntry {
 
 const ALL_SCENARIOS: ScenarioEntry[] = [
   // 心肺复苏
-  { id: 'cardiac_arrest', num: 9, title: '心脏骤停', desc: 'CPR 胸外按压 + 人工呼吸 + AED 除颤', category: '心肺复苏', tag: '🔴🫁⚡' },
+  { id: 'cardiac_arrest', num: 9, title: '心脏骤停', desc: 'CPR 胸外按压 + 人工呼吸 + AED 除颤', category: '心肺复苏', tag: '🤲🫁⚡' },
   // 呼吸系统
   { id: 'choking',        num: 11, title: '气道异物窒息', desc: '海姆立克腹部冲击疗法', category: '呼吸系统', tag: '🎯' },
   { id: 'drowning',       num: 6, title: '溺水', desc: '人工呼吸 + 背部拍击排水', category: '呼吸系统', tag: '🫁🎯' },
-  { id: 'asthma',         num: 2, title: '哮喘发作', desc: '辅助呼吸节奏按压', category: '呼吸系统', tag: '🔴' },
+  { id: 'asthma',         num: 2, title: '哮喘发作', desc: '辅助呼吸胸外按压', category: '呼吸系统', tag: '🤲' },
   { id: 'carbon_monoxide', num: 26, title: '一氧化碳中毒', desc: '侧卧复苏体位防止误吸', category: '呼吸系统', tag: '↩️' },
   // 创伤出血
   { id: 'hemorrhage',     num: 21, title: '刀割伤大出血', desc: '动脉止血点定位 + 近心端压迫', category: '创伤出血', tag: '🎯' },
@@ -39,8 +39,8 @@ const ALL_SCENARIOS: ScenarioEntry[] = [
   { id: 'unconscious_fainting', num: 31, title: '晕厥/意识丧失', desc: '复苏体位侧卧', category: '神经系统', tag: '↩️' },
   { id: 'severe_headache', num: 27, title: '剧烈头痛', desc: '平卧安静体位', category: '神经系统', tag: '✋' },
   // 心血管
-  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '胸外按压节奏训练', category: '心血管', tag: '🔴' },
-  { id: 'heart_problems', num: 19, title: '心律失常', desc: '胸外按压节奏训练', category: '心血管', tag: '🔴' },
+  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '胸外按压节奏训练', category: '心血管', tag: '🤲' },
+  { id: 'heart_problems', num: 19, title: '心律失常', desc: '胸外按压节奏训练', category: '心血管', tag: '🤲' },
   { id: 'electrocution',  num: 15, title: '触电', desc: '断电时机 + CPR', category: '心血管', tag: '⚡' },
   // 消化与泌尿
   { id: 'abdominal_pain', num: 1, title: '急性腹痛', desc: '持续按压缓解', category: '消化泌尿', tag: '✋' },
@@ -64,11 +64,11 @@ const ALL_SCENARIOS: ScenarioEntry[] = [
 ]
 
 const TAGS: Record<string, string> = {
-  '🔴': '节奏按压',
+  '🤲': '胸外按压',
   '🫁': '人工呼吸',
   '⚡': '除颤时机',
   '🎯': '瞄准定位',
-  '✋': '持续按压',
+  '✋': '按压止血',
   '↩️': '体位摆位',
 }
 
@@ -138,7 +138,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
                   key={s.id}
                   style={{
                     ...styles.card,
-                    borderColor: hoveredId === s.id ? '#f1c40f' : '#1e2a4a',
+                    borderColor: hoveredId === s.id ? '#ca8a04' : '#e2e8f0',
                     transform: hoveredId === s.id ? 'translateY(-2px)' : 'none',
                   }}
                   onMouseEnter={() => setHoveredId(s.id)}
@@ -165,31 +165,31 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     width: '100vw',
     height: '100vh',
-    backgroundColor: '#0a0a1a',
+    backgroundColor: '#f0f4f8',
     display: 'flex',
     flexDirection: 'column',
-    color: '#e2e8f0',
+    color: '#334155',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    borderBottom: '1px solid #1a2640',
+    borderBottom: '1px solid #e2e8f0',
   },
   backBtn: {
     padding: '6px 14px',
     fontSize: 13,
-    color: '#94a3b8',
-    backgroundColor: 'transparent',
-    border: '1px solid #334155',
+    color: '#64748b',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
     borderRadius: 6,
     cursor: 'pointer',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ecf0f1',
+    color: '#1e293b',
     margin: 0,
     letterSpacing: 2,
   },
@@ -204,10 +204,10 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     fontSize: 13,
-    backgroundColor: '#0d1121',
-    border: '1px solid #1e2a4a',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
     borderRadius: 6,
-    color: '#e2e8f0',
+    color: '#334155',
     outline: 'none',
   },
   clearBtn: {
@@ -215,7 +215,7 @@ const styles: Record<string, React.CSSProperties> = {
     right: 8,
     background: 'none',
     border: 'none',
-    color: '#64748b',
+    color: '#94a3b8',
     cursor: 'pointer',
     fontSize: 14,
   },
@@ -227,8 +227,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     fontSize: 11,
   },
-  legendTitle: { color: '#64748b', marginRight: 4 },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: '#94a3b8' },
+  legendTitle: { color: '#94a3b8', marginRight: 4 },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: '#64748b' },
   scrollArea: {
     flex: 1,
     overflowY: 'auto',
@@ -240,10 +240,10 @@ const styles: Record<string, React.CSSProperties> = {
   categoryTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#64748b',
+    color: '#94a3b8',
     margin: '0 0 8px',
     paddingLeft: 10,
-    borderLeft: '3px solid #f1c40f',
+    borderLeft: '3px solid #ca8a04',
   },
   grid: {
     display: 'grid',
@@ -252,14 +252,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     padding: '10px 12px',
-    backgroundColor: '#0d1121',
-    border: '1px solid #1e2a4a',
+    backgroundColor: '#ffffff',
+    border: '1px solid #e2e8f0',
     borderRadius: 8,
     cursor: 'pointer',
     transition: 'all 0.15s',
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
   cardHeader: {
     display: 'flex',
@@ -268,7 +269,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   protocolNum: {
     fontSize: 10,
-    color: '#475569',
+    color: '#94a3b8',
     fontWeight: 'bold',
     fontFamily: 'monospace',
   },
@@ -276,11 +277,11 @@ const styles: Record<string, React.CSSProperties> = {
   cardTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#e2e8f0',
+    color: '#334155',
   },
   cardDesc: {
     fontSize: 11,
-    color: '#64748b',
+    color: '#94a3b8',
     lineHeight: 1.3,
   },
 }

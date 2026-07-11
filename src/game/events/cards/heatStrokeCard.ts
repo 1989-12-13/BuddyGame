@@ -71,7 +71,7 @@ export const heatStrokeCard: EmergencyScenario = {
       panickedAnswer: '干的！！没汗！！烫得跟火炉一样！！是不是要烧死了！！',
       reveals: ['additional'],
       judgment: {
-        question: '皮肤干热无汗+高热+意识丧失=？',
+        question: '皮肤干热无汗，高热，意识丧失，考虑什么？',
         options: [
           { label: '热射病 体温调节中枢衰竭 致命性', fills: [{ field: 'conditionNote', value: '热射病，体温调节中枢衰竭' }], isCorrect: true },
           { label: '普通中暑 喝水休息就好', fills: [{ field: 'conditionNote', value: '误判为普通中暑' }], isCorrect: false },

@@ -77,19 +77,19 @@ export function BlowInflate({ spec, onComplete }: MiniGameProps) {
     setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
   }
 
-  const fillColor = fill > s.overInflationSec / s.durationSec ? '#ef4444' : '#38bdf8'
+  const fillColor = fill > s.overInflationSec / s.durationSec ? '#ef4444' : '#3b82f6'
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
-        <Readout label="有效" value={String(good)} color="#27ae60" />
+        <Readout label="有效" value={String(good)} color="#16a34a" />
         <Readout label="目标" value={String(s.targetInflations)} color="#94a3b8" />
         <Readout label="胀气" value={String(over)} color="#ef4444" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#38bdf8" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />
       </div>
 
       {/* 肺部充胀量表 */}
-      <div style={{ width: 240, height: 26, backgroundColor: '#1e293b', borderRadius: 13, border: '1px solid #334155', overflow: 'hidden' }}>
+      <div style={{ width: 240, height: 26, backgroundColor: '#f1f5f9', borderRadius: 13, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
         <div style={{ width: `${fill * 100}%`, height: '100%', backgroundColor: fillColor, transition: 'width 0.05s linear', boxShadow: `0 0 12px ${fillColor}` }} />
       </div>
       <div style={{ fontSize: 11, color: '#64748b' }}>

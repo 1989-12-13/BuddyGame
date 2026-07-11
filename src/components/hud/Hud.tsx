@@ -16,7 +16,7 @@ export function Hud({ state }: Props) {
   const callTime = state.currentCall
     ? state.shiftElapsed - state.callStartTime
     : 0
-  const callTimeColor = callTime > 60 ? '#e74c3c' : callTime > 43 ? '#f39c12' : '#2ecc71'
+  const callTimeColor = callTime > 60 ? '#dc2626' : callTime > 43 ? '#d97706' : '#16a34a'
 
   const isOnCall = state.currentCall !== null
 
@@ -54,14 +54,14 @@ export function Hud({ state }: Props) {
       <div style={{ ...styles.group, marginLeft: 'auto' }}>
         <span style={styles.icon}>⭐</span>
         <span style={styles.label}>得分</span>
-        <span style={{ ...styles.value, color: '#f1c40f' }}>{state.totalScore}</span>
+        <span style={{ ...styles.value, color: '#ca8a04' }}>{state.totalScore}</span>
       </div>
 
       {/* 救护车状态 */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
           <span style={styles.icon}>🚑</span>
-          <span style={{ ...styles.value, color: '#e74c3c', fontSize: 14 }}>
+          <span style={{ ...styles.value, color: '#dc2626', fontSize: 14 }}>
             ETA {state.ambulanceRemaining}s
           </span>
         </div>
@@ -70,7 +70,7 @@ export function Hud({ state }: Props) {
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
           <span style={styles.icon}>🚑</span>
-          <span style={{ ...styles.value, color: '#2ecc71', fontSize: 14 }}>
+          <span style={{ ...styles.value, color: '#22c55e', fontSize: 14 }}>
             已到达
           </span>
         </div>
@@ -85,8 +85,8 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 16,
     padding: '6px 16px',
-    backgroundColor: '#0f172a',
-    borderBottom: '1px solid #1e293b',
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e2e8f0',
     flexShrink: 0,
     minHeight: 36,
   },
@@ -96,17 +96,17 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 6,
   },
   icon: {
-    fontSize: 14,
+    fontSize: 16,
   },
   label: {
-    fontSize: 11,
-    color: '#64748b',
+    fontSize: 13,
+    color: '#94a3b8',
     textTransform: 'uppercase' as const,
     fontWeight: 'bold',
   },
   value: {
-    fontSize: 13,
-    color: '#e2e8f0',
+    fontSize: 15,
+    color: '#334155',
     fontWeight: 'bold',
     fontFamily: 'monospace',
   },

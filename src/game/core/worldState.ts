@@ -93,7 +93,6 @@ export function createInitialState(): WorldState {
     callPhase: 'ringing',
     callStartTime: 0,
     callerState: null,
-    questionCost: 0,
     terminal: createTerminalState(),
     dispatchSent: false,
     dispatchRecord: null,
@@ -169,7 +168,6 @@ export function scoreCall(
   guidanceCorrect: number,
   guidanceTotal: number,
   miniGameAvg = 0,
-  questionCost = 0,
   infoQualityBonus = 0,
   // 协议/判定码参数
   chosenProtocol: number | null = null,
@@ -178,8 +176,8 @@ export function scoreCall(
   correctDeterminant = '',
   chosenSubcode: number | null = null,
 ): CallScore {
-  // 1. 派车速度分（0-35）— 扣除问询耗时后评估"净决策速度"
-  const netTime = dispatchTime !== null ? Math.max(10, dispatchTime - Math.min(questionCost, 30)) : null
+  // 1. 派车速度分（0-35）— 自然时间流逝，不扣除问询耗时
+  const netTime = dispatchTime
   let speed = 0
   if (netTime !== null) {
     if (netTime <= 27) speed = 35

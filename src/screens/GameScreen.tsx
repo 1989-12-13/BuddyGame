@@ -3,11 +3,11 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
-import { createInitialState } from '../game/core/initialState'
 import { getCaller } from '../game/npc/personas'
 import { detectEnding } from '../game/endings/endings'
 import { Hud } from '../components/hud/Hud'
@@ -16,17 +16,17 @@ import type { EndingDef } from '../game/types'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number) => void
-  debugScenarioId?: string
+  scenarioId?: string
 }
 
-export function GameScreen({ onNavigate, debugScenarioId }: Props) {
+export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
 
-  // --- 初始化班次（调试模式：强制指定场景） ---
+  // --- 启动班次 ---
   useEffect(() => {
-    dispatch({ type: 'START_SHIFT', forceScenarios: debugScenarioId ? [debugScenarioId] : undefined })
-  }, [debugScenarioId])
+    dispatch({ type: 'START_SHIFT', forceScenarios: scenarioId ? [scenarioId] : undefined })
+  }, [scenarioId])
 
   // --- 新通话时强制关闭调度卡 ---
   useEffect(() => {
@@ -91,11 +91,11 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
         }
         isProcessing.current = false
         // 行间短暂停顿后开始下一行
-        setTimeout(() => startQueue(), 50)
+        setTimeout(() => startQueue(), 300)  // 行间停顿300ms，模拟换气停顿
       } else {
         setStreamPos(pos)
       }
-    }, 28)  // ~35 字符/秒
+    }, 65)  // ~15 字符/秒，接近真实语速
   }, [])
 
   // 新对话行入队
@@ -107,8 +107,11 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
     if (curLen <= oldLen) return
 
     for (let i = oldLen; i < curLen; i++) {
-      pendingQueue.current.push({ idx: i, text: state.dialogueLog[i].text })
-      pendingSet.current.add(i)          // 标记为待流式
+      // 系统提示行不流式，直接显示；仅来电者/接线员行逐字输出
+      if (state.dialogueLog[i].speaker !== 'system') {
+        pendingQueue.current.push({ idx: i, text: state.dialogueLog[i].text })
+        pendingSet.current.add(i)
+      }
     }
 
     startQueue()
@@ -118,6 +121,32 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
   const handleCalm = useCallback(() => {
     dispatch({ type: 'CALM_CALLER' })
   }, [])
+
+  // --- 对话区 / 操作面板拖拽分割 ---
+  const [dialogueHeight, setDialogueHeight] = useState<number | null>(null)
+  const [splitHovered, setSplitHovered] = useState(false)
+  const splitDragRef = useRef<{ startY: number; startH: number } | null>(null)
+
+  const handleSplitterDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    const area = (e.currentTarget as HTMLElement).previousElementSibling as HTMLElement | null
+    const currentH = dialogueHeight ?? area?.getBoundingClientRect().height ?? 300
+    splitDragRef.current = { startY: e.clientY, startH: currentH }
+
+    const onMove = (ev: PointerEvent) => {
+      if (!splitDragRef.current) return
+      const dy = ev.clientY - splitDragRef.current.startY
+      const newH = Math.max(80, Math.min(window.innerHeight - 280, splitDragRef.current.startH + dy))
+      setDialogueHeight(newH)
+    }
+    const onUp = () => {
+      splitDragRef.current = null
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }, [dialogueHeight])
 
   // --- 打开调度卡 ---
   const handleOpenTerminal = useCallback(() => {
@@ -160,7 +189,7 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
       <div style={styles.container}>
         <Hud state={state} />
         <div style={styles.centerMessage}>
-          <h2 style={{ color: '#e2e8f0' }}>本班次所有通话已处理完毕</h2>
+          <h2 style={{ color: '#334155' }}>本班次所有通话已处理完毕</h2>
           <p style={{ color: '#94a3b8' }}>正在生成班次评估报告...</p>
         </div>
       </div>
@@ -185,13 +214,17 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
           relationship={caller.relationship}
           callPhase={state.callPhase}
           elapsed={state.shiftElapsed - state.callStartTime}
-          stressLevel={state.callerState?.stressLevel ?? 'anxious'}
+          stressLevel={state.callerState?.stressLevel ?? '紧张'}
           stress={state.callerState?.stress ?? 50}
-          questionCost={state.questionCost}
         />
 
         {/* 对话区 — 每条来电者发言旁可能弹出临床判断卡 */}
-        <div ref={dialogueRef} style={styles.dialogueArea}>
+        <div ref={dialogueRef} style={{
+          ...styles.dialogueArea,
+          flex: dialogueHeight ? 'none' : 1,
+          height: dialogueHeight ?? undefined,
+          minHeight: dialogueHeight ? 80 : 0,
+        }}>
           {state.dialogueLog.map((line, i) => {
             const isStreaming = i === streamIdx
             const isPending = pendingSet.current.has(i) && !isStreaming
@@ -227,6 +260,25 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
           })}
         </div>
 
+        {/* ====== 可拖拽分隔条 ====== */}
+        <div
+          style={{
+            ...styles.splitBar,
+            backgroundColor: splitHovered ? '#cbd5e1' : '#e2e8f0',
+          }}
+          onPointerDown={handleSplitterDown}
+          onPointerEnter={() => setSplitHovered(true)}
+          onPointerLeave={() => setSplitHovered(false)}
+          onDoubleClick={() => setDialogueHeight(null)}
+          title="拖拽调整对话区高度，双击重置"
+        >
+          <div style={styles.splitBarHandle}>
+            <div style={styles.splitBarDot} />
+            <div style={styles.splitBarDot} />
+            <div style={styles.splitBarDot} />
+          </div>
+        </div>
+
         {/* 急救指导面板 */}
         {state.callPhase === 'guidance' && call.guidance && (
           <GuidancePanel
@@ -247,9 +299,8 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
           <QuestionPanel
             call={call}
             askedMPDS={state.callerState?.askedMPDS ?? []}
-            stressLevel={state.callerState?.stressLevel ?? 'anxious'}
+            stressLevel={state.callerState?.stressLevel ?? '紧张'}
             stress={state.callerState?.stress ?? 50}
-            questionCost={state.questionCost}
             onAsk={(id) => dispatch({ type: 'ASK_QUESTION', questionId: id })}
             onCalm={handleCalm}
             onOpenTerminal={handleOpenTerminal}
@@ -260,7 +311,7 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
         {/* 收尾阶段 */}
         {state.callPhase === 'closing' && (
           <div style={styles.closingPanel}>
-            <p style={{ color: '#4ade80', fontWeight: 'bold', marginBottom: 8 }}>
+            <p style={{ color: '#16a34a', fontWeight: 'bold', marginBottom: 8 }}>
               {call.guidance ? '急救指导已完成，等待救护车到达。' : '派车指令已发出。'}
             </p>
             <button style={styles.endCallBtn} onClick={() => dispatch({ type: 'END_CALL' })}>
@@ -296,29 +347,6 @@ export function GameScreen({ onNavigate, debugScenarioId }: Props) {
           onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
         />
       )}
-
-      {/* ====== 调试模式覆盖层 ====== */}
-      {debugScenarioId && (
-        <div style={styles.debugOverlay}>
-          <span style={styles.debugBadge}>🧪 测试模式</span>
-          {(state.callPhase === 'questioning' || state.callPhase === 'connected') && !state.dispatchSent && (
-            <button
-              style={styles.debugBtn}
-              onClick={() => dispatch({ type: 'DEBUG_AUTO_DISPATCH' })}
-            >
-              ⚡ 快速派车
-            </button>
-          )}
-          {state.callPhase === 'closing' && (
-            <button
-              style={styles.debugBackBtn}
-              onClick={() => onNavigate('title')}
-            >
-              🔙 返回主菜单
-            </button>
-          )}
-        </div>
-      )}
     </div>
   )
 }
@@ -352,18 +380,18 @@ function CallWaiting({
       }}>
         📞
       </div>
-      <h2 style={{ color: '#e2e8f0', margin: '0 0 4px', fontSize: 18 }}>
+      <h2 style={{ color: '#334155', margin: '0 0 4px', fontSize: 18 }}>
         第 {callIndex + 1}/{totalCalls} 通来电
       </h2>
-      <p style={{ color: '#f87171', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
+      <p style={{ color: '#ef4444', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
         线路接通中...
       </p>
       {lastScore !== undefined && (
-        <p style={{ color: '#4ade80', fontWeight: 'bold', margin: '0 0 12px' }}>
+        <p style={{ color: '#16a34a', fontWeight: 'bold', margin: '0 0 12px' }}>
           上一通得分：{lastScore}/100
         </p>
       )}
-      <p style={{ color: '#64748b', marginBottom: 16, fontSize: 12 }}>
+      <p style={{ color: '#94a3b8', marginBottom: 16, fontSize: 12 }}>
         班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 累计 {totalScore}分
       </p>
       <button style={styles.answerBtn} onClick={onAnswer}>
@@ -383,7 +411,6 @@ function PhoneHeader({
   elapsed,
   stressLevel,
   stress,
-  questionCost,
 }: {
   phoneNumber: string
   baseStation: string
@@ -393,7 +420,6 @@ function PhoneHeader({
   elapsed: number
   stressLevel: CalleeStressLevel
   stress: number
-  questionCost: number
 }) {
   const mm = Math.floor(elapsed / 60)
   const ss = elapsed % 60
@@ -408,15 +434,15 @@ function PhoneHeader({
         <span style={styles.liveLabel}>LIVE</span>
         <span style={{
           ...styles.callTimer,
-          color: urgent ? '#f87171' : '#facc15',
+          color: urgent ? '#ef4444' : '#d97706',
           fontWeight: urgent ? 900 : 700,
         }}>
           通话 {String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
         </span>
         <span style={{
           ...styles.targetBadge,
-          color: urgent ? '#f87171' : '#facc15',
-          borderColor: urgent ? '#f87171' : '#facc15',
+          color: urgent ? '#ef4444' : '#d97706',
+          borderColor: urgent ? '#ef4444' : '#d97706',
         }}>
           {urgent ? '⚠ 超时' : '目标 60秒派车'}
         </span>
@@ -425,18 +451,15 @@ function PhoneHeader({
       {/* 第二行：来电信息 + 问询耗时 */}
       <div style={styles.phoneHeaderInfo}>
         <span>{phoneNumber}</span>
-        <span style={{ color: '#64748b' }}>|</span>
+        <span style={{ color: '#94a3b8' }}>|</span>
         <span>基站 {baseStation}</span>
-        <span style={{ color: '#64748b' }}>|</span>
+        <span style={{ color: '#94a3b8' }}>|</span>
         <span>{callerName}（{relationship}）</span>
-        <span style={{ marginLeft: 'auto', color: '#fbbf24', fontSize: 11, fontFamily: 'monospace' }}>
-          问询耗时 {questionCost}s
-        </span>
       </div>
 
       {/* 第三行：来电者压力指示器 */}
       <div style={styles.stressBar}>
-        <span style={{ fontSize: 11, color: '#94a3b8', minWidth: 40 }}>
+        <span style={{ fontSize: 11, color: '#64748b', minWidth: 40 }}>
           {si.emoji} {si.label}
         </span>
         <div style={styles.stressTrack}>
@@ -457,7 +480,7 @@ function PhoneHeader({
         {callPhase === 'guidance' && '急救指导'}
         {callPhase === 'closing' && '收尾'}
         {callPhase === 'connected' && '已接通'}
-        {stressLevel === 'hysterical' && <span style={{ color: '#ef4444', marginLeft: 8 }}>⚠ 来电者情绪失控！</span>}
+        {stressLevel === '失控' && <span style={{ color: '#dc2626', marginLeft: 8 }}>来电者情绪失控</span>}
       </div>
     </div>
   )
@@ -488,14 +511,14 @@ function TranscriptLine({
     }}>
       <span style={{
         ...styles.transcriptSpeaker,
-        color: isCaller ? '#f87171' : isOperator ? '#60a5fa' : '#94a3b8',
+        color: isCaller ? '#dc2626' : isOperator ? '#2563eb' : '#94a3b8',
       }}>
         [{speakerLabel}]
       </span>
       <span style={{
         ...styles.transcriptText,
-        color: isCaller ? '#fecaca' : '#e2e8f0',
-        fontStyle: isCaller ? 'italic' : 'normal',
+        color: isCaller ? '#b91c1c' : '#475569',
+        fontWeight: isCaller ? 700 : 500,
       }}>
         {text}
         {showCursor && (
@@ -519,14 +542,14 @@ function JudgmentCard({
   return (
     <div style={{
       ...styles.judgmentCard,
-      borderColor: isResolved ? '#475569' : '#fbbf24',
+      borderColor: isResolved ? '#cbd5e1' : '#d97706',
     }}>
       <div style={styles.judgmentHeader}>
         <span style={styles.judgmentIcon}>🔍</span>
         <span style={styles.judgmentQuestion}>{judgment.question}</span>
         {isResolved && (
           <span style={{
-            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? '#4ade80' : '#f87171',
+            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? '#16a34a' : '#dc2626',
             fontSize: 10,
             fontWeight: 'bold',
             marginLeft: 'auto',
@@ -539,15 +562,15 @@ function JudgmentCard({
         {judgment.options.map((opt, idx) => {
           const isChosen = judgment.chosenOptionIndex === idx
           const isCorrectReveal = isResolved && opt.isCorrect
-          let bgColor = '#0f172a'
-          let borderColor = '#334155'
+          let bgColor = '#f8fafc'
+          let borderColor = '#e2e8f0'
           if (isResolved) {
             if (isChosen) {
-              bgColor = opt.isCorrect ? '#0a2e0a' : '#2e0a0a'
-              borderColor = opt.isCorrect ? '#27ae60' : '#ef4444'
+              bgColor = opt.isCorrect ? '#dcfce7' : '#fecaca'
+              borderColor = opt.isCorrect ? '#16a34a' : '#dc2626'
             } else if (isCorrectReveal) {
-              bgColor = '#0a2e0a'
-              borderColor = '#27ae60'
+              bgColor = '#dcfce7'
+              borderColor = '#16a34a'
             }
           }
 
@@ -571,13 +594,13 @@ function JudgmentCard({
                 <div style={{
                   fontWeight: isChosen ? 'bold' : 'normal',
                   color: isChosen
-                    ? (opt.isCorrect && isResolved ? '#4ade80' : isResolved ? '#f87171' : '#fbbf24')
-                    : '#e2e8f0',
+                    ? (opt.isCorrect && isResolved ? '#16a34a' : isResolved ? '#dc2626' : '#d97706')
+                    : '#475569',
                 }}>
                   {opt.label}
                 </div>
                 {opt.sublabel && (
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>
                     {opt.sublabel}
                   </div>
                 )}
@@ -590,21 +613,11 @@ function JudgmentCard({
   )
 }
 
-/** 字段映射：reveals → 终端字段，用于标注按钮会回填什么 */
-const REVEALS_HINT: Record<string, string> = {
-  consciousness: '意识',
-  breathing: '呼吸',
-  age: '年龄',
-  gender: '性别',
-  chiefComplaint: '主诉',
-  additional: '备注',
-}
-
 /** 问题层级配色 */
 const TIER_STYLE: Record<string, { border: string; bg: string; badge: string; label: string }> = {
-  critical:  { border: '#ef4444', bg: '#1a0a0a', badge: '#ef4444', label: '🔴 关键' },
-  important: { border: '#f59e0b', bg: '#1a1408', badge: '#f59e0b', label: '🟡 重要' },
-  detail:    { border: '#22c55e', bg: '#0a1a0a', badge: '#22c55e', label: '🟢 细节' },
+  critical:  { border: '#dc2626', bg: '#fef2f2', badge: '#dc2626', label: '🔴 关键' },
+  important: { border: '#d97706', bg: '#fffbeb', badge: '#d97706', label: '🟡 重要' },
+  detail:    { border: '#16a34a', bg: '#f0fdf4', badge: '#16a34a', label: '🟢 细节' },
 }
 
 /** 问询按钮面板 — 5步标准协议 + 补充MPDS问询 */
@@ -613,7 +626,6 @@ function QuestionPanel({
   askedMPDS,
   stressLevel,
   stress,
-  questionCost,
   onAsk,
   onCalm,
   onOpenTerminal,
@@ -623,7 +635,6 @@ function QuestionPanel({
   askedMPDS: string[]
   stressLevel: CalleeStressLevel
   stress: number
-  questionCost: number
   onAsk: (id: string) => void
   onCalm: () => void
   onOpenTerminal: () => void
@@ -632,31 +643,29 @@ function QuestionPanel({
   const isAsked = (id: string) => askedMPDS.includes(id)
   const si = STRESS_INFO[stressLevel]
 
-  // --- 5步协议状态 ---
+  // --- 4步协议状态 ---
   const step1Done = isAsked('step1_location')
   const step2Done = isAsked('step2_event')
-  const step3Done = isAsked('step3_count')
-  const step4Done = isAsked('step4_age')
-  const step5Done = isAsked('step5_vitals')
+  const step3Done = isAsked('step3_age')
+  const step4Done = isAsked('step4_vitals')
   const landmarkDone = isAsked('ask_landmark')
   const contactDone = isAsked('ask_contact')
 
-  const allFiveStepsDone = step1Done && step2Done && step3Done && step4Done && step5Done
+  const allFourStepsDone = step1Done && step2Done && step3Done && step4Done
 
   // 下一步：第一个未完成的步骤
   const nextStepLabel =
-    !step1Done ? 1 : !step2Done ? 2 : !step3Done ? 3 : !step4Done ? 4 : !step5Done ? 5 : null
+    !step1Done ? 1 : !step2Done ? 2 : !step3Done ? 3 : !step4Done ? 4 : null
 
-  // 补充MPDS问题（5步完成后方可问询）
+  // 补充MPDS问题（4步完成后方可问询）
   const supplementaryQ = call.mpdsQuestions  // 所有MPDS问题现在都是补充性质
 
-  // 5步协议定义
+  // 4步协议定义
   const protocolSteps = [
     { step: 1, id: 'step1_location', icon: '📍', label: '位置确认', qText: '请问事发的确切地址是哪里？', timeCost: 2, desc: '派车根本依据' },
     { step: 2, id: 'step2_event', icon: '📋', label: '事件简述', qText: '好的，请告诉我具体发生了什么事？', timeCost: 3, desc: '获取主诉入口' },
-    { step: 3, id: 'step3_count', icon: '👥', label: '患者人数', qText: '一共有几个人受伤/不适？', timeCost: 2, desc: '评估事件规模' },
-    { step: 4, id: 'step4_age', icon: '👤', label: '患者年龄', qText: '患者多大年龄了？', timeCost: 2, desc: '关键救治因素' },
-    { step: 5, id: 'step5_vitals', icon: '💓', label: '意识与呼吸', qText: '患者清醒吗？他/她还有呼吸吗？', timeCost: 3, desc: '最关键的病情评估' },
+    { step: 3, id: 'step3_age', icon: '👤', label: '患者年龄', qText: '患者多大年龄了？', timeCost: 2, desc: '关键救治因素' },
+    { step: 4, id: 'step4_vitals', icon: '💓', label: '意识与呼吸', qText: '患者清醒吗？他/她还有呼吸吗？', timeCost: 3, desc: '最关键的病情评估' },
   ]
 
   return (
@@ -664,8 +673,8 @@ function QuestionPanel({
       {/* ====== 5步标准协议 ====== */}
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
-          📡 标准协议（Protocol 0）
-          {allFiveStepsDone && <span style={{ color: '#4ade80', marginLeft: 6 }}>✓ 全部完成</span>}
+          📡 标准协议
+          {allFourStepsDone && <span style={{ color: '#16a34a', marginLeft: 6 }}>✓ 全部完成</span>}
         </div>
 
         <div style={styles.protocolStepsList}>
@@ -678,14 +687,14 @@ function QuestionPanel({
               <div key={ps.id} style={{
                 ...styles.protocolStepRow,
                 opacity: locked ? 0.45 : 1,
-                borderColor: done ? '#27ae60' : isCurrent ? '#fbbf24' : '#1e293b',
-                backgroundColor: done ? 'rgba(34,197,94,0.06)' : isCurrent ? 'rgba(251,191,36,0.06)' : 'transparent',
+                borderColor: done ? '#16a34a' : isCurrent ? '#d97706' : '#e2e8f0',
+                backgroundColor: done ? '#f0fdf4' : isCurrent ? '#fffbeb' : 'transparent',
               }}>
                 {/* 步骤编号 */}
                 <div style={{
                   ...styles.protocolStepNum,
-                  backgroundColor: done ? '#27ae60' : isCurrent ? '#fbbf24' : '#1e293b',
-                  color: done ? '#fff' : isCurrent ? '#000' : '#475569',
+                  backgroundColor: done ? '#16a34a' : isCurrent ? '#d97706' : '#e2e8f0',
+                  color: done ? '#fff' : isCurrent ? '#fff' : '#64748b',
                 }}>
                   {done ? '✓' : ps.step}
                 </div>
@@ -695,19 +704,19 @@ function QuestionPanel({
                   <div style={{
                     fontSize: 12,
                     fontWeight: done ? 'normal' : 'bold',
-                    color: done ? '#4ade80' : isCurrent ? '#fbbf24' : '#94a3b8',
+                    color: done ? '#16a34a' : isCurrent ? '#d97706' : '#64748b',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
                   </div>
-                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>
                     {ps.qText}
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 {done ? (
-                  <span style={{ fontSize: 12, color: '#4ade80', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     ✓ 完成
                   </span>
                 ) : isCurrent ? (
@@ -718,7 +727,7 @@ function QuestionPanel({
                     询问 ({ps.timeCost}s)
                   </button>
                 ) : (
-                  <span style={{ fontSize: 10, color: '#475569', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap' }}>
                     🔒 等待
                   </span>
                 )}
@@ -729,7 +738,7 @@ function QuestionPanel({
       </div>
 
       {/* ====== 补充信息（5步完成后方出现） ====== */}
-      {allFiveStepsDone && (
+      {allFourStepsDone && (
         <div style={styles.qSection}>
           <div style={styles.qSectionTitle}>📎 补充信息（按需问询）</div>
           <div style={styles.qGrid}>
@@ -739,7 +748,6 @@ function QuestionPanel({
                 id="ask_landmark"
                 label="标志建筑"
                 icon="🏢"
-                hintTerm="精确地址"
                 timeCost={2}
                 done={false}
                 tier="important"
@@ -747,7 +755,7 @@ function QuestionPanel({
               />
             )}
             {landmarkDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#27ae60', color: '#4ade80', backgroundColor: '#1a3a1a' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: '#16a34a', color: '#16a34a', backgroundColor: '#f0fdf4' }}>
                 ✓ 地址已精确
               </div>
             )}
@@ -765,7 +773,7 @@ function QuestionPanel({
               />
             )}
             {contactDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#27ae60', color: '#4ade80', backgroundColor: '#1a3a1a' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: '#16a34a', color: '#16a34a', backgroundColor: '#f0fdf4' }}>
                 ✓ 已记录
               </div>
             )}
@@ -777,7 +785,6 @@ function QuestionPanel({
                 id={q.id}
                 label={q.label}
                 icon={CATEGORY_ICON[q.category] || '📋'}
-                hintTerm={q.reveals.map(f => REVEALS_HINT[f] || '').filter(Boolean).join('·') || undefined}
                 timeCost={q.timeCost}
                 done={isAsked(q.id)}
                 disabled={isAsked(q.id)}
@@ -794,8 +801,8 @@ function QuestionPanel({
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ fontSize: 11, color: si.color, display: 'flex', alignItems: 'center', gap: 4 }}>
             {si.emoji} {si.label} ({stress}%)
-            {(stressLevel === 'panicked' || stressLevel === 'hysterical') && (
-              <span style={{ color: '#fbbf24', fontSize: 10 }}>⚠ 答案不准确</span>
+            {(stressLevel === '恐慌' || stressLevel === '失控') && (
+              <span style={{ color: '#d97706', fontSize: 10 }}>答案不可靠</span>
             )}
           </div>
           <button
@@ -813,15 +820,12 @@ function QuestionPanel({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, color: '#64748b', fontFamily: 'monospace' }}>
-            耗时 {questionCost}s
-          </span>
           <button
             style={{
               ...styles.terminalBtn,
               animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
-              borderColor: hasTriage ? '#27ae60' : '#ef4444',
-              backgroundColor: hasTriage ? '#0a2e0a' : '#2e0a0a',
+              borderColor: hasTriage ? '#16a34a' : '#dc2626',
+              backgroundColor: hasTriage ? '#f0fdf4' : '#fef2f2',
             }}
             onClick={onOpenTerminal}
           >
@@ -848,12 +852,11 @@ const CATEGORY_ICON: Record<string, string> = {
   mechanism: '🔧',
 }
 
-/** 增强问询按钮 — 带层级颜色 + 时间代价徽章 + 终端回填提示 */
+/** 问询按钮 — 带层级颜色 + 时间代价徽章 */
 function AskBtnEx({
   id: _id,
   label,
   icon,
-  hintTerm,
   timeCost,
   done,
   disabled,
@@ -863,7 +866,6 @@ function AskBtnEx({
   id: string
   label: string
   icon?: string
-  hintTerm?: string
   timeCost: number
   done: boolean
   disabled?: boolean
@@ -875,9 +877,9 @@ function AskBtnEx({
     <button
       style={{
         ...styles.qBtn,
-        backgroundColor: done ? '#1a3a1a' : disabled ? '#1e293b' : (ts?.bg ?? '#0f172a'),
-        borderColor: done ? '#27ae60' : disabled ? '#334155' : (ts?.border ?? '#38bdf8'),
-        color: done ? '#4ade80' : disabled ? '#475569' : '#e2e8f0',
+        backgroundColor: done ? '#f0fdf4' : disabled ? '#f8fafc' : (ts?.bg ?? '#ffffff'),
+        borderColor: done ? '#16a34a' : disabled ? '#e2e8f0' : (ts?.border ?? '#3b82f6'),
+        color: done ? '#16a34a' : disabled ? '#cbd5e1' : '#475569',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled && !done ? 0.45 : 1,
         position: 'relative',
@@ -894,7 +896,7 @@ function AskBtnEx({
           position: 'absolute',
           top: -5,
           right: -5,
-          backgroundColor: ts?.badge ?? '#38bdf8',
+          backgroundColor: ts?.badge ?? '#3b82f6',
           color: '#000',
           fontSize: 9,
           fontWeight: 900,
@@ -905,11 +907,7 @@ function AskBtnEx({
           {timeCost}s
         </span>
       )}
-      {hintTerm && !done && (
-        <div style={{ fontSize: 9, color: '#64748b', marginTop: 1, textAlign: 'center' }}>
-          → {hintTerm}
-        </div>
-      )}
+
     </button>
   )
 }
@@ -951,10 +949,10 @@ function TerminalModal({
               协议 {terminal.protocolNumber ?? '?'}
             </span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 'bold', color: '#e2e8f0' }}>
+              <div style={{ fontSize: 15, fontWeight: 'bold', color: '#334155' }}>
                 MPDS 调度终端
               </div>
-              <div style={{ fontSize: 12, color: '#94a3b8' }}>
+              <div style={{ fontSize: 12, color: '#64748b' }}>
                 判定码：{terminal.determinant
                   ? `${terminal.protocolNumber ?? '?'}-${terminal.determinant[0]}-${terminal.determinantSubcode ?? '?'}`
                   : '未选择'}
@@ -988,7 +986,7 @@ function TerminalModal({
           {!dispatchSent ? (
             <>
               <button style={styles.modalEndCallBtn} onClick={onEndCall}>
-                ✕ 挂断（骚扰电话）
+                ✕ 挂断
               </button>
               <div style={{ flex: 1 }} />
               <button style={styles.modalSaveBtn} onClick={onClose}>
@@ -1006,13 +1004,13 @@ function TerminalModal({
             <div style={styles.dispatchSent}>
               <span style={{ fontSize: 20 }}>🚑</span>
               <div>
-                <div style={{ fontWeight: 'bold', color: '#2ecc71' }}>救护车已派出</div>
+                <div style={{ fontWeight: 'bold', color: '#22c55e' }}>救护车已派出</div>
                 {ambulanceRemaining > 0 ? (
-                  <div style={{ color: '#e74c3c', fontSize: 12 }}>
+                  <div style={{ color: '#dc2626', fontSize: 12 }}>
                     预计 {ambulanceRemaining} 秒后到达现场
                   </div>
                 ) : (
-                  <div style={{ color: '#27ae60', fontSize: 12, fontWeight: 'bold' }}>
+                  <div style={{ color: '#16a34a', fontSize: 12, fontWeight: 'bold' }}>
                     救护车已到达现场！
                   </div>
                 )}
@@ -1059,10 +1057,10 @@ function GuidancePanel({
             style={{
               padding: '4px 8px',
               margin: '2px 0',
-              backgroundColor: r === 'correct' ? '#0a2e0a' : '#2e0a0a',
+              backgroundColor: r === 'correct' ? '#dcfce7' : '#fecaca',
               borderRadius: 4,
               fontSize: 13,
-              color: r === 'correct' ? '#4ade80' : '#f87171',
+              color: r === 'correct' ? '#16a34a' : '#dc2626',
             }}
           >
             {r === 'correct' ? '✅' : '❌'} 步骤{i + 1}：{guidance.steps[i].prompt}
@@ -1091,10 +1089,10 @@ function GuidancePanel({
           style={{
             padding: '4px 8px',
             margin: '2px 0',
-            backgroundColor: r === 'correct' ? '#0a2e0a' : '#2e0a0a',
+            backgroundColor: r === 'correct' ? '#dcfce7' : '#fecaca',
             borderRadius: 4,
             fontSize: 13,
-            color: r === 'correct' ? '#4ade80' : '#f87171',
+            color: r === 'correct' ? '#16a34a' : '#dc2626',
           }}
         >
           {r === 'correct' ? '✅' : '❌'} 步骤{i + 1}：{guidance.steps[i].prompt}
@@ -1165,7 +1163,7 @@ function TerminalForm({
       </FieldRow>
 
       {/* 主诉 */}
-      <FieldRow icon="🩺" label="主诉 (Chief Complaint)">
+      <FieldRow icon="🩺" label="主诉">
         <input
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.chiefComplaint}
@@ -1199,7 +1197,7 @@ function TerminalForm({
       </div>
 
       {/* ====== 患者生命体征 — 关键问题 ====== */}
-      <SectionTitle icon="💓" text="关键问题 (Key Questions)" />
+      <SectionTitle icon="💓" text="关键问题" />
 
       {/* 意识状态 */}
       <StatusToggle
@@ -1208,8 +1206,8 @@ function TerminalForm({
         value={terminal.conscious}
         trueLabel="无意识"
         falseLabel="有意识"
-        colorTrue="#e74c3c"
-        colorFalse="#27ae60"
+        colorTrue="#dc2626"
+        colorFalse="#16a34a"
         onToggle={onSetStatus}
       />
 
@@ -1220,14 +1218,14 @@ function TerminalForm({
         value={terminal.breathing}
         trueLabel="无呼吸/异常"
         falseLabel="正常呼吸"
-        colorTrue="#e74c3c"
-        colorFalse="#27ae60"
+        colorTrue="#dc2626"
+        colorFalse="#16a34a"
         onToggle={onSetStatus}
       />
 
       {/* ====== 协议号 ====== */}
       <SectionTitle icon="📋" text="MPDS 协议" />
-      <FieldRow icon="🔢" label="协议编号 (1-33)">
+      <FieldRow icon="🔢" label="协议编号">
         <input
           type="number"
           min={1}
@@ -1244,17 +1242,17 @@ function TerminalForm({
 
       {/* 协议号对照参考（折叠） */}
       <details style={{ margin: '-4px 0 8px 22px', fontSize: 11 }}>
-        <summary style={{ color: '#64748b', cursor: 'pointer', userSelect: 'none' }}>
+        <summary style={{ color: '#94a3b8', cursor: 'pointer', userSelect: 'none' }}>
           📖 协议编号对照
         </summary>
         <div style={{
           marginTop: 4,
           padding: 6,
-          backgroundColor: '#1e293b',
+          backgroundColor: '#f8fafc',
           borderRadius: 4,
           maxHeight: 160,
           overflowY: 'auto',
-          color: '#94a3b8',
+          color: '#64748b',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '1px 12px',
@@ -1262,7 +1260,7 @@ function TerminalForm({
         }}>
           {PROTOCOL_REF.map(([num, name]) => (
             <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
-              <span style={{ color: '#38bdf8', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
+              <span style={{ color: '#2563eb', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
               <span>{name}</span>
             </div>
           ))}
@@ -1275,23 +1273,37 @@ function TerminalForm({
         current={terminal.determinant}
         onSelect={onSetDeterminant}
       />
-      <FieldRow icon="🔢" label="子编码 (1-4)">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <input
-            type="number"
-            min={1}
-            max={4}
-            style={{ ...styles.formInput, height: 28, width: 60 }}
-            value={terminal.determinantSubcode ?? ''}
-            onChange={(e) => {
-              const v = parseInt(e.target.value, 10)
-              if (v >= 1 && v <= 4) onSetDeterminantSubcode(v)
-            }}
-            placeholder="?"
-          />
-          <span style={{ fontSize: 10, color: '#64748b', lineHeight: 1.3 }}>
-            1=危重伤 2=重伤 3=轻伤 4=非紧急
-          </span>
+      <FieldRow icon="🔢" label="子编码">
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[
+            { n: 1, color: '#dc2626', label: '危重伤' },
+            { n: 2, color: '#ea580c', label: '重伤' },
+            { n: 3, color: '#d97706', label: '轻伤' },
+            { n: 4, color: '#16a34a', label: '非紧急' },
+          ].map(({ n, color, label }) => {
+            const active = terminal.determinantSubcode === n
+            return (
+              <button
+                key={n}
+                style={{
+                  flex: 1,
+                  padding: '6px 4px',
+                  borderRadius: 4,
+                  border: `2px solid ${color}`,
+                  backgroundColor: active ? color : '#ffffff',
+                  color: active ? '#fff' : color,
+                  fontSize: 11,
+                  fontWeight: active ? 'bold' : 'normal',
+                  cursor: 'pointer',
+                  textAlign: 'center' as const,
+                }}
+                onClick={() => onSetDeterminantSubcode(n)}
+              >
+                <div style={{ fontWeight: 'bold', fontSize: 13 }}>{n}</div>
+                <div style={{ fontSize: 9, opacity: active ? 1 : 0.6 }}>{label}</div>
+              </button>
+            )
+          })}
         </div>
       </FieldRow>
 
@@ -1314,8 +1326,8 @@ function SectionTitle({ icon, text }: { icon: string; text: string }) {
     <div style={{
       fontSize: 12,
       fontWeight: 'bold',
-      color: '#94a3b8',
-      borderBottom: '1px solid #334155',
+      color: '#64748b',
+      borderBottom: '1px solid #e2e8f0',
       padding: '6px 0 3px',
       marginBottom: 4,
       letterSpacing: 0.5,
@@ -1465,8 +1477,8 @@ const styles: Record<string, React.CSSProperties> = {
     height: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#1a1a2e',
-    color: '#333',
+    backgroundColor: '#eef2f6',
+    color: '#1e293b',
     overflow: 'hidden',
   },
 
@@ -1475,16 +1487,16 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     overflow: 'hidden',
     minHeight: 0,
-    border: '1px solid #1e293b',
+    border: '1px solid #e2e8f0',
   },
 
   phoneHeader: {
     padding: '8px 12px',
-    backgroundColor: '#020617',
-    borderBottom: '2px solid #ef4444',
+    backgroundColor: '#f8fafc',
+    borderBottom: '2px solid #dc2626',
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
@@ -1496,21 +1508,21 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 8,
   },
   liveDot: {
-    fontSize: 10,
-    color: '#ef4444',
+    fontSize: 12,
+    color: '#dc2626',
     animation: 'pulse-live 1s ease-in-out infinite',
     display: 'inline-block',
   },
   liveLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 900,
-    color: '#ef4444',
+    color: '#dc2626',
     fontFamily: 'monospace',
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
   },
   callTimer: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 700,
     fontFamily: 'monospace',
     letterSpacing: 2,
@@ -1520,20 +1532,20 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 8px',
     borderRadius: 10,
     border: '1px solid',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 700,
     fontFamily: 'monospace',
   },
   phoneHeaderInfo: {
-    fontSize: 11,
+    fontSize: 13,
     display: 'flex',
     gap: 6,
-    color: '#94a3b8',
+    color: '#64748b',
     fontFamily: 'monospace',
   },
   callPhaseTag: {
-    fontSize: 10,
-    color: '#64748b',
+    fontSize: 12,
+    color: '#94a3b8',
     fontFamily: 'monospace',
   },
 
@@ -1546,40 +1558,69 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: 6,
     minHeight: 0,
-    backgroundColor: '#0a0e17',
+    backgroundColor: '#f8fafc',
   },
 
   transcript: {
-    fontSize: 13,
-    lineHeight: 1.6,
+    fontSize: 14,
+    lineHeight: 1.7,
     fontFamily: '"Source Code Pro", "Consolas", "Courier New", monospace',
-    padding: '2px 0',
-    borderBottom: '1px solid #1a1f2e',
+    padding: '4px 0',
+    borderBottom: '1px solid #f1f5f9',
   },
   transcriptSpeaker: {
     display: 'inline',
     fontWeight: 700,
     marginRight: 6,
-    fontSize: 12,
+    fontSize: 13,
   },
   transcriptText: {
     display: 'inline',
   },
   streamCursor: {
     display: 'inline-block',
-    color: '#f87171',
-    fontSize: 13,
+    color: '#ef4444',
+    fontSize: 14,
     marginLeft: 0,
     animation: 'pulse-live 0.7s step-end infinite',
     verticalAlign: 'baseline',
   },
 
+  // ---------- 可拖拽分隔条 ----------
+  splitBar: {
+    flex: 'none',
+    height: 10,
+    backgroundColor: '#e2e8f0',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'row-resize',
+    userSelect: 'none',
+    transition: 'background-color 0.15s',
+    position: 'relative',
+    zIndex: 5,
+    flexShrink: 0,
+  },
+  splitBarHandle: {
+    display: 'flex',
+    gap: 4,
+    alignItems: 'center',
+    pointerEvents: 'none' as const,
+  },
+  splitBarDot: {
+    width: 4,
+    height: 4,
+    borderRadius: '50%',
+    backgroundColor: '#94a3b8',
+  },
+
   // ---------- 问询区域 ----------
   questionArea: {
-    borderTop: '1px solid #1e293b',
+    borderTop: '1px solid #e2e8f0',
     padding: '6px 10px',
-    backgroundColor: '#020617',
-    maxHeight: 320,
+    backgroundColor: '#f8fafc',
+    flex: 1,
+    minHeight: 60,
     overflowY: 'auto' as const,
   },
   // 来电者压力条
@@ -1592,7 +1633,7 @@ const styles: Record<string, React.CSSProperties> = {
   stressTrack: {
     flex: 1,
     height: 7,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#e2e8f0',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -1606,16 +1647,16 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '6px 10px',
-    borderTop: '1px solid #1e293b',
-    backgroundColor: '#020617',
+    borderTop: '1px solid #e2e8f0',
+    backgroundColor: '#f8fafc',
   },
   terminalBtn: {
-    padding: '6px 14px',
+    padding: '8px 16px',
     borderRadius: 6,
     border: '2px solid',
     backgroundColor: 'transparent',
-    color: '#e2e8f0',
-    fontSize: 12,
+    color: '#475569',
+    fontSize: 14,
     fontWeight: 'bold',
     cursor: 'pointer',
     fontFamily: 'monospace',
@@ -1623,12 +1664,12 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.2s',
   },
   calmBtn: {
-    padding: '3px 10px',
+    padding: '5px 12px',
     borderRadius: 4,
-    border: '1px solid #38bdf8',
-    backgroundColor: '#0c4a6e',
-    color: '#e2e8f0',
-    fontSize: 11,
+    border: '1px solid #3b82f6',
+    backgroundColor: '#eff6ff',
+    color: '#475569',
+    fontSize: 13,
     fontWeight: 'bold',
     cursor: 'pointer',
     whiteSpace: 'nowrap' as const,
@@ -1670,8 +1711,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '4px 12px',
     borderRadius: 4,
     border: 'none',
-    backgroundColor: '#fbbf24',
-    color: '#000',
+    backgroundColor: '#d97706',
+    color: '#fff',
     fontSize: 11,
     fontWeight: 'bold',
     cursor: 'pointer',
@@ -1689,13 +1730,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   qSectionTitle: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
-    color: '#64748b',
+    color: '#94a3b8',
     marginBottom: 3,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    borderBottom: '1px solid #1e293b',
+    borderBottom: '1px solid #e2e8f0',
     paddingBottom: 2,
   },
   qGrid: {
@@ -1704,34 +1745,35 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 4,
   },
   qBtn: {
-    padding: '3px 8px',
+    padding: '5px 10px',
     borderRadius: 4,
     border: '1px solid',
-    fontSize: 11,
+    fontSize: 13,
     transition: 'all 0.15s',
-    lineHeight: '1.3',
+    lineHeight: '1.4',
   },
 
   // ---------- 急救指导 ----------
   guidancePanel: {
-    borderTop: '2px solid #ef4444',
+    borderTop: '2px solid #dc2626',
     padding: '10px 14px',
-    backgroundColor: '#1a0a0a',
-    maxHeight: 300,
+    backgroundColor: '#fef2f2',
+    flex: 1,
+    minHeight: 60,
     overflowY: 'auto' as const,
   },
   guidanceTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: 'bold',
-    color: '#f87171',
+    color: '#dc2626',
     marginBottom: 8,
   },
   guidanceIntro: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: '#64748b',
     marginBottom: 8,
     padding: '6px 10px',
-    backgroundColor: '#1e1a0a',
+    backgroundColor: '#fefce8',
     borderRadius: 4,
   },
   guidanceStep: {
@@ -1740,27 +1782,30 @@ const styles: Record<string, React.CSSProperties> = {
   guidancePrompt: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#e2e8f0',
+    color: '#334155',
     marginBottom: 4,
   },
   guidanceOption: {
-    padding: '6px 12px',
-    border: '1px solid #334155',
+    padding: '8px 14px',
+    border: '1px solid #e2e8f0',
     borderRadius: 4,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#ffffff',
     cursor: 'pointer',
-    fontSize: 13,
-    color: '#e2e8f0',
+    fontSize: 14,
+    color: '#475569',
     textAlign: 'left' as const,
     transition: 'all 0.15s',
   },
 
   // ---------- 收尾 ----------
   closingPanel: {
-    borderTop: '1px solid #1e293b',
+    borderTop: '1px solid #e2e8f0',
     padding: '12px 14px',
-    backgroundColor: '#020617',
+    backgroundColor: '#f8fafc',
     textAlign: 'center' as const,
+    flex: 1,
+    minHeight: 60,
+    overflowY: 'auto' as const,
   },
   endCallBtn: {
     padding: '8px 24px',
@@ -1778,7 +1823,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'fixed' as const,
     inset: 0,
     zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1787,21 +1832,21 @@ const styles: Record<string, React.CSSProperties> = {
   modalCard: {
     width: 560,
     maxHeight: '90vh',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
-    border: '1px solid #334155',
+    border: '1px solid #e2e8f0',
     display: 'flex',
     flexDirection: 'column' as const,
     overflow: 'hidden',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 2px #ef4444',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.12), 0 0 0 2px #dc2626',
   },
   modalHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 16px',
-    backgroundColor: '#020617',
-    borderBottom: '2px solid #ef4444',
+    backgroundColor: '#f8fafc',
+    borderBottom: '2px solid #dc2626',
   },
   modalHeaderLeft: {
     display: 'flex',
@@ -1814,11 +1859,11 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 10,
   },
   mpdsModalBadge: {
-    backgroundColor: '#1e293b',
-    border: '2px solid #38bdf8',
+    backgroundColor: '#f1f5f9',
+    border: '2px solid #3b82f6',
     borderRadius: 6,
     padding: '6px 12px',
-    color: '#38bdf8',
+    color: '#3b82f6',
     fontSize: 16,
     fontWeight: 900,
     fontFamily: 'monospace',
@@ -1827,7 +1872,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '4px 10px',
     backgroundColor: 'transparent',
     color: '#94a3b8',
-    border: '1px solid #475569',
+    border: '1px solid #cbd5e1',
     borderRadius: 4,
     cursor: 'pointer',
     fontSize: 14,
@@ -1848,7 +1893,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 10px',
     borderRadius: 8,
     border: '2px solid',
-    backgroundColor: '#0b1320',
+    backgroundColor: '#f8fafc',
     animation: 'slide-in-right 0.3s ease-out',
     maxWidth: 460,
   },
@@ -1859,7 +1904,7 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: 6,
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#fbbf24',
+    color: '#d97706',
   },
   judgmentIcon: {
     fontSize: 14,
@@ -1891,10 +1936,10 @@ const styles: Record<string, React.CSSProperties> = {
     width: 20,
     height: 20,
     borderRadius: '50%',
-    backgroundColor: '#1e293b',
+    backgroundColor: '#f1f5f9',
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#94a3b8',
+    color: '#64748b',
     flexShrink: 0,
     marginTop: 1,
   },
@@ -1903,8 +1948,8 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     padding: '10px 16px',
-    borderTop: '1px solid #334155',
-    backgroundColor: '#020617',
+    borderTop: '1px solid #e2e8f0',
+    backgroundColor: '#f8fafc',
   },
   modalDispatchBtn: {
     padding: '10px 24px',
@@ -1919,9 +1964,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalSaveBtn: {
     padding: '8px 16px',
-    backgroundColor: '#1e293b',
-    color: '#94a3b8',
-    border: '1px solid #475569',
+    backgroundColor: '#ffffff',
+    color: '#64748b',
+    border: '1px solid #e2e8f0',
     borderRadius: 6,
     fontSize: 12,
     cursor: 'pointer',
@@ -1930,16 +1975,16 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 12px',
     backgroundColor: 'transparent',
     color: '#94a3b8',
-    border: '1px solid #475569',
+    border: '1px solid #e2e8f0',
     borderRadius: 6,
     fontSize: 11,
     cursor: 'pointer',
   },
   modalWarning: {
     padding: '6px 16px',
-    backgroundColor: '#2e0a0a',
-    borderTop: '1px solid #ef4444',
-    color: '#f87171',
+    backgroundColor: '#fef2f2',
+    borderTop: '1px solid #dc2626',
+    color: '#dc2626',
     fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center' as const,
@@ -1955,9 +2000,9 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 10,
     padding: '8px 12px',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 6,
-    border: '1px solid #2ecc71',
+    border: '1px solid #22c55e',
     flex: 1,
   },
 
@@ -1966,19 +2011,19 @@ const styles: Record<string, React.CSSProperties> = {
   },
   formLabel: {
     display: 'block',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
-    color: '#94a3b8',
+    color: '#64748b',
     marginBottom: 4,
   },
   formInput: {
     width: '100%',
-    padding: '6px 10px',
+    padding: '8px 10px',
     borderRadius: 4,
-    border: '1px solid #334155',
-    backgroundColor: '#0f172a',
-    color: '#e2e8f0',
-    fontSize: 12,
+    border: '1px solid #e2e8f0',
+    backgroundColor: '#ffffff',
+    color: '#334155',
+    fontSize: 13,
     fontFamily: 'monospace',
     resize: 'vertical' as const,
     boxSizing: 'border-box' as const,
@@ -1992,7 +2037,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#0a0e17',
+    backgroundColor: '#f8fafc',
   },
   answerBtn: {
     padding: '14px 48px',
@@ -2005,46 +2050,5 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     animation: 'pulse-alert 1.5s ease-in-out infinite',
     letterSpacing: 4,
-  },
-
-  // ---------- 调试模式 ----------
-  debugOverlay: {
-    position: 'fixed',
-    top: 10,
-    right: 10,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 6,
-    zIndex: 9999,
-  },
-  debugBadge: {
-    fontSize: 11,
-    color: '#f1c40f',
-    backgroundColor: 'rgba(241,196,15,0.15)',
-    padding: '3px 10px',
-    borderRadius: 4,
-    border: '1px solid rgba(241,196,15,0.3)',
-  },
-  debugBtn: {
-    padding: '8px 16px',
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#f1c40f',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    boxShadow: '0 2px 10px rgba(241,196,15,0.4)',
-  },
-  debugBackBtn: {
-    padding: '8px 16px',
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#e2e8f0',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: 6,
-    cursor: 'pointer',
   },
 }

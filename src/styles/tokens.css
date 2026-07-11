@@ -1,13 +1,13 @@
 :root {
-  /* === Palette === */
-  --bg-night: #07111F;
-  --bg-card: #0E1B2B;
-  --accent-cyan: #5BE7FF;
-  --alert-orange: #FF9B54;
-  --danger-red: #FF5468;
-  --success-green: #72F1B8;
-  --text-primary: #EAF6FF;
-  --text-secondary: #9EB4C6;
+  /* === 120 Light Palette === */
+  --bg-light: #eff6f9;
+  --bg-card: #ffffff;
+  --accent-cyan: #2563eb;
+  --alert-orange: #ea580c;
+  --danger-red: #dc2626;
+  --success-green: #16a34a;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
 
   /* === Spacing === */
   --space-xs: 4px;
@@ -19,8 +19,8 @@
 
   /* === Typography === */
   --font-display: 'Georgia', 'Noto Serif SC', serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
 
   /* === Sizing === */
   --hud-height: 48px;

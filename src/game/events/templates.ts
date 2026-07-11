@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../types'
+import * as Cards from './cards/index'
 
 export const SCENARIOS: Record<string, EmergencyScenario> = {
 
@@ -868,6 +869,15 @@ export const SCENARIOS: Record<string, EmergencyScenario> = {
       prank: '接线员正确识别了恶作剧电话并教育了来电者。120资源没有被浪费。',
     },
   },
+}
+
+// ============================================================
+// 从 MPDS 事件卡片合并额外场景 — 卡片的 id 字段与 SCENARIOS 键名一致
+// ============================================================
+for (const [, card] of Object.entries(Cards)) {
+  if (card && typeof card === 'object' && 'id' in card) {
+    SCENARIOS[card.id] = card as EmergencyScenario
+  }
 }
 
 /** 所有场景ID列表 */

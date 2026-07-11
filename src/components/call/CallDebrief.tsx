@@ -138,9 +138,16 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
                       你的选择：{j.playerChoice}
                     </span>
                     {!j.isCorrect && (
-                      <span style={{ color: '#94a3b8', fontSize: 11, marginLeft: 8 }}>
-                        ✓ 正确：{j.correctAnswer}
-                      </span>
+                      <>
+                        <span style={{ color: '#94a3b8', fontSize: 11, marginLeft: 8 }}>
+                          ✓ 正确：{j.correctAnswer}
+                        </span>
+                        {j.reason && (
+                          <div style={{ color: '#facc15', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
+                            ℹ {j.reason}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

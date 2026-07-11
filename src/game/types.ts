@@ -473,6 +473,8 @@ export interface WorldState {
   /** 是否已为当前 callIndex 显示过结算报告 */
   debriefShown: boolean
   paused: boolean
+  fleet: import('./core/fleet').FleetState
+  pendingCallQueue: string[]
 }
 
 export interface DialogueLine {

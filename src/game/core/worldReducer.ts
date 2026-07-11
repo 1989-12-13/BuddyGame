@@ -16,6 +16,7 @@ import {
 } from './worldState'
 import { getScenario } from '../events/templates'
 import { getCaller } from '../npc/personas'
+import { calcVehicleETA, findFastestAvailable } from './fleet'
 
 /** 根据情绪选择叙述式回答 */
 function pickNarrativeAnswer(
@@ -723,14 +724,17 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const addressCompleteness: 'vague' | 'partial' | 'full' =
         rawAddress === 'none' ? 'vague' : rawAddress
 
-      // 如果没选分诊，默认用场景预设
       const triage = state.terminal.triage
 
-      const eta = calcAmbulanceETA(dispatchTime, addressCompleteness)
+      // 选择最快可用车辆
+      const vehicle = findFastestAvailable(state.fleet)
+      const vehicleEta = vehicle
+        ? calcVehicleETA(addressCompleteness, vehicle.speed)
+        : calcAmbulanceETA(dispatchTime, addressCompleteness)
 
       const systemLine: DialogueLine = {
         speaker: 'system',
-        text: `【🚑 救护车已派出 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+        text: `【🚑 ${vehicle ? vehicle.name : '救护车'}已派出 — ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计 ${vehicleEta}秒 | 派车耗时 ${dispatchTime}秒】`,
         timestamp: state.shiftElapsed,
       }
 
@@ -748,17 +752,24 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         dispatchTime,
         triage,
         addressCompleteness,
-        ambulanceETA: eta,
+        ambulanceETA: vehicleEta,
       }
 
-      // 检查是否需要进入急救指导阶段
+      // 更新车队状态
+      const updatedVehicles = state.fleet.vehicles.map(v => {
+        if (vehicle && v.id === vehicle.id) {
+          return { ...v, status: 'en_route' as const, eta: vehicleEta, currentCallId: state.currentCall!.id }
+        }
+        return v
+      })
+
       const hasGuidance = state.currentCall.guidance !== null
 
       return {
         ...state,
         dispatchSent: true,
         dispatchRecord: record,
-        ambulanceRemaining: eta,
+        ambulanceRemaining: vehicleEta,
         callPhase: hasGuidance ? 'guidance' : 'closing',
         guidanceActive: hasGuidance,
         guidanceStepIndex: 0,
@@ -766,6 +777,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           ? new Array(state.currentCall.guidance!.steps.length).fill(null)
           : [],
         dialogueLog: [...state.dialogueLog, systemLine, ...dispatchEventLines],
+        fleet: { ...state.fleet, vehicles: updatedVehicles },
       }
     }
 
@@ -968,6 +980,15 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         lastCallTitle: call.title,
         lastCallIsPrank: call.isPrank,
         debriefShown: false,
+        // 释放本次通话占用的救护车
+        fleet: {
+          ...state.fleet,
+          vehicles: state.fleet.vehicles.map(v =>
+            v.currentCallId === call.id
+              ? { ...v, status: 'available' as const, eta: 0, currentCallId: null }
+              : v
+          ),
+        },
       }
     }
 
@@ -981,7 +1002,16 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let newAmbulanceRemaining = state.ambulanceRemaining
       const newDialogue: DialogueLine[] = []
 
-      // 救护车倒计时
+      // 车队倒计时：更新每辆车 ETA
+      const updatedVehicles = state.fleet.vehicles.map(v => {
+        if (v.status === 'en_route' && v.eta > 0) {
+          const nextEta = v.eta - 1
+          return { ...v, eta: nextEta, status: (nextEta === 0 ? 'on_scene' : 'en_route') as typeof v.status }
+        }
+        return v
+      })
+
+      // 原救护车倒计时（兼容旧逻辑）
       if (state.dispatchSent && state.ambulanceRemaining > 0) {
         newAmbulanceRemaining -= 1
         if (newAmbulanceRemaining === 0) {
@@ -999,9 +1029,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           if (evt.trigger === 'time_elapsed' && evt.triggerValue) {
             const triggerSec = parseInt(evt.triggerValue, 10)
             const callTime = newElapsed - state.callStartTime
-            // 游戏内问询会推进数秒；使用 >= 避免跨过触发时刻后漏掉事件。
             if (callTime >= triggerSec) {
-              // 检查是否已经插入过这个事件
               const alreadyInserted = state.dialogueLog.some(
                 l => l.text === evt.dialogue
               )
@@ -1024,6 +1052,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
           ? [...state.dialogueLog, ...newDialogue]
           : state.dialogueLog,
+        fleet: { ...state.fleet, vehicles: updatedVehicles },
       }
     }
 

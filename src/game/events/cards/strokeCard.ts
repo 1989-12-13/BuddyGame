@@ -123,7 +123,53 @@ export const strokeCard: EmergencyScenario = {
     },
   ],
 
-  guidance: null, // 脑卒中不需要现场急救指导，关键是尽快送医
+  guidance: {
+    title: '脑卒中现场处置',
+    intro: '救护车已在路上。在到达前，请保持患者安静，不要喂食喂水，并帮患者摆好体位防止误吸。',
+    steps: [
+      {
+        id: 'st_position_choice',
+        instruction: '把患者摆成侧卧的复苏体位，头偏向一侧，防止呕吐物堵塞气道。',
+        prompt: '第一步：摆放复苏体位',
+        options: [
+          '侧卧 头偏向一侧',
+          '平躺仰头',
+          '扶坐起来',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！侧卧头偏一侧能防止误吸，保护气道。',
+          incorrect: '不对。脑卒中患者应保持侧卧、头偏向一侧，避免呕吐物呛入气道。',
+          callerCorrect: '我让他侧过身了，头也偏过去了一点。这样对吗？',
+          callerIncorrect: '我把他扶起来坐着了，他好像更难受了。',
+        },
+      },
+      {
+        id: 'st_position_game',
+        instruction: '把患者身体摆成侧卧复苏体位。',
+        prompt: '实操环节：摆位',
+        options: ['完成摆位'],
+        correctIndex: 0,
+        feedback: {
+          correct: '摆位到位。',
+          incorrect: '摆位不达标。',
+          callerCorrect: '我把他侧过来了，头也偏着，看上去呼吸顺多了。',
+          callerIncorrect: '我摆的位置不太对，他好像不太舒服。',
+        },
+        miniGame: {
+          kind: 'positionDrag',
+          title: '复苏体位摆位',
+          instruction: '拖动或按左右方向键旋转身体成侧卧约90度，头偏向一侧防止呕吐物误吸，对齐后确认。',
+          passThreshold: 0.5,
+          targetAngle: 90,
+          angleTolerance: 10,
+          bodyLabel: '侧卧 头偏一侧',
+          useDetailedFigure: true,
+          feedback: { good: '我把他侧过来了，头也偏着，看上去呼吸顺多了。', bad: '我摆的位置不太对，他好像不太舒服。' },
+        },
+      },
+    ],
+  },
 
   specialEvents: [
     {

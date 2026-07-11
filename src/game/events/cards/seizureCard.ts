@@ -89,6 +89,8 @@ export const seizureCard: EmergencyScenario = {
       answer: '有，今天下午开始发烧，38度5',
       answerVague: '发烧了...下午就发烧...',
       panickedAnswer: '发烧！下午就开始烧了！是不是烧抽了？！热性惊厥是不是？！我在网上看到过！',
+      ramblingAnswer: '下午摸他额头就烫手，量了38度5，后来玩着玩着突然就翻白眼抖起来了，我吓坏了。',
+      reveals: [],
       judgment: {
         question: '发热+抽搐提示什么？',
         options: [
@@ -107,6 +109,10 @@ export const seizureCard: EmergencyScenario = {
       label: '受伤',
       questionText: '抽搐时有没有摔倒或撞到？',
       answer: '没有，他在沙发上发作的，没掉下来',
+      answerVague: '没掉下来...',
+      panickedAnswer: '没有！他在沙发上！没摔着！',
+      ramblingAnswer: '他当时就在沙发上玩平板，突然抽起来的，我赶紧把他旁边的东西都拿开了，没摔下去。',
+      reveals: [],
     },
   ],
 
@@ -161,6 +167,31 @@ export const seizureCard: EmergencyScenario = {
         feedback: {
           correct: '正确，及时记录持续时间很重要',
           incorrect: '不对，需要密切观察抽搐持续情况',
+          callerCorrect: '我看着表呢，已经快一分钟了还在抖……',
+          callerIncorrect: '我没数时间，就一直等着他停……',
+        },
+      },
+      {
+        id: 'sz_mg',
+        instruction: '抽搐停止后，将患者摆成侧卧体位，头偏向一侧防误吸。',
+        prompt: '实操环节：侧卧防误吸体位',
+        options: ['完成'],
+        correctIndex: 0,
+        feedback: {
+          correct: '操作到位，正确执行。',
+          incorrect: '操作需改进。',
+          callerCorrect: '抽搐停了！我把他侧过来了！',
+          callerIncorrect: '我没敢动他，他就那么躺着……',
+        },
+        miniGame: {
+          kind: 'positionDrag',
+          title: '侧卧防误吸体位',
+          instruction: '抽搐停止后，将患者摆成侧卧体位，头偏向一侧防误吸。',
+          passThreshold: 0.5,
+          targetAngle: 90,
+          angleTolerance: 12,
+          bodyLabel: '侧卧防误吸',
+          feedback: { good: '抽搐停了！我把他侧过来了！', bad: '我没敢动他，他就那么躺着……' },
         },
       },
     ],

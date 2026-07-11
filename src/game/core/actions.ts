@@ -7,7 +7,7 @@ import type { TriageLevel, MpdsDeterminant, FragmentTargetField } from '../types
 export type TerminalField = 'address' | 'contact' | 'chiefComplaint' | 'patientAge' | 'patientGender' | 'conditionNote'
 
 export type GameAction =
-  | { type: 'START_SHIFT' }
+  | { type: 'START_SHIFT'; forceScenarios?: string[] }
   | { type: 'ANSWER_CALL' }
   | { type: 'ASK_QUESTION'; questionId: string }
   | { type: 'CALM_CALLER' }                                          // 安抚来电者情绪
@@ -19,7 +19,9 @@ export type GameAction =
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
   | { type: 'DISPATCH' }
+  | { type: 'DEBUG_AUTO_DISPATCH' }
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
+  | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL' }
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }

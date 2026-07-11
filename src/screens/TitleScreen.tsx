@@ -5,10 +5,11 @@
 import { useState, useEffect } from 'react'
 
 interface Props {
-  onStart: () => void
+  onStart: (debugScenarioId?: string) => void
+  onLevelSelect?: () => void
 }
 
-export function TitleScreen({ onStart }: Props) {
+export function TitleScreen({ onStart, onLevelSelect }: Props) {
   const [blink, setBlink] = useState(true)
 
   useEffect(() => {
@@ -61,16 +62,27 @@ export function TitleScreen({ onStart }: Props) {
           <p>⏱ 计时器每时每刻都在走 — 你有多快，生命就离你多近</p>
         </div>
 
-        {/* 开始按钮 */}
-        <button
-          style={{
-            ...styles.startBtn,
-            opacity: blink ? 1 : 0.6,
-          }}
-          onClick={onStart}
-        >
-          开始值班
-        </button>
+        {/* 按钮区 */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center' }}>
+          <button
+            style={{
+              ...styles.startBtn,
+              marginTop: 0,
+              opacity: blink ? 1 : 0.6,
+            }}
+            onClick={() => onStart()}
+          >
+            开始值班
+          </button>
+          {onLevelSelect && (
+            <button
+              onClick={onLevelSelect}
+              style={styles.levelSelectBtn}
+            >
+              📋 选关
+            </button>
+          )}
+        </div>
 
         <p style={styles.version}>v1.0 — 急救调度模拟</p>
       </div>
@@ -108,6 +120,8 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 1,
     maxWidth: 520,
     padding: '20px',
+    maxHeight: '100vh',
+    overflowY: 'auto',
   },
   icon: {
     fontSize: 56,
@@ -160,9 +174,20 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 4px 20px rgba(231, 76, 60, 0.3)',
     transition: 'all 0.5s',
   },
+  levelSelectBtn: {
+    padding: '14px 28px',
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#e2e8f0',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    border: '1px solid #334155',
+    borderRadius: 8,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
   version: {
     fontSize: 11,
     color: '#444',
-    marginTop: 20,
+    marginTop: 16,
   },
 }

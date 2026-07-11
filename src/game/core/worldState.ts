@@ -2,12 +2,12 @@
 // 零点接线台 — WorldState 工厂函数
 // ============================================================
 
-import type { WorldState, CallerState, TerminalState, TriageLevel } from '../types'
+import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId } from '../types'
 import { stressToLevel } from '../types'
 import { SCENARIO_IDS } from '../events/templates'
 
 /** 创建空白的来电者追踪状态 */
-export function createCallerState(callerId: string, initialStress = 40): CallerState {
+export function createCallerState(callerId: CallerId, initialStress = 40): CallerState {
   return {
     id: callerId,
     cooperation: 80,
@@ -101,6 +101,7 @@ export function createInitialState(): WorldState {
     guidanceActive: false,
     guidanceStepIndex: 0,
     guidanceResults: [],
+    guidanceMinigameScores: [],
     dialogueLog: [],
     pendingJudgments: [],
     totalScore: 0,
@@ -167,6 +168,7 @@ export function scoreCall(
   correctTriage: TriageLevel,
   guidanceCorrect: number,
   guidanceTotal: number,
+  miniGameAvg = 0,
   questionCost = 0,
   infoQualityBonus = 0,
   // 协议/判定码参数
@@ -175,7 +177,6 @@ export function scoreCall(
   chosenDeterminant: string | null = null,
   correctDeterminant = '',
   chosenSubcode: number | null = null,
-  correctSubcode = 0,
 ): CallScore {
   // 1. 派车速度分（0-35）— 扣除问询耗时后评估"净决策速度"
   const netTime = dispatchTime !== null ? Math.max(10, dispatchTime - Math.min(questionCost, 30)) : null
@@ -222,10 +223,15 @@ export function scoreCall(
     if (chosenSubcode && correctSub && chosenSubcode === correctSub) decision += 1
   }
 
-  // 5. 急救指导分（0-10）
+  // 5. 急救指导分（0-10）— 选择题与互动小游戏各占一半
   let guidance = 0
-  if (guidanceTotal > 0) {
-    guidance = Math.round((guidanceCorrect / guidanceTotal) * 10)
+  if (guidanceTotal > 0 || miniGameAvg > 0) {
+    const choiceFrac = guidanceTotal > 0 ? guidanceCorrect / guidanceTotal : 0
+    let combined: number
+    if (guidanceTotal > 0 && miniGameAvg > 0) combined = choiceFrac * 0.5 + miniGameAvg * 0.5
+    else if (miniGameAvg > 0) combined = miniGameAvg
+    else combined = choiceFrac
+    guidance = Math.round(combined * 10)
   }
 
   const total = speed + info + triage + decision + guidance

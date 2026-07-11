@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
-import type { TriageLevel, MpdsDeterminant, CallPhase, TerminalState, InfoQuality, CalleeStressLevel } from '../game/types'
+import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
@@ -11,20 +11,22 @@ import { createInitialState } from '../game/core/initialState'
 import { getCaller } from '../game/npc/personas'
 import { detectEnding } from '../game/endings/endings'
 import { Hud } from '../components/hud/Hud'
+import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import type { EndingDef } from '../game/types'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number) => void
+  debugScenarioId?: string
 }
 
-export function GameScreen({ onNavigate }: Props) {
+export function GameScreen({ onNavigate, debugScenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
 
-  // --- 初始化班次 ---
+  // --- 初始化班次（调试模式：强制指定场景） ---
   useEffect(() => {
-    dispatch({ type: 'START_SHIFT' })
-  }, [])
+    dispatch({ type: 'START_SHIFT', forceScenarios: debugScenarioId ? [debugScenarioId] : undefined })
+  }, [debugScenarioId])
 
   // --- 新通话时强制关闭调度卡 ---
   useEffect(() => {
@@ -234,6 +236,9 @@ export function GameScreen({ onNavigate }: Props) {
             onAnswer={(stepIdx, selectedIdx) =>
               dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
             }
+            onCompleteMiniGame={(stepIdx, score, passed) =>
+              dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
+            }
           />
         )}
 
@@ -268,11 +273,9 @@ export function GameScreen({ onNavigate }: Props) {
       {/* ====== MPDS调度卡弹出模态框 ====== */}
       {terminalModalOpen && (
         <TerminalModal
-          mpdsCard={call.mpdsCard}
           terminal={state.terminal}
           dispatchSent={state.dispatchSent}
           ambulanceRemaining={state.ambulanceRemaining}
-          canDispatch={state.callPhase === 'questioning' || state.callPhase === 'connected'}
           onChange={(field, value) =>
             dispatch({ type: 'UPDATE_TERMINAL', field, value } as any)
           }
@@ -292,6 +295,29 @@ export function GameScreen({ onNavigate }: Props) {
           onClose={() => setTerminalModalOpen(false)}
           onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
         />
+      )}
+
+      {/* ====== 调试模式覆盖层 ====== */}
+      {debugScenarioId && (
+        <div style={styles.debugOverlay}>
+          <span style={styles.debugBadge}>🧪 测试模式</span>
+          {(state.callPhase === 'questioning' || state.callPhase === 'connected') && !state.dispatchSent && (
+            <button
+              style={styles.debugBtn}
+              onClick={() => dispatch({ type: 'DEBUG_AUTO_DISPATCH' })}
+            >
+              ⚡ 快速派车
+            </button>
+          )}
+          {state.callPhase === 'closing' && (
+            <button
+              style={styles.debugBackBtn}
+              onClick={() => onNavigate('title')}
+            >
+              🔙 返回主菜单
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
@@ -890,11 +916,9 @@ function AskBtnEx({
 
 /** MPDS 调度卡弹出模态框 */
 function TerminalModal({
-  mpdsCard,
   terminal,
   dispatchSent,
   ambulanceRemaining,
-  canDispatch,
   onChange,
   onSetStatus,
   onSetDeterminant,
@@ -904,11 +928,9 @@ function TerminalModal({
   onClose,
   onEndCall,
 }: {
-  mpdsCard: import('../game/types').MpdsProtocolCard
   terminal: TerminalState
   dispatchSent: boolean
   ambulanceRemaining: number
-  canDispatch: boolean
   onChange: (field: TerminalField, value: string) => void
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
@@ -1012,16 +1034,48 @@ function GuidancePanel({
   stepIndex,
   results,
   onAnswer,
+  onCompleteMiniGame,
 }: {
   guidance: import('../game/types').FirstAidGuidance
   stepIndex: number
   results: ('correct' | 'incorrect' | null)[]
   onAnswer: (stepIdx: number, selectedIdx: number) => void
+  onCompleteMiniGame: (stepIdx: number, score: number, passed: boolean) => void
 }) {
   if (stepIndex >= guidance.steps.length) return null
 
   const currentStep = guidance.steps[stepIndex]
   const previousResults = results.slice(0, stepIndex)
+
+  // 互动小游戏步骤：渲染实操环节
+  if (currentStep.miniGame) {
+    return (
+      <div style={styles.guidancePanel}>
+        <div style={styles.guidanceTitle}>🩺 {guidance.title}</div>
+        {stepIndex === 0 && <p style={styles.guidanceIntro}>{guidance.intro}</p>}
+        {previousResults.map((r, i) => (
+          <div
+            key={i}
+            style={{
+              padding: '4px 8px',
+              margin: '2px 0',
+              backgroundColor: r === 'correct' ? '#0a2e0a' : '#2e0a0a',
+              borderRadius: 4,
+              fontSize: 13,
+              color: r === 'correct' ? '#4ade80' : '#f87171',
+            }}
+          >
+            {r === 'correct' ? '✅' : '❌'} 步骤{i + 1}：{guidance.steps[i].prompt}
+          </div>
+        ))}
+        <p style={styles.guidancePrompt}>步骤{stepIndex + 1}：{currentStep.prompt}</p>
+        <MiniGameHost
+          spec={currentStep.miniGame}
+          onComplete={(score, passed) => onCompleteMiniGame(stepIndex, score, passed)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div style={styles.guidancePanel}>
@@ -1951,5 +2005,46 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     animation: 'pulse-alert 1.5s ease-in-out infinite',
     letterSpacing: 4,
+  },
+
+  // ---------- 调试模式 ----------
+  debugOverlay: {
+    position: 'fixed',
+    top: 10,
+    right: 10,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: 6,
+    zIndex: 9999,
+  },
+  debugBadge: {
+    fontSize: 11,
+    color: '#f1c40f',
+    backgroundColor: 'rgba(241,196,15,0.15)',
+    padding: '3px 10px',
+    borderRadius: 4,
+    border: '1px solid rgba(241,196,15,0.3)',
+  },
+  debugBtn: {
+    padding: '8px 16px',
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#fff',
+    backgroundColor: '#f1c40f',
+    border: 'none',
+    borderRadius: 6,
+    cursor: 'pointer',
+    boxShadow: '0 2px 10px rgba(241,196,15,0.4)',
+  },
+  debugBackBtn: {
+    padding: '8px 16px',
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#e2e8f0',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    border: '1px solid rgba(255,255,255,0.2)',
+    borderRadius: 6,
+    cursor: 'pointer',
   },
 }

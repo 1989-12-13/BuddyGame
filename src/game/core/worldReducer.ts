@@ -3,7 +3,7 @@
 // 120急救调度模拟游戏核心逻辑
 // ============================================================
 
-import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt } from '../types'
+import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt, MpdsDeterminant } from '../types'
 import { stressToLevel, determinantToTriage, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
@@ -141,11 +141,13 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     // ==========================================
     case 'START_SHIFT': {
       const newShift = state.shiftNumber + 1
+      const useQueue = action.forceScenarios ?? buildScenarioQueue(newShift)
       return {
         ...createInitialState(),
         screen: 'playing',
         shiftNumber: newShift,
-        scenarioQueue: buildScenarioQueue(newShift),
+        totalCalls: useQueue.length,     // 调试模式只播 1 通
+        scenarioQueue: useQueue,
         // 为恶作剧电话设置标记：最后2通不能是恶作剧（太简单）
       }
     }
@@ -193,6 +195,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         guidanceActive: false,
         guidanceStepIndex: 0,
         guidanceResults: [],
+        guidanceMinigameScores: [],
         pendingJudgments: [],
         dialogueLog: [systemLine, openingLine],
       }
@@ -646,6 +649,84 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     }
 
     // ==========================================
+    // DEBUG_AUTO_DISPATCH — 调试模式：自动填充并派车（仅供测试入口使用）
+    // ==========================================
+    case 'DEBUG_AUTO_DISPATCH': {
+      if (!state.currentCall || !state.callerState) return state
+      if (state.dispatchSent) return state
+
+      const call = state.currentCall
+      const detParts = call.mpdsCard.determinantCode.split('-')
+
+      // 解析判定码
+      const detChars = ['ECHO','DELTA','CHARLIE','BRAVO','ALPHA'] as const
+      let determinant: MpdsDeterminant = 'ALPHA'
+      const detChar = detParts[1]?.[0]?.toUpperCase()
+      for (const d of detChars) {
+        if (d[0] === detChar) { determinant = d; break }
+      }
+
+      // 构建增强状态：reveal 全部信息 + 填写正确终端
+      const enhancedCaller = {
+        ...state.callerState,
+        revealedInfo: {
+          address: 'full' as const,
+          contact: true,
+          chiefComplaint: true,
+          purpose: true,
+          age: true,
+          gender: true,
+          consciousness: true,
+          breathing: true,
+          additional: [] as string[],
+        },
+      }
+      const enhancedTerminal = {
+        ...state.terminal,
+        protocolNumber: parseInt(detParts[0], 10) || 0,
+        determinant,
+        determinantSubcode: parseInt(detParts[2], 10) || 0,
+      }
+
+      const dispatchTime = state.shiftElapsed - state.callStartTime
+      const derivedTriage = determinantToTriage(determinant)
+      const triage = derivedTriage || call.correctTriage
+      const eta = calcAmbulanceETA(dispatchTime, 'full')
+      const hasGuidance = call.guidance !== null
+
+      const systemLine: DialogueLine = {
+        speaker: 'system',
+        text: `【🚑 测试派车 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒】`,
+        timestamp: state.shiftElapsed,
+      }
+
+      return {
+        ...state,
+        callerState: enhancedCaller,
+        terminal: enhancedTerminal,
+        dispatchSent: true,
+        dispatchRecord: {
+          callId: call.id,
+          dispatchTime,
+          triage,
+          addressCompleteness: 'full',
+          ambulanceETA: eta,
+        },
+        ambulanceRemaining: eta,
+        callPhase: hasGuidance ? 'guidance' : 'closing',
+        guidanceActive: hasGuidance,
+        guidanceStepIndex: 0,
+        guidanceResults: hasGuidance
+          ? new Array(call.guidance!.steps.length).fill(null)
+          : [],
+        guidanceMinigameScores: hasGuidance
+          ? new Array(call.guidance!.steps.length).fill(null)
+          : [],
+        dialogueLog: [...state.dialogueLog, systemLine],
+      }
+    }
+
+    // ==========================================
     // DISPATCH — 派出救护车
     // ==========================================
     case 'DISPATCH': {
@@ -691,6 +772,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         guidanceActive: hasGuidance,
         guidanceStepIndex: 0,
         guidanceResults: hasGuidance
+          ? new Array(state.currentCall.guidance!.steps.length).fill(null)
+          : [],
+        guidanceMinigameScores: hasGuidance
           ? new Array(state.currentCall.guidance!.steps.length).fill(null)
           : [],
         dialogueLog: [...state.dialogueLog, systemLine],
@@ -741,6 +825,47 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     }
 
     // ==========================================
+    // COMPLETE_MINIGAME — 互动小游戏完成（记录分数，推进步骤）
+    // ==========================================
+    case 'COMPLETE_MINIGAME': {
+      if (!state.currentCall?.guidance) return state
+      if (!state.guidanceActive) return state
+      if (state.callPhase !== 'guidance') return state
+
+      const guidanceDef = state.currentCall.guidance
+      const step = guidanceDef.steps[action.stepIndex]
+      if (!step?.miniGame) return state
+
+      const now = state.shiftElapsed
+      const spec = step.miniGame
+      const callerText = action.passed ? spec.feedback.good : spec.feedback.bad
+      const operatorLine: DialogueLine = {
+        speaker: 'operator',
+        text: `【实操指导：${spec.title}】${action.passed ? '操作到位' : '操作需改进'}（评分 ${(action.score * 100).toFixed(0)}）`,
+        timestamp: now,
+      }
+      const feedbackLine: DialogueLine = {
+        speaker: 'caller',
+        text: callerText,
+        timestamp: now,
+      }
+
+      const newScores = [...state.guidanceMinigameScores]
+      newScores[action.stepIndex] = action.score
+
+      const nextIndex = action.stepIndex + 1
+      const isLastStep = nextIndex >= guidanceDef.steps.length
+
+      return {
+        ...state,
+        guidanceStepIndex: nextIndex,
+        guidanceMinigameScores: newScores,
+        callPhase: isLastStep ? 'closing' : 'guidance',
+        dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],
+      }
+    }
+
+    // ==========================================
     // END_CALL — 结束当前通话
     // ==========================================
     case 'END_CALL': {
@@ -783,7 +908,12 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         // 解析场景的预期判定码（如 "9-E-1" → 协议9, 字母E, 子码1）
         const detParts = call.mpdsCard.determinantCode.split('-')
         const correctProto = parseInt(detParts[0], 10) || 0
-        const correctSub = parseInt(detParts[2], 10) || 0
+
+
+        const guidanceSteps = call.guidance?.steps ?? []
+        const choiceStepTotal = guidanceSteps.filter(st => !st.miniGame).length
+        const mgScores = state.guidanceMinigameScores.filter(s => s != null) as number[]
+        const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
 
         const result = scoreCall(
           dispatchRecord?.dispatchTime ?? null,
@@ -794,7 +924,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           dispatchRecord?.triage ?? null,
           call.correctTriage,
           state.guidanceResults.filter(r => r === 'correct').length,
-          state.guidanceResults.length,
+          choiceStepTotal,
+          miniGameAvg,
           state.questionCost,
           qualityBonus,
           state.terminal.protocolNumber,
@@ -802,14 +933,13 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           state.terminal.determinant,
           call.mpdsCard.determinantCode,
           state.terminal.determinantSubcode,
-          correctSub,
         )
         total = result.total
         speed = result.speed
         info = result.info
         triageScore = result.triage
         guidanceScore = result.guidance
-        const decisionScore = result.decision
+        decisionScore = result.decision
       }
 
       const nextCallIndex = state.callIndex + 1

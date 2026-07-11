@@ -68,6 +68,7 @@ export const diabeticCard: EmergencyScenario = {
       answerVague: '打了胰岛素...中午没吃...',
       ramblingAnswer: '她早上来的时候说是打了胰岛素的，然后中午她说没胃口，就喝了杯咖啡，什么也没吃。下午两点多的时候我就看她不对劲了，脸色发白，开始冒冷汗，我问她话她也回答得含糊不清。我觉得是低血糖了。',
       panickedAnswer: '打了！胰岛素打了！中午没吃饭！就是低血糖！你们快来！',
+      reveals: [],
       judgment: {
         question: '胰岛素注射后未进食提示什么？',
         options: [
@@ -86,7 +87,10 @@ export const diabeticCard: EmergencyScenario = {
       label: '意识水平',
       questionText: '她现在能吞咽吗？',
       answer: '不太清楚...她好像还有一点意识',
+      answerVague: '不太清楚...',
+      panickedAnswer: '她眼神涣散！说话含糊！怎么办！',
       ramblingAnswer: '我刚才叫她名字，她眼睛能睁开但是眼神涣散，说话含含糊糊的，我给她倒了杯水她好像接不住。不过她能哼哼两声，应该还算有一点意识吧。',
+      reveals: [],
     },
   ],
 
@@ -124,6 +128,8 @@ export const diabeticCard: EmergencyScenario = {
         feedback: {
           correct: '正确，意识下降时侧躺可以防止误吸',
           incorrect: '不对，意识下降时应侧躺而不是坐起来',
+          callerCorrect: '我让她侧躺了，头也偏过去一点。',
+          callerIncorrect: '我试着把她扶起来坐着了......',
         },
       },
       {
@@ -139,6 +145,31 @@ export const diabeticCard: EmergencyScenario = {
         feedback: {
           correct: '正确，补糖后需要观察恢复情况',
           incorrect: '不对，需要观察但不要过度补糖',
+          callerCorrect: '她好像比刚才精神一点了，能认出我了。',
+          callerIncorrect: '我一直喂她吃糖，她好像没太大变化......',
+        },
+      },
+      {
+        id: 'db_mg',
+        instruction: '患者意识下降，请拖拽旋转身体使其呈侧卧，头偏向一侧防误吸。',
+        prompt: '实操环节：侧卧体位摆放',
+        options: ['完成'],
+        correctIndex: 0,
+        feedback: {
+          correct: '操作到位，正确执行。',
+          incorrect: '操作需改进。',
+          callerCorrect: '我把她侧过来了！头也偏过去了！',
+          callerIncorrect: '我没把她扶好，她又滑回去了……',
+        },
+        miniGame: {
+          kind: 'positionDrag',
+          title: '侧卧体位摆放',
+          instruction: '患者意识下降，请拖拽旋转身体使其呈侧卧，头偏向一侧防误吸。',
+          passThreshold: 0.5,
+          targetAngle: 90,
+          angleTolerance: 12,
+          bodyLabel: '侧卧防误吸',
+          feedback: { good: '我把她侧过来了！头也偏过去了！', bad: '我没把她扶好，她又滑回去了……' },
         },
       },
     ],

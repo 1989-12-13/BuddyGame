@@ -166,12 +166,102 @@ export interface GuidanceStep {
     callerCorrect: string    // 来电者视角：伤者好转/操作成功后的描述
     callerIncorrect: string  // 来电者视角：操作错误或伤者恶化的描述
   }
+  miniGame?: MiniGameSpec   // 可选的互动小游戏（实操环节）
 }
 
 export interface FirstAidGuidance {
   title: string
   intro: string            // 开始急救指导时的开场白
   steps: GuidanceStep[]
+}
+
+// -------------------- 互动小游戏（急救指导实操环节） --------------------
+export type MiniGameKind =
+  | 'rhythmPress'   // 节奏按压：目标 BPM
+  | 'blowInflate'   // 吹气充胀
+  | 'aimForce'      // 瞄准施力
+  | 'holdPressure'  // 持续按压
+  | 'positionDrag'  // 摆位拖拽
+  | 'timedShock'    // 时机识别除颤
+
+/** 小游戏公共字段 */
+export interface BaseMiniGame {
+  kind: MiniGameKind
+  title: string              // 小游戏标题
+  instruction: string       // 操作说明
+  passThreshold: number     // 0-1，达到即通过
+  feedback: { good: string; bad: string }  // 操作结束后来电者视角描述
+}
+
+/** 节奏按压：目标 BPM，空格/点击，检测频率与稳定度 */
+export interface RhythmPressSpec extends BaseMiniGame {
+  kind: 'rhythmPress'
+  targetBpm: number         // 目标按压频率
+  bpmTolerance: number      // 容差（BPM）
+  durationSec: number       // 持续时长（秒）
+  depthSeconds?: number     // 若要求按压深度，设定每次按压需保持的最小时长
+}
+
+/** 吹气充胀：长按充胀，过量惩罚、不足无效 */
+export interface BlowInflateSpec extends BaseMiniGame {
+  kind: 'blowInflate'
+  targetInflations: number  // 目标吹气次数
+  idealHoldSec: number      // 每次理想吹气时长（秒）
+  overInflationSec: number  // 超过即判定胃胀气
+  durationSec: number       // 总时长（秒）
+}
+
+/** 瞄准施力：拖拽标记到解剖位，再冲击，位置+时机计分 */
+export interface AimForceSpec extends BaseMiniGame {
+  kind: 'aimForce'
+  targetX: number           // 目标中心 X（0-100 归一坐标）
+  targetY: number           // 目标中心 Y（0-100 归一坐标）
+  aimTolerance: number      // 命中容差（归一半径）
+  thrusts: number           // 需要施力/按压次数
+  thrustWindowMs: number    // 每次施力的目标节奏窗口（毫秒）
+  showSideView?: boolean    // 显示侧面视图（海姆立克用）
+  hideTargetGuide?: boolean // 隐藏目标提示圈（不显示瞄准辅助线）
+  bodyDiagram?: 'full' | 'arm' | 'leg'  // 身体示意图类型（止血用：显示具体部位）
+}
+
+/** 持续按压：长按保持压力 N 秒，松手血量回升 */
+export interface HoldPressureSpec extends BaseMiniGame {
+  kind: 'holdPressure'
+  holdSec: number           // 需维持的秒数
+  bleedRatePerSec: number   // 松手时血量条回升速度（每秒）
+  regainPerSec: number      // 按压时血量条下降速度（每秒）
+}
+
+/** 摆位拖拽：拖拽/旋转身体到目标角度 */
+export interface PositionDragSpec extends BaseMiniGame {
+  kind: 'positionDrag'
+  targetAngle: number       // 目标角度（度）
+  angleTolerance: number    // 角度容差（度）
+  bodyLabel: string         // 姿态描述，如"复苏体位"
+  useDetailedFigure?: boolean // 使用详细人体图
+}
+
+/** 时机识别：可电击窗口内点除颤，误点/错过扣分 */
+export interface TimedShockSpec extends BaseMiniGame {
+  kind: 'timedShock'
+  windows: number           // 可电击窗口数量
+  windowMs: number          // 每个可电击窗口持续（毫秒）
+  shockCooldownMs: number   // 两次窗口间隔（毫秒）
+  falsePenalty: number      // 误击扣分（0-1 每次）
+}
+
+export type MiniGameSpec =
+  | RhythmPressSpec
+  | BlowInflateSpec
+  | AimForceSpec
+  | HoldPressureSpec
+  | PositionDragSpec
+  | TimedShockSpec
+
+/** 小游戏组件统一契约 */
+export interface MiniGameProps {
+  spec: MiniGameSpec
+  onComplete: (score: number, passed: boolean) => void
 }
 
 // -------------------- 通话事件 --------------------
@@ -374,6 +464,7 @@ export interface WorldState {
   guidanceActive: boolean
   guidanceStepIndex: number
   guidanceResults: ('correct' | 'incorrect' | null)[]
+  guidanceMinigameScores: (number | null)[]  // 小游戏步骤得分（与 guidanceResults 平行）
 
   // 对话历史
   dialogueLog: DialogueLine[]

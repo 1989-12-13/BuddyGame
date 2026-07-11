@@ -2,7 +2,9 @@
 // 零点接线台 — 班次评估/结局画面
 // ============================================================
 
+import { useEffect } from 'react'
 import type { EndingDef } from '../game/types'
+import { useAudio } from '../audio/AudioContext'
 
 interface Props {
   ending: EndingDef
@@ -11,6 +13,17 @@ interface Props {
 }
 
 export function EndingScreen({ ending, totalScore, onRestart }: Props) {
+  const audio = useAudio()
+
+  // 进入结局画面时播放提示音
+  useEffect(() => {
+    audio.play('success')
+  }, [audio])
+
+  const handleRestart = () => {
+    audio.play('confirm')
+    onRestart()
+  }
   return (
     <div style={styles.container}>
       <div style={styles.glow} />
@@ -40,7 +53,7 @@ export function EndingScreen({ ending, totalScore, onRestart }: Props) {
         <div style={styles.divider} />
 
         {/* 重新开始 */}
-        <button style={styles.restartBtn} onClick={onRestart}>
+        <button style={styles.restartBtn} onClick={handleRestart}>
           重新值班
         </button>
       </div>

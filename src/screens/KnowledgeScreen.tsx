@@ -2,7 +2,8 @@
 // MPDS 知识库 — 科普 MPDS 医疗优先调度系统
 // ============================================================
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
+import { useAudio } from '../audio/AudioContext'
 import { SCENARIOS, SCENARIO_IDS } from '../game/events/templates'
 import type { EmergencyScenario, MpdsDeterminant } from '../game/types'
 import { MPDS_DETERMINANT_INFO } from '../game/types'
@@ -188,6 +189,22 @@ const DISPATCHER_NOTES: Record<string, { description: string; commonCauses: stri
 export function KnowledgeScreen({ onBack }: Props) {
   const [search, setSearch] = useState('')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const audio = useAudio()
+
+  const handleBack = useCallback(() => {
+    audio.play('confirm')
+    onBack()
+  }, [audio, onBack])
+
+  const handleScenarioClick = useCallback((id: string) => {
+    audio.play('question')
+    setSelectedId(id)
+  }, [audio])
+
+  const handleCloseModal = useCallback(() => {
+    audio.play('confirm')
+    setSelectedId(null)
+  }, [audio])
 
   const scenarios = useMemo(() => {
     const list = SCENARIO_IDS
@@ -224,7 +241,7 @@ export function KnowledgeScreen({ onBack }: Props) {
     <div style={styles.container}>
       {/* 头部 */}
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backBtn}>← 返回</button>
+        <button onClick={handleBack} style={styles.backBtn}>← 返回</button>
         <h1 style={styles.title}>MPDS 知识库</h1>
         <div style={{ width: 60 }} />
       </div>
@@ -271,7 +288,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                   <div
                     key={s.id}
                     style={styles.card}
-                    onClick={() => setSelectedId(s.id)}
+                    onClick={() => handleScenarioClick(s.id)}
                   >
                     <div style={styles.cardTitle}>{s.title}</div>
                     <div style={styles.cardBottom}>
@@ -293,7 +310,7 @@ export function KnowledgeScreen({ onBack }: Props) {
 
       {/* ====== 详情弹窗 ====== */}
       {selected && selectedNotes && (
-        <div style={styles.modalOverlay} onClick={() => setSelectedId(null)}>
+        <div style={styles.modalOverlay} onClick={handleCloseModal}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             {/* 弹窗头部 */}
             <div style={{ ...styles.modalHeader, borderBottomColor: MPDS_DETERMINANT_INFO[parseDeterminant(selected.mpdsCard.determinantCode)].color }}>
@@ -304,7 +321,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                   <div style={styles.modalSubtitle}>{selected.mpdsCard.chiefComplaint}</div>
                 </div>
               </div>
-              <button style={styles.modalCloseBtn} onClick={() => setSelectedId(null)}>✕</button>
+              <button style={styles.modalCloseBtn} onClick={handleCloseModal}>✕</button>
             </div>
 
             {/* 弹窗内容 */}

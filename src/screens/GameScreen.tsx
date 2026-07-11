@@ -2,7 +2,7 @@
 // 零点接线台 — 调度主界面（双线程：电话+终端）
 // ============================================================
 
-import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import React, { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
@@ -13,6 +13,7 @@ import { detectEnding } from '../game/endings/endings'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import type { EndingDef } from '../game/types'
+import { useAudio } from '../audio/AudioContext'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number) => void
@@ -64,6 +65,86 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const isProcessing = useRef(false)                    // 是否正在处理队列
   const [streamIdx, setStreamIdx] = useState(-1)        // 正在流式的行
   const [streamPos, setStreamPos] = useState(0)         // 已显示字符数
+
+  // --- 音效管理 ---
+  const audio = useAudio()
+  const prevCallCount = useRef(state.callIndex)
+
+  // 来电铃声循环（无活跃通话且还有下一通时）
+  useEffect(() => {
+    if (!state.currentCall && state.callIndex < state.totalCalls) {
+      const id = setInterval(() => audio.play('ring'), 4000)
+      return () => clearInterval(id)
+    }
+  }, [state.currentCall, state.callIndex, state.totalCalls, audio])
+
+  // 接听电话 → connect 音效
+  useEffect(() => {
+    if (state.currentCall && state.callIndex !== prevCallCount.current) {
+      audio.play('connect')
+    }
+    prevCallCount.current = state.callIndex
+  }, [state.currentCall, state.callIndex, audio])
+
+  // 追踪音效状态
+  const prevDispatchSent = useRef(state.dispatchSent)
+  const prevAmbulance = useRef(state.ambulanceRemaining)
+  const prevCallPhase = useRef(state.callPhase)
+  const prevDialogueLen = useRef(state.dialogueLog.length)
+  const prevJudgments = useRef(state.pendingJudgments?.length ?? 0)
+
+  // 派车音效
+  useEffect(() => {
+    if (state.dispatchSent && !prevDispatchSent.current) {
+      audio.play('dispatch')
+    }
+    prevDispatchSent.current = state.dispatchSent
+  }, [state.dispatchSent, audio])
+
+  // 救护车到达音效
+  useEffect(() => {
+    if (prevAmbulance.current > 0 && state.ambulanceRemaining === 0) {
+      audio.play('arrival')
+    }
+    prevAmbulance.current = state.ambulanceRemaining
+  }, [state.ambulanceRemaining, audio])
+
+  // 问询/挂断/紧张音效 — 通过对话日志变化推断
+  useEffect(() => {
+    const curLen = state.dialogueLog.length
+    if (curLen <= prevDialogueLen.current) {
+      prevDialogueLen.current = curLen
+      return
+    }
+    const newLines = state.dialogueLog.slice(prevDialogueLen.current)
+    prevDialogueLen.current = curLen
+
+    for (const line of newLines) {
+      if (line.speaker === 'operator' && line.text.startsWith('请问')) {
+        audio.play('question')
+      }
+      if (line.speaker === 'operator' && line.text.includes('做得好')) {
+        audio.play('success')
+      }
+    }
+  }, [state.dialogueLog, audio])
+
+  // 通话结束音效
+  useEffect(() => {
+    if (prevCallPhase.current !== 'completed' && state.callPhase === 'completed') {
+      audio.play('hangup')
+    }
+    prevCallPhase.current = state.callPhase
+  }, [state.callPhase, audio])
+
+  // 临床判断选择音效
+  useEffect(() => {
+    const curJudgments = state.pendingJudgments?.length ?? 0
+    if (curJudgments > prevJudgments.current) {
+      audio.play('confirm')
+    }
+    prevJudgments.current = curJudgments
+  }, [state.pendingJudgments, audio])
 
   // 启动队列处理（幂等：已在处理中则跳过）
   const startQueue = useCallback(() => {
@@ -166,7 +247,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
   }, [])
 
-  // 无活跃通话时 — 准备接听
+  // 无活跃通话时 — 等待接听
   if (!state.currentCall && state.callIndex < state.totalCalls) {
     return (
       <div style={styles.container}>

@@ -2,7 +2,8 @@
 // 零点接线台 — 标题画面
 // ============================================================
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useAudio } from '../audio/AudioContext'
 
 interface Props {
   onStart: () => void
@@ -12,11 +13,27 @@ interface Props {
 
 export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
   const [blink, setBlink] = useState(true)
+  const audio = useAudio()
 
   useEffect(() => {
     const id = setInterval(() => setBlink((b) => !b), 800)
     return () => clearInterval(id)
   }, [])
+
+  const handleStart = useCallback(() => {
+    audio.play('success')
+    onStart()
+  }, [audio, onStart])
+
+  const handleLevelSelect = useCallback(() => {
+    audio.play('confirm')
+    onLevelSelect?.()
+  }, [audio, onLevelSelect])
+
+  const handleKnowledge = useCallback(() => {
+    audio.play('confirm')
+    onKnowledge?.()
+  }, [audio, onKnowledge])
 
   return (
     <div style={styles.container}>
@@ -42,13 +59,13 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
               marginTop: 0,
               opacity: blink ? 1 : 0.6,
             }}
-            onClick={() => onStart()}
+            onClick={handleStart}
           >
             开始值班
           </button>
           {onLevelSelect && (
             <button
-              onClick={onLevelSelect}
+              onClick={handleLevelSelect}
               style={styles.levelSelectBtn}
             >
               📋 选关
@@ -56,7 +73,7 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
           )}
           {onKnowledge && (
             <button
-              onClick={onKnowledge}
+              onClick={handleKnowledge}
               style={styles.knowledgeBtn}
             >
               📖 知识库

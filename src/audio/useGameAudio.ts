@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 export type GameAudioCue =
   | 'connect'
@@ -8,9 +8,12 @@ export type GameAudioCue =
   | 'dispatch'
   | 'arrival'
   | 'hangup'
+  | 'ring'
+  | 'ringback'
+  | 'success'
+  | 'error'
 
-const STORAGE_ENABLED = 'zero-hour-dispatch.audio-enabled'
-const STORAGE_VOLUME = 'zero-hour-dispatch.audio-volume'
+const DEFAULT_VOLUME = 0.65
 
 const CUE_PATTERNS: Record<GameAudioCue, Array<[frequency: number, delay: number, duration: number]>> = {
   connect: [[520, 0, 0.08], [720, 0.1, 0.12]],
@@ -20,6 +23,10 @@ const CUE_PATTERNS: Record<GameAudioCue, Array<[frequency: number, delay: number
   dispatch: [[440, 0, 0.08], [660, 0.1, 0.08], [880, 0.2, 0.16]],
   arrival: [[740, 0, 0.08], [980, 0.1, 0.18]],
   hangup: [[520, 0, 0.08], [320, 0.1, 0.16]],
+  ring: [[440, 0, 0.3], [0, 0.35, 0.05], [440, 0.4, 0.3], [0, 0.45, 0.05], [440, 0.5, 0.3]],
+  ringback: [[400, 0, 0.15], [0, 0.2, 0.1], [500, 0.3, 0.15], [0, 0.5, 0.1]],
+  success: [[523, 0, 0.08], [659, 0.1, 0.08], [784, 0.2, 0.18]],
+  error: [[300, 0, 0.1], [250, 0.14, 0.1], [200, 0.28, 0.2]],
 }
 
 class GameAudioEngine {
@@ -66,39 +73,11 @@ export function useGameAudio() {
   const engineRef = useRef<GameAudioEngine | null>(null)
   if (!engineRef.current) engineRef.current = new GameAudioEngine()
 
-  const [enabled, setEnabled] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return window.localStorage.getItem(STORAGE_ENABLED) !== 'false'
-  })
-  const [volume, setVolumeState] = useState(() => {
-    if (typeof window === 'undefined') return 0.65
-    const stored = Number(window.localStorage.getItem(STORAGE_VOLUME))
-    return Number.isFinite(stored) && stored >= 0 && stored <= 1 ? stored : 0.65
-  })
-
   useEffect(() => () => engineRef.current?.close(), [])
 
   const play = useCallback((cue: GameAudioCue) => {
-    if (enabled) engineRef.current?.play(cue, volume)
-  }, [enabled, volume])
-
-  const toggle = useCallback(() => {
-    setEnabled(current => {
-      const next = !current
-      window.localStorage.setItem(STORAGE_ENABLED, String(next))
-      if (next) engineRef.current?.play('confirm', volume)
-      return next
-    })
-  }, [volume])
-
-  const setVolume = useCallback((next: number) => {
-    const clamped = Math.max(0, Math.min(1, next))
-    setVolumeState(clamped)
-    window.localStorage.setItem(STORAGE_VOLUME, String(clamped))
+    engineRef.current?.play(cue, DEFAULT_VOLUME)
   }, [])
 
-  return useMemo(
-    () => ({ enabled, volume, play, toggle, setVolume }),
-    [enabled, play, setVolume, toggle, volume],
-  )
+  return { play }
 }

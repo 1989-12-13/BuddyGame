@@ -9,6 +9,7 @@ import { GameScreen } from '../screens/GameScreen'
 import { EndingScreen } from '../screens/EndingScreen'
 import { LevelSelectScreen } from '../screens/LevelSelectScreen'
 import { KnowledgeScreen } from '../screens/KnowledgeScreen'
+import { AudioProvider } from '../audio/AudioContext'
 
 type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 
@@ -49,21 +50,29 @@ export default function App() {
     setFinalScore(0)
   }, [])
 
-  switch (screen) {
-    case 'title':
-      return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} onKnowledge={() => setScreen('knowledge')} />
-    case 'level_select':
-      return <LevelSelectScreen onStart={handleStart} onBack={() => setScreen('title')} />
-    case 'knowledge':
-      return <KnowledgeScreen onBack={() => setScreen('title')} />
-    case 'ending':
-      return ending ? (
-        <EndingScreen ending={ending} totalScore={finalScore} onRestart={handleRestart} />
-      ) : (
-        <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
-      )
-    case 'game':
-    default:
-      return <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
-  }
+  const mainContent = (() => {
+    switch (screen) {
+      case 'title':
+        return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} onKnowledge={() => setScreen('knowledge')} />
+      case 'level_select':
+        return <LevelSelectScreen onStart={handleStart} onBack={() => setScreen('title')} />
+      case 'knowledge':
+        return <KnowledgeScreen onBack={() => setScreen('title')} />
+      case 'ending':
+        return ending ? (
+          <EndingScreen ending={ending} totalScore={finalScore} onRestart={handleRestart} />
+        ) : (
+          <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
+        )
+      case 'game':
+      default:
+        return <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
+    }
+  })()
+
+  return (
+    <AudioProvider>
+      {mainContent}
+    </AudioProvider>
+  )
 }

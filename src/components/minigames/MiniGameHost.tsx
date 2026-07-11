@@ -10,6 +10,7 @@ import { HoldPressure } from './engines/HoldPressure'
 import { PositionDrag } from './engines/PositionDrag'
 import { TimedShock } from './engines/TimedShock'
 import { StepOrder } from './engines/StepOrder'
+import { LocationSelect } from './engines/LocationSelect'
 
 interface Props {
   spec: MiniGameSpec
@@ -50,6 +51,7 @@ export function MiniGameHost({ spec, onComplete }: Props) {
       {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
       {spec.kind === 'timedShock' && <TimedShock spec={spec} onComplete={onComplete} />}
       {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} />}
     </div>
   )
 }

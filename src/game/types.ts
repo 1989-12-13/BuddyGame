@@ -184,6 +184,7 @@ export type MiniGameKind =
   | 'positionDrag'  // 摆位拖拽（已弃用）
   | 'timedShock'    // 时机识别除颤
   | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
+  | 'locationSelect'// 位置选择：选择正确的止血点位置
 
 /** 小游戏公共字段 */
 export interface BaseMiniGame {
@@ -258,6 +259,15 @@ export interface StepOrderSpec extends BaseMiniGame {
   steps: string[]           // 正确顺序的步骤列表
 }
 
+/** 位置选择：从多个选项中选择正确的止血点位置 */
+export interface LocationSelectSpec extends BaseMiniGame {
+  kind: 'locationSelect'
+  bodyPart: 'arm' | 'leg' | 'head' | 'chest'  // 身体部位图
+  woundDesc: string         // 伤口描述（显示在图上）
+  options: string[]         // 选项列表
+  correctIndex: number      // 正确选项索引
+}
+
 export type MiniGameSpec =
   | RhythmPressSpec
   | BlowInflateSpec
@@ -266,6 +276,7 @@ export type MiniGameSpec =
   | PositionDragSpec
   | TimedShockSpec
   | StepOrderSpec
+  | LocationSelectSpec
 
 /** 小游戏组件统一契约 */
 export interface MiniGameProps {

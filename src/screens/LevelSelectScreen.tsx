@@ -2,7 +2,8 @@
 // 零点接线台 — 选关画面
 // ============================================================
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
+import { useAudio } from '../audio/AudioContext'
 
 interface Props {
   onStart: (scenarioId?: string) => void
@@ -77,6 +78,17 @@ const CATEGORY_ORDER = ['心肺复苏', '呼吸系统', '创伤出血', '神经�
 export function LevelSelectScreen({ onStart, onBack }: Props) {
   const [search, setSearch] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const audio = useAudio()
+
+  const handleBack = useCallback(() => {
+    audio.play('confirm')
+    onBack()
+  }, [audio, onBack])
+
+  const handleScenarioClick = useCallback((scenarioId: string) => {
+    audio.play('connect')
+    onStart(scenarioId)
+  }, [audio, onStart])
 
   const filtered = useMemo(() => {
     if (!search.trim()) return ALL_SCENARIOS
@@ -101,7 +113,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backBtn}>← 返回</button>
+        <button onClick={handleBack} style={styles.backBtn}>← 返回</button>
         <h1 style={styles.title}>场景选择</h1>
         <div style={{ width: 60 }} />
       </div>
@@ -143,7 +155,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
                   }}
                   onMouseEnter={() => setHoveredId(s.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  onClick={() => onStart(s.id)}
+                  onClick={() => handleScenarioClick(s.id)}
                 >
                   <div style={styles.cardHeader}>
                     <span style={styles.protocolNum}>#{s.num}</span>

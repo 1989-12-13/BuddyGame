@@ -3,13 +3,8 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
-<<<<<<< Updated upstream
-import type { TriageLevel, MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
-import { MPDS_DETERMINANT_INFO, STRESS_INFO } from '../game/types'
-=======
 import type { TriageLevel, MpdsDeterminant, CallPhase, TerminalState, InfoQuality, CalleeStressLevel } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
->>>>>>> Stashed changes
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { createInitialState } from '../game/core/initialState'

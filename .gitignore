@@ -1,0 +1,16 @@
+node_modules
+dist
+artifacts
+.env
+.env.local
+.env.*.local
+*.log
+npm-debug.log*
+.DS_Store
+*.swp
+*.swo
+.cache
+.codegraph
+.context
+pnpm-lock.yaml
+pnpm-workspace.yaml

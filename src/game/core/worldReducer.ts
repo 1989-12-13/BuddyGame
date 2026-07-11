@@ -650,6 +650,20 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     }
 
     // ==========================================
+    // SET_DETERMINANT_SUBCODE — 设置判定码细分编码
+    // ==========================================
+    case 'SET_DETERMINANT_SUBCODE': {
+      return { ...state, terminal: { ...state.terminal, determinantSubcode: action.subcode } }
+    }
+
+    // ==========================================
+    // SET_PROTOCOL — 设置MPDS协议编号
+    // ==========================================
+    case 'SET_PROTOCOL': {
+      return { ...state, terminal: { ...state.terminal, protocolNumber: action.protocolNumber } }
+    }
+
+    // ==========================================
     // SET_TRIAGE — 设置分诊等级
     // ==========================================
     case 'SET_TRIAGE': {
@@ -752,6 +766,47 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           ? new Array(state.currentCall.guidance!.steps.length).fill(null)
           : [],
         dialogueLog: [...state.dialogueLog, systemLine, ...dispatchEventLines],
+      }
+    }
+
+    // ==========================================
+    // COMPLETE_MINIGAME — 记录小游戏完成结果
+    // ==========================================
+    case 'COMPLETE_MINIGAME': {
+      const newScores = [...(state.guidanceMinigameScores ?? [])]
+      newScores[action.stepIndex] = action.score
+      return {
+        ...state,
+        guidanceMinigameScores: newScores,
+      }
+    }
+
+    // ==========================================
+    // DEBUG_AUTO_DISPATCH — 调试用：跳过问询直接派车
+    // ==========================================
+    case 'DEBUG_AUTO_DISPATCH': {
+      if (!state.currentCall) return state
+      return {
+        ...state,
+        dispatchSent: true,
+        dispatchRecord: {
+          callId: state.currentCall.id,
+          dispatchTime: state.shiftElapsed - state.callStartTime,
+          triage: state.terminal.triage ?? state.currentCall.correctTriage,
+          addressCompleteness: 'vague',
+          ambulanceETA: 4,
+        },
+        ambulanceRemaining: 4,
+        callPhase: state.currentCall.guidance ? 'guidance' : 'closing',
+        guidanceActive: !!state.currentCall.guidance,
+        guidanceStepIndex: 0,
+        guidanceResults: state.currentCall.guidance
+          ? new Array(state.currentCall.guidance.steps.length).fill(null)
+          : [],
+        dialogueLog: [
+          ...state.dialogueLog,
+          { speaker: 'system' as const, text: '【调试模式：自动派车】', timestamp: state.shiftElapsed },
+        ],
       }
     }
 

@@ -16,8 +16,7 @@ import { AudioControl } from '../audio/AudioControl'
 import { useGameAudio } from '../audio/useGameAudio'
 import { CallDebrief } from '../components/call/CallDebrief'
 import { buildDebrief } from '../game/core/debrief'
-import { CprRhythm } from '../components/minigames/CprRhythm'
-import type { MiniGameResult } from '../game/core/minigameTypes'
+import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import {
   crossedDispatchWarning,
   formatPlayerDeterminantCode,
@@ -27,6 +26,7 @@ import type { EndingDef } from '../game/types'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number) => void
+  debugScenarioId?: string
 }
 
 const TRIAGE_OPTIONS: { level: TriageLevel; label: string; color: string; desc: string }[] = [
@@ -36,7 +36,7 @@ const TRIAGE_OPTIONS: { level: TriageLevel; label: string; color: string; desc: 
   { level: 'black', label: '黑色', color: '#7f8c8d', desc: '死亡/无需抢救' },
 ]
 
-export function GameScreen({ onNavigate }: Props) {
+export function GameScreen({ onNavigate, debugScenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const audio = useGameAudio()
@@ -44,10 +44,10 @@ export function GameScreen({ onNavigate }: Props) {
   const previousCallElapsed = useRef(0)
   const previousCallId = useRef<string | null>(null)
 
-  // --- 初始化班次 ---
+  // --- 初始化班次（调试模式：强制指定场景） ---
   useEffect(() => {
-    dispatch({ type: 'START_SHIFT' })
-  }, [])
+    dispatch({ type: 'START_SHIFT', forceScenarios: debugScenarioId ? [debugScenarioId] : undefined })
+  }, [debugScenarioId])
 
   // --- 新通话时强制关闭调度卡 ---
   useEffect(() => {
@@ -310,16 +310,17 @@ export function GameScreen({ onNavigate }: Props) {
     dispatch({ type: 'ANSWER_GUIDANCE', stepIndex, selectedIndex })
   }, [audio])
 
-  const handleMiniGameComplete = useCallback((result: MiniGameResult) => {
-    if (!state.currentCall?.guidance) return
-    const steps = state.currentCall.guidance.steps
-    for (let i = 0; i < steps.length; i++) {
-      const selectedIndex = result.passed ? steps[i].correctIndex : (steps[i].correctIndex + 1) % steps[i].options.length
-      dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: i, selectedIndex })
+  const handleCompleteMinigame = useCallback((stepIndex: number, score: number, passed: boolean) => {
+    dispatch({ type: 'COMPLETE_MINIGAME', stepIndex, score, passed })
+    // 小游戏通过后自动推进到下一步
+    if (state.currentCall?.guidance?.steps[stepIndex]) {
+      dispatch({
+        type: 'ANSWER_GUIDANCE',
+        stepIndex,
+        selectedIndex: state.currentCall.guidance.steps[stepIndex].correctIndex,
+      })
     }
   }, [state.currentCall])
-
-  const hasMiniGame = state.currentCall?.id === 'cardiac_arrest'
 
   const handleEndCall = useCallback(() => {
     audio.play('hangup')
@@ -448,17 +449,15 @@ export function GameScreen({ onNavigate }: Props) {
           })}
         </div>
 
-        {/* 急救指导面板 — 心脏骤停场景使用 CPR 节拍小游戏 */}
-        {state.callPhase === 'guidance' && call.guidance && !hasMiniGame && (
+        {/* 急救指导面板 — 支持互动小游戏 */}
+        {state.callPhase === 'guidance' && call.guidance && (
           <GuidancePanel
             guidance={call.guidance}
             stepIndex={state.guidanceStepIndex}
             results={state.guidanceResults}
             onAnswer={handleGuidanceAnswer}
+            onCompleteMinigame={handleCompleteMinigame}
           />
-        )}
-        {state.callPhase === 'guidance' && hasMiniGame && (
-          <CprRhythm onComplete={handleMiniGameComplete} />
         )}
 
         {/* 问询按钮区 */}
@@ -1397,16 +1396,43 @@ function GuidancePanel({
   stepIndex,
   results,
   onAnswer,
+  onCompleteMinigame,
 }: {
   guidance: import('../game/types').FirstAidGuidance
   stepIndex: number
   results: ('correct' | 'incorrect' | null)[]
   onAnswer: (stepIdx: number, selectedIdx: number) => void
+  onCompleteMinigame?: (stepIdx: number, score: number, passed: boolean) => void
 }) {
   if (stepIndex >= guidance.steps.length) return null
 
   const currentStep = guidance.steps[stepIndex]
   const previousResults = results.slice(0, stepIndex)
+
+  // 互动小游戏步骤：渲染实操环节
+  if (currentStep.miniGame && onCompleteMinigame) {
+    return (
+      <div style={styles.guidancePanel}>
+        <div style={styles.guidanceTitle}>🩺 {guidance.title}</div>
+        {stepIndex === 0 && <p style={styles.guidanceIntro}>{guidance.intro}</p>}
+        {previousResults.map((r, i) => (
+          <div key={i} style={{
+            padding: '4px 8px', margin: '2px 0',
+            backgroundColor: r === 'correct' ? '#0a2e0a' : '#2e0a0a',
+            borderRadius: 4, fontSize: 13,
+            color: r === 'correct' ? '#4ade80' : '#f87171',
+          }}>
+            {r === 'correct' ? '✅' : '❌'} 步骤{i + 1}：{guidance.steps[i].prompt}
+          </div>
+        ))}
+        <p style={styles.guidancePrompt}>步骤{stepIndex + 1}：{currentStep.prompt}</p>
+        <MiniGameHost
+          spec={currentStep.miniGame}
+          onComplete={(score, passed) => onCompleteMinigame(stepIndex, score, passed)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div style={styles.guidancePanel}>

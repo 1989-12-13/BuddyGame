@@ -121,6 +121,7 @@ export type TerminalJudgmentField =
   | 'address' | 'contact' | 'chiefComplaint'
   | 'patientAge' | 'patientGender'
   | 'conscious' | 'breathing' | 'conditionNote'
+  | 'protocolNumber'
 
 // -------------------- 信息碎片（已弃用，保留类型兼容） --------------------
 /** @deprecated 已改为 JudgmentPrompt 系统 */
@@ -151,12 +152,102 @@ export interface GuidanceStep {
     callerCorrect: string    // 来电者视角：伤者好转/操作成功后的描述
     callerIncorrect: string  // 来电者视角：操作错误或伤者恶化的描述
   }
+  miniGame?: MiniGameSpec   // 可选的互动小游戏（实操环节）
 }
 
 export interface FirstAidGuidance {
   title: string
   intro: string            // 开始急救指导时的开场白
   steps: GuidanceStep[]
+}
+
+// -------------------- 互动小游戏（急救指导实操环节） --------------------
+export type MiniGameKind =
+  | 'rhythmPress'   // 节奏按压：目标 BPM
+  | 'blowInflate'   // 吹气充胀
+  | 'aimForce'      // 瞄准施力
+  | 'holdPressure'  // 持续按压
+  | 'positionDrag'  // 摆位拖拽
+  | 'timedShock'    // 时机识别除颤
+
+/** 小游戏公共字段 */
+export interface BaseMiniGame {
+  kind: MiniGameKind
+  title: string              // 小游戏标题
+  instruction: string       // 操作说明
+  passThreshold: number     // 0-1，达到即通过
+  feedback: { good: string; bad: string }  // 操作结束后来电者视角描述
+}
+
+/** 节奏按压：目标 BPM，空格/点击，检测频率与稳定度 */
+export interface RhythmPressSpec extends BaseMiniGame {
+  kind: 'rhythmPress'
+  targetBpm: number
+  bpmTolerance: number
+  durationSec: number
+  depthSeconds?: number
+}
+
+/** 吹气充胀 */
+export interface BlowInflateSpec extends BaseMiniGame {
+  kind: 'blowInflate'
+  targetInflations: number
+  idealHoldSec: number
+  overInflationSec: number
+  durationSec: number
+}
+
+/** 瞄准施力 */
+export interface AimForceSpec extends BaseMiniGame {
+  kind: 'aimForce'
+  targetX: number
+  targetY: number
+  aimTolerance: number
+  thrusts: number
+  thrustWindowMs: number
+  showSideView?: boolean
+  hideTargetGuide?: boolean
+  bodyDiagram?: 'full' | 'arm' | 'leg'
+}
+
+/** 持续按压 */
+export interface HoldPressureSpec extends BaseMiniGame {
+  kind: 'holdPressure'
+  holdSec: number
+  bleedRatePerSec: number
+  regainPerSec: number
+}
+
+/** 摆位拖拽 */
+export interface PositionDragSpec extends BaseMiniGame {
+  kind: 'positionDrag'
+  targetAngle: number
+  angleTolerance: number
+  bodyLabel: string
+  useDetailedFigure?: boolean
+}
+
+/** 时机识别除颤 */
+export interface TimedShockSpec extends BaseMiniGame {
+  kind: 'timedShock'
+  windows: number
+  windowMs: number
+  shockCooldownMs: number
+  falsePenalty: number
+}
+
+export type MiniGameSpec =
+  | RhythmPressSpec
+  | BlowInflateSpec
+  | AimForceSpec
+  | HoldPressureSpec
+  | PositionDragSpec
+  | TimedShockSpec
+
+/** 小游戏组件统一契约 */
+export interface MiniGameProps {
+  spec: MiniGameSpec
+  onComplete: (score: number, passed: boolean) => void
 }
 
 // -------------------- 通话事件 --------------------
@@ -281,6 +372,27 @@ export function stressToLevel(stress: number): CalleeStressLevel {
   return 'hysterical'
 }
 
+/** MPDS 协议编号与名称对照表（33个标准协议） */
+export const PROTOCOL_REF: [number, string][] = [
+  [1, '腹痛/背痛'],        [2, '过敏/输液反应'],
+  [3, '动物咬伤'],         [4, '攻击/性侵'],
+  [5, '腰背痛/非创伤'],    [6, '呼吸问题'],
+  [7, '烧伤/烫伤/爆炸'],   [8, '一氧化碳/吸入'],
+  [9, '心脏/呼吸骤停'],   [10, '胸痛'],
+  [11, '抽搐'],            [12, '糖尿病'],
+  [13, '溺死/潜水'],      [14, '触电'],
+  [15, '眼部问题'],        [16, '坠落伤'],
+  [17, '头痛'],            [18, '心脏病'],
+  [19, '高温/低温'],       [20, '妊娠/分娩'],
+  [21, '出血不止'],        [22, '中毒/误食'],
+  [23, '精神状态异常'],    [24, '产科/流产'],
+  [25, '中风/CVA'],        [26, '外伤/车辆事故'],
+  [27, '昏迷/晕厥'],       [28, '卒中/脑血管'],
+  [29, '交通/运输事故'],   [30, '创伤'],
+  [31, '无意识/晕厥'],     [32, '其他/特殊'],
+  [33, '感染/发热'],
+]
+
 // -------------------- 终端登记状态（MPDS调度卡） --------------------
 export interface TerminalState {
   // — Case Entry（病例录入） —
@@ -295,6 +407,7 @@ export interface TerminalState {
   // — 协议判定 —
   protocolNumber: number | null  // 选定的MPDS协议号
   determinant: MpdsDeterminant | null
+  determinantSubcode: number | null  // 判定码最后一位细分编码 (1-4)
   // — 响应 —
   triage: TriageLevel | null
   hotCold: 'HOT' | 'COLD' | null
@@ -338,6 +451,7 @@ export interface WorldState {
   guidanceActive: boolean
   guidanceStepIndex: number
   guidanceResults: ('correct' | 'incorrect' | null)[]
+  guidanceMinigameScores: (number | null)[]  // 小游戏步骤得分（与 guidanceResults 平行）
 
   // 对话历史
   dialogueLog: DialogueLine[]

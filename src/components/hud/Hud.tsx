@@ -57,6 +57,18 @@ export function Hud({ state }: Props) {
         <span style={{ ...styles.value, color: '#ca8a04' }}>{state.totalScore}</span>
       </div>
 
+      {/* 可用救护车 */}
+      <div style={styles.group}>
+        <span style={styles.icon}>🚑</span>
+        <span style={styles.label}>车辆</span>
+        <span style={{
+          ...styles.value,
+          color: state.fleet.vehicles.filter(v => v.status === 'available').length > 0 ? '#4ade80' : '#ef4444',
+        }}>
+          {state.fleet.vehicles.filter(v => v.status === 'available').length}/{state.fleet.vehicles.length}
+        </span>
+      </div>
+
       {/* 救护车状态 */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>

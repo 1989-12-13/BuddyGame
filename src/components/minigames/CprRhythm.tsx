@@ -126,7 +126,7 @@ export function CprRhythm({ onComplete }: Props) {
         }, BREATH_DURATION_MS)
       }
     }
-  }, [phase, compressions, cycle, onComplete])
+  }, [phase, compressions, cycle])
 
   // 键盘支持
   useEffect(() => {

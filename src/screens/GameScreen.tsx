@@ -20,6 +20,7 @@ import { EventToastStack } from '../components/feedback/EventToastStack'
 import { VehicleSelector } from '../components/feedback/VehicleSelector'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
+import { stressToEmotion, stressToTypewriterInterval } from '../audio/ttsEmotion'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[]) => void
@@ -169,6 +170,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setStreamPos(0)
 
     let pos = 0
+    const interval = stressToTypewriterInterval(state.callerState?.stress ?? 50)
     timerId.current = window.setInterval(() => {
       pos += 1
       if (pos >= chars.length) {
@@ -183,8 +185,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       } else {
         setStreamPos(pos)
       }
-    }, 65)  // ~15 字符/秒，接近真实语速
-  }, [])
+    }, interval)  // 按 stress 分档: 65-120ms/char
+  }, [state.callerState?.stress])
 
   // 新对话行入队
   useEffect(() => {
@@ -195,20 +197,49 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     if (curLen <= oldLen) return
 
     for (let i = oldLen; i < curLen; i++) {
+      const line = state.dialogueLog[i]
       // 系统提示行不流式，直接显示；仅来电者/接线员行逐字输出
-      if (state.dialogueLog[i].speaker !== 'system') {
-        pendingQueue.current.push({ idx: i, text: state.dialogueLog[i].text })
+      if (line.speaker !== 'system') {
+        pendingQueue.current.push({ idx: i, text: line.text })
         pendingSet.current.add(i)
+      }
+      // TTS: 仅来电者发声 (接线员玩家自己, 系统提示不发声)
+      if (line.speaker === 'caller') {
+        const stress = state.callerState?.stress ?? 50
+        audio.tts.enqueue(`caller-${i}`, {
+          text: line.text,
+          kind: 'caller',
+          emotion: stressToEmotion(stress),
+        }).catch(() => undefined)
       }
     }
 
     startQueue()
-  }, [state.dialogueLog.length, startQueue])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅在 dialogue 增长时入队, .length 触发即可
+  }, [state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
+
+  // 通话结束 (currentCall 由有变无) → 停掉所有未播完的 TTS
+  const prevCallRef = useRef(state.currentCall)
+  useEffect(() => {
+    if (prevCallRef.current && !state.currentCall) {
+      audio.tts.stop()
+    }
+    prevCallRef.current = state.currentCall
+  }, [state.currentCall, audio.tts])
+
+  /**
+   * 玩家动作会触发新的来电者回应 → 打断正在播放/排队的旧来电者语音
+   * (打字机按设计保留, 让旧文本继续打完整句, 不与 TTS 强同步)
+   */
+  const interruptCallerVoice = useCallback(() => {
+    audio.tts.stop()
+  }, [audio.tts])
 
   // --- 安抚来电者 ---
   const handleCalm = useCallback(() => {
+    interruptCallerVoice()
     dispatch({ type: 'CALM_CALLER' })
-  }, [])
+  }, [interruptCallerVoice])
 
   // --- 对话区 / 操作面板拖拽分割 ---
   const [dialogueHeight, setDialogueHeight] = useState<number | null>(null)
@@ -250,20 +281,23 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
 
   // --- 选定车辆后真正派出 ---
   const handleConfirmVehicle = useCallback((vehicleId: string) => {
+    interruptCallerVoice()
     setVehicleSelectorOpen(false)
     setTerminalModalOpen(false)
     dispatch({ type: 'DISPATCH', vehicleId })
-  }, [])
+  }, [interruptCallerVoice])
 
   // --- 关闭一个事件 toast ---
   const handleDismissEvent = useCallback((eventId: string) => {
+    interruptCallerVoice()
     dispatch({ type: 'DISMISS_PATIENT_EVENT', eventId })
-  }, [])
+  }, [interruptCallerVoice])
 
   // --- 处理临床判断选择 ---
   const handleJudgment = useCallback((judgmentId: string, optionIndex: number) => {
+    interruptCallerVoice()
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
-  }, [])
+  }, [interruptCallerVoice])
 
   // 无活跃通话时 — 等待接听
   if (!state.currentCall && state.callIndex < state.totalCalls) {
@@ -400,12 +434,14 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             guidance={call.guidance}
             stepIndex={state.guidanceStepIndex}
             results={state.guidanceResults}
-            onAnswer={(stepIdx, selectedIdx) =>
+            onAnswer={(stepIdx, selectedIdx) => {
+              interruptCallerVoice()
               dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
-            }
-            onCompleteMiniGame={(stepIdx, score, passed) =>
+            }}
+            onCompleteMiniGame={(stepIdx, score, passed) => {
+              interruptCallerVoice()
               dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
-            }
+            }}
           />
         )}
 
@@ -416,7 +452,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             askedMPDS={state.callerState?.askedMPDS ?? []}
             stressLevel={state.callerState?.stressLevel ?? '紧张'}
             stress={state.callerState?.stress ?? 50}
-            onAsk={(id) => dispatch({ type: 'ASK_QUESTION', questionId: id })}
+            onAsk={(id) => { interruptCallerVoice(); dispatch({ type: 'ASK_QUESTION', questionId: id }) }}
             onCalm={handleCalm}
             onOpenTerminal={handleOpenTerminal}
             hasTriage={hasTriage}
@@ -429,7 +465,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             <p style={{ color: '#00ff88', fontWeight: 'bold', marginBottom: 8 }}>
               {call.guidance ? '急救指导已完成，等待救护车到达。' : '派车指令已发出。'}
             </p>
-            <button style={styles.endCallBtn} onClick={() => dispatch({ type: 'END_CALL' })}>
+            <button style={styles.endCallBtn} onClick={() => { interruptCallerVoice(); dispatch({ type: 'END_CALL' }) }}>
               挂断电话
             </button>
           </div>
@@ -459,7 +495,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           }
           onDispatch={handleDispatch}
           onClose={() => setTerminalModalOpen(false)}
-          onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
+          onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
         />
       )}
 

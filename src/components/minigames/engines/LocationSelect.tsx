@@ -45,7 +45,7 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
     <div style={wrap}>
       {/* 身体部位图 + 伤口标记 */}
       <svg viewBox="0 0 100 100" width={180} height={160}
-        style={{ backgroundColor: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+        style={{ backgroundColor: '#11151c', borderRadius: 10, border: '1px solid #2a323e' }}>
         <defs>
           <radialGradient id="lsWound" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="rgba(239,68,68,0.4)" />
@@ -61,8 +61,8 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
             <rect x={12} y={84} width={12} height={3} rx={1.5} fill="#fadcbc" stroke="#c9a98b" strokeWidth={0.5} />
             {/* 伤口 */}
             <circle cx={18} cy={74} r={5} fill="url(#lsWound)" />
-            <path d="M13 72 L23 72 M13 74 L23 74 M13 76 L23 76" stroke="#dc2626" strokeWidth={1.5} strokeLinecap="round" fill="none" />
-            <text x={30} y={77} fill="#dc2626" fontSize={4} fontWeight="bold">伤口</text>
+            <path d="M13 72 L23 72 M13 74 L23 74 M13 76 L23 76" stroke="#ff3b3b" strokeWidth={1.5} strokeLinecap="round" fill="none" />
+            <text x={30} y={77} fill="#ff3b3b" fontSize={4} fontWeight="bold">伤口</text>
           </g>
         )}
 
@@ -73,8 +73,8 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
             <path d="M14 50 Q12 58 13 68 Q13 76 15 80 L17 82 Q20 84 24 84 Q28 84 30 82 L32 80 Q34 76 34 68 Q35 58 33 50 Z" fill="#fadcbc" stroke="#c9a98b" strokeWidth={0.7} />
             {/* 伤口 */}
             <circle cx={22} cy={72} r={5} fill="url(#lsWound)" />
-            <path d="M18 70 L26 70 M18 72 L26 72 M18 74 L26 74" stroke="#dc2626" strokeWidth={1.5} strokeLinecap="round" fill="none" />
-            <text x={30} y={76} fill="#dc2626" fontSize={4} fontWeight="bold">伤口</text>
+            <path d="M18 70 L26 70 M18 72 L26 72 M18 74 L26 74" stroke="#ff3b3b" strokeWidth={1.5} strokeLinecap="round" fill="none" />
+            <text x={30} y={76} fill="#ff3b3b" fontSize={4} fontWeight="bold">伤口</text>
           </g>
         )}
 
@@ -88,8 +88,8 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
             <circle cx={65} cy={32} r={1.2} fill="#2d1b0e" />
             {/* 伤口 */}
             <circle cx={50} cy={48} r={6} fill="url(#lsWound)" />
-            <path d="M45 46 L55 50 M45 48 L55 52" stroke="#dc2626" strokeWidth={1.5} strokeLinecap="round" fill="none" />
-            <text x={42} y={64} fill="#dc2626" fontSize={4} fontWeight="bold">伤口</text>
+            <path d="M45 46 L55 50 M45 48 L55 52" stroke="#ff3b3b" strokeWidth={1.5} strokeLinecap="round" fill="none" />
+            <text x={42} y={64} fill="#ff3b3b" fontSize={4} fontWeight="bold">伤口</text>
           </g>
         )}
 
@@ -101,14 +101,14 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
             <path d="M22 20 Q18 34 20 48 Q22 58 26 64 L74 64 Q78 58 80 48 Q82 34 78 20 Z" fill="#fadcbc" stroke="#c9a98b" strokeWidth={0.7} />
             {/* 伤口 */}
             <circle cx={50} cy={50} r={6} fill="url(#lsWound)" />
-            <path d="M45 48 L55 52 M44 50 L56 50 M46 52 L54 48" stroke="#dc2626" strokeWidth={1.5} strokeLinecap="round" fill="none" />
-            <text x={52} y={62} fill="#dc2626" fontSize={4} fontWeight="bold">伤口</text>
+            <path d="M45 48 L55 52 M44 50 L56 50 M46 52 L54 48" stroke="#ff3b3b" strokeWidth={1.5} strokeLinecap="round" fill="none" />
+            <text x={52} y={62} fill="#ff3b3b" fontSize={4} fontWeight="bold">伤口</text>
           </g>
         )}
       </svg>
 
       {/* 伤口描述 */}
-      <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center' }}>
+      <div style={{ fontSize: 11, color: '#8b949e', textAlign: 'center' }}>
         {s.woundDesc}
       </div>
 
@@ -118,18 +118,18 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
           const isSelected = selected === i
           const isThisCorrect = i === s.correctIndex
           let bg = '#fff'
-          let border = '#e2e8f0'
-          let color = '#334155'
+          let border = '#2a323e'
+          let color = '#e6edf3'
 
           if (showResult && isSelected) {
             if (isThisCorrect) {
-              bg = '#059669'; border = '#059669'; color = '#fff'
+              bg = '#00ff88'; border = '#00ff88'; color = '#fff'
             } else {
-              bg = '#ef4444'; border = '#ef4444'; color = '#fff'
+              bg = '#ff5454'; border = '#ff5454'; color = '#fff'
             }
           } else if (showResult && isThisCorrect && !isCorrect) {
             // 答错时高亮正确答案
-            bg = 'rgba(5,150,105,0.1)'; border = '#059669'; color = '#059669'
+            bg = 'rgba(5,150,105,0.1)'; border = '#00ff88'; color = '#00ff88'
           }
 
           return (
@@ -151,8 +151,8 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
                 opacity: showResult && !isSelected && !isThisCorrect ? 0.5 : 1,
               }}
             >
-              {showResult && isThisCorrect && '✅ '}
-              {showResult && isSelected && !isThisCorrect && '❌ '}
+              {showResult && isThisCorrect && '✓ '}
+              {showResult && isSelected && !isThisCorrect && '✕ '}
               {opt}
             </button>
           )
@@ -164,7 +164,7 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
         <div style={{
           fontSize: 13,
           fontWeight: 'bold',
-          color: isCorrect ? '#059669' : '#ef4444',
+          color: isCorrect ? '#00ff88' : '#ff5454',
           padding: '4px 0',
         }}>
           {isCorrect ? '✓ 正确！找到了近心端止血点' : '✗ 不对，正确答案已标出。请重试…'}

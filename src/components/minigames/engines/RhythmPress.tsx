@@ -99,16 +99,16 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   }
 
   const pulseAnim = flash
-    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ef4444' }
+    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ff5454' }
     : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#16a34a' : '#d97706'} />
-        <Readout label="目标" value={String(s.targetBpm)} color="#94a3b8" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />
-        <Readout label="按压" value={String(presses)} color="#e2e8f0" />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#00ff88' : '#ffb000'} />
+        <Readout label="目标" value={String(s.targetBpm)} color="#6e7681" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#58a6ff" />
+        <Readout label="按压" value={String(presses)} color="#2a323e" />
       </div>
 
       <div
@@ -117,8 +117,8 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           width: 160,
           height: 160,
           borderRadius: '50%',
-          backgroundColor: '#f1f5f9',
-          border: '3px solid #dc2626',
+          backgroundColor: '#1e252e',
+          border: '3px solid #ff3b3b',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -132,7 +132,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           {done ? '完成' : '按空格\n或点击'}
         </span>
       </div>
-      <div style={{ fontSize: 11, color: '#64748b' }}>
+      <div style={{ fontSize: 11, color: '#8b949e' }}>
         保持每 {targetInterval.toFixed(0)} 毫秒一次的稳定节奏
       </div>
     </div>
@@ -142,7 +142,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
 function Readout({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 52 }}>
-      <div style={{ fontSize: 9, color: '#64748b' }}>{label}</div>
+      <div style={{ fontSize: 9, color: '#8b949e' }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 900, color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
     </div>
   )

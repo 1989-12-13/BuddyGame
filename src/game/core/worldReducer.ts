@@ -653,7 +653,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       const systemLine: DialogueLine = {
         speaker: 'system',
-        text: `【🚑 救护车已派出 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+        text: `【▸ 救护车已派出 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
         timestamp: state.shiftElapsed,
       }
 
@@ -890,7 +890,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         if (newAmbulanceRemaining === 0) {
           newDialogue.push({
             speaker: 'system',
-            text: '【🚑 救护车已到达现场】',
+            text: '【▸ 救护车已到达现场】',
             timestamp: newElapsed,
           })
         }

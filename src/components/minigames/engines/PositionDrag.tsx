@@ -69,7 +69,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
 
   return (
     <div style={wrap}>
-      <div style={{ fontSize: 11, color: '#94a3b8', letterSpacing: 0.5 }}>
+      <div style={{ fontSize: 11, color: '#6e7681', letterSpacing: 0.5 }}>
         目标：{s.bodyLabel}
       </div>
 
@@ -80,9 +80,9 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
         style={{
           width: 280,
           height: 260,
-          backgroundColor: '#f8fafc',
+          backgroundColor: '#11151c',
           borderRadius: 12,
-          border: '1px solid #e2e8f0',
+          border: '1px solid #2a323e',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -94,7 +94,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
       >
         <svg width={200} height={200} viewBox="0 0 180 180">
           {/* 刻度盘底色 */}
-          <circle cx={90} cy={90} r={68} fill="#f1f5f9" stroke="#e2e8f0" strokeWidth={1} />
+          <circle cx={90} cy={90} r={68} fill="#1e252e" stroke="#2a323e" strokeWidth={1} />
 
           {/* 刻度标记（每 15°） */}
           {Array.from({ length: 13 }).map((_, i) => {
@@ -107,56 +107,56 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
             const ey = 90 + inner * Math.sin(((deg - 90 + rad) * Math.PI) / 180)
             return (
               <line key={i} x1={ex} y1={ey} x2={sx} y2={sy}
-                stroke={deg % 30 === 0 ? '#94a3b8' : '#cbd5e1'} strokeWidth={deg % 30 === 0 ? 1 : 0.5} />
+                stroke={deg % 30 === 0 ? '#6e7681' : '#3a4452'} strokeWidth={deg % 30 === 0 ? 1 : 0.5} />
             )
           })}
 
           {/* 角度标签 */}
-          <text x={90} y={6} textAnchor="middle" fontSize={7} fill="#94a3b8">0°</text>
-          <text x={90} y={178} textAnchor="middle" fontSize={7} fill="#94a3b8">180°</text>
-          <text x={8} y={93} textAnchor="middle" fontSize={7} fill="#94a3b8" transform="rotate(-90,8,93)">90°</text>
-          <text x={172} y={93} textAnchor="middle" fontSize={7} fill="#94a3b8" transform="rotate(90,172,93)">90°</text>
+          <text x={90} y={6} textAnchor="middle" fontSize={7} fill="#6e7681">0°</text>
+          <text x={90} y={178} textAnchor="middle" fontSize={7} fill="#6e7681">180°</text>
+          <text x={8} y={93} textAnchor="middle" fontSize={7} fill="#6e7681" transform="rotate(-90,8,93)">90°</text>
+          <text x={172} y={93} textAnchor="middle" fontSize={7} fill="#6e7681" transform="rotate(90,172,93)">90°</text>
 
           {/* 目标扇形区域 */}
           <path
             d={arcPath(90 - s.targetAngle, 90 + s.targetAngle, 58)}
-            stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="4 3"
+            stroke="#58a6ff" strokeWidth={1.5} strokeDasharray="4 3"
             fill="rgba(59,130,246,0.06)"
           />
           {/* 目标终点小旗 */}
           <text
             x={tipX(90 - s.targetAngle)} y={tipY(90 - s.targetAngle) - 6}
-            textAnchor="middle" fontSize={7} fill="#3b82f6"
+            textAnchor="middle" fontSize={7} fill="#58a6ff"
             fontWeight="bold"
           >
             ▼ 目标 {s.targetAngle}°
           </text>
 
           {/* 中心圈 */}
-          <circle cx={90} cy={90} r={22} fill="#fff" stroke="#cbd5e1" strokeWidth={1} />
-          <circle cx={90} cy={90} r={18} fill="#f8fafc" />
+          <circle cx={90} cy={90} r={22} fill="#fff" stroke="#3a4452" strokeWidth={1} />
+          <circle cx={90} cy={90} r={18} fill="#11151c" />
 
           {/* 人脸方向图标 */}
           <g transform={`rotate(${angle - 90}, 90, 90)`}>
             {/* 面部朝向三角箭头 */}
             <polygon
               points="90,45 83,65 97,65"
-              fill={aligned ? '#059669' : '#475569'}
+              fill={aligned ? '#00ff88' : '#b1bac4'}
               opacity={0.7}
             />
             {/* 面部圆（脸的轮廓） */}
             <circle cx={90} cy={78} r={10}
               fill={aligned ? 'rgba(5,150,105,0.12)' : 'rgba(71,85,105,0.08)'}
-              stroke={aligned ? '#059669' : '#94a3b8'}
+              stroke={aligned ? '#00ff88' : '#6e7681'}
               strokeWidth={0.6} />
           </g>
 
           {/* 中心小圆点 */}
-          <circle cx={90} cy={90} r={2.5} fill="#64748b" />
+          <circle cx={90} cy={90} r={2.5} fill="#8b949e" />
 
           {/* 当前角度指示条 */}
           <line x1={90} y1={90} x2={tipX(angle)} y2={tipY(angle)}
-            stroke={aligned ? '#059669' : '#475569'}
+            stroke={aligned ? '#00ff88' : '#b1bac4'}
             strokeWidth={aligned ? 2 : 1.2}
             opacity={aligned ? 0.8 : 0.4}
           />
@@ -165,10 +165,10 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
           {aligned && (
             <g>
               <circle cx={90} cy={90} r={68}
-                fill="none" stroke="#059669" strokeWidth={1.5} opacity={0.4}>
+                fill="none" stroke="#00ff88" strokeWidth={1.5} opacity={0.4}>
                 <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
               </circle>
-              <text x={90} y={172} textAnchor="middle" fill="#059669" fontSize={8} fontWeight="bold">
+              <text x={90} y={172} textAnchor="middle" fill="#00ff88" fontSize={8} fontWeight="bold">
                 ✓ 到位
               </text>
             </g>
@@ -180,7 +180,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
           <div style={{
             position: 'absolute', bottom: 14, left: '50%',
             transform: 'translateX(-50%)',
-            fontSize: 9, color: '#94a3b8',
+            fontSize: 9, color: '#6e7681',
             animation: 'pulse 1.5s ease-in-out infinite',
           }}>
             ← 拖拽旋转 →
@@ -191,11 +191,11 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
       <div style={{
         display: 'flex', gap: 20, fontFamily: 'monospace',
         backgroundColor: '#fff', padding: '6px 16px',
-        borderRadius: 8, border: '1px solid #e2e8f0',
+        borderRadius: 8, border: '1px solid #2a323e',
       }}>
-        <Readout label="当前" value={`${angle.toFixed(0)}°`} color="#334155" />
-        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? '#059669' : '#f59e0b'} />
-        <Readout label="目标" value={`${s.targetAngle}°`} color="#94a3b8" />
+        <Readout label="当前" value={`${angle.toFixed(0)}°`} color="#e6edf3" />
+        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? '#00ff88' : '#ffb000'} />
+        <Readout label="目标" value={`${s.targetAngle}°`} color="#6e7681" />
       </div>
 
       <button
@@ -204,9 +204,9 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
         style={{
           padding: '8px 24px', borderRadius: 6, border: 'none',
           background: aligned
-            ? 'linear-gradient(135deg, #059669, #047857)'
-            : '#f1f5f9',
-          color: aligned ? '#fff' : '#94a3b8',
+            ? 'linear-gradient(135deg, #00ff88, #047857)'
+            : '#1e252e',
+          color: aligned ? '#fff' : '#6e7681',
           fontSize: 13, fontWeight: 'bold',
           cursor: aligned ? 'pointer' : 'not-allowed',
           opacity: aligned ? 1 : 0.5,
@@ -216,7 +216,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
       >
         确认摆位
       </button>
-      <div style={{ fontSize: 10, color: '#94a3b8' }}>
+      <div style={{ fontSize: 10, color: '#6e7681' }}>
         ← 拖拽或按方向键 → 旋转指针至目标角度
       </div>
     </div>
@@ -226,7 +226,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
 function Readout({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 50 }}>
-      <div style={{ fontSize: 9, color: '#94a3b8', marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 9, color: '#6e7681', marginBottom: 2 }}>{label}</div>
       <div style={{ fontSize: 17, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </div>

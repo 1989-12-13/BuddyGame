@@ -21,56 +21,56 @@ interface ScenarioEntry {
 
 const ALL_SCENARIOS: ScenarioEntry[] = [
   // 心肺复苏
-  { id: 'cardiac_arrest', num: 9, title: '心脏骤停', desc: 'CPR 30:2 循环', category: '心肺复苏', tag: '🫀' },
+  { id: 'cardiac_arrest', num: 9, title: '心脏骤停', desc: 'CPR 30:2 循环', category: '心肺复苏', tag: '♥' },
   // 呼吸系统
-  { id: 'choking',        num: 11, title: '气道异物窒息', desc: '海姆立克腹部冲击疗法', category: '呼吸系统', tag: '🎯' },
-  { id: 'drowning',       num: 6, title: '溺水', desc: 'CPR 30:2', category: '呼吸系统', tag: '🫀' },
-  { id: 'asthma',         num: 2, title: '哮喘发作', desc: '辅助呼吸胸外按压', category: '呼吸系统', tag: '🤲' },
-  { id: 'carbon_monoxide', num: 26, title: '一氧化碳中毒', desc: '复苏体位步骤排序', category: '呼吸系统', tag: '🔢' },
+  { id: 'choking',        num: 11, title: '气道异物窒息', desc: '海姆立克腹部冲击疗法', category: '呼吸系统', tag: '◎' },
+  { id: 'drowning',       num: 6, title: '溺水', desc: 'CPR 30:2', category: '呼吸系统', tag: '♥' },
+  { id: 'asthma',         num: 2, title: '哮喘发作', desc: '辅助呼吸胸外按压', category: '呼吸系统', tag: '○' },
+  { id: 'carbon_monoxide', num: 26, title: '一氧化碳中毒', desc: '复苏体位步骤排序', category: '呼吸系统', tag: '#' },
   // 创伤出血
-  { id: 'hemorrhage',     num: 21, title: '刀割伤大出血', desc: '近心端止血点选择', category: '创伤出血', tag: '📍' },
-  { id: 'stab_gunshot',   num: 18, title: '刀刺/枪伤', desc: '近心端止血点选择', category: '创伤出血', tag: '📍' },
-  { id: 'trauma_car',     num: 4, title: '严重车祸', desc: '近心端止血点选择', category: '创伤出血', tag: '📍' },
-  { id: 'trauma',         num: 17, title: '高处坠落伤', desc: '急救指导', category: '创伤出血', tag: '💬' },
-  { id: 'animal_bite',    num: 3, title: '狗咬伤', desc: '近心端止血点选择', category: '创伤出血', tag: '📍' },
-  { id: 'assault',        num: 5, title: '暴力袭击', desc: '近心端止血点选择', category: '创伤出血', tag: '📍' },
+  { id: 'hemorrhage',     num: 21, title: '刀割伤大出血', desc: '近心端止血点选择', category: '创伤出血', tag: '◉' },
+  { id: 'stab_gunshot',   num: 18, title: '刀刺/枪伤', desc: '近心端止血点选择', category: '创伤出血', tag: '◉' },
+  { id: 'trauma_car',     num: 4, title: '严重车祸', desc: '近心端止血点选择', category: '创伤出血', tag: '◉' },
+  { id: 'trauma',         num: 17, title: '高处坠落伤', desc: '急救指导', category: '创伤出血', tag: '◆' },
+  { id: 'animal_bite',    num: 3, title: '狗咬伤', desc: '近心端止血点选择', category: '创伤出血', tag: '◉' },
+  { id: 'assault',        num: 5, title: '暴力袭击', desc: '近心端止血点选择', category: '创伤出血', tag: '◉' },
   // 神经系统
-  { id: 'stroke',         num: 28, title: '脑卒中', desc: 'FAST 识别 + 复苏体位步骤', category: '神经系统', tag: '🔢' },
-  { id: 'seizure',        num: 12, title: '癫痫发作', desc: '复苏体位步骤排序', category: '神经系统', tag: '🔢' },
-  { id: 'unconscious_fainting', num: 31, title: '晕厥/意识丧失', desc: '复苏体位步骤排序', category: '神经系统', tag: '🔢' },
-  { id: 'severe_headache', num: 27, title: '剧烈头痛', desc: '急救指导', category: '神经系统', tag: '💬' },
+  { id: 'stroke',         num: 28, title: '脑卒中', desc: 'FAST 识别 + 复苏体位步骤', category: '神经系统', tag: '#' },
+  { id: 'seizure',        num: 12, title: '癫痫发作', desc: '复苏体位步骤排序', category: '神经系统', tag: '#' },
+  { id: 'unconscious_fainting', num: 31, title: '晕厥/意识丧失', desc: '复苏体位步骤排序', category: '神经系统', tag: '#' },
+  { id: 'severe_headache', num: 27, title: '剧烈头痛', desc: '急救指导', category: '神经系统', tag: '◆' },
   // 心血管
-  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '胸外按压训练', category: '心血管', tag: '🤲' },
-  { id: 'heart_problems', num: 19, title: '心律失常', desc: '胸外按压训练', category: '心血管', tag: '🤲' },
-  { id: 'electrocution',  num: 15, title: '触电', desc: 'CPR 30:2', category: '心血管', tag: '🫀' },
+  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '胸外按压训练', category: '心血管', tag: '○' },
+  { id: 'heart_problems', num: 19, title: '心律失常', desc: '胸外按压训练', category: '心血管', tag: '○' },
+  { id: 'electrocution',  num: 15, title: '触电', desc: 'CPR 30:2', category: '心血管', tag: '♥' },
   // 消化与泌尿
-  { id: 'abdominal_pain', num: 1, title: '急性腹痛', desc: '急救指导', category: '消化泌尿', tag: '💬' },
-  { id: 'back_pain',      num: 13, title: '急性腰扭伤', desc: '急救指导', category: '消化泌尿', tag: '💬' },
-  { id: 'urinary',        num: 33, title: '肾绞痛', desc: '急救指导', category: '消化泌尿', tag: '💬' },
+  { id: 'abdominal_pain', num: 1, title: '急性腹痛', desc: '急救指导', category: '消化泌尿', tag: '◆' },
+  { id: 'back_pain',      num: 13, title: '急性腰扭伤', desc: '急救指导', category: '消化泌尿', tag: '◆' },
+  { id: 'urinary',        num: 33, title: '肾绞痛', desc: '急救指导', category: '消化泌尿', tag: '◆' },
   // 内分泌与过敏
-  { id: 'diabetic',       num: 25, title: '低血糖昏迷', desc: '复苏体位步骤排序', category: '内分泌过敏', tag: '🔢' },
-  { id: 'anaphylaxis',    num: 20, title: '过敏性休克', desc: '肾上腺素注射定位', category: '内分泌过敏', tag: '🎯' },
-  { id: 'heat_stroke',    num: 29, title: '热射病', desc: '冰敷位置定位', category: '内分泌过敏', tag: '🎯' },
+  { id: 'diabetic',       num: 25, title: '低血糖昏迷', desc: '复苏体位步骤排序', category: '内分泌过敏', tag: '#' },
+  { id: 'anaphylaxis',    num: 20, title: '过敏性休克', desc: '肾上腺素注射定位', category: '内分泌过敏', tag: '◎' },
+  { id: 'heat_stroke',    num: 29, title: '热射病', desc: '冰敷位置定位', category: '内分泌过敏', tag: '◎' },
   // 眼伤与灼伤
-  { id: 'eye_injury',     num: 23, title: '化学物入眼', desc: '眼部冲洗定位', category: '眼伤灼伤', tag: '🎯' },
-  { id: 'chemical_burn',  num: 7, title: '化学品灼伤', desc: '眼部冲洗定位', category: '眼伤灼伤', tag: '🎯' },
+  { id: 'eye_injury',     num: 23, title: '化学物入眼', desc: '眼部冲洗定位', category: '眼伤灼伤', tag: '◎' },
+  { id: 'chemical_burn',  num: 7, title: '化学品灼伤', desc: '眼部冲洗定位', category: '眼伤灼伤', tag: '◎' },
   // 精神与特殊
-  { id: 'psychiatric',    num: 25, title: '自杀倾向', desc: '复苏体位步骤排序', category: '精神特殊', tag: '🔢' },
-  { id: 'overdose',       num: 22, title: '药物过量', desc: '复苏体位步骤排序', category: '精神特殊', tag: '🔢' },
-  { id: 'entrapment',     num: 22, title: '电梯困人', desc: '急救指导', category: '精神特殊', tag: '💬' },
+  { id: 'psychiatric',    num: 25, title: '自杀倾向', desc: '复苏体位步骤排序', category: '精神特殊', tag: '#' },
+  { id: 'overdose',       num: 22, title: '药物过量', desc: '复苏体位步骤排序', category: '精神特殊', tag: '#' },
+  { id: 'entrapment',     num: 22, title: '电梯困人', desc: '急救指导', category: '精神特殊', tag: '◆' },
   // 妇儿与老年
-  { id: 'obstetric',      num: 24, title: '产科急症', desc: '急救指导', category: '妇儿老年', tag: '💬' },
-  { id: 'falls_elderly',  num: 17, title: '老人跌倒', desc: '复苏体位步骤排序', category: '妇儿老年', tag: '🔢' },
-  { id: 'sick_person',    num: 33, title: '不明原因发烧', desc: '急救指导', category: '妇儿老年', tag: '💬' },
+  { id: 'obstetric',      num: 24, title: '产科急症', desc: '急救指导', category: '妇儿老年', tag: '◆' },
+  { id: 'falls_elderly',  num: 17, title: '老人跌倒', desc: '复苏体位步骤排序', category: '妇儿老年', tag: '#' },
+  { id: 'sick_person',    num: 33, title: '不明原因发烧', desc: '急救指导', category: '妇儿老年', tag: '◆' },
 ]
 
 const TAGS: Record<string, string> = {
-  '🫀': 'CPR 30:2',
-  '🤲': '胸外按压',
-  '🎯': '瞄准定位',
-  '📍': '位置选择',
-  '🔢': '步骤排序',
-  '💬': '急救指导',
+  '♥': 'CPR 30:2',
+  '○': '胸外按压',
+  '◎': '瞄准定位',
+  '◉': '位置选择',
+  '#': '步骤排序',
+  '◆': '急救指导',
 }
 
 const CATEGORY_ORDER = ['心肺复苏', '呼吸系统', '创伤出血', '神经系统', '心血管', '消化泌尿', '内分泌过敏', '眼伤灼伤', '精神特殊', '妇儿老年']
@@ -150,7 +150,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
                   key={s.id}
                   style={{
                     ...styles.card,
-                    borderColor: hoveredId === s.id ? '#ca8a04' : '#e2e8f0',
+                    borderColor: hoveredId === s.id ? '#ffb000' : '#2a323e',
                     transform: hoveredId === s.id ? 'translateY(-2px)' : 'none',
                   }}
                   onMouseEnter={() => setHoveredId(s.id)}
@@ -177,31 +177,31 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     width: '100vw',
     height: '100vh',
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#0a0e14',
     display: 'flex',
     flexDirection: 'column',
-    color: '#334155',
+    color: '#e6edf3',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    borderBottom: '1px solid #e2e8f0',
+    borderBottom: '1px solid #2a323e',
   },
   backBtn: {
     padding: '6px 14px',
     fontSize: 13,
-    color: '#64748b',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    color: '#8b949e',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 6,
     cursor: 'pointer',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#e6edf3',
     margin: 0,
     letterSpacing: 2,
   },
@@ -216,10 +216,10 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     fontSize: 13,
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 6,
-    color: '#334155',
+    color: '#e6edf3',
     outline: 'none',
   },
   clearBtn: {
@@ -227,7 +227,7 @@ const styles: Record<string, React.CSSProperties> = {
     right: 8,
     background: 'none',
     border: 'none',
-    color: '#94a3b8',
+    color: '#6e7681',
     cursor: 'pointer',
     fontSize: 14,
   },
@@ -239,8 +239,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     fontSize: 11,
   },
-  legendTitle: { color: '#94a3b8', marginRight: 4 },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: '#64748b' },
+  legendTitle: { color: '#6e7681', marginRight: 4 },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: '#8b949e' },
   scrollArea: {
     flex: 1,
     overflowY: 'auto',
@@ -252,10 +252,10 @@ const styles: Record<string, React.CSSProperties> = {
   categoryTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#94a3b8',
+    color: '#6e7681',
     margin: '0 0 8px',
     paddingLeft: 10,
-    borderLeft: '3px solid #ca8a04',
+    borderLeft: '3px solid #ffb000',
   },
   grid: {
     display: 'grid',
@@ -264,8 +264,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     padding: '10px 12px',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 8,
     cursor: 'pointer',
     transition: 'all 0.15s',
@@ -281,7 +281,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   protocolNum: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: '#6e7681',
     fontWeight: 'bold',
     fontFamily: 'monospace',
   },
@@ -289,11 +289,11 @@ const styles: Record<string, React.CSSProperties> = {
   cardTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#334155',
+    color: '#e6edf3',
   },
   cardDesc: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#6e7681',
     lineHeight: 1.3,
   },
 }

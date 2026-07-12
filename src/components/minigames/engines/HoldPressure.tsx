@@ -76,17 +76,17 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
     setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
   }
 
-  const bloodColor = blood < 30 ? '#16a34a' : blood < 70 ? '#d97706' : '#ef4444'
+  const bloodColor = blood < 30 ? '#00ff88' : blood < 70 ? '#ffb000' : '#ff5454'
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
         <Readout label="血量" value={blood.toFixed(0)} color={bloodColor} />
-        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="#3b82f6" />
-        <Readout label="目标" value={s.holdSec + 's'} color="#94a3b8" />
+        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="#58a6ff" />
+        <Readout label="目标" value={s.holdSec + 's'} color="#6e7681" />
       </div>
 
-      <div style={{ width: 240, height: 26, backgroundColor: '#f1f5f9', borderRadius: 13, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      <div style={{ width: 240, height: 26, backgroundColor: '#1e252e', borderRadius: 13, border: '1px solid #2a323e', overflow: 'hidden' }}>
         <div style={{ width: `${blood}%`, height: '100%', backgroundColor: bloodColor, transition: 'width 0.05s linear', boxShadow: `0 0 12px ${bloodColor}` }} />
       </div>
 
@@ -94,11 +94,11 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
         onPointerDown={() => press(true)}
         onPointerUp={() => press(false)}
         onPointerLeave={() => press(false)}
-        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: '#f1f5f9', border: `3px solid ${holding ? '#16a34a' : '#dc2626'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
+        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: '#1e252e', border: `3px solid ${holding ? '#00ff88' : '#ff3b3b'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
       >
-        <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
+        <span style={{ fontSize: 13, color: '#ff3b3b', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
       </div>
-      <div style={{ fontSize: 11, color: '#64748b' }}>保持按压直到血量降至安全区并维持</div>
+      <div style={{ fontSize: 11, color: '#8b949e' }}>保持按压直到血量降至安全区并维持</div>
     </div>
   )
 }
@@ -106,7 +106,7 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
 function Readout({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 50 }}>
-      <div style={{ fontSize: 9, color: '#64748b' }}>{label}</div>
+      <div style={{ fontSize: 9, color: '#8b949e' }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 900, color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
     </div>
   )

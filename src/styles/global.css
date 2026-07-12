@@ -11,14 +11,14 @@
 
 html {
   font-size: 17px;
-  -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   font-family: var(--font-body);
   font-weight: 500;
-  background: var(--bg-light);
+  background: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -33,6 +33,7 @@ button {
   cursor: pointer;
   border: none;
   outline: none;
+  color: inherit;
 }
 
 button:focus-visible {
@@ -46,6 +47,10 @@ input, textarea {
   color: inherit;
 }
 
+input::placeholder, textarea::placeholder {
+  color: var(--text-dim);
+}
+
 /* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 4px;
@@ -54,8 +59,17 @@ input, textarea {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--text-secondary);
+  background: var(--border-bright);
   border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* === Selection === */
+::selection {
+  background: rgba(0, 212, 255, 0.25);
+  color: var(--text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

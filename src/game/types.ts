@@ -33,11 +33,11 @@ export type CallerTone = '镇定' | '紧张' | '恐慌' | '失控'
 export type MpdsDeterminant = 'ECHO' | 'DELTA' | 'CHARLIE' | 'BRAVO' | 'ALPHA'
 
 export const MPDS_DETERMINANT_INFO: Record<MpdsDeterminant, { label: string; color: string; responseCode: string }> = {
-  ECHO:    { label: 'E — 即刻生命威胁',         color: '#c0392b', responseCode: '灯闪警笛' },
-  DELTA:   { label: 'D — 高危/潜在致命',         color: '#dc2626', responseCode: '灯闪警笛' },
-  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#f39c12', responseCode: '安静接近' },
-  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#22c55e', responseCode: '安静接近' },
-  ALPHA:   { label: 'A — 低危/常规转运',         color: '#3498db', responseCode: '安静接近' },
+  ECHO:    { label: 'E — 即刻生命威胁',         color: '#ff3b3b', responseCode: '灯闪警笛' },
+  DELTA:   { label: 'D — 高危/潜在致命',         color: '#ff5454', responseCode: '灯闪警笛' },
+  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#ffb000', responseCode: '安静接近' },
+  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#00ff88', responseCode: '安静接近' },
+  ALPHA:   { label: 'A — 低危/常规转运',         color: '#00d4ff', responseCode: '安静接近' },
 }
 
 // -------------------- 分诊等级（颜色四色法 — 急救现场分诊） --------------------
@@ -78,13 +78,13 @@ export type CallPhase =
   | 'completed'     // 通话结束
 
 // -------------------- 问询策略 --------------------
-export type QuestionTier = 'critical'   // 🔴 必问，时间敏感，降压力
-                          | 'important'  // 🟡 应该问，解锁更多信息
-                          | 'detail'     // 🟢 加分项，但耗时间
+export type QuestionTier = 'critical'   // ◆ 必问，时间敏感，降压力
+                          | 'important'  // ◆ 应该问，解锁更多信息
+                          | 'detail'     // ◆ 加分项，但耗时间
 
-export type InfoQuality = 'clear'    // 🟢 完整准确
-                         | 'partial' // 🟡 基本可用
-                         | 'vague'   // 🔴 模糊不清
+export type InfoQuality = 'clear'    // ◆ 完整准确
+                         | 'partial' // ◆ 基本可用
+                         | 'vague'   // ◆ 模糊不清
                          | 'unknown' // ⬜ 尚未获取
 
 // -------------------- MPDS问询 --------------------
@@ -378,10 +378,10 @@ export type CalleeStressLevel = '镇定' | '紧张' | '恐慌' | '失控'
 
 /** 压力 → 文字 + 颜色映射 */
 export const STRESS_INFO: Record<CalleeStressLevel, { label: string; color: string; emoji: string; answerQuality: number }> = {
-  镇定: { label: '镇定',     color: '#4ade80', emoji: '😌', answerQuality: 1.0 },
-  紧张: { label: '紧张',     color: '#facc15', emoji: '😰', answerQuality: 0.9 },
-  恐慌: { label: '恐慌',     color: '#f97316', emoji: '😱', answerQuality: 0.65 },
-  失控: { label: '失控',     color: '#ef4444', emoji: '🤯', answerQuality: 0.35 },
+  镇定: { label: '镇定',     color: '#00ff88', emoji: '○', answerQuality: 1.0 },
+  紧张: { label: '紧张',     color: '#ffb000', emoji: '◐', answerQuality: 0.9 },
+  恐慌: { label: '恐慌',     color: '#ff8c00', emoji: '◑', answerQuality: 0.65 },
+  失控: { label: '失控',     color: '#ff5454', emoji: '●', answerQuality: 0.35 },
 }
 
 /** 由压力值推导等级 */

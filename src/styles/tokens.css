@@ -1,13 +1,47 @@
 :root {
-  /* === 120 Light Palette === */
-  --bg-light: #eff6f9;
-  --bg-card: #ffffff;
-  --accent-cyan: #2563eb;
-  --alert-orange: #ea580c;
-  --danger-red: #dc2626;
-  --success-green: #16a34a;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
+  /* === 120 Dispatch Console — Dark Palette === */
+  --bg: #0a0e14;               /* OLED black — base background */
+  --bg-surface: #11151c;        /* dark surface — panels */
+  --bg-elevated: #1a1f29;       /* elevated card / modal */
+  --bg-hover: #222834;          /* hover state */
+  --bg-input: #0d1117;          /* input fields */
+
+  /* === Text === */
+  --text-primary: #e6edf3;      /* main text — high contrast */
+  --text-secondary: #8b949e;    /* secondary text */
+  --text-muted: #6e7681;        /* muted / labels */
+  --text-dim: #484f58;           /* very dim — placeholders */
+
+  /* === Accents === */
+  --accent-cyan: #00d4ff;        /* operational cyan — info / links */
+  --accent-green: #00ff88;       /* terminal green — success / live */
+  --accent-amber: #ffb000;       /* phosphor amber — warnings */
+  --accent-blue: #58a6ff;        /* secondary blue */
+  --accent-gold: #ffb000;        /* gold score */
+
+  /* === Semantic === */
+  --danger-red: #ff3b3b;         /* alert red — critical / emergency */
+  --danger-red-dim: #cc3030;     /* dimmed red */
+  --danger-red-bg: rgba(255, 59, 59, 0.08);
+  --danger-red-border: rgba(255, 59, 59, 0.25);
+
+  --success-green: #00ff88;      /* terminal green */
+  --success-green-dim: #2ea043;
+  --success-green-bg: rgba(0, 255, 136, 0.08);
+  --success-green-border: rgba(0, 255, 136, 0.25);
+
+  --warning-amber: #ffb000;
+  --warning-amber-bg: rgba(255, 176, 0, 0.08);
+  --warning-amber-border: rgba(255, 176, 0, 0.25);
+
+  --info-cyan: #00d4ff;
+  --info-cyan-bg: rgba(0, 212, 255, 0.08);
+  --info-cyan-border: rgba(0, 212, 255, 0.25);
+
+  /* === Borders === */
+  --border: #2a323e;             /* standard border */
+  --border-light: #1e252e;       /* subtle border */
+  --border-bright: #3a4452;      /* brighter border for emphasis */
 
   /* === Spacing === */
   --space-xs: 4px;
@@ -18,9 +52,9 @@
   --space-2xl: 48px;
 
   /* === Typography === */
-  --font-display: 'Georgia', 'Noto Serif SC', serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+  --font-display: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
 
   /* === Sizing === */
   --hud-height: 48px;
@@ -35,4 +69,11 @@
   --z-hud: 50;
   --z-dialogue: 40;
   --z-overlay: 100;
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow-red: 0 0 20px rgba(255, 59, 59, 0.3);
+  --shadow-glow-green: 0 0 20px rgba(0, 255, 136, 0.2);
 }

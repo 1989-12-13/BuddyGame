@@ -45,7 +45,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
     <div style={styles.overlay}>
       <div style={styles.card} role="dialog" aria-modal="true" aria-label="通话结算报告">
         <h2 style={styles.header}>
-          {debrief.isPrank ? '📞 恶作剧电话' : `📞 ${debrief.scenarioTitle}`}
+          {debrief.isPrank ? '◈ 恶作剧电话' : `◈ ${debrief.scenarioTitle}`}
         </h2>
 
         {/* 总分 */}
@@ -57,10 +57,10 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
         {/* 分项得分条 */}
         <div style={styles.breakdownRow}>
           {[
-            { label: '派车速度', value: breakdown.speed, max: 40, color: '#38bdf8' },
-            { label: '信息完整', value: breakdown.info, max: 30, color: '#4ade80' },
-            { label: '分诊准确', value: breakdown.triage, max: 20, color: '#facc15' },
-            { label: '急救指导', value: breakdown.guidance, max: 10, color: '#f97316' },
+            { label: '派车速度', value: breakdown.speed, max: 40, color: '#00d4ff' },
+            { label: '信息完整', value: breakdown.info, max: 30, color: '#00ff88' },
+            { label: '分诊准确', value: breakdown.triage, max: 20, color: '#ffb000' },
+            { label: '急救指导', value: breakdown.guidance, max: 10, color: '#ff8c00' },
           ].map(item => (
             <div key={item.label} style={styles.breakdownItem}>
               <div style={styles.breakdownLabel}>{item.label}</div>
@@ -80,7 +80,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
 
         {breakdown.penalty > 0 && (
           <div style={styles.penaltyRow}>
-            判断扣分：<span style={{ color: '#ef4444', fontWeight: 'bold' }}>-{breakdown.penalty}</span>
+            判断扣分：<span style={{ color: '#ff5454', fontWeight: 'bold' }}>-{breakdown.penalty}</span>
           </div>
         )}
 
@@ -89,32 +89,32 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
         {/* 决策明细 */}
         <div style={styles.detailGrid}>
           <DetailItem
-            icon="⏱" label="派车时间"
+            icon="◷" label="派车时间"
             value={debrief.dispatchTime !== null ? `${debrief.dispatchTime}秒` : '未派车'}
             ok={debrief.withinTimeLimit}
           />
           <DetailItem
-            icon="📍" label="地址获取"
+            icon="◉" label="地址获取"
             value={LEVEL_LABEL[debrief.addressStatus] ?? debrief.addressStatus}
             ok={debrief.addressStatus === 'full' || debrief.addressStatus === 'partial'}
           />
-          <DetailItem icon="📞" label="联系电话" ok={debrief.hasContact} />
-          <DetailItem icon="🩺" label="病情信息" ok={debrief.hasCondition} />
-          <DetailItem icon="🆘" label="求助诉求" ok={debrief.hasPurpose} />
+          <DetailItem icon="◈" label="联系电话" ok={debrief.hasContact} />
+          <DetailItem icon="♥" label="病情信息" ok={debrief.hasCondition} />
+          <DetailItem icon="!" label="求助诉求" ok={debrief.hasPurpose} />
           <DetailItem
-            icon="🎯" label="MPDS 判定"
+            icon="◎" label="MPDS 判定"
             value={`${debrief.playerDeterminant ?? '未选择'}（预期 ${debrief.expectedDeterminant ?? '未知'}）`}
             ok={debrief.determinantCorrect}
           />
           <DetailItem
-            icon="🚨" label="分诊等级"
+            icon="!" label="分诊等级"
             value={`${triageLabel(debrief.playerTriage)}（正确：${triageLabel(debrief.correctTriage)}）`}
             ok={debrief.triageCorrect}
             partial={!debrief.triageCorrect && debrief.triageDiff <= 1}
           />
           {debrief.guidanceTotal > 0 && (
             <DetailItem
-              icon="🩺" label="急救指导"
+              icon="♥" label="急救指导"
               value={`${debrief.guidanceCorrect}/${debrief.guidanceTotal} 步正确`}
               ok={debrief.guidanceCorrect === debrief.guidanceTotal}
               partial={debrief.guidanceCorrect > 0 && debrief.guidanceCorrect < debrief.guidanceTotal}
@@ -125,25 +125,25 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
         {/* 临床判断明细 */}
         {debrief.judgments.length > 0 && (
           <>
-            <div style={styles.sectionTitle}>🔍 临床判断</div>
+            <div style={styles.sectionTitle}>◆ 临床判断</div>
             <div style={styles.judgmentList}>
               {debrief.judgments.map((j, i) => (
                 <div key={i} style={{
                   ...styles.judgmentRow,
-                  borderColor: j.isCorrect ? '#27ae60' : '#ef4444',
+                  borderColor: j.isCorrect ? '#00ff88' : '#ff5454',
                 }}>
                   <div style={styles.judgmentQuestion}>{j.question}</div>
                   <div style={styles.judgmentChoices}>
-                    <span style={{ color: j.isCorrect ? '#4ade80' : '#f87171', fontSize: 12 }}>
+                    <span style={{ color: j.isCorrect ? '#00ff88' : '#ff6b6b', fontSize: 12 }}>
                       你的选择：{j.playerChoice}
                     </span>
                     {!j.isCorrect && (
                       <>
-                        <span style={{ color: '#94a3b8', fontSize: 11, marginLeft: 8 }}>
+                        <span style={{ color: '#6e7681', fontSize: 11, marginLeft: 8 }}>
                           ✓ 正确：{j.correctAnswer}
                         </span>
                         {j.reason && (
-                          <div style={{ color: '#facc15', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
+                          <div style={{ color: '#ffb000', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
                             ℹ {j.reason}
                           </div>
                         )}
@@ -176,8 +176,8 @@ function DetailItem({
 }: {
   icon: string; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
-  const statusIcon = ok ? '✅' : partial ? '⚠️' : '❌'
-  const statusColor = ok ? '#4ade80' : partial ? '#facc15' : '#ef4444'
+  const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
+  const statusColor = ok ? '#00ff88' : partial ? '#ffb000' : '#ff5454'
   return (
     <div style={styles.detailItem}>
       <span style={{ fontSize: 13 }}>{statusIcon}</span>
@@ -201,12 +201,12 @@ const styles: Record<string, React.CSSProperties> = {
   card: {
     width: 'min(520px, calc(100vw - 24px))',
     maxHeight: '85vh',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#1a1f29',
     borderRadius: 10,
-    border: '1px solid #334155',
+    border: '1px solid #2a323e',
     padding: '20px 24px',
     overflowY: 'auto' as const,
-    color: '#e2e8f0',
+    color: '#e6edf3',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: 8,
@@ -214,7 +214,7 @@ const styles: Record<string, React.CSSProperties> = {
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#f1f5f9',
+    color: '#e6edf3',
     textAlign: 'center' as const,
     margin: 0,
   },
@@ -225,12 +225,12 @@ const styles: Record<string, React.CSSProperties> = {
   totalScoreValue: {
     fontSize: 42,
     fontWeight: 'bold',
-    color: '#38bdf8',
+    color: '#00d4ff',
     fontFamily: 'monospace',
   },
   totalScoreLabel: {
     fontSize: 16,
-    color: '#64748b',
+    color: '#8b949e',
     marginLeft: 4,
   },
   breakdownRow: {
@@ -245,14 +245,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   breakdownLabel: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: '#6e7681',
     minWidth: 56,
     textAlign: 'right' as const,
   },
   breakdownBarTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#1e252e',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -270,12 +270,12 @@ const styles: Record<string, React.CSSProperties> = {
   penaltyRow: {
     textAlign: 'center' as const,
     fontSize: 12,
-    color: '#f87171',
+    color: '#ff6b6b',
     padding: '2px 0',
   },
   divider: {
     height: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#1e252e',
     margin: '2px 0',
   },
   detailGrid: {
@@ -291,7 +291,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 4px',
   },
   detailLabel: {
-    color: '#94a3b8',
+    color: '#6e7681',
     minWidth: 90,
   },
   detailValue: {
@@ -302,8 +302,8 @@ const styles: Record<string, React.CSSProperties> = {
   sectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#fbbf24',
-    borderBottom: '1px solid #334155',
+    color: '#ffb000',
+    borderBottom: '1px solid #2a323e',
     paddingBottom: 3,
     marginTop: 4,
   },
@@ -316,11 +316,11 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '6px 8px',
     borderRadius: 6,
     border: '1px solid',
-    backgroundColor: '#0b1320',
+    backgroundColor: '#0d1117',
   },
   judgmentQuestion: {
     fontSize: 11,
-    color: '#cbd5e1',
+    color: '#b1bac4',
     marginBottom: 2,
   },
   judgmentChoices: {
@@ -331,19 +331,19 @@ const styles: Record<string, React.CSSProperties> = {
   narrativeBox: {
     marginTop: 4,
     padding: '8px 10px',
-    backgroundColor: '#0a1628',
+    backgroundColor: '#0d1117',
     borderRadius: 6,
-    border: '1px solid #1e293b',
+    border: '1px solid #1e252e',
   },
   narrativeText: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: '#6e7681',
     lineHeight: 1.6,
     fontStyle: 'italic' as const,
   },
   nextBtn: {
     padding: '12px 24px',
-    backgroundColor: '#dc2626',
+    backgroundColor: '#ff3b3b',
     color: '#fff',
     border: 'none',
     borderRadius: 6,

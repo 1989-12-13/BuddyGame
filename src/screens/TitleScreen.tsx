@@ -1,5 +1,5 @@
 // ============================================================
-// 零点接线台 — 标题画面
+// 零点接线台 — 标题画面（调度台暗色主题 + ECG 波形）
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
@@ -13,10 +13,24 @@ interface Props {
 
 export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
   const [blink, setBlink] = useState(true)
+  const [clock, setClock] = useState('')
   const audio = useAudio()
 
   useEffect(() => {
     const id = setInterval(() => setBlink((b) => !b), 800)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date()
+      const h = String(now.getHours()).padStart(2, '0')
+      const m = String(now.getMinutes()).padStart(2, '0')
+      const s = String(now.getSeconds()).padStart(2, '0')
+      setClock(`${h}:${m}:${s}`)
+    }
+    update()
+    const id = setInterval(update, 1000)
     return () => clearInterval(id)
   }, [])
 
@@ -37,51 +51,104 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.glow} />
+      {/* Scanline overlay */}
+      <div style={styles.scanline} />
+
+      {/* ECG waveform */}
+      <div style={styles.ecgContainer}>
+        <svg
+          width="100%"
+          height="120"
+          viewBox="0 0 1200 120"
+          preserveAspectRatio="none"
+          style={styles.ecgSvg}
+        >
+          <defs>
+            <linearGradient id="ecg-fade" x1="0%" x2="100%">
+              <stop offset="0%" stopColor="#00ff88" stopOpacity="0" />
+              <stop offset="15%" stopColor="#00ff88" stopOpacity="0.8" />
+              <stop offset="85%" stopColor="#00ff88" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#00ff88" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <g style={styles.ecgGroup}>
+            <path
+              d="M0,60 L80,60 L90,60 L95,55 L100,65 L105,30 L110,90 L115,60 L200,60 L280,60 L290,60 L295,55 L300,65 L305,30 L310,90 L315,60 L400,60 L480,60 L490,60 L495,55 L500,65 L505,30 L510,90 L515,60 L600,60 L680,60 L690,60 L695,55 L700,65 L705,30 L710,90 L715,60 L800,60 L880,60 L890,60 L895,55 L900,65 L905,30 L910,90 L915,60 L1000,60 L1080,60 L1090,60 L1095,55 L1100,65 L1105,30 L1110,90 L1115,60 L1200,60"
+              fill="none"
+              stroke="url(#ecg-fade)"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </g>
+        </svg>
+      </div>
+
+      {/* Corner brackets — terminal frame */}
+      <div style={styles.cornerTL} />
+      <div style={styles.cornerTR} />
+      <div style={styles.cornerBL} />
+      <div style={styles.cornerBR} />
 
       <div style={styles.content}>
-        <div style={styles.icon}>📞</div>
+        {/* Status bar */}
+        <div style={styles.statusBar}>
+          <span style={{
+            width: 7,
+            height: 7,
+            borderRadius: '50%',
+            backgroundColor: blink ? '#00ff88' : '#0a0e14',
+            border: '1px solid #00ff88',
+            boxShadow: blink ? '0 0 6px rgba(0, 255, 136, 0.6)' : 'none',
+            transition: 'all 0.1s',
+          }} />
+          <span style={styles.statusText}>SYSTEM ONLINE</span>
+          <span style={styles.statusSep}>|</span>
+          <span style={styles.statusText}>{clock}</span>
+          <span style={styles.statusSep}>|</span>
+          <span style={styles.statusText}>CH-120</span>
+        </div>
 
+        {/* Title */}
         <h1 style={styles.title}>120 调度台</h1>
-        <p style={styles.subtitle}>120 急救调度模拟</p>
+        <p style={styles.subtitle}>EMERGENCY DISPATCH SIMULATOR</p>
+
+        <div style={styles.divider} />
 
         <p style={styles.tagline}>
           接听来电 · 问询登记 · MPDS 分诊 · 快速派车
         </p>
 
-        <div style={styles.divider} />
-
         {/* 按钮区 */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={styles.buttonRow}>
           <button
             style={{
               ...styles.startBtn,
-              marginTop: 0,
-              opacity: blink ? 1 : 0.6,
+              opacity: blink ? 1 : 0.85,
             }}
             onClick={handleStart}
           >
-            开始值班
+            ▸ 开始值班
           </button>
           {onLevelSelect && (
             <button
               onClick={handleLevelSelect}
-              style={styles.levelSelectBtn}
+              style={styles.secondaryBtn}
             >
-              📋 选关
+              选关
             </button>
           )}
           {onKnowledge && (
             <button
               onClick={handleKnowledge}
-              style={styles.knowledgeBtn}
+              style={styles.secondaryBtn}
             >
-              📖 知识库
+              知识库
             </button>
           )}
         </div>
 
-        <p style={styles.version}>v1.0</p>
+        <p style={styles.version}>v1.0 // BUILD-{clock.split(':').join('')}</p>
       </div>
     </div>
   )
@@ -94,104 +161,175 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#0a0e14',
     position: 'relative',
     overflow: 'hidden',
+    fontFamily: 'var(--font-body)',
+    animation: 'fade-in 0.6s ease-out',
   },
-  glow: {
+  scanline: {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: 400,
-    height: 400,
-    transform: 'translate(-50%, -50%)',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(220, 38, 38, 0.06) 0%, transparent 70%)',
+    inset: 0,
+    background: 'linear-gradient(180deg, transparent 0%, rgba(0, 255, 136, 0.015) 50%, transparent 100%)',
     pointerEvents: 'none',
+    animation: 'scanline-sweep 8s linear infinite',
+    zIndex: 1,
+  },
+  ecgContainer: {
+    position: 'absolute',
+    bottom: '15%',
+    left: 0,
+    right: 0,
+    pointerEvents: 'none',
+    zIndex: 1,
+    opacity: 0.5,
+  },
+  ecgSvg: {
+    animation: 'ecg-glow 3s ease-in-out infinite',
+  },
+  ecgGroup: {
+    animation: 'ecg-scroll 4s linear infinite',
+  },
+  cornerTL: {
+    position: 'absolute',
+    top: 24,
+    left: 24,
+    width: 30,
+    height: 30,
+    borderTop: '2px solid rgba(0, 255, 136, 0.3)',
+    borderLeft: '2px solid rgba(0, 255, 136, 0.3)',
+    zIndex: 2,
+  },
+  cornerTR: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    width: 30,
+    height: 30,
+    borderTop: '2px solid rgba(0, 255, 136, 0.3)',
+    borderRight: '2px solid rgba(0, 255, 136, 0.3)',
+    zIndex: 2,
+  },
+  cornerBL: {
+    position: 'absolute',
+    bottom: 24,
+    left: 24,
+    width: 30,
+    height: 30,
+    borderBottom: '2px solid rgba(0, 255, 136, 0.3)',
+    borderLeft: '2px solid rgba(0, 255, 136, 0.3)',
+    zIndex: 2,
+  },
+  cornerBR: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 30,
+    height: 30,
+    borderBottom: '2px solid rgba(0, 255, 136, 0.3)',
+    borderRight: '2px solid rgba(0, 255, 136, 0.3)',
+    zIndex: 2,
   },
   content: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: 6,
-    zIndex: 1,
+    zIndex: 3,
     maxWidth: 520,
     padding: '20px',
     maxHeight: '100vh',
     overflowY: 'auto',
   },
-  icon: {
-    fontSize: 60,
-    marginBottom: 8,
+  statusBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '4px 16px',
+    borderRadius: 4,
+    border: '1px solid var(--border)',
+    backgroundColor: 'rgba(0, 255, 136, 0.04)',
+    marginBottom: 20,
+    fontFamily: 'var(--font-mono)',
+    fontSize: 11,
+  },
+  statusText: {
+    color: '#00ff88',
+    fontWeight: 600,
+    letterSpacing: 1,
+  },
+  statusSep: {
+    color: 'var(--text-dim)',
   },
   title: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#1e293b',
-    margin: 0,
-    letterSpacing: 4,
-    textShadow: '0 0 20px rgba(220, 38, 38, 0.12)',
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#94a3b8',
+    fontSize: 42,
+    fontWeight: 800,
+    color: '#e6edf3',
     margin: 0,
     letterSpacing: 6,
-    textTransform: 'uppercase' as const,
+    fontFamily: 'var(--font-mono)',
+    textShadow: '0 0 30px rgba(0, 255, 136, 0.15)',
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#6e7681',
+    margin: 0,
+    letterSpacing: 4,
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 500,
   },
   divider: {
-    width: 200,
+    width: 220,
     height: 1,
-    backgroundColor: '#e2e8f0',
-    margin: '8px 0',
+    background: 'linear-gradient(90deg, transparent, var(--border-bright), transparent)',
+    margin: '10px 0',
   },
   tagline: {
     textAlign: 'center' as const,
-    color: '#64748b',
-    fontSize: 16,
+    color: '#8b949e',
+    fontSize: 14,
     marginTop: 4,
-    letterSpacing: 1,
+    letterSpacing: 2,
     fontWeight: 500,
   },
+  buttonRow: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+    marginTop: 8,
+  },
   startBtn: {
-    marginTop: 12,
     padding: '14px 56px',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: 700,
     color: '#fff',
     backgroundColor: '#dc2626',
     border: 'none',
-    borderRadius: 8,
+    borderRadius: 6,
     cursor: 'pointer',
-    letterSpacing: 2,
-    boxShadow: '0 4px 20px rgba(220, 38, 38, 0.3)',
-    transition: 'all 0.5s',
+    letterSpacing: 3,
+    fontFamily: 'var(--font-mono)',
+    boxShadow: '0 0 20px rgba(255, 59, 59, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+    transition: 'all 0.3s',
   },
-  levelSelectBtn: {
+  secondaryBtn: {
     padding: '14px 28px',
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#475569',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#8b949e',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid var(--border)',
+    borderRadius: 6,
     cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  knowledgeBtn: {
-    padding: '14px 28px',
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1e40af',
-    backgroundColor: '#eff6ff',
-    border: '1px solid #bfdbfe',
-    borderRadius: 8,
-    cursor: 'pointer',
+    fontFamily: 'var(--font-mono)',
+    letterSpacing: 1,
     transition: 'all 0.2s',
   },
   version: {
-    fontSize: 11,
-    color: '#cbd5e1',
-    marginTop: 16,
+    fontSize: 10,
+    color: '#484f58',
+    marginTop: 20,
+    fontFamily: 'var(--font-mono)',
+    letterSpacing: 1,
   },
 }

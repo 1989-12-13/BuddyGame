@@ -17,9 +17,9 @@ interface Props {
 }
 
 const SHELL: React.CSSProperties = {
-  borderTop: '2px solid #3b82f6',
+  borderTop: '2px solid #58a6ff',
   padding: '12px 14px',
-  backgroundColor: '#f8fafc',
+  backgroundColor: '#11151c',
   maxHeight: 360,
   overflowY: 'auto',
 }
@@ -27,13 +27,13 @@ const SHELL: React.CSSProperties = {
 const TITLE: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 'bold',
-  color: '#3b82f6',
+  color: '#58a6ff',
   marginBottom: 4,
 }
 
 const INSTR: React.CSSProperties = {
   fontSize: 12,
-  color: '#64748b',
+  color: '#8b949e',
   marginBottom: 10,
   lineHeight: 1.5,
 }
@@ -41,7 +41,7 @@ const INSTR: React.CSSProperties = {
 export function MiniGameHost({ spec, onComplete }: Props) {
   return (
     <div style={SHELL}>
-      <div style={TITLE}>🎮 {spec.title}</div>
+      <div style={TITLE}>◆ {spec.title}</div>
       <div style={INSTR}>{spec.instruction}</div>
       {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} />}
       {spec.kind === 'aimForce' && <AimForce spec={spec} onComplete={onComplete} />}

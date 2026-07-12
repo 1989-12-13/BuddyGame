@@ -199,7 +199,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
     setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
   }
 
-  const barColor = fill >= overThreshold ? '#ef4444' : fill >= idealMin ? '#059669' : fill > 0 ? '#3b82f6' : '#e2e8f0'
+  const barColor = fill >= overThreshold ? '#ff5454' : fill >= idealMin ? '#00ff88' : fill > 0 ? '#58a6ff' : '#2a323e'
 
   // 节奏指标统计
   const goodCount = rhythmQualities.filter(q => q === 'good').length
@@ -207,13 +207,13 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 16, fontFamily: 'monospace' }}>
-        <Readout label="循环" value={`${cycle}/${cycles}`} color="#3b82f6" />
-        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${COMPRESSIONS}`} color="#dc2626" />}
+        <Readout label="循环" value={`${cycle}/${cycles}`} color="#58a6ff" />
+        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${COMPRESSIONS}`} color="#ff3b3b" />}
         {(phase === 'blowing_1' || phase === 'blowing_2') && (
-          <Readout label="吹气" value={`${breathCount}/${BREATHS}`} color="#16a34a" />
+          <Readout label="吹气" value={`${breathCount}/${BREATHS}`} color="#00ff88" />
         )}
         {compCount > 0 && phase === 'compressing' && (
-          <Readout label="✅" value={String(goodCount)} color="#059669" />
+          <Readout label="✓" value={String(goodCount)} color="#00ff88" />
         )}
       </div>
 
@@ -222,23 +222,23 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
         <>
           {/* 频率指示器 */}
           <div style={{ fontSize: 11, marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: '#64748b' }}>目标:</span>
-            <span style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
+            <span style={{ color: '#8b949e' }}>目标:</span>
+            <span style={{ color: '#58a6ff', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
               {TARGET_BPM}
             </span>
-            <span style={{ color: '#64748b', fontSize: 10 }}>BPM</span>
+            <span style={{ color: '#8b949e', fontSize: 10 }}>BPM</span>
             {currentBpm !== null && (
               <>
-                <span style={{ color: '#94a3b8' }}>|</span>
-                <span style={{ color: '#64748b' }}>当前:</span>
+                <span style={{ color: '#6e7681' }}>|</span>
+                <span style={{ color: '#8b949e' }}>当前:</span>
                 <span style={{
-                  color: Math.abs(currentBpm - TARGET_BPM) <= 10 ? '#059669' :
-                         Math.abs(currentBpm - TARGET_BPM) <= 20 ? '#f59e0b' : '#ef4444',
+                  color: Math.abs(currentBpm - TARGET_BPM) <= 10 ? '#00ff88' :
+                         Math.abs(currentBpm - TARGET_BPM) <= 20 ? '#ffb000' : '#ff5454',
                   fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15,
                 }}>
                   {currentBpm}
                 </span>
-                <span style={{ color: '#64748b', fontSize: 10 }}>BPM</span>
+                <span style={{ color: '#8b949e', fontSize: 10 }}>BPM</span>
               </>
             )}
           </div>
@@ -247,9 +247,9 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
             style={{
               width: 130, height: 130, borderRadius: '50%',
               background: pulse
-                ? 'radial-gradient(circle at 50% 50%, #fecaca, #f8fafc)'
-                : 'radial-gradient(circle at 50% 50%, #f1f5f9, #ffffff)',
-              border: `4px solid ${pulse ? '#ef4444' : '#94a3b8'}`,
+                ? 'radial-gradient(circle at 50% 50%, #fecaca, #11151c)'
+                : 'radial-gradient(circle at 50% 50%, #1e252e, #1a1f29)',
+              border: `4px solid ${pulse ? '#ff5454' : '#6e7681'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', userSelect: 'none',
               transform: pulse ? 'scale(0.9)' : 'scale(1)',
@@ -258,25 +258,25 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
               position: 'relative',
             }}
           >
-            <span style={{ fontSize: 13, color: pulse ? '#ef4444' : '#64748b', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 }}>
+            <span style={{ fontSize: 13, color: pulse ? '#ff5454' : '#8b949e', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 }}>
               按压{'\n'}空格
             </span>
           </div>
 
           {/* 进度条 */}
-          <div style={{ width: 240, height: 6, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden' }}>
-            <div style={{ width: `${(compCount / COMPRESSIONS) * 100}%`, height: '100%', backgroundColor: '#dc2626', transition: 'width 0.1s' }} />
+          <div style={{ width: 240, height: 6, borderRadius: 3, backgroundColor: '#1e252e', overflow: 'hidden' }}>
+            <div style={{ width: `${(compCount / COMPRESSIONS) * 100}%`, height: '100%', backgroundColor: '#ff3b3b', transition: 'width 0.1s' }} />
           </div>
 
           {/* 节奏准确度视觉化 */}
           {compCount > 0 && compCount <= 30 && (
             <div style={{ width: 240 }}>
-              <div style={{ fontSize: 9, color: '#94a3b8', marginBottom: 2 }}>节奏准确度：</div>
+              <div style={{ fontSize: 9, color: '#6e7681', marginBottom: 2 }}>节奏准确度：</div>
               <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {rhythmQualities.map((q, i) => (
                   <div key={i} style={{
                     width: 6, height: 6, borderRadius: 1,
-                    backgroundColor: q === 'good' ? '#059669' : q === 'ok' ? '#f59e0b' : '#ef4444',
+                    backgroundColor: q === 'good' ? '#00ff88' : q === 'ok' ? '#ffb000' : '#ff5454',
                   }} />
                 ))}
               </div>
@@ -290,7 +290,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
 
       {/* === 1秒间隔 === */}
       {phase === 'pause_1to2' && (
-        <div style={{ fontSize: 14, color: '#f59e0b', fontWeight: 'bold', padding: '20px 0' }}>
+        <div style={{ fontSize: 14, color: '#ffb000', fontWeight: 'bold', padding: '20px 0' }}>
           ⏸ 等待 {PAUSE_MS / 1000} 秒后再次吹气…
         </div>
       )}
@@ -300,8 +300,8 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
 
       {/* === 完成 === */}
       {phase === 'done' && (
-        <div style={{ fontSize: 16, color: '#059669', fontWeight: 'bold', padding: '10px 0' }}>
-          ✅ {cycles} 个循环 CPR 完成！
+        <div style={{ fontSize: 16, color: '#00ff88', fontWeight: 'bold', padding: '10px 0' }}>
+          ✓ {cycles} 个循环 CPR 完成！
         </div>
       )}
     </div>
@@ -313,22 +313,22 @@ function BlowPhase({ fill, barColor, goodBreath }: { fill: number; barColor: str
   return (
     <>
       <div style={{ width: 240 }}>
-        <div style={{ width: '100%', height: 24, backgroundColor: '#f1f5f9', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', position: 'relative' }}>
+        <div style={{ width: '100%', height: 24, backgroundColor: '#1e252e', borderRadius: 12, border: '1px solid #2a323e', overflow: 'hidden', position: 'relative' }}>
           <div style={{ position: 'absolute', left: '30%', width: '42%', top: 0, bottom: 0, backgroundColor: 'rgba(5,150,105,0.12)' }} />
           <div style={{ position: 'absolute', left: '72%', width: '28%', top: 0, bottom: 0, backgroundColor: 'rgba(239,68,68,0.12)' }} />
-          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: 2, backgroundColor: '#059669' }} />
-          <div style={{ position: 'absolute', left: '72%', top: 0, bottom: 0, width: 2, backgroundColor: '#ef4444' }} />
+          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: 2, backgroundColor: '#00ff88' }} />
+          <div style={{ position: 'absolute', left: '72%', top: 0, bottom: 0, width: 2, backgroundColor: '#ff5454' }} />
           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `calc(${fill * 100}%)`, backgroundColor: barColor, boxShadow: fill > 0.01 ? `0 0 6px ${barColor}` : 'none' }} />
         </div>
         <div style={{ position: 'relative', width: '100%', height: 14, fontSize: 9 }}>
-          <span style={{ position: 'absolute', left: 0, width: '30%', textAlign: 'center', color: '#94a3b8' }}>不足</span>
-          <span style={{ position: 'absolute', left: '30%', width: '42%', textAlign: 'center', color: '#059669', fontWeight: 'bold' }}>理想区</span>
-          <span style={{ position: 'absolute', left: '72%', width: '28%', textAlign: 'center', color: '#ef4444' }}>过量</span>
+          <span style={{ position: 'absolute', left: 0, width: '30%', textAlign: 'center', color: '#6e7681' }}>不足</span>
+          <span style={{ position: 'absolute', left: '30%', width: '42%', textAlign: 'center', color: '#00ff88', fontWeight: 'bold' }}>理想区</span>
+          <span style={{ position: 'absolute', left: '72%', width: '28%', textAlign: 'center', color: '#ff5454' }}>过量</span>
         </div>
       </div>
-      {goodBreath && <div style={{ fontSize: 14, color: '#059669', fontWeight: 'bold' }}>✓ 吹气成功</div>}
-      <div style={{ fontSize: 11, color: '#64748b' }}>
-        {fill < 0.01 ? '按住空格吹气' : fill >= 0.72 ? '⚠️ 过量！' : fill >= 0.30 ? '✅ 理想区 — 松手' : '继续吹气…'}
+      {goodBreath && <div style={{ fontSize: 14, color: '#00ff88', fontWeight: 'bold' }}>✓ 吹气成功</div>}
+      <div style={{ fontSize: 11, color: '#8b949e' }}>
+        {fill < 0.01 ? '按住空格吹气' : fill >= 0.72 ? '⚠ 过量！' : fill >= 0.30 ? '✓ 理想区 — 松手' : '继续吹气…'}
       </div>
     </>
   )
@@ -337,7 +337,7 @@ function BlowPhase({ fill, barColor, goodBreath }: { fill: number; barColor: str
 function Readout({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 48 }}>
-      <div style={{ fontSize: 9, color: '#64748b' }}>{label}</div>
+      <div style={{ fontSize: 9, color: '#8b949e' }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 900, color }}>{value}</div>
     </div>
   )

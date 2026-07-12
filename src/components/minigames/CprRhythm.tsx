@@ -177,9 +177,9 @@ export function CprRhythm({ onComplete }: Props) {
                   ...styles.beatBall,
                   bottom: `${beatProgress * 80 + 10}%`,
                   backgroundColor:
-                    lastHitQuality === 'perfect' ? '#4ade80'
-                    : lastHitQuality === 'good' ? '#facc15'
-                    : lastHitQuality === 'miss' ? '#ef4444'
+                    lastHitQuality === 'perfect' ? '#00ff88'
+                    : lastHitQuality === 'good' ? '#ffb000'
+                    : lastHitQuality === 'miss' ? '#ff5454'
                     : '#38bdf8',
                   transform: `scale(${isSweetSpot ? 1.3 : 1})`,
                   transition: showFeedback
@@ -200,7 +200,7 @@ export function CprRhythm({ onComplete }: Props) {
               onTouchStart={(e) => { e.preventDefault(); handlePress() }}
               disabled={phase !== 'pressing'}
             >
-              {phase === 'breath' ? '🌬️ 人工呼吸中...' : '👇 按压'}
+              {phase === 'breath' ? '~ 人工呼吸中...' : '↓ 按压'}
             </button>
           </div>
 
@@ -210,9 +210,9 @@ export function CprRhythm({ onComplete }: Props) {
               style={{
                 ...styles.feedbackPopup,
                 color:
-                  lastHitQuality === 'perfect' ? '#4ade80'
-                  : lastHitQuality === 'good' ? '#facc15'
-                  : '#ef4444',
+                  lastHitQuality === 'perfect' ? '#00ff88'
+                  : lastHitQuality === 'good' ? '#ffb000'
+                  : '#ff5454',
               }}
             >
               {lastHitQuality === 'perfect' ? '完美！' :
@@ -228,9 +228,9 @@ export function CprRhythm({ onComplete }: Props) {
                 style={{
                   ...styles.historyDot,
                   backgroundColor:
-                    hit.quality === 'perfect' ? '#4ade80'
-                    : hit.quality === 'good' ? '#facc15'
-                    : '#ef4444',
+                    hit.quality === 'perfect' ? '#00ff88'
+                    : hit.quality === 'good' ? '#ffb000'
+                    : '#ff5454',
                 }}
               />
             ))}
@@ -239,7 +239,7 @@ export function CprRhythm({ onComplete }: Props) {
       )}
 
       {phase === 'breath' && (
-        <div style={styles.breathIndicator}>🌬️ 进行 2 次人工呼吸...</div>
+        <div style={styles.breathIndicator}>~ 进行 2 次人工呼吸...</div>
       )}
     </div>
   )
@@ -249,8 +249,8 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'relative' as const,
     padding: '12px 16px',
-    backgroundColor: '#0f172a',
-    borderTop: '2px solid #ef4444',
+    backgroundColor: '#1a1f29',
+    borderTop: '2px solid #ff5454',
     minHeight: 260,
     display: 'flex',
     flexDirection: 'column' as const,
@@ -273,7 +273,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   readyHint: {
     fontSize: 13,
-    color: '#94a3b8',
+    color: '#6e7681',
   },
   statusBar: {
     display: 'flex',
@@ -284,7 +284,7 @@ const styles: Record<string, React.CSSProperties> = {
   statusLabel: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#94a3b8',
+    color: '#6e7681',
     fontFamily: 'monospace',
   },
   beatMeter: {
@@ -298,10 +298,10 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative' as const,
     width: 40,
     height: 180,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#e6edf3',
     borderRadius: 20,
     overflow: 'hidden',
-    border: '1px solid #334155',
+    border: '1px solid #e6edf3',
   },
   sweetSpot: {
     position: 'absolute' as const,
@@ -329,7 +329,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '2px solid #38bdf8',
     borderRadius: 8,
     backgroundColor: '#0c4a6e',
-    color: '#e2e8f0',
+    color: '#2a323e',
     fontSize: 16,
     fontWeight: 'bold',
     cursor: 'pointer',

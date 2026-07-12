@@ -65,17 +65,17 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
     <div style={wrap}>
       <div style={{
         width: '100%', height: 4, borderRadius: 2,
-        backgroundColor: '#e2e8f0', overflow: 'hidden',
+        backgroundColor: '#2a323e', overflow: 'hidden',
       }}>
         <div style={{
           width: `${progress}%`, height: '100%',
-          backgroundColor: allDone ? '#059669' : '#3b82f6',
+          backgroundColor: allDone ? '#00ff88' : '#58a6ff',
           borderRadius: 2,
           transition: 'width 0.3s, background-color 0.3s',
         }} />
       </div>
 
-      <div style={{ fontSize: 10, color: '#64748b' }}>
+      <div style={{ fontSize: 10, color: '#8b949e' }}>
         按正确顺序点击步骤（第 {stepIndex + 1}/{s.steps.length} 步）
       </div>
 
@@ -91,9 +91,9 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
                 padding: '10px 14px',
                 borderRadius: 8,
                 border: isWrong
-                  ? '2px solid #ef4444'
+                  ? '2px solid #ff5454'
                   : isDone
-                    ? '2px solid #059669'
+                    ? '2px solid #00ff88'
                     : '1px solid #d1d9e8',
                 backgroundColor: isDone
                   ? 'rgba(5,150,105,0.06)'
@@ -103,7 +103,7 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
                 cursor: isDone ? 'default' : 'pointer',
                 opacity: isDone ? 0.6 : 1,
                 fontSize: 13,
-                color: '#334155',
+                color: '#e6edf3',
                 lineHeight: 1.5,
                 transition: 'all 0.15s',
                 display: 'flex',
@@ -118,8 +118,8 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
                 width: 22, height: 22, borderRadius: 11,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 'bold',
-                backgroundColor: isDone ? '#059669' : '#e2e8f0',
-                color: isDone ? '#fff' : '#94a3b8',
+                backgroundColor: isDone ? '#00ff88' : '#2a323e',
+                color: isDone ? '#fff' : '#6e7681',
                 marginTop: 1,
               }}>
                 {isDone ? '✓' : Array.from(done).indexOf(i) !== -1 ? '' : String.fromCharCode(65 + i)}
@@ -131,7 +131,7 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
       </div>
 
       {allDone && (
-        <div style={{ fontSize: 13, color: '#059669', fontWeight: 'bold', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: '#00ff88', fontWeight: 'bold', marginTop: 4 }}>
           ✓ 操作步骤全部正确！
         </div>
       )}

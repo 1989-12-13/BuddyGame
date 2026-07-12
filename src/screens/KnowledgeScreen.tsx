@@ -165,7 +165,7 @@ export function KnowledgeScreen({ onBack }: Props) {
 
             {/* 弹窗内容 */}
             <div style={styles.modalBody}>
-              <DetailSection icon="📋" title="病情概述">
+              <DetailSection icon="≡" title="病情概述">
                 <p style={styles.paragraph}>{selectedNotes.description}</p>
               </DetailSection>
 
@@ -174,16 +174,16 @@ export function KnowledgeScreen({ onBack }: Props) {
                 const ex = SCENARIO_EXAMPLES[selected.id]
                 if (!ex) return null
                 return (
-                  <DetailSection icon="🚑" title="典型现场案例">
-                    <p style={{ ...styles.paragraph, fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>
-                      ⭐ 粗体为游戏中本协议所采用的案例
+                  <DetailSection icon="▸" title="典型现场案例">
+                    <p style={{ ...styles.paragraph, fontSize: 12, color: '#6e7681', marginBottom: 4 }}>
+                      ★ 粗体为游戏中本协议所采用的案例
                     </p>
                     <ul style={styles.list}>
                       {ex.examples.map((e, i) => (
                         <li key={i} style={{
                           ...styles.listItem,
                           fontWeight: i === ex.gameIndex ? 700 : 400,
-                          color: i === ex.gameIndex ? '#1e293b' : '#475569',
+                          color: i === ex.gameIndex ? '#e6edf3' : '#b1bac4',
                         }}>
                           {e}
                         </li>
@@ -193,7 +193,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 )
               })()}
 
-              <DetailSection icon="🔍" title="常见原因">
+              <DetailSection icon="◆" title="常见原因">
                 <ul style={styles.list}>
                   {selectedNotes.commonCauses.map((c, i) => (
                     <li key={i} style={styles.listItem}>{c}</li>
@@ -201,7 +201,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 </ul>
               </DetailSection>
 
-              <DetailSection icon="💡" title="调度员注意事项">
+              <DetailSection icon="◆" title="调度员注意事项">
                 <ul style={styles.list}>
                   {selectedNotes.dispatcherTips.map((t, i) => (
                     <li key={i} style={styles.listItem}>{t}</li>
@@ -209,7 +209,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 </ul>
               </DetailSection>
 
-              <DetailSection icon="❓" title="MPDS 关键问询">
+              <DetailSection icon="?" title="MPDS 关键问询">
                 <ul style={styles.list}>
                   {selected.mpdsCard.keyQuestions.map((q, i) => (
                     <li key={i} style={styles.listItem}>{q}</li>
@@ -220,9 +220,9 @@ export function KnowledgeScreen({ onBack }: Props) {
               {selected.guidance && (() => {
                 const detail = GUIDANCE_DETAILS[selected.id]
                 return (
-                <DetailSection icon="🩺" title={`急救指导案例`}>
-                  <p style={{ ...styles.paragraph, fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>
-                    ⭐ 以下为游戏中本协议所采用的急救方案及临床分析
+                <DetailSection icon="♥" title={`急救指导案例`}>
+                  <p style={{ ...styles.paragraph, fontSize: 12, color: '#6e7681', marginBottom: 6 }}>
+                    ★ 以下为游戏中本协议所采用的急救方案及临床分析
                   </p>
                   <p style={{ ...styles.paragraph, fontWeight: 600, marginBottom: 4 }}>{selected.guidance.title}</p>
                   <p style={styles.paragraph}>{selected.guidance.intro}</p>
@@ -231,8 +231,8 @@ export function KnowledgeScreen({ onBack }: Props) {
                       const isDetailed = 'explanation' in step
                       return (
                         <li key={i} style={{ marginBottom: 10, lineHeight: 1.7 }}>
-                          <div style={{ fontWeight: 'bold', fontSize: 13, color: '#334155' }}>{step.prompt}</div>
-                          <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>
+                          <div style={{ fontWeight: 'bold', fontSize: 13, color: '#e6edf3' }}>{step.prompt}</div>
+                          <div style={{ fontSize: 12, color: '#b1bac4', marginTop: 2 }}>
                             {step.options.map((o: string, j: number) => {
                               const isCorrect = j === step.correctIndex
                               return (
@@ -241,27 +241,27 @@ export function KnowledgeScreen({ onBack }: Props) {
                                   padding: '1px 6px',
                                   margin: '1px 2px',
                                   borderRadius: 3,
-                                  backgroundColor: isCorrect ? '#dcfce7' : '#f8fafc',
-                                  border: `1px solid ${isCorrect ? '#16a34a' : '#e2e8f0'}`,
-                                  color: isCorrect ? '#166534' : '#64748b',
+                                  backgroundColor: isCorrect ? 'rgba(0, 255, 136, 0.12)' : '#11151c',
+                                  border: `1px solid ${isCorrect ? '#00ff88' : '#2a323e'}`,
+                                  color: isCorrect ? '#00ff88' : '#8b949e',
                                   fontWeight: isCorrect ? 600 : 400,
                                   fontSize: 12,
                                 }}>
-                                  {isCorrect ? '✅ ' : ''}{o}
+                                  {isCorrect ? '✓ ' : ''}{o}
                                 </span>
                               )
                             })}
                           </div>
                           {isDetailed && (
                             <>
-                              <div style={{ fontSize: 12, color: '#64748b', marginTop: 4, lineHeight: 1.6 }}>
-                                <span style={{ fontWeight: 'bold', color: '#475569' }}>临床分析：</span>
+                              <div style={{ fontSize: 12, color: '#8b949e', marginTop: 4, lineHeight: 1.6 }}>
+                                <span style={{ fontWeight: 'bold', color: '#b1bac4' }}>临床分析：</span>
                                 {step.explanation}
                               </div>
-                              <div style={{ marginTop: 4, paddingLeft: 8, borderLeft: '2px solid #e2e8f0' }}>
+                              <div style={{ marginTop: 4, paddingLeft: 8, borderLeft: '2px solid #2a323e' }}>
                                 {(step.optionAnalysis as string[]).map((oa: string, j: number) => (
-                                  <div key={j} style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.5, marginTop: 1 }}>
-                                    {j === step.correctIndex ? '✅' : '❌'} {oa}
+                                  <div key={j} style={{ fontSize: 11, color: '#6e7681', lineHeight: 1.5, marginTop: 1 }}>
+                                    {j === step.correctIndex ? '✓' : '✕'} {oa}
                                   </div>
                                 ))}
                               </div>
@@ -275,7 +275,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 )
               })()}
 
-              <DetailSection icon="🏷️" title="判定信息">
+              <DetailSection icon="#" title="判定信息">
                 <div style={styles.infoRow}>
                   <span style={styles.infoLabel}>判定码</span>
                   <span style={{ ...styles.infoValue, fontFamily: 'monospace', fontWeight: 'bold', color: MPDS_DETERMINANT_INFO[parseDeterminant(selected.mpdsCard.determinantCode)].color }}>
@@ -312,32 +312,32 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     width: '100vw',
     height: '100vh',
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#0a0e14',
     display: 'flex',
     flexDirection: 'column',
-    color: '#334155',
+    color: '#e6edf3',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    borderBottom: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #2a323e',
+    backgroundColor: '#1a1f29',
   },
   backBtn: {
     padding: '6px 14px',
     fontSize: 13,
-    color: '#64748b',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    color: '#8b949e',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 6,
     cursor: 'pointer',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#e6edf3',
     margin: 0,
     letterSpacing: 2,
   },
@@ -352,10 +352,10 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     fontSize: 13,
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 6,
-    color: '#334155',
+    color: '#e6edf3',
     outline: 'none',
   },
   clearBtn: {
@@ -363,7 +363,7 @@ const styles: Record<string, React.CSSProperties> = {
     right: 8,
     background: 'none',
     border: 'none',
-    color: '#94a3b8',
+    color: '#6e7681',
     cursor: 'pointer',
     fontSize: 14,
   },
@@ -375,7 +375,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     fontSize: 11,
   },
-  legendTitle: { color: '#94a3b8', marginRight: 4, fontWeight: 'bold' },
+  legendTitle: { color: '#6e7681', marginRight: 4, fontWeight: 'bold' },
   legendTag: {
     display: 'flex',
     alignItems: 'center',
@@ -406,8 +406,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     padding: '12px',
-    backgroundColor: '#ffffff',
-    border: '1px solid #e2e8f0',
+    backgroundColor: '#1a1f29',
+    border: '1px solid #2a323e',
     borderRadius: 8,
     cursor: 'pointer',
     transition: 'all 0.15s',
@@ -419,7 +419,7 @@ const styles: Record<string, React.CSSProperties> = {
   cardTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#334155',
+    color: '#e6edf3',
   },
   cardBottom: {
     display: 'flex',
@@ -446,7 +446,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   chiefComplaint: {
     fontSize: 13,
-    color: '#64748b',
+    color: '#8b949e',
     marginTop: 4,
     lineHeight: 1.4,
   },
@@ -456,7 +456,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'fixed' as const,
     inset: 0,
     zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -465,9 +465,9 @@ const styles: Record<string, React.CSSProperties> = {
   modal: {
     width: 560,
     maxHeight: '85vh',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1a1f29',
     borderRadius: 10,
-    border: '1px solid #e2e8f0',
+    border: '1px solid #2a323e',
     display: 'flex',
     flexDirection: 'column' as const,
     overflow: 'hidden',
@@ -478,7 +478,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '14px 18px',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#11151c',
     borderBottom: '3px solid',
   },
   modalHeaderLeft: {
@@ -490,8 +490,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 18,
     fontWeight: 900,
     fontFamily: 'monospace',
-    color: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    color: '#58a6ff',
+    backgroundColor: 'rgba(0, 212, 255, 0.08)',
     padding: '4px 10px',
     borderRadius: 6,
     lineHeight: 1,
@@ -499,18 +499,18 @@ const styles: Record<string, React.CSSProperties> = {
   modalTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#e6edf3',
   },
   modalSubtitle: {
     fontSize: 11,
-    color: '#64748b',
+    color: '#8b949e',
     marginTop: 2,
   },
   modalCloseBtn: {
     padding: '4px 10px',
     backgroundColor: 'transparent',
-    color: '#94a3b8',
-    border: '1px solid #e2e8f0',
+    color: '#6e7681',
+    border: '1px solid #2a323e',
     borderRadius: 4,
     cursor: 'pointer',
     fontSize: 16,
@@ -535,13 +535,13 @@ const styles: Record<string, React.CSSProperties> = {
   detailSectionTitle: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#64748b',
+    color: '#8b949e',
     borderBottom: '1px solid #f1f5f9',
     paddingBottom: 3,
   },
   paragraph: {
     fontSize: 13,
-    color: '#475569',
+    color: '#b1bac4',
     lineHeight: 1.8,
     margin: 0,
   },
@@ -551,7 +551,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   listItem: {
     fontSize: 13,
-    color: '#475569',
+    color: '#b1bac4',
     lineHeight: 1.7,
   },
   infoRow: {
@@ -563,11 +563,11 @@ const styles: Record<string, React.CSSProperties> = {
   infoLabel: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#94a3b8',
+    color: '#6e7681',
     minWidth: 64,
   },
   infoValue: {
     fontSize: 13,
-    color: '#475569',
+    color: '#b1bac4',
   },
 }

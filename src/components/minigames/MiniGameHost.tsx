@@ -4,13 +4,12 @@
 
 import type { MiniGameSpec } from '../../game/types'
 import { RhythmPress } from './engines/RhythmPress'
-import { BlowInflate } from './engines/BlowInflate'
 import { AimForce } from './engines/AimForce'
 import { HoldPressure } from './engines/HoldPressure'
 import { PositionDrag } from './engines/PositionDrag'
-import { TimedShock } from './engines/TimedShock'
 import { StepOrder } from './engines/StepOrder'
 import { LocationSelect } from './engines/LocationSelect'
+import { CprGame } from './engines/CprGame'
 
 interface Props {
   spec: MiniGameSpec
@@ -45,13 +44,12 @@ export function MiniGameHost({ spec, onComplete }: Props) {
       <div style={TITLE}>🎮 {spec.title}</div>
       <div style={INSTR}>{spec.instruction}</div>
       {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'blowInflate' && <BlowInflate spec={spec} onComplete={onComplete} />}
       {spec.kind === 'aimForce' && <AimForce spec={spec} onComplete={onComplete} />}
       {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} />}
       {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'timedShock' && <TimedShock spec={spec} onComplete={onComplete} />}
       {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}
       {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'cpr' && <CprGame spec={spec} onComplete={onComplete} />}
     </div>
   )
 }

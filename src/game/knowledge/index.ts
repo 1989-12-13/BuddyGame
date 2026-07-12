@@ -1,2 +1,6 @@
 export { SCENARIO_EXAMPLES } from './examples'
 export type { ScenarioExamples } from './examples'
+export { DISPATCHER_NOTES } from './dispatcherNotes'
+export type { DispatcherNote } from './dispatcherNotes'
+export { GUIDANCE_DETAILS } from './guidanceDetails'
+export type { GuidanceDetail, GuidanceStepDetail } from './guidanceDetails'

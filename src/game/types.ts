@@ -178,13 +178,12 @@ export interface FirstAidGuidance {
 // -------------------- 互动小游戏（急救指导实操环节） --------------------
 export type MiniGameKind =
   | 'rhythmPress'   // 胸外按压：目标 BPM
-  | 'blowInflate'   // 吹气充胀
   | 'aimForce'      // 瞄准施力
   | 'holdPressure'  // 按压止血
   | 'positionDrag'  // 摆位拖拽（已弃用）
-  | 'timedShock'    // 时机识别除颤
   | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
   | 'locationSelect'// 位置选择：选择正确的止血点位置
+  | 'cpr'           // 心肺复苏：30:2 循环
 
 /** 小游戏公共字段 */
 export interface BaseMiniGame {
@@ -202,15 +201,6 @@ export interface RhythmPressSpec extends BaseMiniGame {
   bpmTolerance: number      // 容差（BPM）
   durationSec: number       // 持续时长（秒）
   depthSeconds?: number     // 若要求按压深度，设定每次按压需保持的最小时长
-}
-
-/** 吹气充胀：长按充胀，过量惩罚、不足无效 */
-export interface BlowInflateSpec extends BaseMiniGame {
-  kind: 'blowInflate'
-  targetInflations: number  // 目标吹气次数
-  idealHoldSec: number      // 每次理想吹气时长（秒）
-  overInflationSec: number  // 超过即判定胃胀气
-  durationSec: number       // 总时长（秒）
 }
 
 /** 瞄准施力：拖拽标记到解剖位，再冲击/按压，位置+力度计分 */
@@ -244,15 +234,6 @@ export interface PositionDragSpec extends BaseMiniGame {
   useDetailedFigure?: boolean // 使用详细人体图
 }
 
-/** 时机识别：可电击窗口内点除颤，误点/错过扣分 */
-export interface TimedShockSpec extends BaseMiniGame {
-  kind: 'timedShock'
-  windows: number           // 可电击窗口数量
-  windowMs: number          // 每个可电击窗口持续（毫秒）
-  shockCooldownMs: number   // 两次窗口间隔（毫秒）
-  falsePenalty: number      // 误击扣分（0-1 每次）
-}
-
 /** 步骤排序：将打乱的步骤按正确顺序逐一选中 */
 export interface StepOrderSpec extends BaseMiniGame {
   kind: 'stepOrder'
@@ -268,15 +249,20 @@ export interface LocationSelectSpec extends BaseMiniGame {
   correctIndex: number      // 正确选项索引
 }
 
+/** 心肺复苏：30次胸外按压 + 2次人工呼吸 循环 */
+export interface CprSpec extends BaseMiniGame {
+  kind: 'cpr'
+  cycles: number             // 循环次数（默认2）
+}
+
 export type MiniGameSpec =
   | RhythmPressSpec
-  | BlowInflateSpec
   | AimForceSpec
   | HoldPressureSpec
   | PositionDragSpec
-  | TimedShockSpec
   | StepOrderSpec
   | LocationSelectSpec
+  | CprSpec
 
 /** 小游戏组件统一契约 */
 export interface MiniGameProps {

@@ -18,18 +18,20 @@ export function LocationSelect({ spec, onComplete }: MiniGameProps) {
   const [selected, setSelected] = useState<number | null>(null)
   const [showResult, setShowResult] = useState(false)
   const finished = useRef(false)
+  const attemptsRef = useRef(0)
 
   const handleSelect = (idx: number) => {
     if (finished.current || showResult) return
+    attemptsRef.current += 1
     setSelected(idx)
     setShowResult(true)
 
     const correct = idx === s.correctIndex
     if (correct) {
       finished.current = true
-      setTimeout(() => onComplete(1, true), 1000)
+      const score = Math.max(0.3, 1 - (attemptsRef.current - 1) * 0.3)
+      setTimeout(() => onComplete(score, score >= s.passThreshold), 1000)
     } else {
-      // 答错：1.5秒后允许重试
       setTimeout(() => {
         setShowResult(false)
         setSelected(null)

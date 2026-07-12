@@ -15,9 +15,10 @@ import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import { VitalSignsBar } from '../components/feedback/VitalSignsBar'
-import { RescueProgressToast } from '../components/feedback/RescueProgressToast'
 import { EventToastStack } from '../components/feedback/EventToastStack'
 import { VehicleSelector } from '../components/feedback/VehicleSelector'
+import { CityMap } from '../components/map/CityMap'
+import { CallDrawer } from '../components/call/CallDrawer'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
 
@@ -30,6 +31,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(true)
 
   // --- 启动班次 ---
   useEffect(() => {
@@ -144,6 +146,28 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     prevCallPhase.current = state.callPhase
   }, [state.callPhase, audio])
 
+  // 救援结算完成 → 2.5s 后自动挂断进入下一通（地图接管观察期）
+  const prevOutcome = useRef<string | null>(null)
+  useEffect(() => {
+    const outcome = state.rescue.outcome
+    if (outcome && outcome !== prevOutcome.current && state.currentCall) {
+      prevOutcome.current = outcome
+      const t = setTimeout(() => {
+        dispatch({ type: 'END_CALL' })
+      }, 2500)
+      return () => clearTimeout(t)
+    }
+    prevOutcome.current = outcome
+  }, [state.rescue.outcome, state.currentCall])
+
+  // 患者死亡（rescue.outcome 未及触发）→ 2s 后自动挂断
+  useEffect(() => {
+    if (state.patientStatus?.died && state.currentCall && state.rescue.outcome === null) {
+      const t = setTimeout(() => dispatch({ type: 'END_CALL' }), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [state.patientStatus?.died, state.currentCall, state.rescue.outcome])
+
   // 临床判断选择音效
   useEffect(() => {
     const curJudgments = state.pendingJudgments?.length ?? 0
@@ -241,6 +265,28 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setTerminalModalOpen(true)
   }, [])
 
+  // --- 进入 closing 阶段自动折叠抽屉（让地图接管） ---
+  const prevPhaseRef = useRef(state.callPhase)
+  useEffect(() => {
+    if (prevPhaseRef.current === state.callPhase) return
+    // 进入 closing（指导完成或无指导直接派车后）→ 折叠
+    if (state.callPhase === 'closing' && prevPhaseRef.current !== 'closing') {
+      setDrawerOpen(false)
+    }
+    // 新通话开始 → 展开
+    if (state.callPhase === 'questioning' && prevPhaseRef.current === 'completed') {
+      setDrawerOpen(true)
+    }
+    prevPhaseRef.current = state.callPhase
+  }, [state.callPhase])
+
+  // --- 无 currentCall 但还有下一通（pendingCallPhase='completed' 后），新 ANSWER_CALL 时展开 ---
+  useEffect(() => {
+    if (state.currentCall && state.callPhase === 'questioning') {
+      setDrawerOpen(true)
+    }
+  }, [state.currentCall, state.callPhase])
+
   // --- 处理派车：先弹车辆选择 ---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
@@ -265,19 +311,25 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
   }, [])
 
-  // 无活跃通话时 — 等待接听
+  // 无活跃通话时 — 等待接听（地图作背景 + 浮动卡片）
   if (!state.currentCall && state.callIndex < state.totalCalls) {
     return (
       <div style={styles.container}>
         <Hud state={state} />
-        <CallWaiting
-          callIndex={state.callIndex}
-          totalCalls={state.totalCalls}
-          onAnswer={() => dispatch({ type: 'ANSWER_CALL' })}
-          shiftElapsed={state.shiftElapsed}
-          totalScore={state.totalScore}
-          lastScore={state.callScores[state.callScores.length - 1]}
-        />
+        <div style={styles.mainArea}>
+          <CityMap state={state} />
+          <div style={styles.floatCard}>
+            <CallWaiting
+              callIndex={state.callIndex}
+              totalCalls={state.totalCalls}
+              onAnswer={() => dispatch({ type: 'ANSWER_CALL' })}
+              shiftElapsed={state.shiftElapsed}
+              totalScore={state.totalScore}
+              lastScore={state.callScores[state.callScores.length - 1]}
+            />
+          </div>
+          <EventToastStack events={state.patientEvents} onDismiss={handleDismissEvent} />
+        </div>
       </div>
     )
   }
@@ -287,9 +339,13 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     return (
       <div style={styles.container}>
         <Hud state={state} />
-        <div style={styles.centerMessage}>
-          <h2 style={{ color: '#e6edf3' }}>本班次所有通话已处理完毕</h2>
-          <p style={{ color: '#6e7681' }}>正在生成班次评估报告...</p>
+        <div style={styles.mainArea}>
+          <CityMap state={state} />
+          <div style={styles.floatCard}>
+            <h2 style={{ color: '#e6edf3', marginBottom: 8 }}>本班次所有通话已处理完毕</h2>
+            <p style={{ color: '#6e7681' }}>正在生成班次评估报告...</p>
+          </div>
+          <EventToastStack events={state.patientEvents} onDismiss={handleDismissEvent} />
         </div>
       </div>
     )
@@ -300,12 +356,42 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const caller = getCaller(call.callerId)
   const hasTriage = state.terminal.triage !== null
 
+  // 抽屉标题与迷你信息
+  const callElapsed = state.shiftElapsed - state.callStartTime
+  const callMm = String(Math.floor(callElapsed / 60)).padStart(2, '0')
+  const callSs = String(callElapsed % 60).padStart(2, '0')
+  const drawerTitle = `${callMm}:${callSs}`
+  const drawerMini = state.patientStatus ? (
+    <div style={{
+      width: 8, height: 100, backgroundColor: '#2a323e', borderRadius: 4,
+      overflow: 'hidden', display: 'flex', flexDirection: 'column-reverse',
+    }}>
+      <div style={{
+        width: '100%',
+        height: `${state.patientStatus.stability}%`,
+        backgroundColor:
+          state.patientStatus.vitalSign === 'stable' ? '#16a34a' :
+          state.patientStatus.vitalSign === 'warning' ? '#f59e0b' :
+          state.patientStatus.vitalSign === 'critical' ? '#ef4444' : '#7f1d1d',
+        transition: 'height 0.5s ease, background-color 0.3s ease',
+      }} />
+    </div>
+  ) : null
+
   return (
     <div style={styles.container}>
       <Hud state={state} />
 
-      {/* ====== 电话面板（全宽） ====== */}
-      <div style={styles.phonePanel}>
+      <div style={styles.mainArea}>
+        <CityMap state={state} />
+
+        <CallDrawer
+          open={drawerOpen}
+          onToggle={() => setDrawerOpen(o => !o)}
+          active={state.callPhase !== 'completed'}
+          title={drawerTitle}
+          mini={drawerMini}
+        >
         <PhoneHeader
           phoneNumber={call.phoneNumber}
           baseStation={call.baseStation}
@@ -322,16 +408,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           <VitalSignsBar status={state.patientStatus} />
         )}
 
-        {/* 即时反馈：救护车救援闭环 */}
-        {state.rescue.phase !== 'idle' && (
-          <RescueProgressToast
-            rescue={state.rescue}
-            ambulanceRemaining={state.ambulanceRemaining}
-            vehicleTier={
-              state.fleet.vehicles.find(v => v.id === state.rescue.vehicleId)?.tier
-            }
-          />
-        )}
+        {/* 对话区 — 救护车进度由主地图承载，避免重复 */}
 
         {/* 对话区 — 每条来电者发言旁可能弹出临床判断卡 */}
         <div ref={dialogueRef} style={{
@@ -434,7 +511,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             </button>
           </div>
         )}
-      </div>
+        </CallDrawer>
 
       {/* ====== MPDS调度卡弹出模态框 ====== */}
       {terminalModalOpen && (
@@ -478,6 +555,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           onCancel={() => setVehicleSelectorOpen(false)}
         />
       )}
+      </div>
     </div>
   )
 }
@@ -503,7 +581,7 @@ function CallWaiting({
   lastScore?: number
 }) {
   return (
-    <div style={styles.centerMessage}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
       <div style={{
         lineHeight: 1,
         marginBottom: 8,
@@ -1611,6 +1689,32 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: '#0a0e14',
     color: '#e6edf3',
     overflow: 'hidden',
+  },
+
+  // ---------- 主区（地图 + 浮层）----------
+  mainArea: {
+    flex: 1,
+    position: 'relative' as const,
+    overflow: 'hidden',
+    minHeight: 0,
+  },
+  floatCard: {
+    position: 'absolute' as const,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(17, 21, 28, 0.88)',
+    border: '1px solid #2a323e',
+    borderRadius: 10,
+    padding: '24px 32px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+    backdropFilter: 'blur(6px)',
+    zIndex: 40,
   },
 
   // ---------- 电话面板（全宽）----------

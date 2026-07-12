@@ -13,9 +13,11 @@ const wrap: React.CSSProperties = {
   gap: 10,
 }
 
-export function StepOrder({ spec, onComplete }: MiniGameProps) {
+export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as StepOrderSpec
   const finished = useRef(false)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
 
   // 打乱步骤
   const shuffled = useMemo(
@@ -36,7 +38,7 @@ export function StepOrder({ spec, onComplete }: MiniGameProps) {
   }, [wrongIdx])
 
   const handleClick = (shufIdx: number) => {
-    if (finished.current) return
+    if (finished.current || pausedRef.current) return
     if (done.has(shufIdx)) return
     const clicked = shuffled[shufIdx]
     const correct = s.steps[stepIndex]

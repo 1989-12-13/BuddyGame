@@ -268,6 +268,8 @@ export type MiniGameSpec =
 export interface MiniGameProps {
   spec: MiniGameSpec
   onComplete: (score: number, passed: boolean) => void
+  /** true 时冻结计时/输入；用于浮层折叠时暂停 */
+  paused?: boolean
 }
 
 // -------------------- 通话事件 --------------------

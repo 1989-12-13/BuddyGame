@@ -19,6 +19,7 @@ import { EventToastStack } from '../components/feedback/EventToastStack'
 import { VehicleSelector } from '../components/feedback/VehicleSelector'
 import { CityMap } from '../components/map/CityMap'
 import { CallDrawer } from '../components/call/CallDrawer'
+import { GuidanceOverlay } from '../components/guidance/GuidanceOverlay'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
 
@@ -32,6 +33,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(true)
+  const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
 
   // --- 启动班次 ---
   useEffect(() => {
@@ -273,12 +275,24 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     if (state.callPhase === 'closing' && prevPhaseRef.current !== 'closing') {
       setDrawerOpen(false)
     }
-    // 新通话开始 → 展开
+    // 新通话开始 → 展开 + 重置指导折叠
     if (state.callPhase === 'questioning' && prevPhaseRef.current === 'completed') {
       setDrawerOpen(true)
+      setGuidanceCollapsed(false)
+    }
+    // 首次进入 guidance 阶段 → 默认展开指导浮层
+    if (state.callPhase === 'guidance' && prevPhaseRef.current !== 'guidance') {
+      setGuidanceCollapsed(false)
     }
     prevPhaseRef.current = state.callPhase
   }, [state.callPhase])
+
+  // --- 用户展开抽屉查看对话时，自动折叠指导浮层（职责分离） ---
+  useEffect(() => {
+    if (drawerOpen && state.callPhase === 'guidance') {
+      setGuidanceCollapsed(true)
+    }
+  }, [drawerOpen, state.callPhase])
 
   // --- 无 currentCall 但还有下一通（pendingCallPhase='completed' 后），新 ANSWER_CALL 时展开 ---
   useEffect(() => {
@@ -471,20 +485,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           </div>
         </div>
 
-        {/* 急救指导面板 */}
-        {state.callPhase === 'guidance' && call.guidance && (
-          <GuidancePanel
-            guidance={call.guidance}
-            stepIndex={state.guidanceStepIndex}
-            results={state.guidanceResults}
-            onAnswer={(stepIdx, selectedIdx) =>
-              dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
-            }
-            onCompleteMiniGame={(stepIdx, score, passed) =>
-              dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
-            }
-          />
-        )}
+        {/* 急救指导面板 — 已移至 mainArea 浮层（GuidanceOverlay） */}
 
         {/* 问询按钮区 */}
         {(state.callPhase === 'questioning' || state.callPhase === 'connected') && (
@@ -512,6 +513,29 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           </div>
         )}
         </CallDrawer>
+
+        {/* ====== 急救指导浮层（居中模态 / 折叠为左下角悬浮球） ====== */}
+        {state.callPhase === 'guidance' && call.guidance && (
+          <GuidanceOverlay
+            collapsed={guidanceCollapsed}
+            onToggle={() => setGuidanceCollapsed(c => !c)}
+            title={`♥ ${call.guidance.title}`}
+            subtitle={`步骤 ${Math.min(state.guidanceStepIndex + 1, call.guidance.steps.length)}/${call.guidance.steps.length}`}
+          >
+            <GuidancePanel
+              guidance={call.guidance}
+              stepIndex={state.guidanceStepIndex}
+              results={state.guidanceResults}
+              paused={guidanceCollapsed}
+              onAnswer={(stepIdx, selectedIdx) =>
+                dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
+              }
+              onCompleteMiniGame={(stepIdx, score, passed) =>
+                dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
+              }
+            />
+          </GuidanceOverlay>
+        )}
 
       {/* ====== MPDS调度卡弹出模态框 ====== */}
       {terminalModalOpen && (
@@ -1242,12 +1266,15 @@ function GuidancePanel({
   results,
   onAnswer,
   onCompleteMiniGame,
+  paused,
 }: {
   guidance: import('../game/types').FirstAidGuidance
   stepIndex: number
   results: ('correct' | 'incorrect' | null)[]
   onAnswer: (stepIdx: number, selectedIdx: number) => void
   onCompleteMiniGame: (stepIdx: number, score: number, passed: boolean) => void
+  /** 折叠/遮罩时暂停 minigame */
+  paused?: boolean
 }) {
   if (stepIndex >= guidance.steps.length) return null
 
@@ -1279,6 +1306,7 @@ function GuidancePanel({
         <MiniGameHost
           spec={currentStep.miniGame}
           onComplete={(score, passed) => onCompleteMiniGame(stepIndex, score, passed)}
+          paused={paused}
         />
       </div>
     )

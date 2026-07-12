@@ -35,7 +35,7 @@ function getDefaultPos(bodyType: string): [number, number] {
   }
 }
 
-export function AimForce({ spec, onComplete }: MiniGameProps) {
+export function AimForce({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as AimForceSpec
   const hideGuide = s.hideTargetGuide
   const bodyType = s.bodyDiagram ?? 'full'
@@ -52,6 +52,10 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
   const holdTimer = useRef<number>(0)
   const holdStart = useRef(0)
   const finished = useRef(false)
+  const pausedRef = useRef(false)
+  const progressRef = useRef(0)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  useEffect(() => { progressRef.current = progress }, [progress])
 
   const dist = Math.hypot(mx - s.targetX, my - s.targetY)
   const inTarget = dist <= s.aimTolerance
@@ -66,7 +70,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
   }
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (phase !== 'aim') return
+    if (phase !== 'aim' || pausedRef.current) return
     dragging.current = true
     e.currentTarget.setPointerCapture(e.pointerId)
     toNorm(e)
@@ -80,12 +84,16 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
     if (isHoldMode && inTarget && phase === 'aim') setPhase('press')
   }
 
-  // 持续按压逻辑
+  // 持续按压逻辑（接续已有 progress）
   const startHold = () => {
-    if (finished.current || phase !== 'press') return
-    holdStart.current = performance.now()
+    if (finished.current || phase !== 'press' || pausedRef.current) return
     const sec = s.holdSec ?? 3
+    holdStart.current = performance.now() - progressRef.current * sec * 1000
     const tick = () => {
+      if (pausedRef.current || finished.current) {
+        holdTimer.current = 0
+        return
+      }
       const elapsed = (performance.now() - holdStart.current) / 1000
       const p = Math.min(1, elapsed / sec)
       setProgress(p)
@@ -108,6 +116,14 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
     const total = aimScore * (0.6 + 0.4 * progress)
     setTimeout(() => onComplete(total, total >= s.passThreshold), 700)
   }
+
+  // paused 切换：恢复时若仍在 press 阶段且玩家未曾 pointerUp，自动接续 tick
+  useEffect(() => {
+    if (!paused && phase === 'press' && !holdTimer.current && !finished.current && progressRef.current > 0 && progressRef.current < 1) {
+      startHold()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paused])
 
   // 冲击模式（非持续按压，现有海姆立克等用）
   // ... kept for backward compatibility but simplified

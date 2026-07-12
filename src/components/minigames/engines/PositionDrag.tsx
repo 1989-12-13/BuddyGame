@@ -13,25 +13,28 @@ const wrap: React.CSSProperties = {
   gap: 8,
 }
 
-export function PositionDrag({ spec, onComplete }: MiniGameProps) {
+export function PositionDrag({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as PositionDragSpec
 
   const [angle, setAngle] = useState(0)
   const dragging = useRef(false)
   const lastX = useRef(0)
   const finished = useRef(false)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
 
   const dev = Math.abs(((angle - s.targetAngle + 540) % 360) - 180)
   const aligned = dev <= s.angleTolerance
   const score = Math.max(0, 1 - dev / (s.angleTolerance * 3))
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if (pausedRef.current) return
     dragging.current = true
     lastX.current = e.clientX
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging.current) return
+    if (!dragging.current || pausedRef.current) return
     const dx = e.clientX - lastX.current
     lastX.current = e.clientX
     setAngle((a) => Math.max(0, Math.min(180, a + dx * 0.6)))
@@ -40,7 +43,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (finished.current) return
+      if (finished.current || pausedRef.current) return
       if (e.code === 'ArrowLeft') setAngle((a) => Math.max(0, a - 3))
       if (e.code === 'ArrowRight') setAngle((a) => Math.min(180, a + 3))
     }
@@ -49,7 +52,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
   }, [])
 
   const confirm = () => {
-    if (finished.current) return
+    if (finished.current || pausedRef.current) return
     finished.current = true
     setTimeout(() => onComplete(score, score >= s.passThreshold), 600)
   }

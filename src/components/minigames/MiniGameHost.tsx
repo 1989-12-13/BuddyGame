@@ -14,13 +14,14 @@ import { CprGame } from './engines/CprGame'
 interface Props {
   spec: MiniGameSpec
   onComplete: (score: number, passed: boolean) => void
+  /** 折叠/遮罩时暂停计时与输入 */
+  paused?: boolean
 }
 
 const SHELL: React.CSSProperties = {
   borderTop: '2px solid #58a6ff',
   padding: '12px 14px',
-  backgroundColor: '#11151c',
-  maxHeight: 360,
+  backgroundColor: 'transparent',
   overflowY: 'auto',
 }
 
@@ -38,18 +39,18 @@ const INSTR: React.CSSProperties = {
   lineHeight: 1.5,
 }
 
-export function MiniGameHost({ spec, onComplete }: Props) {
+export function MiniGameHost({ spec, onComplete, paused }: Props) {
   return (
     <div style={SHELL}>
       <div style={TITLE}>◆ {spec.title}</div>
       <div style={INSTR}>{spec.instruction}</div>
-      {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'aimForce' && <AimForce spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'cpr' && <CprGame spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'aimForce' && <AimForce spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'cpr' && <CprGame spec={spec} onComplete={onComplete} paused={paused} />}
     </div>
   )
 }

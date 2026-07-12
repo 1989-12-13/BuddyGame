@@ -17,7 +17,7 @@ const PAUSE_MS = 1000
 const idealMin = 0.30
 const overThreshold = 0.72
 
-export function CprGame({ spec, onComplete }: MiniGameProps) {
+export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as CprSpec
   const cycles = s.cycles || 2
 
@@ -42,6 +42,8 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
   const overBreathRef = useRef(false)
   const rhythmQRef = useRef<string[]>([])
   const doneRef = useRef(false)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
 
   // 泄气循环
   useEffect(() => {
@@ -49,6 +51,10 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
     const loop = (now: number) => {
       const dt = Math.min((now - lastTRef.current) / 1000, 0.05)
       lastTRef.current = now
+      if (pausedRef.current) {
+        rafRef.current = requestAnimationFrame(loop)
+        return
+      }
       const p = phase
       if (p === 'blowing_1' || p === 'blowing_2') {
         if (holdingRef.current) {
@@ -66,7 +72,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
 
   // 按压
   const doCompress = useCallback(() => {
-    if (doneRef.current) return
+    if (doneRef.current || pausedRef.current) return
     const now = performance.now()
     const gap = lastCompTime.current ? now - lastCompTime.current : 0
     lastCompTime.current = now
@@ -105,7 +111,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
   // 吹气
   const releaseBreath = useCallback(() => {
     const p = phase
-    if ((p !== 'blowing_1' && p !== 'blowing_2') || !holdingRef.current) return
+    if (pausedRef.current || (p !== 'blowing_1' && p !== 'blowing_2') || !holdingRef.current) return
     holdingRef.current = false
     const f = fillRef.current
     if (f >= overThreshold) {
@@ -151,7 +157,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
     const onDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault()
-        if (doneRef.current) return
+        if (pausedRef.current || doneRef.current) return
         const p = phase
         if (p === 'compressing') {
           doCompress()
@@ -163,6 +169,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
     const onUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault()
+        if (pausedRef.current) return
         const p = phase
         if (p === 'blowing_1' || p === 'blowing_2') releaseBreath()
       }
@@ -177,7 +184,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
 
   // 1秒间隔自动过渡（blowing_1 → pause_1to2 →自动→ blowing_2）
   useEffect(() => {
-    if (phase === 'pause_1to2') {
+    if (phase === 'pause_1to2' && !pausedRef.current) {
       const t = setTimeout(() => {
         setPhase('blowing_2')
         fillRef.current = 0
@@ -185,7 +192,7 @@ export function CprGame({ spec, onComplete }: MiniGameProps) {
       }, PAUSE_MS)
       return () => clearTimeout(t)
     }
-  }, [phase])
+  }, [phase, paused])
 
   const finish = () => {
     if (finished.current) return

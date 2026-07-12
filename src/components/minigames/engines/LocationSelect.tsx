@@ -3,7 +3,7 @@
 // 显示身体部位图 + 伤口标记，从选项中选择正确的止血点
 // ============================================================
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, LocationSelectSpec } from '../../../game/types'
 
 const wrap: React.CSSProperties = {
@@ -13,15 +13,17 @@ const wrap: React.CSSProperties = {
   gap: 10,
 }
 
-export function LocationSelect({ spec, onComplete }: MiniGameProps) {
+export function LocationSelect({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as LocationSelectSpec
   const [selected, setSelected] = useState<number | null>(null)
   const [showResult, setShowResult] = useState(false)
   const finished = useRef(false)
   const attemptsRef = useRef(0)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
 
   const handleSelect = (idx: number) => {
-    if (finished.current || showResult) return
+    if (finished.current || showResult || pausedRef.current) return
     attemptsRef.current += 1
     setSelected(idx)
     setShowResult(true)

@@ -14,6 +14,10 @@ import { detectEnding } from '../game/endings/endings'
 import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
+import { VitalSignsBar } from '../components/feedback/VitalSignsBar'
+import { RescueProgressToast } from '../components/feedback/RescueProgressToast'
+import { EventToastStack } from '../components/feedback/EventToastStack'
+import { VehicleSelector } from '../components/feedback/VehicleSelector'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
 
@@ -25,6 +29,7 @@ interface Props {
 export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
+  const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
 
   // --- 启动班次 ---
   useEffect(() => {
@@ -236,13 +241,24 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setTerminalModalOpen(true)
   }, [])
 
-  // --- 处理派车（从模态框调用）---
+  // --- 处理派车：先弹车辆选择 ---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
     if (!state.terminal.determinant) return // 必须选择判定码才能派车
-    setTerminalModalOpen(false)
-    dispatch({ type: 'DISPATCH' })
+    setVehicleSelectorOpen(true)
   }, [state.currentCall, state.terminal.determinant])
+
+  // --- 选定车辆后真正派出 ---
+  const handleConfirmVehicle = useCallback((vehicleId: string) => {
+    setVehicleSelectorOpen(false)
+    setTerminalModalOpen(false)
+    dispatch({ type: 'DISPATCH', vehicleId })
+  }, [])
+
+  // --- 关闭一个事件 toast ---
+  const handleDismissEvent = useCallback((eventId: string) => {
+    dispatch({ type: 'DISMISS_PATIENT_EVENT', eventId })
+  }, [])
 
   // --- 处理临床判断选择 ---
   const handleJudgment = useCallback((judgmentId: string, optionIndex: number) => {
@@ -300,6 +316,22 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           stressLevel={state.callerState?.stressLevel ?? '紧张'}
           stress={state.callerState?.stress ?? 50}
         />
+
+        {/* 即时反馈：患者生命体征 */}
+        {state.patientStatus && (
+          <VitalSignsBar status={state.patientStatus} />
+        )}
+
+        {/* 即时反馈：救护车救援闭环 */}
+        {state.rescue.phase !== 'idle' && (
+          <RescueProgressToast
+            rescue={state.rescue}
+            ambulanceRemaining={state.ambulanceRemaining}
+            vehicleTier={
+              state.fleet.vehicles.find(v => v.id === state.rescue.vehicleId)?.tier
+            }
+          />
+        )}
 
         {/* 对话区 — 每条来电者发言旁可能弹出临床判断卡 */}
         <div ref={dialogueRef} style={{
@@ -428,6 +460,22 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           onDispatch={handleDispatch}
           onClose={() => setTerminalModalOpen(false)}
           onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
+        />
+      )}
+
+      {/* 即时反馈：顶部事件 toast 堆叠 */}
+      <EventToastStack
+        events={state.patientEvents}
+        onDismiss={handleDismissEvent}
+      />
+
+      {/* 派车车辆选择模态 */}
+      {vehicleSelectorOpen && (
+        <VehicleSelector
+          fleet={state.fleet}
+          suggestedCapability={call.correctTriage}
+          onSelect={handleConfirmVehicle}
+          onCancel={() => setVehicleSelectorOpen(false)}
         />
       )}
     </div>

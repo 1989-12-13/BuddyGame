@@ -18,9 +18,11 @@ export type GameAction =
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
-  | { type: 'DISPATCH' }
+  | { type: 'SELECT_VEHICLE'; vehicleId: string }                 // 玩家在派车 UI 中选定车辆
+  | { type: 'DISPATCH'; vehicleId?: string }                      // 派车；可选指定车辆，否则用 selectedVehicleId 或自动选最快
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
+  | { type: 'DISMISS_PATIENT_EVENT'; eventId: string }            // 关闭一个顶部 toast
   | { type: 'END_CALL' }
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }

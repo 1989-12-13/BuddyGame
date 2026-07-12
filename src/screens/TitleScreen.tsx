@@ -3,7 +3,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
-import { Play, Map, BookOpen } from 'lucide-react'
+import { Play, Map, BookOpen, Phone } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 
 interface Props {
@@ -91,27 +91,29 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
       <div style={styles.cornerBL} />
       <div style={styles.cornerBR} />
 
-      <div style={styles.content}>
-        {/* Status bar */}
-        <div style={styles.statusBar}>
-          <span style={{
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            backgroundColor: blink ? '#00ff88' : '#0a0e14',
-            border: '1px solid #00ff88',
-            boxShadow: blink ? '0 0 6px rgba(0, 255, 136, 0.6)' : 'none',
-            transition: 'all 0.1s',
-          }} />
-          <span style={styles.statusText}>SYSTEM ONLINE</span>
-          <span style={styles.statusSep}>|</span>
-          <span style={styles.statusText}>{clock}</span>
-          <span style={styles.statusSep}>|</span>
-          <span style={styles.statusText}>CH-120</span>
-        </div>
+      {/* Status bar — top-left corner */}
+      <div style={styles.statusBar}>
+        <span style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          backgroundColor: blink ? '#00ff88' : '#0a0e14',
+          border: '1px solid #00ff88',
+          boxShadow: blink ? '0 0 6px rgba(0, 255, 136, 0.6)' : 'none',
+          transition: 'all 0.1s',
+        }} />
+        <span style={styles.statusText}>SYSTEM ONLINE</span>
+        <span style={styles.statusSep}>|</span>
+        <span style={styles.statusText}>{clock}</span>
+        <span style={styles.statusSep}>|</span>
+        <span style={styles.statusText}>CH-120</span>
+      </div>
 
+      <div style={styles.content}>
         {/* Title */}
-        <h1 style={styles.title}>120 调度台</h1>
+        <h1 style={styles.title}>
+          120 <Phone size={40} color="#ff3b3b" strokeWidth={2.5} style={{ verticalAlign: 'middle', marginTop: -4 }} /> 调度台
+        </h1>
         <p style={styles.subtitle}>EMERGENCY DISPATCH SIMULATOR</p>
 
         <div style={styles.divider} />
@@ -243,6 +245,9 @@ const styles: Record<string, React.CSSProperties> = {
     overflowY: 'auto',
   },
   statusBar: {
+    position: 'absolute',
+    top: 24,
+    left: 60,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
@@ -250,9 +255,9 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 4,
     border: '1px solid var(--border)',
     backgroundColor: 'rgba(0, 255, 136, 0.04)',
-    marginBottom: 20,
     fontFamily: 'var(--font-mono)',
     fontSize: 11,
+    zIndex: 3,
   },
   statusText: {
     color: '#00ff88',

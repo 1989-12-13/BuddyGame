@@ -5,6 +5,7 @@
 import { useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import type { EndingDef } from '../game/types'
+import { RotateCcw, Trophy, ShieldCheck, ShieldAlert, Skull } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 
 interface Props {
@@ -27,7 +28,9 @@ function ratingColor(rating: string): string {
 
 function badgeStyle(rating: string): CSSProperties {
   return {
-    display: 'inline-block',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
     padding: '4px 16px',
     borderRadius: 4,
     border: `1px solid ${ratingColor(rating)}`,
@@ -99,6 +102,9 @@ function callCardScoreStyle(saved: boolean): CSSProperties {
 
 function callCardStatusStyle(saved: boolean): CSSProperties {
   return {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
     fontSize: 10,
     color: saved ? '#00ff88' : '#ff3b3b',
     fontFamily: 'var(--font-mono)',
@@ -242,6 +248,9 @@ const styles: Record<string, CSSProperties> = {
     fontFamily: 'var(--font-body)',
   },
   restartBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
     marginTop: 8,
     padding: '12px 48px',
     fontSize: 16,
@@ -284,10 +293,10 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
         {/* Rating badge */}
         <div style={styles.badgeWrap}>
           <div style={badgeStyle(rating)}>
-            {rating === 'gold' && '★ 金牌调度员'}
-            {rating === 'silver' && '★ 银牌调度员'}
-            {rating === 'bronze' && '★ 铜牌调度员'}
-            {rating === 'fail' && '⚠ 需要复训'}
+            {rating === 'gold' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />金牌调度员</>}
+            {rating === 'silver' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />银牌调度员</>}
+            {rating === 'bronze' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />铜牌调度员</>}
+            {rating === 'fail' && <><Skull size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />需要复训</>}
           </div>
         </div>
 
@@ -326,7 +335,7 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
                         <span style={styles.callCardMax}>/100</span>
                       </div>
                       <div style={callCardStatusStyle(saved)}>
-                        {saved ? '◆ 救回' : '◇ 错失'}
+                        {saved ? <><ShieldCheck size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />救回</> : <><ShieldAlert size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />错失</>}
                       </div>
                     </div>
                     <div style={styles.callCardBar}>
@@ -348,7 +357,7 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
 
         {/* Restart */}
         <button style={styles.restartBtn} onClick={handleRestart}>
-          ▸ 重新值班
+          <RotateCcw size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />重新值班
         </button>
       </div>
     </div>

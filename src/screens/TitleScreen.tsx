@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
+import { Play, Map, BookOpen } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 
 interface Props {
@@ -128,14 +129,14 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
             }}
             onClick={handleStart}
           >
-            ▸ 开始值班
+            <Play size={16} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />开始值班
           </button>
           {onLevelSelect && (
             <button
               onClick={handleLevelSelect}
               style={styles.secondaryBtn}
             >
-              选关
+              <Map size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />选关
             </button>
           )}
           {onKnowledge && (
@@ -143,7 +144,7 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
               onClick={handleKnowledge}
               style={styles.secondaryBtn}
             >
-              知识库
+              <BookOpen size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />知识库
             </button>
           )}
         </div>
@@ -299,6 +300,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 8,
   },
   startBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
     padding: '14px 56px',
     fontSize: 18,
     fontWeight: 700,
@@ -313,6 +317,9 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all 0.3s',
   },
   secondaryBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
     padding: '14px 28px',
     fontSize: 14,
     fontWeight: 600,

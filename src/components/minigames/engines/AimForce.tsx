@@ -125,9 +125,9 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
         width={isLocal ? 200 : 160}
         height={isLocal ? 180 : 220}
         style={{
-          backgroundColor: '#11151c',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: 10,
-          border: '1px solid #2a323e',
+          border: '1px solid var(--border)',
           cursor: phase === 'aim' ? 'crosshair' : 'default',
           touchAction: 'none',
           boxShadow: 'inset 0 0 30px rgba(0,0,0,0.4)',
@@ -175,7 +175,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             {/* 目标 */}
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
             {targetMark(s.targetX, s.targetY)}
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
             <text x={s.targetX + 8} y={s.targetY + 1} fill="#58a6ff" fontSize={3.8} fontWeight="bold" opacity={0.5}>肱动脉止血点</text>
           </g>
         ) : bodyType === 'leg' ? (
@@ -198,7 +198,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             {/* 目标 */}
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
             {targetMark(s.targetX, s.targetY)}
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
             <text x={s.targetX + 8} y={s.targetY + 1} fill="#58a6ff" fontSize={3.8} fontWeight="bold" opacity={0.5}>股动脉止血点</text>
           </g>
         ) : bodyType === 'head' ? (
@@ -226,7 +226,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             {/* 目标 */}
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
             {targetMark(s.targetX, s.targetY)}
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
             <text x={s.targetX - 22} y={s.targetY + 12} fill="#58a6ff" fontSize={3.8} fontWeight="bold" opacity={0.5}>颞动脉止血点</text>
           </g>
         ) : bodyType === 'chest' ? (
@@ -251,7 +251,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             {/* 目标 */}
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
             {targetMark(s.targetX, s.targetY)}
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
             <text x={s.targetX + 8} y={s.targetY + 1} fill="#58a6ff" fontSize={3.8} fontWeight="bold" opacity={0.5}>锁骨下动脉止血点</text>
           </g>
         ) : bodyType === 'full' && s.showSideView ? (
@@ -268,7 +268,7 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             <path d="M38 60 Q36 64 37 68 Q38 70 42 71 L44 71 Q47 70 48 68 Q50 64 48 60 Z" fill="url(#sg)" stroke={skinStroke} strokeWidth={0.6} />
             <path d="M39 70 Q38 76 39 84 Q40 88 42 90 L44 90 Q46 88 47 84 Q48 76 47 70 Z" fill="url(#sg)" stroke={skinStroke} strokeWidth={0.6} />
             <path d="M40 88 Q39 92 40 98 Q41 100 43 100 L44 100 Q46 100 46 98 Q47 92 46 88 Z" fill="url(#sg)" stroke={skinStroke} strokeWidth={0.6} />
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
           </g>
         ) : (
@@ -289,13 +289,13 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
             <rect x={40} y={90} width={7} height={18} rx={3.5} fill="url(#sg)" stroke={skinStroke} strokeWidth={0.5} />
             <rect x={53} y={90} width={7} height={18} rx={3.5} fill="url(#sg)" stroke={skinStroke} strokeWidth={0.5} />
             <circle cx={s.targetX} cy={s.targetY} r={s.aimTolerance} {...glowBlue} />
-            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#00ff88' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
+            {!hideGuide && <circle cx={mx} cy={my} r={4} fill={inTarget ? '#22c55e' : '#ff3b3b'} stroke="#fff" strokeWidth={1.2} style={{ filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.3))' }} />}
           </g>
         )}
       </svg>
 
       {phase === 'aim' && (
-        <div style={{ fontSize: 11, color: inTarget ? '#00ff88' : '#6e7681', padding: '4px 0' }}>
+        <div style={{ fontSize: 11, color: inTarget ? '#22c55e' : 'var(--text-muted)', padding: '4px 0' }}>
           {inTarget && isHoldMode ? '✓ 位置准确，松手开始按压' : inTarget ? '位置准确 ✓' : isHoldMode ? '拖拽到伤口近心端的动脉位置' : '拖拽施力点到目标位置'}
         </div>
       )}
@@ -312,9 +312,9 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
               style={{
                 width: 130, height: 130, borderRadius: '50%',
                 background: flash
-                  ? 'radial-gradient(circle at 50% 50%, #fee2e2, #11151c)'
-                  : 'radial-gradient(circle at 50% 50%, #2a323e, #1a1f29)',
-                border: `4px solid ${flash ? '#ff5454' : '#6e7681'}`,
+                  ? 'radial-gradient(circle at 50% 50%, #fee2e2, var(--bg-surface))'
+                  : 'radial-gradient(circle at 50% 50%, var(--border), var(--bg-elevated))',
+                border: `4px solid ${flash ? '#ff5454' : 'var(--text-muted)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', userSelect: 'none',
                 transition: 'transform 0.1s, border-color 0.1s',
@@ -322,34 +322,34 @@ export function AimForce({ spec, onComplete }: MiniGameProps) {
                 boxShadow: flash ? '0 0 25px rgba(239,68,68,0.3)' : 'none',
               }}
             >
-              <span style={{ fontSize: 14, color: flash ? '#ff5454' : '#8b949e', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 }}>
+              <span style={{ fontSize: 14, color: flash ? '#ff5454' : 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 }}>
                 按住不放{'\n'}持续施压
               </span>
             </div>
             {/* 压力进度条 */}
-            <div style={{ width: '80%', maxWidth: 180, height: 8, borderRadius: 4, backgroundColor: '#2a323e', overflow: 'hidden' }}>
+            <div style={{ width: '80%', maxWidth: 180, height: 8, borderRadius: 4, backgroundColor: 'var(--border)', overflow: 'hidden' }}>
               <div style={{
                 width: `${progress * 100}%`, height: '100%',
                 borderRadius: 4,
-                background: progress >= 1 ? '#00ff88' : 'linear-gradient(90deg, #58a6ff, #00ff88)',
+                background: progress >= 1 ? '#22c55e' : 'linear-gradient(90deg, #58a6ff, #22c55e)',
                 transition: 'width 0.08s linear, background-color 0.3s',
               }} />
             </div>
-            <div style={{ fontSize: 10, color: '#6e7681' }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
               持续按压 {Math.round((progress) * (s.holdSec ?? 3))}/{(s.holdSec ?? 3)} 秒
             </div>
-            {progress >= 1 && <div style={{ fontSize: 13, color: '#00ff88', fontWeight: 'bold' }}>✓ 按压完成</div>}
+            {progress >= 1 && <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 'bold' }}>✓ 按压完成</div>}
           </div>
         ) : (
           /* ── 冲击模式（保留给海姆立克等） ── */
-          <div style={{ fontSize: 11, color: '#6e7681' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             冲击模式（点击以下按钮）
           </div>
         )
       )}
 
       {phase === 'done' && !isHoldMode && (
-        <div style={{ fontSize: 13, color: '#00ff88', fontWeight: 'bold' }}>
+        <div style={{ fontSize: 13, color: '#22c55e', fontWeight: 'bold' }}>
           ✓ 操作完成
         </div>
       )}

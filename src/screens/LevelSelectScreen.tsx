@@ -150,7 +150,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
                   key={s.id}
                   style={{
                     ...styles.card,
-                    borderColor: hoveredId === s.id ? '#ffb000' : '#2a323e',
+                    borderColor: hoveredId === s.id ? '#ffb000' : 'var(--border)',
                     transform: hoveredId === s.id ? 'translateY(-2px)' : 'none',
                   }}
                   onMouseEnter={() => setHoveredId(s.id)}
@@ -177,31 +177,31 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     width: '100vw',
     height: '100vh',
-    backgroundColor: '#0a0e14',
+    backgroundColor: 'var(--bg)',
     display: 'flex',
     flexDirection: 'column',
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    borderBottom: '1px solid #2a323e',
+    borderBottom: '1px solid var(--border)',
   },
   backBtn: {
     padding: '6px 14px',
     fontSize: 13,
-    color: '#8b949e',
-    backgroundColor: '#1a1f29',
-    border: '1px solid #2a323e',
+    color: 'var(--text-secondary)',
+    backgroundColor: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
     borderRadius: 6,
     cursor: 'pointer',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     margin: 0,
     letterSpacing: 2,
   },
@@ -216,10 +216,10 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     fontSize: 13,
-    backgroundColor: '#1a1f29',
-    border: '1px solid #2a323e',
+    backgroundColor: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
     borderRadius: 6,
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     outline: 'none',
   },
   clearBtn: {
@@ -227,7 +227,7 @@ const styles: Record<string, React.CSSProperties> = {
     right: 8,
     background: 'none',
     border: 'none',
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     cursor: 'pointer',
     fontSize: 14,
   },
@@ -239,8 +239,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     fontSize: 11,
   },
-  legendTitle: { color: '#6e7681', marginRight: 4 },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: '#8b949e' },
+  legendTitle: { color: 'var(--text-muted)', marginRight: 4 },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: 'var(--text-secondary)' },
   scrollArea: {
     flex: 1,
     overflowY: 'auto',
@@ -252,7 +252,7 @@ const styles: Record<string, React.CSSProperties> = {
   categoryTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     margin: '0 0 8px',
     paddingLeft: 10,
     borderLeft: '3px solid #ffb000',
@@ -264,8 +264,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     padding: '10px 12px',
-    backgroundColor: '#1a1f29',
-    border: '1px solid #2a323e',
+    backgroundColor: 'var(--bg-elevated)',
+    border: '1px solid var(--border)',
     borderRadius: 8,
     cursor: 'pointer',
     transition: 'all 0.15s',
@@ -281,7 +281,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   protocolNum: {
     fontSize: 10,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontWeight: 'bold',
     fontFamily: 'monospace',
   },
@@ -289,11 +289,11 @@ const styles: Record<string, React.CSSProperties> = {
   cardTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
   },
   cardDesc: {
     fontSize: 11,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     lineHeight: 1.3,
   },
 }

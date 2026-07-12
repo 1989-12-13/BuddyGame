@@ -177,7 +177,7 @@ export function CprRhythm({ onComplete }: Props) {
                   ...styles.beatBall,
                   bottom: `${beatProgress * 80 + 10}%`,
                   backgroundColor:
-                    lastHitQuality === 'perfect' ? '#00ff88'
+                    lastHitQuality === 'perfect' ? '#22c55e'
                     : lastHitQuality === 'good' ? '#ffb000'
                     : lastHitQuality === 'miss' ? '#ff5454'
                     : '#38bdf8',
@@ -210,7 +210,7 @@ export function CprRhythm({ onComplete }: Props) {
               style={{
                 ...styles.feedbackPopup,
                 color:
-                  lastHitQuality === 'perfect' ? '#00ff88'
+                  lastHitQuality === 'perfect' ? '#22c55e'
                   : lastHitQuality === 'good' ? '#ffb000'
                   : '#ff5454',
               }}
@@ -228,7 +228,7 @@ export function CprRhythm({ onComplete }: Props) {
                 style={{
                   ...styles.historyDot,
                   backgroundColor:
-                    hit.quality === 'perfect' ? '#00ff88'
+                    hit.quality === 'perfect' ? '#22c55e'
                     : hit.quality === 'good' ? '#ffb000'
                     : '#ff5454',
                 }}
@@ -249,7 +249,7 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'relative' as const,
     padding: '12px 16px',
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     borderTop: '2px solid #ff5454',
     minHeight: 260,
     display: 'flex',
@@ -273,7 +273,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   readyHint: {
     fontSize: 13,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
   },
   statusBar: {
     display: 'flex',
@@ -284,7 +284,7 @@ const styles: Record<string, React.CSSProperties> = {
   statusLabel: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontFamily: 'monospace',
   },
   beatMeter: {
@@ -298,10 +298,10 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative' as const,
     width: 40,
     height: 180,
-    backgroundColor: '#e6edf3',
+    backgroundColor: 'var(--text-primary)',
     borderRadius: 20,
     overflow: 'hidden',
-    border: '1px solid #e6edf3',
+    border: '1px solid var(--text-primary)',
   },
   sweetSpot: {
     position: 'absolute' as const,
@@ -329,7 +329,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '2px solid #38bdf8',
     borderRadius: 8,
     backgroundColor: '#0c4a6e',
-    color: '#2a323e',
+    color: 'var(--border)',
     fontSize: 16,
     fontWeight: 'bold',
     cursor: 'pointer',

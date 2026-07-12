@@ -60,7 +60,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
         <div style={styles.breakdownRow}>
           {[
             { label: '派车速度', value: breakdown.speed, max: 40, color: '#00d4ff' },
-            { label: '信息完整', value: breakdown.info, max: 30, color: '#00ff88' },
+            { label: '信息完整', value: breakdown.info, max: 30, color: '#22c55e' },
             { label: '分诊准确', value: breakdown.triage, max: 20, color: '#ffb000' },
             { label: '急救指导', value: breakdown.guidance, max: 10, color: '#ff8c00' },
           ].map(item => (
@@ -132,16 +132,16 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
               {debrief.judgments.map((j, i) => (
                 <div key={i} style={{
                   ...styles.judgmentRow,
-                  borderColor: j.isCorrect ? '#00ff88' : '#ff5454',
+                  borderColor: j.isCorrect ? '#22c55e' : '#ff5454',
                 }}>
                   <div style={styles.judgmentQuestion}>{j.question}</div>
                   <div style={styles.judgmentChoices}>
-                    <span style={{ color: j.isCorrect ? '#00ff88' : '#ff6b6b', fontSize: 12 }}>
+                    <span style={{ color: j.isCorrect ? '#22c55e' : '#ff6b6b', fontSize: 12 }}>
                       你的选择：{j.playerChoice}
                     </span>
                     {!j.isCorrect && (
                       <>
-                        <span style={{ color: '#6e7681', fontSize: 11, marginLeft: 8 }}>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 8 }}>
                           ✓ 正确：{j.correctAnswer}
                         </span>
                         {j.reason && (
@@ -179,7 +179,7 @@ function DetailItem({
   icon: ReactNode; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
   const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
-  const statusColor = ok ? '#00ff88' : partial ? '#ffb000' : '#ff5454'
+  const statusColor = ok ? '#22c55e' : partial ? '#ffb000' : '#ff5454'
   return (
     <div style={styles.detailItem}>
       <span style={{ fontSize: 13 }}>{statusIcon}</span>
@@ -203,12 +203,12 @@ const styles: Record<string, React.CSSProperties> = {
   card: {
     width: 'min(520px, calc(100vw - 24px))',
     maxHeight: '85vh',
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     borderRadius: 10,
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
     padding: '20px 24px',
     overflowY: 'auto' as const,
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     display: 'flex',
     flexDirection: 'column' as const,
     gap: 8,
@@ -216,7 +216,7 @@ const styles: Record<string, React.CSSProperties> = {
   header: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     textAlign: 'center' as const,
     margin: 0,
   },
@@ -232,7 +232,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   totalScoreLabel: {
     fontSize: 16,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     marginLeft: 4,
   },
   breakdownRow: {
@@ -247,14 +247,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   breakdownLabel: {
     fontSize: 11,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     minWidth: 56,
     textAlign: 'right' as const,
   },
   breakdownBarTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: '#1e252e',
+    backgroundColor: 'var(--border-light)',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -277,7 +277,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   divider: {
     height: 1,
-    backgroundColor: '#1e252e',
+    backgroundColor: 'var(--border-light)',
     margin: '2px 0',
   },
   detailGrid: {
@@ -293,7 +293,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '2px 4px',
   },
   detailLabel: {
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     minWidth: 90,
   },
   detailValue: {
@@ -305,7 +305,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#ffb000',
-    borderBottom: '1px solid #2a323e',
+    borderBottom: '1px solid var(--border)',
     paddingBottom: 3,
     marginTop: 4,
   },
@@ -318,11 +318,11 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '6px 8px',
     borderRadius: 6,
     border: '1px solid',
-    backgroundColor: '#0d1117',
+    backgroundColor: 'var(--bg-input)',
   },
   judgmentQuestion: {
     fontSize: 11,
-    color: '#b1bac4',
+    color: 'var(--text-secondary)',
     marginBottom: 2,
   },
   judgmentChoices: {
@@ -333,13 +333,13 @@ const styles: Record<string, React.CSSProperties> = {
   narrativeBox: {
     marginTop: 4,
     padding: '8px 10px',
-    backgroundColor: '#0d1117',
+    backgroundColor: 'var(--bg-input)',
     borderRadius: 6,
-    border: '1px solid #1e252e',
+    border: '1px solid var(--border-light)',
   },
   narrativeText: {
     fontSize: 12,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     lineHeight: 1.6,
     fontStyle: 'italic' as const,
   },

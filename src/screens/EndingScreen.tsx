@@ -20,7 +20,7 @@ const SAVE_THRESHOLD = 60 // 每通 ≥60 分视为"救回"
 function ratingColor(rating: string): string {
   switch (rating) {
     case 'gold': return '#ffb000'
-    case 'silver': return '#8b949e'
+    case 'silver': return 'var(--text-secondary)'
     case 'bronze': return '#d97706'
     default: return '#ff3b3b'
   }
@@ -71,7 +71,7 @@ function savedSummaryStyle(saved: number, total: number): CSSProperties {
     fontSize: 14,
     fontWeight: 800,
     fontFamily: 'var(--font-mono)',
-    color: saved === total ? '#00ff88' : saved > total / 2 ? '#ffb000' : '#ff3b3b',
+    color: saved === total ? '#22c55e' : saved > total / 2 ? '#ffb000' : '#ff3b3b',
     letterSpacing: 1,
   }
 }
@@ -81,8 +81,8 @@ function callCardStyle(saved: boolean): CSSProperties {
     width: 78,
     padding: '8px 6px',
     borderRadius: 6,
-    border: `1px solid ${saved ? 'rgba(0, 255, 136, 0.25)' : 'rgba(255, 59, 59, 0.25)'}`,
-    backgroundColor: saved ? 'rgba(0, 255, 136, 0.05)' : 'rgba(255, 59, 59, 0.05)',
+    border: `1px solid ${saved ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 59, 59, 0.25)'}`,
+    backgroundColor: saved ? 'rgba(34, 197, 94, 0.05)' : 'rgba(255, 59, 59, 0.05)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -94,7 +94,7 @@ function callCardScoreStyle(saved: boolean): CSSProperties {
   return {
     fontSize: 20,
     fontWeight: 800,
-    color: saved ? '#00ff88' : '#ff3b3b',
+    color: saved ? '#22c55e' : '#ff3b3b',
     fontFamily: 'var(--font-mono)',
     lineHeight: 1,
   }
@@ -106,7 +106,7 @@ function callCardStatusStyle(saved: boolean): CSSProperties {
     alignItems: 'center',
     gap: 1,
     fontSize: 10,
-    color: saved ? '#00ff88' : '#ff3b3b',
+    color: saved ? '#22c55e' : '#ff3b3b',
     fontFamily: 'var(--font-mono)',
     fontWeight: 600,
   }
@@ -116,7 +116,7 @@ function callCardBarFillStyle(saved: boolean, score: number): CSSProperties {
   return {
     width: `${Math.min(100, score)}%`,
     height: '100%',
-    backgroundColor: saved ? '#00ff88' : '#ff3b3b',
+    backgroundColor: saved ? '#22c55e' : '#ff3b3b',
     transition: 'width 0.6s ease-out',
   }
 }
@@ -141,7 +141,7 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0a0e14',
+    backgroundColor: 'var(--bg)',
     position: 'relative',
     overflow: 'hidden',
     animation: 'fade-in 0.6s ease-out',
@@ -164,14 +164,14 @@ const styles: Record<string, CSSProperties> = {
   title: {
     fontSize: 30,
     fontWeight: 800,
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     margin: 0,
     fontFamily: 'var(--font-mono)',
     letterSpacing: 3,
   },
   subtitle: {
     fontSize: 13,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     margin: 0,
     fontStyle: 'italic',
     fontFamily: 'var(--font-body)',
@@ -184,13 +184,13 @@ const styles: Record<string, CSSProperties> = {
   },
   scoreLabel: {
     fontSize: 13,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 600,
   },
   scoreMax: {
     fontSize: 14,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontFamily: 'var(--font-mono)',
   },
   callsHeader: {
@@ -202,7 +202,7 @@ const styles: Record<string, CSSProperties> = {
   },
   callsHeaderText: {
     fontSize: 12,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontWeight: 700,
     fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
@@ -217,7 +217,7 @@ const styles: Record<string, CSSProperties> = {
   },
   callCardNum: {
     fontSize: 10,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontWeight: 700,
     fontFamily: 'var(--font-mono)',
   },
@@ -229,7 +229,7 @@ const styles: Record<string, CSSProperties> = {
   },
   callCardMax: {
     fontSize: 9,
-    color: '#484f58',
+    color: 'var(--text-dim)',
     fontWeight: 500,
   },
   callCardBar: {
@@ -242,7 +242,7 @@ const styles: Record<string, CSSProperties> = {
   },
   description: {
     fontSize: 13,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     lineHeight: 1.8,
     padding: '0 10px',
     fontFamily: 'var(--font-body)',

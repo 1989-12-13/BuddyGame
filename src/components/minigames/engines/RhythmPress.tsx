@@ -105,10 +105,10 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#00ff88' : '#ffb000'} />
-        <Readout label="目标" value={String(s.targetBpm)} color="#6e7681" />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#22c55e' : '#ffb000'} />
+        <Readout label="目标" value={String(s.targetBpm)} color="var(--text-muted)" />
         <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#58a6ff" />
-        <Readout label="按压" value={String(presses)} color="#2a323e" />
+        <Readout label="按压" value={String(presses)} color="var(--border)" />
       </div>
 
       <div
@@ -117,7 +117,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           width: 160,
           height: 160,
           borderRadius: '50%',
-          backgroundColor: '#1e252e',
+          backgroundColor: 'var(--border-light)',
           border: '3px solid #ff3b3b',
           display: 'flex',
           alignItems: 'center',
@@ -132,7 +132,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           {done ? '完成' : '按空格\n或点击'}
         </span>
       </div>
-      <div style={{ fontSize: 11, color: '#8b949e' }}>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
         保持每 {targetInterval.toFixed(0)} 毫秒一次的稳定节奏
       </div>
     </div>
@@ -142,7 +142,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
 function Readout({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ textAlign: 'center', minWidth: 52 }}>
-      <div style={{ fontSize: 9, color: '#8b949e' }}>{label}</div>
+      <div style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 900, color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
     </div>
   )

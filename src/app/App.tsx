@@ -10,6 +10,8 @@ import { EndingScreen } from '../screens/EndingScreen'
 import { LevelSelectScreen } from '../screens/LevelSelectScreen'
 import { KnowledgeScreen } from '../screens/KnowledgeScreen'
 import { AudioProvider } from '../audio/AudioContext'
+import { ThemeProvider } from '../contexts/ThemeContext'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 
@@ -75,8 +77,11 @@ export default function App() {
   })()
 
   return (
-    <AudioProvider>
-      {mainContent}
-    </AudioProvider>
+    <ThemeProvider>
+      <AudioProvider>
+        {mainContent}
+        <ThemeToggle />
+      </AudioProvider>
+    </ThemeProvider>
   )
 }

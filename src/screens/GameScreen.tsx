@@ -272,8 +272,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       <div style={styles.container}>
         <Hud state={state} />
         <div style={styles.centerMessage}>
-          <h2 style={{ color: '#e6edf3' }}>本班次所有通话已处理完毕</h2>
-          <p style={{ color: '#6e7681' }}>正在生成班次评估报告...</p>
+          <h2 style={{ color: 'var(--text-primary)' }}>本班次所有通话已处理完毕</h2>
+          <p style={{ color: 'var(--text-muted)' }}>正在生成班次评估报告...</p>
         </div>
       </div>
     )
@@ -347,7 +347,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         <div
           style={{
             ...styles.splitBar,
-            backgroundColor: splitHovered ? '#3a4452' : '#2a323e',
+            backgroundColor: splitHovered ? 'var(--border-bright)' : 'var(--border)',
           }}
           onPointerDown={handleSplitterDown}
           onPointerEnter={() => setSplitHovered(true)}
@@ -394,7 +394,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         {/* 收尾阶段 */}
         {state.callPhase === 'closing' && (
           <div style={styles.closingPanel}>
-            <p style={{ color: '#00ff88', fontWeight: 'bold', marginBottom: 8 }}>
+            <p style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: 8 }}>
               {call.guidance ? '急救指导已完成，等待救护车到达。' : '派车指令已发出。'}
             </p>
             <button style={styles.endCallBtn} onClick={() => dispatch({ type: 'END_CALL' })}>
@@ -463,18 +463,18 @@ function CallWaiting({
       }}>
         <Phone size={64} color="#ff3b3b" strokeWidth={1.8} />
       </div>
-      <h2 style={{ color: '#e6edf3', margin: '0 0 4px', fontSize: 18 }}>
+      <h2 style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontSize: 18 }}>
         第 {callIndex + 1}/{totalCalls} 通来电
       </h2>
       <p style={{ color: '#ff5454', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
         线路接通中...
       </p>
       {lastScore !== undefined && (
-        <p style={{ color: '#00ff88', fontWeight: 'bold', margin: '0 0 12px' }}>
+        <p style={{ color: '#22c55e', fontWeight: 'bold', margin: '0 0 12px' }}>
           上一通得分：{lastScore}/100
         </p>
       )}
-      <p style={{ color: '#6e7681', marginBottom: 16, fontSize: 12 }}>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: 12 }}>
         班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 累计 {totalScore}分
       </p>
       <button style={styles.answerBtn} onClick={onAnswer}>
@@ -534,15 +534,15 @@ function PhoneHeader({
       {/* 第二行：来电信息 + 问询耗时 */}
       <div style={styles.phoneHeaderInfo}>
         <span>{phoneNumber}</span>
-        <span style={{ color: '#6e7681' }}>|</span>
+        <span style={{ color: 'var(--text-muted)' }}>|</span>
         <span>基站 {baseStation}</span>
-        <span style={{ color: '#6e7681' }}>|</span>
+        <span style={{ color: 'var(--text-muted)' }}>|</span>
         <span>{callerName}（{relationship}）</span>
       </div>
 
       {/* 第三行：来电者压力指示器 */}
       <div style={styles.stressBar}>
-        <span style={{ fontSize: 11, color: '#8b949e', minWidth: 40 }}>
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 40 }}>
           {si.emoji} {si.label}
         </span>
         <div style={styles.stressTrack}>
@@ -594,7 +594,7 @@ function TranscriptLine({
     }}>
       <span style={{
         ...styles.transcriptSpeaker,
-        color: isCaller ? '#ff3b3b' : isOperator ? '#00d4ff' : '#6e7681',
+        color: isCaller ? '#ff3b3b' : isOperator ? '#00d4ff' : 'var(--text-muted)',
       }}>
         [{speakerLabel}]
       </span>
@@ -625,14 +625,14 @@ function JudgmentCard({
   return (
     <div style={{
       ...styles.judgmentCard,
-      borderColor: isResolved ? '#3a4452' : '#ffb000',
+      borderColor: isResolved ? 'var(--border-bright)' : '#ffb000',
     }}>
       <div style={styles.judgmentHeader}>
         <span style={styles.judgmentIcon}>◆</span>
         <span style={styles.judgmentQuestion}>{judgment.question}</span>
         {isResolved && (
           <span style={{
-            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? '#00ff88' : '#ff3b3b',
+            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? '#22c55e' : '#ff3b3b',
             fontSize: 10,
             fontWeight: 'bold',
             marginLeft: 'auto',
@@ -645,15 +645,15 @@ function JudgmentCard({
         {judgment.options.map((opt, idx) => {
           const isChosen = judgment.chosenOptionIndex === idx
           const isCorrectReveal = isResolved && opt.isCorrect
-          let bgColor = '#11151c'
-          let borderColor = '#2a323e'
+          let bgColor = 'var(--bg-surface)'
+          let borderColor = 'var(--border)'
           if (isResolved) {
             if (isChosen) {
               bgColor = opt.isCorrect ? 'rgba(0, 255, 136, 0.12)' : 'rgba(255, 59, 59, 0.12)'
-              borderColor = opt.isCorrect ? '#00ff88' : '#ff3b3b'
+              borderColor = opt.isCorrect ? '#22c55e' : '#ff3b3b'
             } else if (isCorrectReveal) {
               bgColor = 'rgba(0, 255, 136, 0.12)'
-              borderColor = '#00ff88'
+              borderColor = '#22c55e'
             }
           }
 
@@ -677,13 +677,13 @@ function JudgmentCard({
                 <div style={{
                   fontWeight: isChosen ? 'bold' : 'normal',
                   color: isChosen
-                    ? (opt.isCorrect && isResolved ? '#00ff88' : isResolved ? '#ff3b3b' : '#ffb000')
+                    ? (opt.isCorrect && isResolved ? '#22c55e' : isResolved ? '#ff3b3b' : '#ffb000')
                     : '#b1bac4',
                 }}>
                   {opt.label}
                 </div>
                 {opt.sublabel && (
-                  <div style={{ fontSize: 10, color: '#6e7681', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
                     {opt.sublabel}
                   </div>
                 )}
@@ -700,7 +700,7 @@ function JudgmentCard({
 const TIER_STYLE: Record<string, { border: string; bg: string; badge: string; label: string }> = {
   critical:  { border: '#ff3b3b', bg: 'rgba(255, 59, 59, 0.08)', badge: '#ff3b3b', label: '◆ 关键' },
   important: { border: '#ffb000', bg: 'rgba(255, 176, 0, 0.08)', badge: '#ffb000', label: '◆ 重要' },
-  detail:    { border: '#00ff88', bg: 'rgba(0, 255, 136, 0.08)', badge: '#00ff88', label: '◆ 细节' },
+  detail:    { border: '#22c55e', bg: 'rgba(0, 255, 136, 0.08)', badge: '#22c55e', label: '◆ 细节' },
 }
 
 /** 问询按钮面板 — 5步标准协议 + 补充MPDS问询 */
@@ -757,7 +757,7 @@ function QuestionPanel({
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
           📡 标准协议
-          {allFourStepsDone && <span style={{ color: '#00ff88', marginLeft: 6 }}>✓ 全部完成</span>}
+          {allFourStepsDone && <span style={{ color: '#22c55e', marginLeft: 6 }}>✓ 全部完成</span>}
         </div>
 
         <div style={styles.protocolStepsList}>
@@ -770,14 +770,14 @@ function QuestionPanel({
               <div key={ps.id} style={{
                 ...styles.protocolStepRow,
                 opacity: locked ? 0.45 : 1,
-                borderColor: done ? '#00ff88' : isCurrent ? '#ffb000' : '#2a323e',
+                borderColor: done ? '#22c55e' : isCurrent ? '#ffb000' : 'var(--border)',
                 backgroundColor: done ? 'rgba(0, 255, 136, 0.08)' : isCurrent ? 'rgba(255, 176, 0, 0.08)' : 'transparent',
               }}>
                 {/* 步骤编号 */}
                 <div style={{
                   ...styles.protocolStepNum,
-                  backgroundColor: done ? '#00ff88' : isCurrent ? '#ffb000' : '#2a323e',
-                  color: done ? '#fff' : isCurrent ? '#fff' : '#8b949e',
+                  backgroundColor: done ? '#22c55e' : isCurrent ? '#ffb000' : 'var(--border)',
+                  color: done ? '#fff' : isCurrent ? '#fff' : 'var(--text-secondary)',
                 }}>
                   {done ? '✓' : ps.step}
                 </div>
@@ -787,19 +787,19 @@ function QuestionPanel({
                   <div style={{
                     fontSize: 12,
                     fontWeight: done ? 'normal' : 'bold',
-                    color: done ? '#00ff88' : isCurrent ? '#ffb000' : '#8b949e',
+                    color: done ? '#22c55e' : isCurrent ? '#ffb000' : 'var(--text-secondary)',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
                   </div>
-                  <div style={{ fontSize: 10, color: '#6e7681', marginTop: 1 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
                     {ps.qText}
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 {done ? (
-                  <span style={{ fontSize: 12, color: '#00ff88', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     ✓ 完成
                   </span>
                 ) : isCurrent ? (
@@ -810,7 +810,7 @@ function QuestionPanel({
                     询问 ({ps.timeCost}s)
                   </button>
                 ) : (
-                  <span style={{ fontSize: 10, color: '#6e7681', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     🔒 等待
                   </span>
                 )}
@@ -838,7 +838,7 @@ function QuestionPanel({
               />
             )}
             {landmarkDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#00ff88', color: '#00ff88', backgroundColor: 'rgba(0, 255, 136, 0.08)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: '#22c55e', color: '#22c55e', backgroundColor: 'rgba(0, 255, 136, 0.08)' }}>
                 ✓ 地址已精确
               </div>
             )}
@@ -856,7 +856,7 @@ function QuestionPanel({
               />
             )}
             {contactDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#00ff88', color: '#00ff88', backgroundColor: 'rgba(0, 255, 136, 0.08)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: '#22c55e', color: '#22c55e', backgroundColor: 'rgba(0, 255, 136, 0.08)' }}>
                 ✓ 已记录
               </div>
             )}
@@ -907,7 +907,7 @@ function QuestionPanel({
             style={{
               ...styles.terminalBtn,
               animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
-              borderColor: hasTriage ? '#00ff88' : '#ff3b3b',
+              borderColor: hasTriage ? '#22c55e' : '#ff3b3b',
               backgroundColor: hasTriage ? 'rgba(0, 255, 136, 0.08)' : 'rgba(255, 59, 59, 0.08)',
             }}
             onClick={onOpenTerminal}
@@ -960,9 +960,9 @@ function AskBtnEx({
     <button
       style={{
         ...styles.qBtn,
-        backgroundColor: done ? 'rgba(0, 255, 136, 0.08)' : disabled ? '#11151c' : (ts?.bg ?? '#1a1f29'),
-        borderColor: done ? '#00ff88' : disabled ? '#2a323e' : (ts?.border ?? '#58a6ff'),
-        color: done ? '#00ff88' : disabled ? '#3a4452' : '#b1bac4',
+        backgroundColor: done ? 'rgba(0, 255, 136, 0.08)' : disabled ? 'var(--bg-surface)' : (ts?.bg ?? 'var(--bg-elevated)'),
+        borderColor: done ? '#22c55e' : disabled ? 'var(--border)' : (ts?.border ?? '#58a6ff'),
+        color: done ? '#22c55e' : disabled ? 'var(--border-bright)' : '#b1bac4',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled && !done ? 0.45 : 1,
         position: 'relative',
@@ -980,7 +980,7 @@ function AskBtnEx({
           top: -5,
           right: -5,
           backgroundColor: ts?.badge ?? '#58a6ff',
-          color: '#0a0e14',
+          color: 'var(--bg)',
           fontSize: 9,
           fontWeight: 900,
           padding: '1px 5px',
@@ -1032,10 +1032,10 @@ function TerminalModal({
               协议 {terminal.protocolNumber ?? '?'}
             </span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 'bold', color: '#e6edf3' }}>
+              <div style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 MPDS 调度终端
               </div>
-              <div style={{ fontSize: 12, color: '#8b949e' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                 判定码：{terminal.determinant
                   ? `${terminal.protocolNumber ?? '?'}-${terminal.determinant[0]}-${terminal.determinantSubcode ?? '?'}`
                   : '未选择'}
@@ -1093,7 +1093,7 @@ function TerminalModal({
                     预计 {ambulanceRemaining} 秒后到达现场
                   </div>
                 ) : (
-                  <div style={{ color: '#00ff88', fontSize: 12, fontWeight: 'bold' }}>
+                  <div style={{ color: '#22c55e', fontSize: 12, fontWeight: 'bold' }}>
                     救护车已到达现场！
                   </div>
                 )}
@@ -1143,7 +1143,7 @@ function GuidancePanel({
               backgroundColor: r === 'correct' ? 'rgba(0, 255, 136, 0.12)' : 'rgba(255, 59, 59, 0.12)',
               borderRadius: 4,
               fontSize: 13,
-              color: r === 'correct' ? '#00ff88' : '#ff3b3b',
+              color: r === 'correct' ? '#22c55e' : '#ff3b3b',
             }}
           >
             {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}
@@ -1175,7 +1175,7 @@ function GuidancePanel({
             backgroundColor: r === 'correct' ? 'rgba(0, 255, 136, 0.12)' : 'rgba(255, 59, 59, 0.12)',
             borderRadius: 4,
             fontSize: 13,
-            color: r === 'correct' ? '#00ff88' : '#ff3b3b',
+            color: r === 'correct' ? '#22c55e' : '#ff3b3b',
           }}
         >
           {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}
@@ -1290,7 +1290,7 @@ function TerminalForm({
         trueLabel="无意识"
         falseLabel="有意识"
         colorTrue="#ff3b3b"
-        colorFalse="#00ff88"
+        colorFalse="#22c55e"
         onToggle={onSetStatus}
       />
 
@@ -1302,7 +1302,7 @@ function TerminalForm({
         trueLabel="无呼吸/异常"
         falseLabel="正常呼吸"
         colorTrue="#ff3b3b"
-        colorFalse="#00ff88"
+        colorFalse="#22c55e"
         onToggle={onSetStatus}
       />
 
@@ -1325,17 +1325,17 @@ function TerminalForm({
 
       {/* 协议号对照参考（折叠） */}
       <details style={{ margin: '-4px 0 8px 22px', fontSize: 11 }}>
-        <summary style={{ color: '#6e7681', cursor: 'pointer', userSelect: 'none' }}>
+        <summary style={{ color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
           ¶ 协议编号对照
         </summary>
         <div style={{
           marginTop: 4,
           padding: 6,
-          backgroundColor: '#11151c',
+          backgroundColor: 'var(--bg-surface)',
           borderRadius: 4,
           maxHeight: 160,
           overflowY: 'auto',
-          color: '#8b949e',
+          color: 'var(--text-secondary)',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '1px 12px',
@@ -1362,7 +1362,7 @@ function TerminalForm({
             { n: 1, color: '#ff3b3b', label: '危重伤' },
             { n: 2, color: '#ff8c00', label: '重伤' },
             { n: 3, color: '#ffb000', label: '轻伤' },
-            { n: 4, color: '#00ff88', label: '非紧急' },
+            { n: 4, color: '#22c55e', label: '非紧急' },
           ].map(({ n, color, label }) => {
             const active = terminal.determinantSubcode === n
             return (
@@ -1373,7 +1373,7 @@ function TerminalForm({
                   padding: '6px 4px',
                   borderRadius: 4,
                   border: `2px solid ${color}`,
-                  backgroundColor: active ? color : '#1a1f29',
+                  backgroundColor: active ? color : 'var(--bg-elevated)',
                   color: active ? '#fff' : color,
                   fontSize: 11,
                   fontWeight: active ? 'bold' : 'normal',
@@ -1409,8 +1409,8 @@ function SectionTitle({ icon, text }: { icon: React.ReactNode; text: string }) {
     <div style={{
       fontSize: 12,
       fontWeight: 'bold',
-      color: '#8b949e',
-      borderBottom: '1px solid #2a323e',
+      color: 'var(--text-secondary)',
+      borderBottom: '1px solid var(--border)',
       padding: '6px 0 3px',
       marginBottom: 4,
       letterSpacing: 0.5,
@@ -1560,8 +1560,8 @@ const styles: Record<string, CSSProperties> = {
     height: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#0a0e14',
-    color: '#e6edf3',
+    backgroundColor: 'var(--bg)',
+    color: 'var(--text-primary)',
     overflow: 'hidden',
   },
 
@@ -1570,15 +1570,15 @@ const styles: Record<string, CSSProperties> = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     overflow: 'hidden',
     minHeight: 0,
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
   },
 
   phoneHeader: {
     padding: '8px 12px',
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
     borderBottom: '2px solid #ff3b3b',
     display: 'flex',
     flexDirection: 'column',
@@ -1623,12 +1623,12 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 13,
     display: 'flex',
     gap: 6,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     fontFamily: 'monospace',
   },
   callPhaseTag: {
     fontSize: 12,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontFamily: 'monospace',
   },
 
@@ -1641,7 +1641,7 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: 'column',
     gap: 6,
     minHeight: 0,
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
   },
 
   transcript: {
@@ -1649,7 +1649,7 @@ const styles: Record<string, CSSProperties> = {
     lineHeight: 1.7,
     fontFamily: '"Source Code Pro", "Consolas", "Courier New", monospace',
     padding: '4px 0',
-    borderBottom: '1px solid #1e252e',
+    borderBottom: '1px solid var(--border-light)',
   },
   transcriptSpeaker: {
     display: 'inline',
@@ -1673,7 +1673,7 @@ const styles: Record<string, CSSProperties> = {
   splitBar: {
     flex: 'none',
     height: 10,
-    backgroundColor: '#2a323e',
+    backgroundColor: 'var(--border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1694,14 +1694,14 @@ const styles: Record<string, CSSProperties> = {
     width: 4,
     height: 4,
     borderRadius: '50%',
-    backgroundColor: '#6e7681',
+    backgroundColor: 'var(--text-muted)',
   },
 
   // ---------- 问询区域 ----------
   questionArea: {
-    borderTop: '1px solid #2a323e',
+    borderTop: '1px solid var(--border)',
     padding: '6px 10px',
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
     flex: 1,
     minHeight: 60,
     overflowY: 'auto' as const,
@@ -1716,7 +1716,7 @@ const styles: Record<string, CSSProperties> = {
   stressTrack: {
     flex: 1,
     height: 7,
-    backgroundColor: '#2a323e',
+    backgroundColor: 'var(--border)',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -1730,8 +1730,8 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '6px 10px',
-    borderTop: '1px solid #2a323e',
-    backgroundColor: '#11151c',
+    borderTop: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-surface)',
   },
   terminalBtn: {
     padding: '8px 16px',
@@ -1815,11 +1815,11 @@ const styles: Record<string, CSSProperties> = {
   qSectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     marginBottom: 3,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    borderBottom: '1px solid #2a323e',
+    borderBottom: '1px solid var(--border)',
     paddingBottom: 2,
   },
   qGrid: {
@@ -1853,7 +1853,7 @@ const styles: Record<string, CSSProperties> = {
   },
   guidanceIntro: {
     fontSize: 13,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     marginBottom: 8,
     padding: '6px 10px',
     backgroundColor: 'rgba(255, 176, 0, 0.06)',
@@ -1865,14 +1865,14 @@ const styles: Record<string, CSSProperties> = {
   guidancePrompt: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     marginBottom: 4,
   },
   guidanceOption: {
     padding: '8px 14px',
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
     borderRadius: 4,
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     cursor: 'pointer',
     fontSize: 14,
     color: '#b1bac4',
@@ -1882,9 +1882,9 @@ const styles: Record<string, CSSProperties> = {
 
   // ---------- 收尾 ----------
   closingPanel: {
-    borderTop: '1px solid #2a323e',
+    borderTop: '1px solid var(--border)',
     padding: '12px 14px',
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
     textAlign: 'center' as const,
     flex: 1,
     minHeight: 60,
@@ -1915,9 +1915,9 @@ const styles: Record<string, CSSProperties> = {
   modalCard: {
     width: 560,
     maxHeight: '90vh',
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     borderRadius: 10,
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
     display: 'flex',
     flexDirection: 'column' as const,
     overflow: 'hidden',
@@ -1928,7 +1928,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 16px',
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
     borderBottom: '2px solid #ff3b3b',
   },
   modalHeaderLeft: {
@@ -1942,7 +1942,7 @@ const styles: Record<string, CSSProperties> = {
     gap: 10,
   },
   mpdsModalBadge: {
-    backgroundColor: '#1e252e',
+    backgroundColor: 'var(--border-light)',
     border: '2px solid #58a6ff',
     borderRadius: 6,
     padding: '6px 12px',
@@ -1954,8 +1954,8 @@ const styles: Record<string, CSSProperties> = {
   modalCloseBtn: {
     padding: '4px 10px',
     backgroundColor: 'transparent',
-    color: '#6e7681',
-    border: '1px solid #3a4452',
+    color: 'var(--text-muted)',
+    border: '1px solid var(--border-bright)',
     borderRadius: 4,
     cursor: 'pointer',
     fontSize: 14,
@@ -1976,7 +1976,7 @@ const styles: Record<string, CSSProperties> = {
     padding: '8px 10px',
     borderRadius: 8,
     border: '2px solid',
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
     animation: 'slide-in-right 0.3s ease-out',
     maxWidth: 460,
   },
@@ -2019,10 +2019,10 @@ const styles: Record<string, CSSProperties> = {
     width: 20,
     height: 20,
     borderRadius: '50%',
-    backgroundColor: '#1e252e',
+    backgroundColor: 'var(--border-light)',
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     flexShrink: 0,
     marginTop: 1,
   },
@@ -2031,8 +2031,8 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     padding: '10px 16px',
-    borderTop: '1px solid #2a323e',
-    backgroundColor: '#11151c',
+    borderTop: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-surface)',
   },
   modalDispatchBtn: {
     padding: '10px 24px',
@@ -2047,9 +2047,9 @@ const styles: Record<string, CSSProperties> = {
   },
   modalSaveBtn: {
     padding: '8px 16px',
-    backgroundColor: '#1a1f29',
-    color: '#8b949e',
-    border: '1px solid #2a323e',
+    backgroundColor: 'var(--bg-elevated)',
+    color: 'var(--text-secondary)',
+    border: '1px solid var(--border)',
     borderRadius: 6,
     fontSize: 12,
     cursor: 'pointer',
@@ -2057,8 +2057,8 @@ const styles: Record<string, CSSProperties> = {
   modalEndCallBtn: {
     padding: '8px 12px',
     backgroundColor: 'transparent',
-    color: '#6e7681',
-    border: '1px solid #2a323e',
+    color: 'var(--text-muted)',
+    border: '1px solid var(--border)',
     borderRadius: 6,
     fontSize: 11,
     cursor: 'pointer',
@@ -2083,7 +2083,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 10,
     padding: '8px 12px',
-    backgroundColor: '#1a1f29',
+    backgroundColor: 'var(--bg-elevated)',
     borderRadius: 6,
     border: '1px solid #2ea043',
     flex: 1,
@@ -2096,16 +2096,16 @@ const styles: Record<string, CSSProperties> = {
     display: 'block',
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     marginBottom: 4,
   },
   formInput: {
     width: '100%',
     padding: '8px 10px',
     borderRadius: 4,
-    border: '1px solid #2a323e',
-    backgroundColor: '#1a1f29',
-    color: '#e6edf3',
+    border: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-elevated)',
+    color: 'var(--text-primary)',
     fontSize: 13,
     fontFamily: 'monospace',
     resize: 'vertical' as const,
@@ -2120,7 +2120,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#11151c',
+    backgroundColor: 'var(--bg-surface)',
   },
   answerBtn: {
     padding: '14px 48px',

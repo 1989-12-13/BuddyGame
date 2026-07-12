@@ -19,7 +19,7 @@ interface Props {
 const SHELL: React.CSSProperties = {
   borderTop: '2px solid #58a6ff',
   padding: '12px 14px',
-  backgroundColor: '#11151c',
+  backgroundColor: 'var(--bg-surface)',
   maxHeight: 360,
   overflowY: 'auto',
 }
@@ -33,7 +33,7 @@ const TITLE: React.CSSProperties = {
 
 const INSTR: React.CSSProperties = {
   fontSize: 12,
-  color: '#8b949e',
+  color: 'var(--text-secondary)',
   marginBottom: 10,
   lineHeight: 1.5,
 }

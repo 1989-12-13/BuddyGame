@@ -3,6 +3,8 @@
 // ============================================================
 
 import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
+import { Phone } from 'lucide-react'
 import type { DebriefEntry } from '../../game/core/debrief'
 import { parseScoreBreakdown } from '../../game/core/debrief'
 import type { WorldState } from '../../game/types'
@@ -98,7 +100,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
             value={LEVEL_LABEL[debrief.addressStatus] ?? debrief.addressStatus}
             ok={debrief.addressStatus === 'full' || debrief.addressStatus === 'partial'}
           />
-          <DetailItem icon="◈" label="联系电话" ok={debrief.hasContact} />
+          <DetailItem icon={<Phone size={12} />} label="联系电话" ok={debrief.hasContact} />
           <DetailItem icon="♥" label="病情信息" ok={debrief.hasCondition} />
           <DetailItem icon="!" label="求助诉求" ok={debrief.hasPurpose} />
           <DetailItem
@@ -174,7 +176,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
 function DetailItem({
   icon, label, value, ok, partial,
 }: {
-  icon: string; label: string; value?: string; ok: boolean; partial?: boolean
+  icon: ReactNode; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
   const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
   const statusColor = ok ? '#00ff88' : partial ? '#ffb000' : '#ff5454'

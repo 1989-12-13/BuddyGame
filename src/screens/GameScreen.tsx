@@ -11,6 +11,7 @@ import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { getCaller } from '../game/npc/personas'
 import { detectEnding } from '../game/endings/endings'
+import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import type { EndingDef } from '../game/types'
@@ -456,11 +457,11 @@ function CallWaiting({
   return (
     <div style={styles.centerMessage}>
       <div style={{
-        fontSize: 64,
+        lineHeight: 1,
         marginBottom: 8,
-        animation: 'pulse-live 0.8s ease-in-out infinite',
+        animation: 'call-incoming 1.2s ease-in-out infinite',
       }}>
-        ◈
+        <Phone size={64} color="#ff3b3b" strokeWidth={1.8} />
       </div>
       <h2 style={{ color: '#e6edf3', margin: '0 0 4px', fontSize: 18 }}>
         第 {callIndex + 1}/{totalCalls} 通来电
@@ -847,7 +848,7 @@ function QuestionPanel({
               <AskBtnEx
                 id="ask_contact"
                 label="联系电话"
-                icon="◈"
+                icon={<Phone size={10} />}
                 timeCost={1}
                 done={false}
                 tier="detail"
@@ -947,7 +948,7 @@ function AskBtnEx({
 }: {
   id: string
   label: string
-  icon?: string
+  icon?: React.ReactNode
   timeCost: number
   done: boolean
   disabled?: boolean
@@ -970,7 +971,7 @@ function AskBtnEx({
       disabled={disabled}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, justifyContent: 'center' }}>
-        {done ? '✓ ' : icon ? icon + ' ' : ''}
+        {done ? <span>✓ </span> : icon ? <span style={{ marginRight: 2, display: 'flex' }}>{icon}</span> : null}
         <span style={{ fontWeight: done ? 'normal' : 'bold', fontSize: 11 }}>{label}</span>
       </div>
       {!done && (
@@ -1235,7 +1236,7 @@ function TerminalForm({
       </FieldRow>
 
       {/* 联系电话 */}
-      <FieldRow icon="◈" label="联系电话">
+      <FieldRow icon={<Phone size={13} />} label="联系电话">
         <input
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.contact}
@@ -1403,7 +1404,7 @@ function TerminalForm({
 }
 
 /** 小标题 */
-function SectionTitle({ icon, text }: { icon: string; text: string }) {
+function SectionTitle({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div style={{
       fontSize: 12,
@@ -1426,7 +1427,7 @@ function FieldRow({
   label,
   children,
 }: {
-  icon: string
+  icon: React.ReactNode
   label: string
   children: React.ReactNode
 }) {

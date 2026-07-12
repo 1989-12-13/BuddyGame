@@ -6,13 +6,13 @@ import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Phone } from 'lucide-react'
 import type { DebriefEntry } from '../../game/core/debrief'
-import { parseScoreBreakdown } from '../../game/core/debrief'
 import type { WorldState } from '../../game/types'
 
 interface Props {
   state: WorldState
   debrief: DebriefEntry
   onNext: () => void
+  nextLabel?: string
 }
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -22,9 +22,17 @@ const LEVEL_LABEL: Record<string, string> = {
   none: '未获取',
 }
 
-export function CallDebrief({ state, debrief, onNext }: Props) {
-  const breakdown = parseScoreBreakdown(state)
+const OUTCOME_STYLE: Record<DebriefEntry['outcomeTier'], { label: string; color: string; bg: string }> = {
+  good: { label: 'GOOD END', color: '#4ade80', bg: 'rgba(34, 197, 94, 0.12)' },
+  normal: { label: 'NORMAL END', color: '#facc15', bg: 'rgba(250, 204, 21, 0.12)' },
+  bad: { label: 'BAD END', color: '#f87171', bg: 'rgba(248, 113, 113, 0.12)' },
+  special: { label: 'SPECIAL END', color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)' },
+}
+
+export function CallDebrief({ debrief, onNext, nextLabel = '继续' }: Props) {
+  const breakdown = debrief.breakdown
   const btnRef = useRef<HTMLButtonElement>(null)
+  const outcomeStyle = OUTCOME_STYLE[debrief.outcomeTier]
 
   useEffect(() => {
     btnRef.current?.focus()
@@ -50,8 +58,16 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
           {debrief.isPrank ? '◈ 恶作剧电话' : `◈ ${debrief.scenarioTitle}`}
         </h2>
 
-        {/* 总分 */}
+        <div style={{ ...styles.outcomeBox, backgroundColor: outcomeStyle.bg, borderColor: outcomeStyle.color }}>
+          <div style={{ ...styles.outcomeBadge, color: outcomeStyle.color }}>{outcomeStyle.label}</div>
+          <div style={styles.outcomeTitle}>{debrief.outcomeTitle}</div>
+          <div style={styles.patientStatus}>{debrief.patientStatus}</div>
+          <div style={styles.consequence}>{debrief.consequence}</div>
+        </div>
+
+        {/* 内部分数仍保留给复盘与平衡 */}
         <div style={styles.totalScore}>
+          <span style={styles.totalScoreLabel}>调度评级</span>
           <span style={styles.totalScoreValue}>{debrief.score}</span>
           <span style={styles.totalScoreLabel}>/ 100</span>
         </div>
@@ -62,6 +78,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
             { label: '派车速度', value: breakdown.speed, max: 40, color: '#00d4ff' },
             { label: '信息完整', value: breakdown.info, max: 30, color: '#22c55e' },
             { label: '分诊准确', value: breakdown.triage, max: 20, color: '#ffb000' },
+            { label: '判定码', value: breakdown.decision, max: 5, color: '#a78bfa' },
             { label: '急救指导', value: breakdown.guidance, max: 10, color: '#ff8c00' },
           ].map(item => (
             <div key={item.label} style={styles.breakdownItem}>
@@ -163,10 +180,19 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
           <div style={styles.narrativeText}>{debrief.outcomeNarrative}</div>
         </div>
 
+        {debrief.reviewPoints.length > 0 && (
+          <div style={styles.reviewBox}>
+            <div style={styles.sectionTitle}>◆ 关键复盘</div>
+            {debrief.reviewPoints.slice(0, 4).map(point => (
+              <div key={point} style={styles.reviewPoint}>{point}</div>
+            ))}
+          </div>
+        )}
+
         <div style={styles.divider} />
 
         <button ref={btnRef} style={styles.nextBtn} onClick={onNext}>
-          接听下一通电话 (Enter)
+          {nextLabel} (Enter)
         </button>
       </div>
     </div>
@@ -222,10 +248,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   totalScore: {
     textAlign: 'center' as const,
-    padding: '8px 0',
+    padding: '4px 0',
+    display: 'flex',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: 6,
   },
   totalScoreValue: {
-    fontSize: 42,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#00d4ff',
     fontFamily: 'monospace',
@@ -234,6 +264,34 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 16,
     color: 'var(--text-secondary)',
     marginLeft: 4,
+  },
+  outcomeBox: {
+    border: '1px solid',
+    borderRadius: 8,
+    padding: '12px 14px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 5,
+  },
+  outcomeBadge: {
+    fontSize: 11,
+    fontWeight: 900,
+    letterSpacing: 0.4,
+  },
+  outcomeTitle: {
+    fontSize: 18,
+    fontWeight: 800,
+    color: 'var(--text-primary)',
+  },
+  patientStatus: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: 'var(--text-primary)',
+  },
+  consequence: {
+    fontSize: 12,
+    color: 'var(--text-secondary)',
+    lineHeight: 1.5,
   },
   breakdownRow: {
     display: 'flex',
@@ -342,6 +400,15 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'var(--text-muted)',
     lineHeight: 1.6,
     fontStyle: 'italic' as const,
+  },
+  reviewBox: {
+    padding: '2px 0 0',
+  },
+  reviewPoint: {
+    fontSize: 12,
+    color: 'var(--text-primary)',
+    lineHeight: 1.5,
+    padding: '3px 0 3px 14px',
   },
   nextBtn: {
     padding: '12px 24px',

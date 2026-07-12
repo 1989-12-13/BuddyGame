@@ -44,6 +44,7 @@ export function createTerminalState(): TerminalState {
     protocolNumber: null,
     determinant: null,
     determinantSubcode: null,
+    hotCold: null,
     triage: null,
     conditionNote: '',
   }
@@ -60,7 +61,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /** 获取本班次的场景队列（随机打乱顺序） */
-export function buildScenarioQueue(_shiftNumber: number): string[] {
+export function buildScenarioQueue(): string[] {
   // 每个班次5通电话，从所有场景中随机选5个
   const prankId = 'prank_call'
   // 分离恶作剧场景和普通场景
@@ -90,6 +91,7 @@ export function createInitialState(): WorldState {
     totalCalls: 5,
     scenarioQueue: [],
     shiftElapsed: 0,
+    questionCost: 0,
     fleet: createDefaultFleet(),
     currentCall: null,
     callPhase: 'ringing',
@@ -108,6 +110,10 @@ export function createInitialState(): WorldState {
     totalScore: 0,
     callScores: [],
     endingId: null,
+    lastDebrief: null,
+    pendingPerkChoices: [],
+    perks: [],
+    shiftCompletePending: false,
   }
 }
 
@@ -221,7 +227,9 @@ export function scoreCall(
     const correctSub = parts[2] ? parseInt(parts[2], 10) : 0
     if (chosenDeterminant[0] === correctLetter) decision += 2
     if (chosenSubcode && correctSub && chosenSubcode === correctSub) decision += 1
+    if (!chosenProtocol && !chosenSubcode && chosenDeterminant[0] === correctLetter) decision = 5
   }
+  decision = Math.min(5, decision)
 
   // 5. 急救指导分（0-10）— 选择题与互动小游戏各占一半
   let guidance = 0

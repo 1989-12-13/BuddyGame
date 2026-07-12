@@ -6,9 +6,10 @@ import { useMemo, useState, useCallback } from 'react'
 import { useAudio } from '../audio/AudioContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { SCENARIOS, SCENARIO_IDS } from '../game/events/templates'
-import type { EmergencyScenario, MpdsDeterminant } from '../game/types'
+import type { EmergencyScenario, GuidanceStep, MpdsDeterminant } from '../game/types'
 import { MPDS_DETERMINANT_INFO } from '../game/types'
 import { SCENARIO_EXAMPLES, DISPATCHER_NOTES, GUIDANCE_DETAILS } from '../game/knowledge'
+import type { GuidanceStepDetail } from '../game/knowledge'
 
 interface Props {
   onBack: () => void
@@ -228,7 +229,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                   <p style={{ ...styles.paragraph, fontWeight: 600, marginBottom: 4 }}>{selected.guidance.title}</p>
                   <p style={styles.paragraph}>{selected.guidance.intro}</p>
                   <ol style={styles.list}>
-                    {(detail?.steps ?? selected.guidance.steps).map((step: any, i: number) => {
+                    {(detail?.steps ?? selected.guidance.steps).map((step: GuidanceStepDetail | GuidanceStep, i: number) => {
                       const isDetailed = 'explanation' in step
                       return (
                         <li key={i} style={{ marginBottom: 10, lineHeight: 1.7 }}>

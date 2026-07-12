@@ -3,8 +3,8 @@
 // 120急救调度模拟游戏核心逻辑
 // ============================================================
 
-import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt, MpdsDeterminant } from '../types'
-import { stressToLevel, determinantToTriage, PROTOCOL_REF } from '../types'
+import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt } from '../types'
+import { stressToLevel, determinantToHotCold, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
   createInitialState,
@@ -16,6 +16,8 @@ import {
 } from './worldState'
 import { getScenario } from '../events/templates'
 import { getCaller } from '../npc/personas'
+import { buildDebrief } from './debrief'
+import { getPerkChoices, hasPerk } from './perks'
 
 /** 根据情绪选择叙述式回答 */
 function pickNarrativeAnswer(
@@ -130,6 +132,44 @@ function generateVitalsNarrative(consciousness: string, breathing: string, stres
   return `${consciousness}，${breathing}。`
 }
 
+function getQuestionTimeCost(questionId: string, call: { mpdsQuestions: { id: string; timeCost: number }[] }): number {
+  const fixedCosts: Record<string, number> = {
+    step1_location: 2,
+    ask_landmark: 2,
+    step2_event: 2,
+    step3_age: 1,
+    step4_vitals: 2,
+    ask_contact: 1,
+    ask_purpose: 1,
+  }
+  return fixedCosts[questionId] ?? call.mpdsQuestions.find(q => q.id === questionId)?.timeCost ?? 2
+}
+
+function isPrankVerified(judgments: JudgmentPrompt[]): boolean {
+  return judgments.some(j => (
+    j.questionId === 'mpds_prank_patient'
+    && j.chosenOptionIndex !== null
+    && j.options[j.chosenOptionIndex]?.isCorrect === true
+  ))
+}
+
+function countIncorrectJudgments(judgments: JudgmentPrompt[]): number {
+  return judgments.filter(j => (
+    j.chosenOptionIndex !== null
+    && j.options[j.chosenOptionIndex]?.isCorrect !== true
+  )).length
+}
+
+function deriveExpectedVitals(consciousness: string, breathing: string): { conscious: boolean; breathing: boolean } {
+  const isUnconscious = consciousness.includes('无意识') || consciousness.includes('不醒') || consciousness.includes('呼之不应') || consciousness.includes('昏迷')
+  const isNotBreathing = breathing.includes('没有呼吸') || breathing.includes('无呼吸') || breathing.includes('窒息') || breathing.includes('胸口不动')
+  const isBreathingAbnormal = breathing.includes('急促') || breathing.includes('喘') || breathing.includes('异常')
+  return {
+    conscious: !isUnconscious,
+    breathing: !isNotBreathing && !isBreathingAbnormal,
+  }
+}
+
 export function worldReducer(state: WorldState, action: GameAction): WorldState {
   switch (action.type) {
 
@@ -138,7 +178,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     // ==========================================
     case 'START_SHIFT': {
       const newShift = state.shiftNumber + 1
-      const useQueue = action.forceScenarios ?? buildScenarioQueue(newShift)
+      const useQueue = action.forceScenarios ?? buildScenarioQueue()
       return {
         ...createInitialState(),
         screen: 'playing',
@@ -188,11 +228,14 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         dispatchSent: false,
         dispatchRecord: null,
         ambulanceRemaining: -1,
+        questionCost: 0,
         guidanceActive: false,
         guidanceStepIndex: 0,
         guidanceResults: [],
         guidanceMinigameScores: [],
         pendingJudgments: [],
+        lastDebrief: null,
+        pendingPerkChoices: [],
         dialogueLog: [systemLine, openingLine],
       }
     }
@@ -203,7 +246,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     case 'ASK_QUESTION': {
       const { questionId } = action
       const call = state.currentCall
-      let cs = state.callerState
+      const cs = state.callerState
       if (!call || !cs) return state
       if (state.callPhase !== 'questioning' && state.callPhase !== 'connected') return state
       if (cs.askedMPDS.includes(questionId)) return state
@@ -216,7 +259,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let newAddress: 'none' | 'vague' | 'partial' | 'full' = newRevealed.address
       let newStress = cs.stress
       let stressEffect = 0
-      let newJudgments: JudgmentPrompt[] = [...(state.pendingJudgments ?? [])]
+      const newJudgments: JudgmentPrompt[] = [...(state.pendingJudgments ?? [])]
       let newTerminal = { ...state.terminal }
 
       // ==========================================
@@ -358,10 +401,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           dialogueIndex: state.dialogueLog.length + (callerIdx2 >= 0 ? callerIdx2 : 1),
           question: '根据来电者描述，请判断患者意识与呼吸状态：',
           options: [
-            { label: '有意识，呼吸正常', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: false }], isCorrect: !isUnconscious && !isNotBreathing && !isBreathingAbnormal },
-            { label: '有意识，呼吸困难', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: true }, { field: 'conditionNote', value: '呼吸异常' }], isCorrect: !isUnconscious && isBreathingAbnormal },
-            { label: '无意识，无呼吸', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: true }], isCorrect: isUnconscious && isNotBreathing },
-            { label: '无意识，有呼吸', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: false }], isCorrect: isUnconscious && !isNotBreathing },
+            { label: '有意识，呼吸正常', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: true }], isCorrect: !isUnconscious && !isNotBreathing && !isBreathingAbnormal },
+            { label: '有意识，呼吸困难', fills: [{ field: 'conscious', value: true }, { field: 'breathing', value: false }, { field: 'conditionNote', value: '呼吸异常' }], isCorrect: !isUnconscious && isBreathingAbnormal },
+            { label: '无意识，无呼吸', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: false }], isCorrect: isUnconscious && isNotBreathing },
+            { label: '无意识，有呼吸', fills: [{ field: 'conscious', value: false }, { field: 'breathing', value: true }], isCorrect: isUnconscious && !isNotBreathing },
           ],
           chosenOptionIndex: null,
         })
@@ -386,6 +429,15 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         newInfoQuality['contact'] = cq.quality
         // 自动填写调度卡：联系电话
         newTerminal = { ...newTerminal, contact: call.fourElements.contact }
+      }
+
+      // --- 求助诉求（补充闭环信息）---
+      else if (questionId === 'ask_purpose') {
+        stressEffect = -1
+        newDialogue.push({ speaker: 'operator', text: '您现在最需要我们协助处理什么？', timestamp: now })
+        newDialogue.push({ speaker: 'caller', text: call.fourElements.purpose, timestamp: now })
+        newRevealed.purpose = true
+        newInfoQuality['purpose'] = newStress >= 50 ? 'partial' : 'clear'
       }
 
       // --- MPDS 标准问询 ---
@@ -458,10 +510,22 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         })
       }
 
+      if (questionId === 'step1_location' && hasPerk(state.perks, 'address_memory') && newAddress === 'vague') {
+        newAddress = 'partial'
+        newTerminal = { ...newTerminal, address: call.fourElements.address.partial }
+        newInfoQuality['address'] = 'partial'
+      }
+
       const updatedRevealed = { ...newRevealed, address: newAddress }
+      const baseQuestionTimeCost = getQuestionTimeCost(questionId, call)
+      const questionTimeCost = hasPerk(state.perks, 'rapid_intake') && cs.questionCount === 0
+        ? 0
+        : baseQuestionTimeCost
 
       return {
         ...state,
+        shiftElapsed: state.shiftElapsed + questionTimeCost,
+        questionCost: state.questionCost + questionTimeCost,
         callPhase: 'questioning',
         pendingJudgments: newJudgments,
         terminal: newTerminal,
@@ -487,7 +551,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       const cs = state.callerState
       const now = state.shiftElapsed
-      const stressDrop = 20 + Math.floor(Math.random() * 10)  // 降低20-30点压力
+      const hasCalmScript = hasPerk(state.perks, 'calm_script')
+      const stressDrop = (hasCalmScript ? 30 : 20) + Math.floor(Math.random() * 10)
+      const calmCost = hasCalmScript ? 1 : 2
       const newStress = Math.max(0, cs.stress - stressDrop)
       const newStressLevel = stressToLevel(newStress)
 
@@ -507,7 +573,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       return {
         ...state,
-
+        shiftElapsed: state.shiftElapsed + calmCost,
+        questionCost: state.questionCost + calmCost,
         callerState: {
           ...cs,
           stress: newStress,
@@ -552,6 +619,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         terminal: {
           ...state.terminal,
           determinant: action.determinant,
+          hotCold: determinantToHotCold(action.determinant),
         },
       }
     }
@@ -637,6 +705,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     case 'DISPATCH': {
       if (!state.currentCall || !state.callerState) return state
       if (state.dispatchSent) return state
+      if (!state.terminal.determinant || !state.terminal.triage) return state
 
       const dispatchTime = state.shiftElapsed - state.callStartTime
       const rawAddress = state.callerState.revealedInfo.address
@@ -644,12 +713,12 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         rawAddress === 'none' ? 'vague' : rawAddress
 
       // 从MPDS判定码自动推导分诊等级（现场分诊由急救人员执行，调度员无需手动选择）
-      const derivedTriage = state.terminal.determinant
-        ? determinantToTriage(state.terminal.determinant)
-        : null
-      const triage = derivedTriage || state.currentCall.correctTriage
+      const triage = state.terminal.triage
 
-      const eta = calcAmbulanceETA(dispatchTime, addressCompleteness)
+      const eta = Math.max(
+        3,
+        calcAmbulanceETA(dispatchTime, addressCompleteness) - (hasPerk(state.perks, 'priority_channel') ? 2 : 0),
+      )
 
       const systemLine: DialogueLine = {
         speaker: 'system',
@@ -664,6 +733,13 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         addressCompleteness,
         ambulanceETA: eta,
       }
+      const afterDispatchLines: DialogueLine[] = state.currentCall.specialEvents
+        .filter(evt => evt.trigger === 'after_dispatch')
+        .map(evt => ({
+          speaker: 'caller',
+          text: evt.dialogue,
+          timestamp: state.shiftElapsed,
+        }))
 
       // 检查是否需要进入急救指导阶段
       const hasGuidance = state.currentCall.guidance !== null
@@ -682,7 +758,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         guidanceMinigameScores: hasGuidance
           ? new Array(state.currentCall.guidance!.steps.length).fill(null)
           : [],
-        dialogueLog: [...state.dialogueLog, systemLine],
+        dialogueLog: [...state.dialogueLog, systemLine, ...afterDispatchLines],
       }
     }
 
@@ -788,15 +864,22 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let triageScore = 0
       let decisionScore = 0
       let guidanceScore = 0
+      let penaltyScore = 0
 
       // 恶作剧电话特殊评分
       if (call.isPrank) {
-        if (!didDispatch) {
+        if (!didDispatch && isPrankVerified(state.pendingJudgments)) {
           total = 100
           speed = 35
           info = 30
           triageScore = 20
           guidanceScore = 10
+        } else if (!didDispatch) {
+          total = 40
+          speed = 15
+          info = 15
+          triageScore = 5
+          guidanceScore = 5
         } else {
           total = 0
           speed = 0
@@ -819,6 +902,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         const choiceStepTotal = guidanceSteps.filter(st => !st.miniGame).length
         const mgScores = state.guidanceMinigameScores.filter(s => s != null) as number[]
         const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
+        const rawGuidanceCorrect = state.guidanceResults.filter(r => r === 'correct').length
+        const hasGuidanceMiss = state.guidanceResults.some(r => r === 'incorrect')
+        const guidanceCorrect = hasPerk(state.perks, 'field_first_aid') && hasGuidanceMiss
+          ? Math.min(choiceStepTotal, rawGuidanceCorrect + 1)
+          : rawGuidanceCorrect
 
         const result = scoreCall(
           dispatchRecord?.dispatchTime ?? null,
@@ -828,7 +916,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           cs.revealedInfo.purpose,
           dispatchRecord?.triage ?? null,
           call.correctTriage,
-          state.guidanceResults.filter(r => r === 'correct').length,
+          guidanceCorrect,
           choiceStepTotal,
           miniGameAvg,
           qualityBonus,
@@ -842,19 +930,61 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         speed = result.speed
         info = result.info
         triageScore = result.triage
-        guidanceScore = result.guidance
         decisionScore = result.decision
+        guidanceScore = result.guidance
+
+        const expectedVitals = deriveExpectedVitals(
+          call.fourElements.condition.consciousness,
+          call.fourElements.condition.breathing,
+        )
+        const vitalsPenalty =
+          state.terminal.conscious !== null
+          && state.terminal.breathing !== null
+          && (
+            state.terminal.conscious !== expectedVitals.conscious
+            || state.terminal.breathing !== expectedVitals.breathing
+          )
+            ? 6
+            : 0
+        penaltyScore = countIncorrectJudgments(state.pendingJudgments) * 5 + vitalsPenalty
+        total = Math.max(0, total - penaltyScore)
       }
 
       const nextCallIndex = state.callIndex + 1
       const isShiftOver = nextCallIndex >= state.totalCalls
+      const nextCallScores = [...state.callScores, total]
 
       // 通话结束的总结行
       const summaryLine: DialogueLine = {
         speaker: 'system',
-        text: `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore}】`,
+        text: `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore} 判断扣分:${penaltyScore}】`,
         timestamp: state.shiftElapsed,
       }
+
+      const stateForDebrief: WorldState = {
+        ...state,
+        callIndex: nextCallIndex,
+        callPhase: 'completed',
+        currentCall: null,
+        callerState: cs,
+        dispatchSent: false,
+        dispatchRecord,
+        ambulanceRemaining: -1,
+        guidanceActive: false,
+        totalScore: state.totalScore + total,
+        callScores: nextCallScores,
+        dialogueLog: [...state.dialogueLog, summaryLine],
+        screen: 'playing',
+        shiftCompletePending: isShiftOver,
+      }
+      const lastDebrief = buildDebrief(stateForDebrief, call, {
+        speed,
+        info,
+        triage: triageScore,
+        decision: decisionScore,
+        guidance: guidanceScore,
+        penalty: penaltyScore,
+      })
 
       return {
         ...state,
@@ -867,9 +997,42 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         ambulanceRemaining: -1,
         guidanceActive: false,
         totalScore: state.totalScore + total,
-        callScores: [...state.callScores, total],
+        callScores: nextCallScores,
         dialogueLog: [...state.dialogueLog, summaryLine],
-        screen: isShiftOver ? 'ending' : 'playing',
+        screen: 'playing',
+        shiftCompletePending: isShiftOver,
+        lastDebrief,
+        pendingPerkChoices: isShiftOver ? [] : getPerkChoices(state.perks, 3),
+      }
+    }
+
+    // ==========================================
+    // DISMISS_DEBRIEF — 关闭单通患者结果总结卡
+    // ==========================================
+    case 'DISMISS_DEBRIEF': {
+      return {
+        ...state,
+        lastDebrief: null,
+        screen: state.shiftCompletePending && state.pendingPerkChoices.length === 0
+          ? 'ending'
+          : state.screen,
+      }
+    }
+
+    // ==========================================
+    // CHOOSE_PERK — 每通电话后选择一项班次收益
+    // ==========================================
+    case 'CHOOSE_PERK': {
+      if (!state.pendingPerkChoices.includes(action.perkId)) return state
+      if (state.perks.includes(action.perkId)) {
+        return { ...state, pendingPerkChoices: [] }
+      }
+
+      return {
+        ...state,
+        perks: [...state.perks, action.perkId],
+        pendingPerkChoices: [],
+        screen: state.shiftCompletePending ? 'ending' : state.screen,
       }
     }
 
@@ -881,7 +1044,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       const newElapsed = state.shiftElapsed + 1
       let newAmbulanceRemaining = state.ambulanceRemaining
-      let newCallPhase = state.callPhase as CallPhase
+      const newCallPhase = state.callPhase as CallPhase
       const newDialogue: DialogueLine[] = []
 
       // 救护车倒计时

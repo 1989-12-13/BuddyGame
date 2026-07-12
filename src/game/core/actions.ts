@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { TriageLevel, MpdsDeterminant, FragmentTargetField } from '../types'
+import type { RoguePerkId } from './perks'
 
 export type TerminalField = 'address' | 'contact' | 'chiefComplaint' | 'patientAge' | 'patientGender' | 'conditionNote'
 
@@ -22,6 +23,8 @@ export type GameAction =
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL' }
+  | { type: 'DISMISS_DEBRIEF' }
+  | { type: 'CHOOSE_PERK'; perkId: RoguePerkId }
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }
   | { type: 'BACK_TO_TITLE' }

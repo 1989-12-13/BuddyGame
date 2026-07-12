@@ -14,6 +14,9 @@ import { detectEnding } from '../game/endings/endings'
 import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
+import { CallDebrief } from '../components/call/CallDebrief'
+import { ROGUE_PERKS } from '../game/core/perks'
+import type { RoguePerkId } from '../game/core/perks'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
 
@@ -49,7 +52,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       const ending = detectEnding(state.totalScore)
       onNavigate('ending', ending, state.totalScore, state.callScores)
     }
-  }, [state.screen])
+  }, [onNavigate, state.callScores, state.screen, state.totalScore])
 
   // --- 自动滚动对话 ---
   const dialogueRef = useRef<HTMLDivElement>(null)
@@ -198,7 +201,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     }
 
     startQueue()
-  }, [state.dialogueLog.length, startQueue])
+  }, [state.dialogueLog, state.dialogueLog.length, startQueue])
 
   // --- 安抚来电者 ---
   const handleCalm = useCallback(() => {
@@ -239,15 +242,42 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   // --- 处理派车（从模态框调用）---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
-    if (!state.terminal.determinant) return // 必须选择判定码才能派车
+    if (!state.terminal.determinant || !state.terminal.triage) return
     setTerminalModalOpen(false)
     dispatch({ type: 'DISPATCH' })
-  }, [state.currentCall, state.terminal.determinant])
+  }, [state.currentCall, state.terminal.determinant, state.terminal.triage])
 
   // --- 处理临床判断选择 ---
   const handleJudgment = useCallback((judgmentId: string, optionIndex: number) => {
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
   }, [])
+
+  if (state.lastDebrief) {
+    return (
+      <div style={styles.container}>
+        <Hud state={state} />
+        <CallDebrief
+          state={state}
+          debrief={state.lastDebrief}
+          onNext={() => dispatch({ type: 'DISMISS_DEBRIEF' })}
+          nextLabel={state.shiftCompletePending ? '生成班次报告' : '查看班次收益'}
+        />
+      </div>
+    )
+  }
+
+  if (state.pendingPerkChoices.length > 0) {
+    return (
+      <div style={styles.container}>
+        <Hud state={state} />
+        <PerkSelection
+          choices={state.pendingPerkChoices}
+          owned={state.perks}
+          onChoose={(perkId) => dispatch({ type: 'CHOOSE_PERK', perkId })}
+        />
+      </div>
+    )
+  }
 
   // 无活跃通话时 — 等待接听
   if (!state.currentCall && state.callIndex < state.totalCalls) {
@@ -411,7 +441,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           dispatchSent={state.dispatchSent}
           ambulanceRemaining={state.ambulanceRemaining}
           onChange={(field, value) =>
-            dispatch({ type: 'UPDATE_TERMINAL', field, value } as any)
+            dispatch({ type: 'UPDATE_TERMINAL', field, value })
           }
           onSetStatus={(field, value) =>
             dispatch({ type: 'SET_PATIENT_STATUS', field, value })
@@ -480,6 +510,39 @@ function CallWaiting({
       <button style={styles.answerBtn} onClick={onAnswer}>
         接 听 电 话
       </button>
+    </div>
+  )
+}
+
+function PerkSelection({
+  choices,
+  owned,
+  onChoose,
+}: {
+  choices: RoguePerkId[]
+  owned: RoguePerkId[]
+  onChoose: (perkId: RoguePerkId) => void
+}) {
+  return (
+    <div style={styles.perkScreen}>
+      <div style={styles.perkHeader}>班次经验</div>
+      <h2 style={styles.perkTitle}>选择一项后续收益</h2>
+      <p style={styles.perkSubtitle}>
+        已获得 {owned.length} 项收益。每次选择只影响本轮值班，用来形成轻量肉鸽节奏。
+      </p>
+      <div style={styles.perkGrid}>
+        {choices.map(id => {
+          const perk = ROGUE_PERKS[id]
+          return (
+            <button key={id} style={styles.perkCard} onClick={() => onChoose(id)}>
+              <span style={styles.perkCategory}>{perk.category.toUpperCase()}</span>
+              <span style={styles.perkName}>{perk.title}</span>
+              <span style={styles.perkDesc}>{perk.description}</span>
+              <span style={styles.perkEffect}>{perk.effect}</span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -937,7 +1000,6 @@ const CATEGORY_ICON: Record<string, string> = {
 
 /** 问询按钮 — 带层级颜色 + 时间代价徽章 */
 function AskBtnEx({
-  id: _id,
   label,
   icon,
   timeCost,
@@ -1287,10 +1349,10 @@ function TerminalForm({
         label="意识状态"
         field="conscious"
         value={terminal.conscious}
-        trueLabel="无意识"
-        falseLabel="有意识"
-        colorTrue="#ff3b3b"
-        colorFalse="#22c55e"
+        trueLabel="有意识"
+        falseLabel="无意识"
+        colorTrue="#22c55e"
+        colorFalse="#ff3b3b"
         onToggle={onSetStatus}
       />
 
@@ -1299,10 +1361,10 @@ function TerminalForm({
         label="呼吸状态"
         field="breathing"
         value={terminal.breathing}
-        trueLabel="无呼吸/异常"
-        falseLabel="正常呼吸"
-        colorTrue="#ff3b3b"
-        colorFalse="#22c55e"
+        trueLabel="正常呼吸"
+        falseLabel="无呼吸/异常"
+        colorTrue="#22c55e"
+        colorFalse="#ff3b3b"
         onToggle={onSetStatus}
       />
 
@@ -2110,6 +2172,85 @@ const styles: Record<string, CSSProperties> = {
     fontFamily: 'monospace',
     resize: 'vertical' as const,
     boxSizing: 'border-box' as const,
+  },
+
+  // ---------- 肉鸽收益选择 ----------
+  perkScreen: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    padding: 24,
+    backgroundColor: 'var(--bg-surface)',
+  },
+  perkHeader: {
+    fontSize: 12,
+    color: '#00d4ff',
+    fontFamily: 'var(--font-mono)',
+    letterSpacing: 2,
+    fontWeight: 800,
+  },
+  perkTitle: {
+    margin: 0,
+    color: 'var(--text-primary)',
+    fontSize: 24,
+  },
+  perkSubtitle: {
+    margin: 0,
+    color: 'var(--text-muted)',
+    fontSize: 13,
+    maxWidth: 560,
+    textAlign: 'center' as const,
+    lineHeight: 1.5,
+  },
+  perkGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 12,
+    width: 'min(720px, 100%)',
+    marginTop: 8,
+  },
+  perkCard: {
+    minHeight: 150,
+    padding: '14px 16px',
+    border: '1px solid var(--border)',
+    borderRadius: 8,
+    backgroundColor: 'var(--bg-elevated)',
+    color: 'var(--text-primary)',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: 8,
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+  perkCategory: {
+    fontSize: 10,
+    color: '#00d4ff',
+    fontFamily: 'var(--font-mono)',
+    letterSpacing: 1.2,
+    fontWeight: 800,
+  },
+  perkName: {
+    fontSize: 18,
+    fontWeight: 800,
+  },
+  perkDesc: {
+    fontSize: 12,
+    color: 'var(--text-secondary)',
+    lineHeight: 1.5,
+    flex: 1,
+  },
+  perkEffect: {
+    alignSelf: 'flex-start',
+    padding: '4px 8px',
+    border: '1px solid #00d4ff',
+    borderRadius: 999,
+    color: '#00d4ff',
+    fontSize: 11,
+    fontWeight: 800,
   },
 
   // ---------- 等待接听 — 紧急调度台 ----------

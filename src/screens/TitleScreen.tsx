@@ -66,10 +66,10 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
         >
           <defs>
             <linearGradient id="ecg-fade" x1="0%" x2="100%">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0" />
-              <stop offset="15%" stopColor="#22c55e" stopOpacity="0.8" />
-              <stop offset="85%" stopColor="#22c55e" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+              <stop offset="0%" stopColor="#16a34a" stopOpacity="0" />
+              <stop offset="15%" stopColor="#16a34a" stopOpacity="0.8" />
+              <stop offset="85%" stopColor="#16a34a" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#16a34a" stopOpacity="0" />
             </linearGradient>
           </defs>
           <g style={styles.ecgGroup}>
@@ -97,9 +97,9 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
           width: 7,
           height: 7,
           borderRadius: '50%',
-          backgroundColor: blink ? '#22c55e' : 'var(--bg)',
-          border: '1px solid #22c55e',
-          boxShadow: blink ? '0 0 6px rgba(34, 197, 94, 0.4)' : 'none',
+          backgroundColor: blink ? '#16a34a' : 'var(--bg)',
+          border: '1px solid #16a34a',
+          boxShadow: blink ? '0 0 6px rgba(22, 163, 74, 0.4)' : 'none',
           transition: 'all 0.1s',
         }} />
         <span style={styles.statusText}>SYSTEM ONLINE</span>
@@ -112,7 +112,7 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
       <div style={styles.content}>
         {/* Title */}
         <h1 style={styles.title}>
-          120 <Phone size={40} color="#ff3b3b" strokeWidth={2.5} style={{ verticalAlign: 'middle', marginTop: -4 }} /> 调度台
+          120 <Phone size={40} color="#dc2626" strokeWidth={2.5} style={{ verticalAlign: 'middle', marginTop: -4 }} /> 调度台
         </h1>
         <p style={styles.subtitle}>EMERGENCY DISPATCH SIMULATOR</p>
 
@@ -173,7 +173,7 @@ const styles: Record<string, React.CSSProperties> = {
   scanline: {
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(180deg, transparent 0%, rgba(34, 197, 94, 0.015) 50%, transparent 100%)',
+    background: 'linear-gradient(180deg, transparent 0%, rgba(22, 163, 74, 0.015) 50%, transparent 100%)',
     pointerEvents: 'none',
     animation: 'scanline-sweep 8s linear infinite',
     zIndex: 1,
@@ -199,8 +199,8 @@ const styles: Record<string, React.CSSProperties> = {
     left: 24,
     width: 30,
     height: 30,
-    borderTop: '2px solid rgba(34, 197, 94, 0.2)',
-    borderLeft: '2px solid rgba(34, 197, 94, 0.2)',
+    borderTop: '2px solid rgba(22, 163, 74, 0.2)',
+    borderLeft: '2px solid rgba(22, 163, 74, 0.2)',
     zIndex: 2,
   },
   cornerTR: {
@@ -209,8 +209,8 @@ const styles: Record<string, React.CSSProperties> = {
     right: 24,
     width: 30,
     height: 30,
-    borderTop: '2px solid rgba(34, 197, 94, 0.2)',
-    borderRight: '2px solid rgba(34, 197, 94, 0.2)',
+    borderTop: '2px solid rgba(22, 163, 74, 0.2)',
+    borderRight: '2px solid rgba(22, 163, 74, 0.2)',
     zIndex: 2,
   },
   cornerBL: {
@@ -219,8 +219,8 @@ const styles: Record<string, React.CSSProperties> = {
     left: 24,
     width: 30,
     height: 30,
-    borderBottom: '2px solid rgba(34, 197, 94, 0.2)',
-    borderLeft: '2px solid rgba(34, 197, 94, 0.2)',
+    borderBottom: '2px solid rgba(22, 163, 74, 0.2)',
+    borderLeft: '2px solid rgba(22, 163, 74, 0.2)',
     zIndex: 2,
   },
   cornerBR: {
@@ -229,8 +229,8 @@ const styles: Record<string, React.CSSProperties> = {
     right: 24,
     width: 30,
     height: 30,
-    borderBottom: '2px solid rgba(34, 197, 94, 0.2)',
-    borderRight: '2px solid rgba(34, 197, 94, 0.2)',
+    borderBottom: '2px solid rgba(22, 163, 74, 0.2)',
+    borderRight: '2px solid rgba(22, 163, 74, 0.2)',
     zIndex: 2,
   },
   content: {
@@ -254,13 +254,13 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '4px 16px',
     borderRadius: 4,
     border: '1px solid var(--border)',
-    backgroundColor: 'rgba(34, 197, 94, 0.04)',
+    backgroundColor: 'rgba(22, 163, 74, 0.04)',
     fontFamily: 'var(--font-mono)',
     fontSize: 11,
     zIndex: 3,
   },
   statusText: {
-    color: '#22c55e',
+    color: '#16a34a',
     fontWeight: 600,
     letterSpacing: 1,
   },
@@ -274,7 +274,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     letterSpacing: 6,
     fontFamily: 'var(--font-mono)',
-    textShadow: '0 0 30px rgba(34, 197, 94, 0.12)',
+    textShadow: '0 0 30px rgba(22, 163, 74, 0.12)',
   },
   subtitle: {
     fontSize: 12,
@@ -318,7 +318,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
     letterSpacing: 3,
     fontFamily: 'var(--font-mono)',
-    boxShadow: '0 0 20px rgba(255, 59, 59, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+    boxShadow: '0 0 20px rgba(220, 38, 38, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
     transition: 'all 0.3s',
   },
   secondaryBtn: {

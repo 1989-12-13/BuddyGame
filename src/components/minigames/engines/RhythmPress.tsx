@@ -99,15 +99,15 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   }
 
   const pulseAnim = flash
-    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ff5454' }
+    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ef4444' }
     : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#22c55e' : '#ffb000'} />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#16a34a' : '#d97706'} />
         <Readout label="目标" value={String(s.targetBpm)} color="var(--text-muted)" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#58a6ff" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />
         <Readout label="按压" value={String(presses)} color="var(--border)" />
       </div>
 
@@ -118,7 +118,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
           height: 160,
           borderRadius: '50%',
           backgroundColor: 'var(--border-light)',
-          border: '3px solid #ff3b3b',
+          border: '3px solid #dc2626',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

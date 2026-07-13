@@ -33,11 +33,11 @@ export type CallerTone = '镇定' | '紧张' | '恐慌' | '失控'
 export type MpdsDeterminant = 'ECHO' | 'DELTA' | 'CHARLIE' | 'BRAVO' | 'ALPHA'
 
 export const MPDS_DETERMINANT_INFO: Record<MpdsDeterminant, { label: string; color: string; responseCode: string }> = {
-  ECHO:    { label: 'E — 即刻生命威胁',         color: '#ff3b3b', responseCode: '灯闪警笛' },
-  DELTA:   { label: 'D — 高危/潜在致命',         color: '#ff5454', responseCode: '灯闪警笛' },
-  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#ffb000', responseCode: '安静接近' },
-  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#00ff88', responseCode: '安静接近' },
-  ALPHA:   { label: 'A — 低危/常规转运',         color: '#00d4ff', responseCode: '安静接近' },
+  ECHO:    { label: 'E — 即刻生命威胁',         color: '#dc2626', responseCode: '灯闪警笛' },
+  DELTA:   { label: 'D — 高危/潜在致命',         color: '#ef4444', responseCode: '灯闪警笛' },
+  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#d97706', responseCode: '安静接近' },
+  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#16a34a', responseCode: '安静接近' },
+  ALPHA:   { label: 'A — 低危/常规转运',         color: '#0ea5e9', responseCode: '安静接近' },
 }
 
 // -------------------- 分诊等级（颜色四色法 — 急救现场分诊） --------------------
@@ -178,7 +178,7 @@ export interface FirstAidGuidance {
 // -------------------- 互动小游戏（急救指导实操环节） --------------------
 export type MiniGameKind =
   | 'rhythmPress'   // 胸外按压：目标 BPM
-  | 'aimForce'      // 瞄准施力
+  | 'quickChoice'   // 快速选择题：选择正确的急救操作
   | 'holdPressure'  // 按压止血
   | 'positionDrag'  // 摆位拖拽（已弃用）
   | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
@@ -203,18 +203,12 @@ export interface RhythmPressSpec extends BaseMiniGame {
   depthSeconds?: number     // 若要求按压深度，设定每次按压需保持的最小时长
 }
 
-/** 瞄准施力：拖拽标记到解剖位，再冲击/按压，位置+力度计分 */
-export interface AimForceSpec extends BaseMiniGame {
-  kind: 'aimForce'
-  targetX: number           // 目标中心 X（0-100 归一坐标）
-  targetY: number           // 目标中心 Y（0-100 归一坐标）
-  aimTolerance: number      // 命中容差（归一半径）
-  thrusts?: number           // 需要施力/按压次数（与 holdSec 二选一）
-  thrustWindowMs?: number    // 每次施力的目标节奏窗口（毫秒）
-  holdSec?: number           // 持续按压时长（秒）（与 thrusts 二选一）
-  showSideView?: boolean    // 显示侧面视图（海姆立克用）
-  hideTargetGuide?: boolean // 隐藏目标提示圈（不显示瞄准辅助线）
-  bodyDiagram?: 'full' | 'arm' | 'leg' | 'head' | 'chest'  // 身体示意图类型（止血用：显示具体部位）
+/** 快速选择题：纯文字版急救知识选择题 */
+export interface QuickChoiceSpec extends BaseMiniGame {
+  kind: 'quickChoice'
+  question: string           // 题目
+  options: string[]          // 选项列表
+  correctIndex: number       // 正确选项索引
 }
 
 /** 按压止血：长按保持压力 N 秒，松手血量回升 */
@@ -257,7 +251,7 @@ export interface CprSpec extends BaseMiniGame {
 
 export type MiniGameSpec =
   | RhythmPressSpec
-  | AimForceSpec
+  | QuickChoiceSpec
   | HoldPressureSpec
   | PositionDragSpec
   | StepOrderSpec
@@ -378,10 +372,10 @@ export type CalleeStressLevel = '镇定' | '紧张' | '恐慌' | '失控'
 
 /** 压力 → 文字 + 颜色映射 */
 export const STRESS_INFO: Record<CalleeStressLevel, { label: string; color: string; emoji: string; answerQuality: number }> = {
-  镇定: { label: '镇定',     color: '#00ff88', emoji: '○', answerQuality: 1.0 },
-  紧张: { label: '紧张',     color: '#ffb000', emoji: '◐', answerQuality: 0.9 },
+  镇定: { label: '镇定',     color: '#16a34a', emoji: '○', answerQuality: 1.0 },
+  紧张: { label: '紧张',     color: '#d97706', emoji: '◐', answerQuality: 0.9 },
   恐慌: { label: '恐慌',     color: '#ff8c00', emoji: '◑', answerQuality: 0.65 },
-  失控: { label: '失控',     color: '#ff5454', emoji: '●', answerQuality: 0.35 },
+  失控: { label: '失控',     color: '#ef4444', emoji: '●', answerQuality: 0.35 },
 }
 
 /** 由压力值推导等级 */

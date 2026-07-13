@@ -19,10 +19,10 @@ const SAVE_THRESHOLD = 60 // 每通 ≥60 分视为"救回"
 
 function ratingColor(rating: string): string {
   switch (rating) {
-    case 'gold': return '#ffb000'
+    case 'gold': return '#d97706'
     case 'silver': return 'var(--text-secondary)'
     case 'bronze': return '#d97706'
-    default: return '#ff3b3b'
+    default: return '#dc2626'
   }
 }
 
@@ -71,7 +71,7 @@ function savedSummaryStyle(saved: number, total: number): CSSProperties {
     fontSize: 14,
     fontWeight: 800,
     fontFamily: 'var(--font-mono)',
-    color: saved === total ? '#22c55e' : saved > total / 2 ? '#ffb000' : '#ff3b3b',
+    color: saved === total ? '#16a34a' : saved > total / 2 ? '#d97706' : '#dc2626',
     letterSpacing: 1,
   }
 }
@@ -81,8 +81,8 @@ function callCardStyle(saved: boolean): CSSProperties {
     width: 78,
     padding: '8px 6px',
     borderRadius: 6,
-    border: `1px solid ${saved ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 59, 59, 0.25)'}`,
-    backgroundColor: saved ? 'rgba(34, 197, 94, 0.05)' : 'rgba(255, 59, 59, 0.05)',
+    border: `1px solid ${saved ? 'rgba(22, 163, 74, 0.2)' : 'rgba(220, 38, 38, 0.25)'}`,
+    backgroundColor: saved ? 'rgba(22, 163, 74, 0.05)' : 'rgba(220, 38, 38, 0.05)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -94,7 +94,7 @@ function callCardScoreStyle(saved: boolean): CSSProperties {
   return {
     fontSize: 20,
     fontWeight: 800,
-    color: saved ? '#22c55e' : '#ff3b3b',
+    color: saved ? '#16a34a' : '#dc2626',
     fontFamily: 'var(--font-mono)',
     lineHeight: 1,
   }
@@ -106,7 +106,7 @@ function callCardStatusStyle(saved: boolean): CSSProperties {
     alignItems: 'center',
     gap: 1,
     fontSize: 10,
-    color: saved ? '#22c55e' : '#ff3b3b',
+    color: saved ? '#16a34a' : '#dc2626',
     fontFamily: 'var(--font-mono)',
     fontWeight: 600,
   }
@@ -116,7 +116,7 @@ function callCardBarFillStyle(saved: boolean, score: number): CSSProperties {
   return {
     width: `${Math.min(100, score)}%`,
     height: '100%',
-    backgroundColor: saved ? '#22c55e' : '#ff3b3b',
+    backgroundColor: saved ? '#16a34a' : '#dc2626',
     transition: 'width 0.6s ease-out',
   }
 }
@@ -262,7 +262,7 @@ const styles: Record<string, CSSProperties> = {
     cursor: 'pointer',
     letterSpacing: 2,
     fontFamily: 'var(--font-mono)',
-    boxShadow: '0 0 16px rgba(255, 59, 59, 0.25)',
+    boxShadow: '0 0 16px rgba(220, 38, 38, 0.25)',
     transition: 'all 0.3s',
   },
 }

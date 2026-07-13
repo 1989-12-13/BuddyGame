@@ -120,13 +120,13 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
           {/* 目标扇形区域 */}
           <path
             d={arcPath(90 - s.targetAngle, 90 + s.targetAngle, 58)}
-            stroke="#58a6ff" strokeWidth={1.5} strokeDasharray="4 3"
+            stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="4 3"
             fill="rgba(59,130,246,0.06)"
           />
           {/* 目标终点小旗 */}
           <text
             x={tipX(90 - s.targetAngle)} y={tipY(90 - s.targetAngle) - 6}
-            textAnchor="middle" fontSize={7} fill="#58a6ff"
+            textAnchor="middle" fontSize={7} fill="#3b82f6"
             fontWeight="bold"
           >
             ▼ 目标 {s.targetAngle}°
@@ -141,13 +141,13 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
             {/* 面部朝向三角箭头 */}
             <polygon
               points="90,45 83,65 97,65"
-              fill={aligned ? '#22c55e' : '#b1bac4'}
+              fill={aligned ? '#16a34a' : '#b1bac4'}
               opacity={0.7}
             />
             {/* 面部圆（脸的轮廓） */}
             <circle cx={90} cy={78} r={10}
               fill={aligned ? 'rgba(5,150,105,0.12)' : 'rgba(71,85,105,0.08)'}
-              stroke={aligned ? '#22c55e' : 'var(--text-muted)'}
+              stroke={aligned ? '#16a34a' : 'var(--text-muted)'}
               strokeWidth={0.6} />
           </g>
 
@@ -156,7 +156,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
 
           {/* 当前角度指示条 */}
           <line x1={90} y1={90} x2={tipX(angle)} y2={tipY(angle)}
-            stroke={aligned ? '#22c55e' : '#b1bac4'}
+            stroke={aligned ? '#16a34a' : '#b1bac4'}
             strokeWidth={aligned ? 2 : 1.2}
             opacity={aligned ? 0.8 : 0.4}
           />
@@ -165,10 +165,10 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
           {aligned && (
             <g>
               <circle cx={90} cy={90} r={68}
-                fill="none" stroke="#22c55e" strokeWidth={1.5} opacity={0.4}>
+                fill="none" stroke="#16a34a" strokeWidth={1.5} opacity={0.4}>
                 <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
               </circle>
-              <text x={90} y={172} textAnchor="middle" fill="#22c55e" fontSize={8} fontWeight="bold">
+              <text x={90} y={172} textAnchor="middle" fill="#16a34a" fontSize={8} fontWeight="bold">
                 ✓ 到位
               </text>
             </g>
@@ -194,7 +194,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
         borderRadius: 8, border: '1px solid var(--border)',
       }}>
         <Readout label="当前" value={`${angle.toFixed(0)}°`} color="var(--text-primary)" />
-        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? '#22c55e' : '#ffb000'} />
+        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? '#16a34a' : '#d97706'} />
         <Readout label="目标" value={`${s.targetAngle}°`} color="var(--text-muted)" />
       </div>
 
@@ -204,7 +204,7 @@ export function PositionDrag({ spec, onComplete }: MiniGameProps) {
         style={{
           padding: '8px 24px', borderRadius: 6, border: 'none',
           background: aligned
-            ? 'linear-gradient(135deg, #22c55e, #047857)'
+            ? 'linear-gradient(135deg, #16a34a, #047857)'
             : 'var(--border-light)',
           color: aligned ? '#fff' : 'var(--text-muted)',
           fontSize: 13, fontWeight: 'bold',

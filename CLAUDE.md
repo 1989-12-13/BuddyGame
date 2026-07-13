@@ -47,7 +47,7 @@ src/
 │   ├── call/CallDebrief.tsx  # 单通电话结束评分卡
 │   └── minigames/
 │       ├── MiniGameHost.tsx    # 按 spec.kind 分发到 7 个引擎
-│       └── engines/            # RhythmPress / AimForce / HoldPressure / PositionDrag / StepOrder / LocationSelect / CprGame
+│       └── engines/            # RhythmPress / QuickChoice / HoldPressure / PositionDrag / StepOrder / LocationSelect / CprGame
 ├── styles/                # tokens.css / global.css / animations.css（纯 CSS 变量）
 └── test/setup.ts          # jsdom + jest-dom
 ```

@@ -177,9 +177,9 @@ export function CprRhythm({ onComplete }: Props) {
                   ...styles.beatBall,
                   bottom: `${beatProgress * 80 + 10}%`,
                   backgroundColor:
-                    lastHitQuality === 'perfect' ? '#22c55e'
-                    : lastHitQuality === 'good' ? '#ffb000'
-                    : lastHitQuality === 'miss' ? '#ff5454'
+                    lastHitQuality === 'perfect' ? '#16a34a'
+                    : lastHitQuality === 'good' ? '#d97706'
+                    : lastHitQuality === 'miss' ? '#ef4444'
                     : '#38bdf8',
                   transform: `scale(${isSweetSpot ? 1.3 : 1})`,
                   transition: showFeedback
@@ -210,9 +210,9 @@ export function CprRhythm({ onComplete }: Props) {
               style={{
                 ...styles.feedbackPopup,
                 color:
-                  lastHitQuality === 'perfect' ? '#22c55e'
-                  : lastHitQuality === 'good' ? '#ffb000'
-                  : '#ff5454',
+                  lastHitQuality === 'perfect' ? '#16a34a'
+                  : lastHitQuality === 'good' ? '#d97706'
+                  : '#ef4444',
               }}
             >
               {lastHitQuality === 'perfect' ? '完美！' :
@@ -228,9 +228,9 @@ export function CprRhythm({ onComplete }: Props) {
                 style={{
                   ...styles.historyDot,
                   backgroundColor:
-                    hit.quality === 'perfect' ? '#22c55e'
-                    : hit.quality === 'good' ? '#ffb000'
-                    : '#ff5454',
+                    hit.quality === 'perfect' ? '#16a34a'
+                    : hit.quality === 'good' ? '#d97706'
+                    : '#ef4444',
                 }}
               />
             ))}
@@ -250,7 +250,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'relative' as const,
     padding: '12px 16px',
     backgroundColor: 'var(--bg-elevated)',
-    borderTop: '2px solid #ff5454',
+    borderTop: '2px solid #ef4444',
     minHeight: 260,
     display: 'flex',
     flexDirection: 'column' as const,

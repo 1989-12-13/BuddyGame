@@ -4,7 +4,7 @@
 
 import type { MiniGameSpec } from '../../game/types'
 import { RhythmPress } from './engines/RhythmPress'
-import { AimForce } from './engines/AimForce'
+import { QuickChoice } from './engines/QuickChoice'
 import { HoldPressure } from './engines/HoldPressure'
 import { PositionDrag } from './engines/PositionDrag'
 import { StepOrder } from './engines/StepOrder'
@@ -17,18 +17,20 @@ interface Props {
 }
 
 const SHELL: React.CSSProperties = {
-  borderTop: '2px solid #58a6ff',
-  padding: '12px 14px',
+  padding: '14px 16px',
   backgroundColor: 'var(--bg-surface)',
+  borderRadius: 10,
   maxHeight: 360,
   overflowY: 'auto',
+  boxShadow: '0 1px 0 0 var(--accent-blue), var(--shadow-md)',
 }
 
 const TITLE: React.CSSProperties = {
   fontSize: 15,
   fontWeight: 'bold',
-  color: '#58a6ff',
-  marginBottom: 4,
+  color: 'var(--accent-blue)',
+  marginBottom: 2,
+  letterSpacing: 0.3,
 }
 
 const INSTR: React.CSSProperties = {
@@ -36,6 +38,7 @@ const INSTR: React.CSSProperties = {
   color: 'var(--text-secondary)',
   marginBottom: 10,
   lineHeight: 1.5,
+  paddingLeft: 2,
 }
 
 export function MiniGameHost({ spec, onComplete }: Props) {
@@ -44,7 +47,7 @@ export function MiniGameHost({ spec, onComplete }: Props) {
       <div style={TITLE}>◆ {spec.title}</div>
       <div style={INSTR}>{spec.instruction}</div>
       {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'aimForce' && <AimForce spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'quickChoice' && <QuickChoice spec={spec} onComplete={onComplete} />}
       {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} />}
       {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
       {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}

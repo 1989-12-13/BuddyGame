@@ -59,9 +59,9 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
         {/* 分项得分条 */}
         <div style={styles.breakdownRow}>
           {[
-            { label: '派车速度', value: breakdown.speed, max: 40, color: '#00d4ff' },
-            { label: '信息完整', value: breakdown.info, max: 30, color: '#22c55e' },
-            { label: '分诊准确', value: breakdown.triage, max: 20, color: '#ffb000' },
+            { label: '派车速度', value: breakdown.speed, max: 40, color: '#0ea5e9' },
+            { label: '信息完整', value: breakdown.info, max: 30, color: '#16a34a' },
+            { label: '分诊准确', value: breakdown.triage, max: 20, color: '#d97706' },
             { label: '急救指导', value: breakdown.guidance, max: 10, color: '#ff8c00' },
           ].map(item => (
             <div key={item.label} style={styles.breakdownItem}>
@@ -82,7 +82,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
 
         {breakdown.penalty > 0 && (
           <div style={styles.penaltyRow}>
-            判断扣分：<span style={{ color: '#ff5454', fontWeight: 'bold' }}>-{breakdown.penalty}</span>
+            判断扣分：<span style={{ color: '#ef4444', fontWeight: 'bold' }}>-{breakdown.penalty}</span>
           </div>
         )}
 
@@ -132,11 +132,11 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
               {debrief.judgments.map((j, i) => (
                 <div key={i} style={{
                   ...styles.judgmentRow,
-                  borderColor: j.isCorrect ? '#22c55e' : '#ff5454',
+                  borderColor: j.isCorrect ? '#16a34a' : '#ef4444',
                 }}>
                   <div style={styles.judgmentQuestion}>{j.question}</div>
                   <div style={styles.judgmentChoices}>
-                    <span style={{ color: j.isCorrect ? '#22c55e' : '#ff6b6b', fontSize: 12 }}>
+                    <span style={{ color: j.isCorrect ? '#16a34a' : '#ff6b6b', fontSize: 12 }}>
                       你的选择：{j.playerChoice}
                     </span>
                     {!j.isCorrect && (
@@ -145,7 +145,7 @@ export function CallDebrief({ state, debrief, onNext }: Props) {
                           ✓ 正确：{j.correctAnswer}
                         </span>
                         {j.reason && (
-                          <div style={{ color: '#ffb000', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
+                          <div style={{ color: '#d97706', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
                             ℹ {j.reason}
                           </div>
                         )}
@@ -179,7 +179,7 @@ function DetailItem({
   icon: ReactNode; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
   const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
-  const statusColor = ok ? '#22c55e' : partial ? '#ffb000' : '#ff5454'
+  const statusColor = ok ? '#16a34a' : partial ? '#d97706' : '#ef4444'
   return (
     <div style={styles.detailItem}>
       <span style={{ fontSize: 13 }}>{statusIcon}</span>
@@ -227,7 +227,7 @@ const styles: Record<string, React.CSSProperties> = {
   totalScoreValue: {
     fontSize: 42,
     fontWeight: 'bold',
-    color: '#00d4ff',
+    color: '#0ea5e9',
     fontFamily: 'monospace',
   },
   totalScoreLabel: {
@@ -304,7 +304,7 @@ const styles: Record<string, React.CSSProperties> = {
   sectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#ffb000',
+    color: '#d97706',
     borderBottom: '1px solid var(--border)',
     paddingBottom: 3,
     marginTop: 4,
@@ -345,7 +345,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   nextBtn: {
     padding: '12px 24px',
-    backgroundColor: '#ff3b3b',
+    backgroundColor: '#dc2626',
     color: '#fff',
     border: 'none',
     borderRadius: 6,

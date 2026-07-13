@@ -45,7 +45,7 @@ export function SettingsPanel({ onNavigate }: Props) {
   }
 
   return (
-    <div ref={panelRef} style={{ position: 'fixed', top: 16, left: 16, zIndex: 1000 }}>
+    <div ref={panelRef} style={{ position: 'fixed', top: 85, left: 16, zIndex: 1000 }}>
       {/* 齿轮按钮 */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -130,7 +130,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             />
           </div>
 
-          <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--border)' }} />
+          <div style={{ height: 1, margin: '4px 26px', backgroundColor: 'var(--border)' }} />
 
           {/* 主题切换 */}
           <button

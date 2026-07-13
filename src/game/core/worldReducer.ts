@@ -12,6 +12,7 @@ import {
   createTerminalState,
   buildScenarioQueue,
   calcAmbulanceETA,
+  calcOnSceneDuration,
   scoreCall,
   createPatientStatus,
   stabilityToVitalSign,
@@ -25,7 +26,7 @@ import { getCaller } from '../npc/personas'
 import { buildDebrief } from './debrief'
 import { getPerkChoices, hasPerk } from './perks'
 import { isPrankVerified } from './judgments'
-import { findVehicleById, findFastestAvailable, type Ambulance } from './fleet'
+import { findVehicleById, findFastestAvailable, advanceFleet, type Ambulance } from './fleet'
 
 // ============================================================
 // 即时反馈事件工厂（push 到 state.patientEvents → 顶部 toast）
@@ -781,12 +782,12 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const triage = state.terminal.triage
 
       // ETA 受车辆速度影响（speed 越大 ETA 越短）+ 肉鸽收益 priority_channel
-      const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness)
-      const rawEta = Math.round(baseEta / Math.max(1, vehicle.speed * 0.6))
+      const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness, vehicle.speed)
       const eta = Math.max(
-        3,
-        rawEta - (hasPerk(state.perks, 'priority_channel') ? 2 : 0),
+        20,
+        baseEta - (hasPerk(state.perks, 'priority_channel') ? 5 : 0),
       )
+      const onSceneTotal = calcOnSceneDuration(state.currentCall.correctTriage)
 
       const systemLine: DialogueLine = {
         speaker: 'system',
@@ -848,7 +849,25 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           : [],
         dialogueLog: [...state.dialogueLog, systemLine, ...afterDispatchLines],
         rescue,
-        fleet: { ...state.fleet, selectedVehicleId: vehicle.id },
+        fleet: {
+          ...state.fleet,
+          selectedVehicleId: vehicle.id,
+          vehicles: state.fleet.vehicles.map(v =>
+            v.id === vehicle.id
+              ? {
+                  ...v,
+                  status: 'en_route' as const,
+                  eta,
+                  currentCallId: state.currentCall!.id,
+                  mission: {
+                    callId: state.currentCall!.id,
+                    outboundTotal: eta,
+                    onSceneTotal,
+                  },
+                }
+              : v
+          ),
+        },
         patientEvents: newEvents,
       }
     }
@@ -1130,15 +1149,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         penalty: penaltyScore,
       })
 
-      // 派出的车在通话结束时复位为 available（P0 简化：忽略现实里的返程时间）
-      const newFleet = state.rescue.vehicleId
-        ? {
-          ...state.fleet,
-          vehicles: state.fleet.vehicles.map(v =>
-            v.id === state.rescue.vehicleId ? { ...v, status: 'available' as const, currentCallId: null } : v
-          ),
-        }
-        : state.fleet
+      // 车辆不在此处复位 — 由 advanceFleet 自然推进 on_scene→returning→available
+      // 这样伪并发下下一通电话能看到真实占用（车还没回来就不能选）
+      const newFleet = state.fleet
 
       return {
         ...state,
@@ -1336,6 +1349,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         patientStatus: newPatientStatus,
         patientEvents: newEvents,
         rescue: newRescue,
+        fleet: advanceFleet(state.fleet),
         dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
           ? [...state.dialogueLog, ...newDialogue]
           : state.dialogueLog,

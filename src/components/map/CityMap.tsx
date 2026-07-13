@@ -37,18 +37,44 @@ export function CityMap({ state }: Props) {
   const isPrank = state.currentCall?.isPrank ?? false
   const evPos = eventPos(state)
 
-  // 救护车位置：起点（车辆归属站） → 终点（事件点）
+  // 救护车位置：基于 vehicle.status + mission 推导（去程/现场/返程）
   const rescue = state.rescue
   const vehicleId = rescue.vehicleId
+  const vehicle = vehicleId ? state.fleet.vehicles.find(v => v.id === vehicleId) : undefined
   const startPt = vehicleId ? (STATIONS[vehicleId]?.pos ?? { x: 600, y: 350 }) : evPos
-  const total = rescue.etaTotal || 1
-  const remaining = state.ambulanceRemaining < 0 ? total : state.ambulanceRemaining
-  const progress = rescue.phase === 'arrived' || rescue.phase === 'success' || rescue.phase === 'failed'
-    ? 1
-    : 1 - remaining / total
-  const ambX = lerp(startPt.x, evPos.x, progress)
-  const ambY = lerp(startPt.y, evPos.y, progress)
-  const showAmbulance = rescue.phase !== 'idle' && vehicleId
+
+  let ambX = evPos.x
+  let ambY = evPos.y
+  let showAmbulance = false
+  let isReturning = false
+  if (vehicle && vehicle.mission && rescue.phase !== 'idle') {
+    const m = vehicle.mission
+    showAmbulance = true
+    switch (vehicle.status) {
+      case 'en_route': {
+        // 去程：用 ambulanceRemaining（单通电话维度，和 vehicle.eta 同步）
+        const remaining = state.ambulanceRemaining < 0 ? m.outboundTotal : state.ambulanceRemaining
+        const progress = Math.max(0, Math.min(1, 1 - remaining / Math.max(1, m.outboundTotal)))
+        ambX = lerp(startPt.x, evPos.x, progress)
+        ambY = lerp(startPt.y, evPos.y, progress)
+        break
+      }
+      case 'on_scene':
+        ambX = evPos.x
+        ambY = evPos.y
+        break
+      case 'returning': {
+        isReturning = true
+        const progress = Math.max(0, Math.min(1, 1 - vehicle.eta / Math.max(1, m.outboundTotal)))
+        ambX = lerp(evPos.x, startPt.x, progress)
+        ambY = lerp(evPos.y, startPt.y, progress)
+        break
+      }
+      case 'available':
+        showAmbulance = false
+        break
+    }
+  }
 
   return (
     <div style={styles.wrap}>
@@ -68,11 +94,14 @@ export function CityMap({ state }: Props) {
         <path d="M 0 350 L 1200 350" stroke="var(--map-road)" strokeWidth={3} />
         <path d="M 600 0 L 600 700" stroke="var(--map-road)" strokeWidth={3} />
 
-        {/* 救护车行驶路径（虚线） */}
+        {/* 救护车行驶路径（虚线）— 返程时绿色，去程橙色 */}
         {showAmbulance && (
           <line
             x1={startPt.x} y1={startPt.y} x2={evPos.x} y2={evPos.y}
-            stroke="#d97706" strokeWidth={2} strokeDasharray="6 6" opacity={0.55}
+            stroke={isReturning ? '#16a34a' : '#d97706'}
+            strokeWidth={2}
+            strokeDasharray="6 6"
+            opacity={isReturning ? 0.4 : 0.55}
           />
         )}
 
@@ -80,20 +109,28 @@ export function CityMap({ state }: Props) {
         {Object.entries(STATIONS).map(([id, info]) => {
           const v = state.fleet.vehicles.find(x => x.id === id)
           const busy = v?.status !== 'available'
+          const statusLabel = !v ? '● 待命'
+            : v.status === 'available' ? '● 待命'
+            : v.status === 'en_route' ? '○ 出击中'
+            : v.status === 'on_scene' ? '○ 救治中'
+            : '○ 返程中'
+          const statusColor = !v || v.status === 'available' ? '#16a34a'
+            : v.status === 'returning' ? '#d97706'
+            : '#dc2626'
           return (
             <g key={id}>
               <circle cx={info.pos.x} cy={info.pos.y} r={26}
                 fill={busy ? 'var(--map-grid)' : 'var(--bg-elevated)'}
-                stroke={busy ? 'var(--border-bright)' : '#16a34a'} strokeWidth={2} />
+                stroke={busy ? statusColor : '#16a34a'} strokeWidth={2} />
               <circle cx={info.pos.x} cy={info.pos.y} r={36}
-                fill="none" stroke={busy ? 'var(--border-bright)' : '#16a34a'} strokeWidth={1}
+                fill="none" stroke={busy ? statusColor : '#16a34a'} strokeWidth={1}
                 opacity={busy ? 0.2 : 0.4} />
               <text x={info.pos.x} y={info.pos.y + 4} textAnchor="middle"
                 fontSize={11} fill="var(--text-secondary)" fontFamily="monospace">{info.name}</text>
               <text x={info.pos.x} y={info.pos.y + 50} textAnchor="middle"
-                fontSize={10} fill={busy ? 'var(--text-muted)' : '#16a34a'}
+                fontSize={10} fill={busy ? statusColor : '#16a34a'}
                 fontFamily="monospace" fontWeight="bold">
-                {busy ? '○ 执勤中' : '● 待命'}
+                {statusLabel}
               </text>
             </g>
           )

@@ -6,11 +6,20 @@ export type AmbulanceStatus = 'available' | 'en_route' | 'on_scene' | 'returning
 
 export type AmbulanceTier = 'BLS' | 'ALS' | 'MICU'
 
+/** 车辆当前任务周期信息（跨 en_route → on_scene → returning 保持） */
+export interface AmbulanceMission {
+  callId: string
+  /** 去程总时长（秒），返程对称使用 */
+  outboundTotal: number
+  /** 现场救治总时长（秒） */
+  onSceneTotal: number
+}
+
 export interface Ambulance {
   id: string
   name: string
   status: AmbulanceStatus
-  /** 当前任务剩余秒数（0 = 空闲） */
+  /** 当前阶段剩余秒数（0 = 空闲） */
   eta: number
   /** 速度等级 1-3，影响 ETA */
   speed: number
@@ -22,6 +31,8 @@ export interface Ambulance {
   equipment: string[]
   /** 当前任务的目的地场景 ID（用于追踪） */
   currentCallId: string | null
+  /** 当前任务周期信息，null = 空闲 */
+  mission: AmbulanceMission | null
 }
 
 export interface FleetState {
@@ -34,11 +45,33 @@ export interface FleetState {
 export function createDefaultFleet(): FleetState {
   return {
     vehicles: [
-      { id: 'ambulance_a', name: '望京站 · 甲车', status: 'available', eta: 0, speed: 2, capability: 4, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null },
-      { id: 'ambulance_b', name: '中关村站 · 乙车', status: 'available', eta: 0, speed: 1, capability: 2, tier: 'BLS', equipment: ['BLS'], currentCallId: null },
-      { id: 'ambulance_c', name: '方庄站 · 丙车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null },
+      { id: 'ambulance_a', name: '望京站 · 甲车', status: 'available', eta: 0, speed: 2, capability: 4, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null, mission: null },
+      { id: 'ambulance_b', name: '中关村站 · 乙车', status: 'available', eta: 0, speed: 1, capability: 2, tier: 'BLS', equipment: ['BLS'], currentCallId: null, mission: null },
+      { id: 'ambulance_c', name: '方庄站 · 丙车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null, mission: null },
     ],
     selectedVehicleId: null,
+  }
+}
+
+/** TICK 每秒推进所有占用车辆的状态机（en_route→on_scene→returning→available） */
+export function advanceFleet(fleet: FleetState): FleetState {
+  return {
+    ...fleet,
+    vehicles: fleet.vehicles.map(v => {
+      if (v.status === 'available' || !v.mission) return v
+      const newEta = v.eta - 1
+      if (newEta > 0) return { ...v, eta: newEta }
+      // 阶段切换
+      switch (v.status) {
+        case 'en_route':
+          return { ...v, status: 'on_scene', eta: v.mission.onSceneTotal }
+        case 'on_scene':
+          return { ...v, status: 'returning', eta: v.mission.outboundTotal }
+        case 'returning':
+          return { ...v, status: 'available', eta: 0, mission: null, currentCallId: null }
+      }
+      return v
+    }),
   }
 }
 

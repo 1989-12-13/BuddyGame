@@ -13,7 +13,7 @@ export function ThemeToggle({ style }: { style?: React.CSSProperties }) {
       title={theme === 'light' ? '切换深色主题' : '切换浅色主题'}
       style={{
         position: 'fixed',
-        top: 16,
+        top: 26,
         right: 16,
         zIndex: 1000,
         padding: '6px 10px',

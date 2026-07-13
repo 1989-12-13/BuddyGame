@@ -215,33 +215,36 @@ export function triageLevelDiff(a: TriageLevel | null, b: TriageLevel): number {
 
 /**
  * 计算救护车预计到达时间（游戏秒数）
- * 受派车速度和地址完整度影响
+ * 目标区间 25-120 秒：让电话指导有施展空间，避免"还没指导完就到了"
+ * 受派车速度、地址完整度、车辆 speed 影响
  */
 export function calcAmbulanceETA(
   dispatchTime: number,
   addressCompleteness: 'vague' | 'partial' | 'full',
+  vehicleSpeed = 1,
 ): number {
-  // 基础ETA（游戏压缩后的时间）
-  let eta = 8
+  let eta = 70
 
-  // 派车越快，ETA越短
-  if (dispatchTime <= 27) {
-    eta -= 2
-  } else if (dispatchTime <= 43) {
-    eta -= 1
-  } else if (dispatchTime > 60) {
-    eta += 2
-  }
+  // 派车越快，ETA 越短
+  if (dispatchTime <= 27) eta -= 15
+  else if (dispatchTime <= 43) eta -= 8
+  else if (dispatchTime > 60) eta += 12
 
-  // 地址越完整，ETA越短
-  if (addressCompleteness === 'vague') {
-    eta += 3
-  } else if (addressCompleteness === 'partial') {
-    eta += 1
-  }
-  // full: no penalty
+  // 地址越完整，ETA 越短
+  if (addressCompleteness === 'full') eta -= 10
+  else if (addressCompleteness === 'vague') eta += 15
 
-  return Math.max(3, eta)
+  // 车辆速度（speed 1-3）：speed 3 快车减 14，speed 1 无加成
+  eta -= (vehicleSpeed - 1) * 7
+
+  return Math.max(25, Math.min(120, eta))
+}
+
+/** 现场救治时长（秒）— 按分诊严重度，red 最久 */
+export function calcOnSceneDuration(triage: TriageLevel): number {
+  const cfg = SEVERITY_CONFIG[triage]
+  // 越严重现场救治越久：red ~20s, yellow ~15s, green ~8s, black ~10s
+  return Math.round(20 - (cfg.decayRate < 0.3 ? 12 : cfg.decayRate < 0.6 ? 5 : 0))
 }
 
 // ============================================================

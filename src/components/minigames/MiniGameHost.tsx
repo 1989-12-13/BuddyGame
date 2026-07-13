@@ -14,13 +14,14 @@ import { CprGame } from './engines/CprGame'
 interface Props {
   spec: MiniGameSpec
   onComplete: (score: number, passed: boolean) => void
+  /** 折叠/遮罩时暂停计时与输入 */
+  paused?: boolean
 }
 
 const SHELL: React.CSSProperties = {
-  padding: '14px 16px',
-  backgroundColor: 'var(--bg-surface)',
-  borderRadius: 10,
-  maxHeight: 360,
+  borderTop: '2px solid var(--accent-blue)',
+  padding: '12px 14px',
+  backgroundColor: 'transparent',
   overflowY: 'auto',
   boxShadow: '0 1px 0 0 var(--accent-blue), var(--shadow-md)',
 }
@@ -41,18 +42,18 @@ const INSTR: React.CSSProperties = {
   paddingLeft: 2,
 }
 
-export function MiniGameHost({ spec, onComplete }: Props) {
+export function MiniGameHost({ spec, onComplete, paused }: Props) {
   return (
     <div style={SHELL}>
       <div style={TITLE}>◆ {spec.title}</div>
       <div style={INSTR}>{spec.instruction}</div>
-      {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'quickChoice' && <QuickChoice spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} />}
-      {spec.kind === 'cpr' && <CprGame spec={spec} onComplete={onComplete} />}
+      {spec.kind === 'rhythmPress' && <RhythmPress spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'quickChoice' && <QuickChoice spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'holdPressure' && <HoldPressure spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'positionDrag' && <PositionDrag spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'stepOrder' && <StepOrder spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'locationSelect' && <LocationSelect spec={spec} onComplete={onComplete} paused={paused} />}
+      {spec.kind === 'cpr' && <CprGame spec={spec} onComplete={onComplete} paused={paused} />}
     </div>
   )
 }

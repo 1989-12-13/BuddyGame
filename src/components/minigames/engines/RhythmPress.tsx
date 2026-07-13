@@ -13,7 +13,7 @@ const wrap: React.CSSProperties = {
   gap: 10,
 }
 
-export function RhythmPress({ spec, onComplete }: MiniGameProps) {
+export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as RhythmPressSpec
   const [timeLeft, setTimeLeft] = useState(s.durationSec)
   const [bpm, setBpm] = useState(0)
@@ -25,12 +25,24 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   const startRef = useRef<number>(0)
   const rafRef = useRef<number | null>(null)
   const finished = useRef(false)
+  const pausedRef = useRef(false)
+  const pausedAtRef = useRef(0)
+  const pausedAccumRef = useRef(0)
+  useEffect(() => {
+    pausedRef.current = !!paused
+    if (paused && !pausedAtRef.current) {
+      pausedAtRef.current = performance.now()
+    } else if (!paused && pausedAtRef.current) {
+      pausedAccumRef.current += performance.now() - pausedAtRef.current
+      pausedAtRef.current = 0
+    }
+  }, [paused])
 
   const targetInterval = 60000 / s.targetBpm
   const tolFrac = s.bpmTolerance / s.targetBpm
 
   const registerPress = () => {
-    if (finished.current) return
+    if (finished.current || pausedRef.current) return
     const now = performance.now()
     pressTimes.current.push(now)
     setPresses(pressTimes.current.length)
@@ -41,7 +53,12 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
   useEffect(() => {
     startRef.current = performance.now()
     const loop = () => {
-      const elapsed = (performance.now() - startRef.current) / 1000
+      const now = performance.now()
+      const elapsed = (now - startRef.current - pausedAccumRef.current) / 1000
+      if (pausedRef.current) {
+        rafRef.current = requestAnimationFrame(loop)
+        return
+      }
       const left = Math.max(0, s.durationSec - elapsed)
       setTimeLeft(left)
       // 实时 BPM：取最近 4 次按压
@@ -64,6 +81,7 @@ export function RhythmPress({ spec, onComplete }: MiniGameProps) {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault()
+        if (pausedRef.current) return
         registerPress()
       }
     }

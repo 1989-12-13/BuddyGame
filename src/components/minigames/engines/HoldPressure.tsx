@@ -13,7 +13,7 @@ const wrap: React.CSSProperties = {
   gap: 10,
 }
 
-export function HoldPressure({ spec, onComplete }: MiniGameProps) {
+export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as HoldPressureSpec
   const [blood, setBlood] = useState(100)        // 0 安全，100 危险
   const [safeTime, setSafeTime] = useState(0)
@@ -25,6 +25,8 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
   const rafRef = useRef<number | null>(null)
   const lastRef = useRef(0)
   const finished = useRef(false)
+  const pausedRef = useRef(false)
+  useEffect(() => { pausedRef.current = !!paused }, [paused])
   const maxTime = s.holdSec * 3 + 6
 
   useEffect(() => {
@@ -33,6 +35,10 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
       const now = performance.now()
       const dt = (now - lastRef.current) / 1000
       lastRef.current = now
+      if (pausedRef.current) {
+        rafRef.current = requestAnimationFrame(loop)
+        return
+      }
       if (held.current) bloodRef.current = Math.max(0, bloodRef.current - s.regainPerSec * dt)
       else bloodRef.current = Math.min(100, bloodRef.current + s.bleedRatePerSec * dt)
       setBlood(bloodRef.current)
@@ -48,8 +54,8 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
     }
     rafRef.current = requestAnimationFrame(loop)
 
-    const onDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); press(true) } }
-    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); press(false) } }
+    const onDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); if (pausedRef.current) return; press(true) } }
+    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); if (pausedRef.current) return; press(false) } }
     window.addEventListener('keydown', onDown)
     window.addEventListener('keyup', onUp)
     return () => {
@@ -61,7 +67,7 @@ export function HoldPressure({ spec, onComplete }: MiniGameProps) {
   }, [])
 
   const press = (v: boolean) => {
-    if (finished.current) return
+    if (finished.current || pausedRef.current) return
     held.current = v
     setHolding(v)
   }

@@ -434,15 +434,21 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           />
         )}
 
-        {/* 收尾阶段 */}
-        {state.callPhase === 'closing' && (
-          <div style={styles.closingPanel}>
-            <p style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: 8 }}>
-              {call.guidance ? '急救指导已完成，等待救护车到达。' : '派车指令已发出。'}
-            </p>
-            <button style={styles.endCallBtn} onClick={handleEndCall}>
-              挂断电话
-            </button>
+        {/* 收尾阶段 — 弹窗 */}
+        {state.callPhase === 'closing' && call && (
+          <div style={styles.guidanceOverlay}>
+            <div style={{ ...styles.guidanceWindow, width: 360 }}>
+              <div style={styles.guidanceWindowHeader}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <span style={{ fontSize: 15, fontWeight: 'bold', color: '#4ade80' }}>通话完成</span>
+              </div>
+              <ClosingPanel
+                guidance={!!call.guidance}
+                ambulanceRemaining={state.ambulanceRemaining}
+                terminal={state.terminal}
+                onEndCall={() => dispatch({ type: 'END_CALL' })}
+              />
+            </div>
           </div>
         )}
       </div>

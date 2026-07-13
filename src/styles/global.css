@@ -18,7 +18,12 @@ html {
 body {
   font-family: var(--font-body);
   font-weight: 500;
-  background: var(--bg);
+  /* 氛围层：径向暗角 + 垂直渐变营造调度中心深度 */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, calc(var(--vignette-strength) * 0.55)) 100%),
+    linear-gradient(180deg, var(--bg-gradient-head) 0%, var(--bg-gradient-foot) 100%);
+  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -26,6 +31,57 @@ body {
 
 #root {
   min-height: 100vh;
+  position: relative;
+}
+
+/* === 暗角层（全主题，z-index 高于游戏内容但低于模态） === */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 35%,
+    rgba(0, 0, 0, var(--vignette-strength)) 100%
+  );
+}
+
+/* === 扫描线（仅深色主题，CRT 监视器质感） === */
+[data-theme='dark'] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: repeating-linear-gradient(
+    0deg,
+    var(--scanline-color) 0px,
+    var(--scanline-color) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: var(--scanline-opacity);
+}
+
+/* === 移动扫描光束（仅深色主题，非常微弱） === */
+[data-theme='dark'] #root::before {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 120px;
+  top: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--sweep-color) 50%,
+    transparent 100%
+  );
+  animation: scanline-sweep 9s linear infinite;
 }
 
 button {

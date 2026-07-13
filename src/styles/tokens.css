@@ -59,6 +59,15 @@
   /* === 地图 SVG === */
   --map-grid: #cbd5e1;
   --map-road: #94a3b8;
+
+  /* === 氛围层（玻化/扫描线/暗角） === */
+  --vignette-strength: 0.18;            /* 暗角强度，浅色主题保持低调 */
+  --bg-gradient-head: #eff6f9;          /* 顶部背景色 */
+  --bg-gradient-foot: #dce7ed;          /* 底部背景色（略深，营造深度） */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-blur: 10px;
 }
 
 /* ===== 深色主题（调度台夜间模式） ===== */
@@ -117,6 +126,18 @@
   /* === 地图 SVG === */
   --map-grid: #1e252e;
   --map-road: #2a323e;
+
+  /* === 氛围层（玻化/扫描线/暗角） === */
+  --vignette-strength: 0.55;            /* 暗角强度，夜间调度台模式更深 */
+  --bg-gradient-head: #0a0e14;          /* 顶部背景色 */
+  --bg-gradient-foot: #05080d;          /* 底部背景色（更深，营造深度） */
+  --glass-bg: rgba(17, 21, 28, 0.72);   /* 玻化面板底色（半透明） */
+  --glass-bg-elevated: rgba(26, 31, 41, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-blur: 14px;
+  --scanline-color: rgba(0, 0, 0, 0.22);
+  --scanline-opacity: 0.45;
+  --sweep-color: rgba(120, 200, 255, 0.025);
 }
 
 /* === 共用令牌（两主题一致） === */

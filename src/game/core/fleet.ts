@@ -13,6 +13,8 @@ export interface AmbulanceMission {
   outboundTotal: number
   /** 现场救治总时长（秒） */
   onSceneTotal: number
+  /** 事件点真实经纬度（用于地图渲染 + 跨通话显示） */
+  eventLatLng: { lat: number; lng: number }
 }
 
 export interface Ambulance {

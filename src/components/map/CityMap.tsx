@@ -1,223 +1,259 @@
 // ============================================================
-// 零点接线台 — 抽象城市俯视图（SVG，地图主背景）
-// 三站点 + 事件点 + 救护车沿路径插值移动
+// 零点接线台 — Leaflet 真实地图 + CartoDB Dark Matter 瓦片
+// 跨通话显示所有占用车辆（en_route/on_scene/returning）
 // ============================================================
 
-import type { CSSProperties } from 'react'
+import { useEffect, useMemo } from 'react'
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import type { WorldState } from '../../game/types'
+import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
+import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
 
 interface Props {
   state: WorldState
 }
 
-// 站点坐标（viewBox 1200×700）
-interface Pt { x: number; y: number }
-const STATIONS: Record<string, { name: string; pos: Pt }> = {
-  ambulance_a: { name: '望京站', pos: { x: 200, y: 160 } },
-  ambulance_b: { name: '中关村站', pos: { x: 220, y: 560 } },
-  ambulance_c: { name: '方庄站', pos: { x: 1000, y: 560 } },
+// -------------------- 辅助：lat/lng 线性插值 --------------------
+function lerpCoord(a: LatLng, b: LatLng, t: number): LatLng {
+  const c = Math.max(0, Math.min(1, t))
+  return { lat: a.lat + (b.lat - a.lat) * c, lng: a.lng + (b.lng - a.lng) * c }
 }
 
-// 事件发生点（按 baseStation 粗映射，否则中心）
-function eventPos(state: WorldState): Pt {
-  const bs = state.currentCall?.baseStation ?? ''
-  if (bs.includes('望京') || bs.includes('朝阳北')) return { x: 520, y: 280 }
-  if (bs.includes('中关村') || bs.includes('海淀')) return { x: 480, y: 440 }
-  if (bs.includes('方庄') || bs.includes('丰台')) return { x: 820, y: 420 }
-  return { x: 600, y: 350 }
+// -------------------- 自定义 div 图标（避免 leaflet 默认图标 404） --------------------
+function makeDivIcon(html: string, className = ''): L.DivIcon {
+  return L.divIcon({
+    html,
+    className: `cmap-marker ${className}`.trim(),
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+  })
 }
 
-/** 线性插值 */
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * Math.max(0, Math.min(1, t))
+const STATION_ICON_AVAILABLE = makeDivIcon(
+  `<div class="cmap-station available"><div class="cmap-station-dot"></div></div>`,
+)
+function stationIconFor(status: AmbulanceStatus): L.DivIcon {
+  if (status === 'available') return STATION_ICON_AVAILABLE
+  const cls = status === 'returning' ? 'returning' : 'busy'
+  return makeDivIcon(`<div class="cmap-station ${cls}"><div class="cmap-station-dot"></div></div>`)
 }
 
+const AMB_ENROUTE = makeDivIcon(`<div class="cmap-amb cmap-amb-enroute">🚑</div>`)
+const AMB_ONSCENE = makeDivIcon(`<div class="cmap-amb cmap-amb-onscene">🚑</div>`)
+const AMB_RETURNING = makeDivIcon(`<div class="cmap-amb cmap-amb-returning">🚑</div>`)
+function ambulanceIconFor(status: AmbulanceStatus): L.DivIcon {
+  if (status === 'on_scene') return AMB_ONSCENE
+  if (status === 'returning') return AMB_RETURNING
+  return AMB_ENROUTE
+}
+
+const EVENT_ICON = makeDivIcon(`<div class="cmap-event"><div class="cmap-event-pulse"></div><div class="cmap-event-dot"></div></div>`, 'cmap-event-wrap')
+const EVENT_ICON_DIM = makeDivIcon(`<div class="cmap-event cmap-event-dim"><div class="cmap-event-dot"></div></div>`)
+
+// -------------------- 视口自适应：站点 + 事件点（不含救护车当前位置，避免每秒重 fit） --------------------
+function FitBounds({ points }: { points: LatLng[] }) {
+  const map = useMap()
+  // key 基于点的集合签名，只在 mission 数量/位置变化时触发，不在救护车移动时触发
+  const key = useMemo(() => points.map(p => `${p.lat.toFixed(3)},${p.lng.toFixed(3)}`).join('|') || 'empty', [points])
+  useEffect(() => {
+    if (points.length === 0) {
+      map.setView([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng], DEFAULT_ZOOM)
+    } else if (points.length === 1) {
+      map.setView([points[0].lat, points[0].lng], DEFAULT_ZOOM)
+    } else {
+      const bounds = L.latLngBounds(points.map(p => [p.lat, p.lng]))
+      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 })
+    }
+    // 异步触发 leaflet 重算容器 size，避免灰色块（容器 layout 未及时确定时 fitBounds 会错位）
+    const t = setTimeout(() => map.invalidateSize(), 50)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+  return null
+}
+
+// -------------------- 主组件 --------------------
 export function CityMap({ state }: Props) {
   const hasCall = state.currentCall !== null
   const isPrank = state.currentCall?.isPrank ?? false
-  const evPos = eventPos(state)
-
-  // 救护车位置：基于 vehicle.status + mission 推导（去程/现场/返程）
-  const rescue = state.rescue
-  const vehicleId = rescue.vehicleId
-  const vehicle = vehicleId ? state.fleet.vehicles.find(v => v.id === vehicleId) : undefined
-  const startPt = vehicleId ? (STATIONS[vehicleId]?.pos ?? { x: 600, y: 350 }) : evPos
-
-  let ambX = evPos.x
-  let ambY = evPos.y
-  let showAmbulance = false
-  let isReturning = false
-  if (vehicle && vehicle.mission && rescue.phase !== 'idle') {
-    const m = vehicle.mission
-    showAmbulance = true
-    switch (vehicle.status) {
-      case 'en_route': {
-        // 去程：用 ambulanceRemaining（单通电话维度，和 vehicle.eta 同步）
-        const remaining = state.ambulanceRemaining < 0 ? m.outboundTotal : state.ambulanceRemaining
-        const progress = Math.max(0, Math.min(1, 1 - remaining / Math.max(1, m.outboundTotal)))
-        ambX = lerp(startPt.x, evPos.x, progress)
-        ambY = lerp(startPt.y, evPos.y, progress)
-        break
-      }
-      case 'on_scene':
-        ambX = evPos.x
-        ambY = evPos.y
-        break
-      case 'returning': {
-        isReturning = true
-        const progress = Math.max(0, Math.min(1, 1 - vehicle.eta / Math.max(1, m.outboundTotal)))
-        ambX = lerp(evPos.x, startPt.x, progress)
-        ambY = lerp(evPos.y, startPt.y, progress)
-        break
-      }
-      case 'available':
-        showAmbulance = false
-        break
+  // 当前通话事件点：优先用车 mission，回退到 baseStation lookup（接通未派车时也显示）
+  const currentEventPos: LatLng | null = (() => {
+    if (!state.currentCall) return null
+    if (state.rescue.vehicleId) {
+      const v = state.fleet.vehicles.find(x => x.id === state.rescue.vehicleId)
+      if (v?.mission) return v.mission.eventLatLng
     }
+    return lookupCoords(state.currentCall.baseStation)
+  })()
+
+  // 静态点（站点 + 事件点）— 传给 FitBounds 用于视口自适应
+  // 不含救护车当前位置，否则每秒 TICK 救护车移动会触发 fitBounds 重 fit + 瓦片重载
+  const staticPoints: LatLng[] = []
+  Object.values(STATION_COORDS).forEach(s => staticPoints.push(s.pos))
+  state.fleet.vehicles.forEach(v => {
+    if (v.mission) staticPoints.push(v.mission.eventLatLng)
+  })
+  if (currentEventPos) staticPoints.push(currentEventPos)
+
+  // 渲染所有 mission 的事件点（用 Set 去重 + 标 dim）
+  const renderedEventKeys = new Set<string>()
+  const renderEvent = (pos: LatLng, isCurrent: boolean, key: string) => {
+    if (renderedEventKeys.has(`${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`)) return null
+    renderedEventKeys.add(`${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`)
+    return (
+      <Marker
+        key={key}
+        position={[pos.lat, pos.lng]}
+        icon={isCurrent && hasCall && !isPrank ? EVENT_ICON : EVENT_ICON_DIM}
+        zIndexOffset={isCurrent ? 100 : 50}
+      >
+        <Tooltip direction="top" offset={[0, -8]} opacity={0.95}>
+          {isCurrent && hasCall && !isPrank ? '事件现场' : '历史事件点'}
+        </Tooltip>
+      </Marker>
+    )
   }
 
   return (
     <div style={styles.wrap}>
-      <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" style={styles.svg}>
-        {/* 背景 */}
-        <rect x={0} y={0} width={1200} height={700} fill="var(--bg)" />
+      <MapContainer
+        center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
+        zoom={DEFAULT_ZOOM}
+        style={styles.map}
+        scrollWheelZoom
+        zoomControl
+        attributionControl={false}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          subdomains={['a', 'b', 'c', 'd']}
+          maxZoom={19}
+        />
 
-        {/* 网格 */}
-        {Array.from({ length: 13 }).map((_, i) => (
-          <line key={`v${i}`} x1={i * 100} y1={0} x2={i * 100} y2={700} stroke="var(--map-grid)" strokeWidth={1} />
-        ))}
-        {Array.from({ length: 8 }).map((_, i) => (
-          <line key={`h${i}`} x1={0} y1={i * 100} x2={1200} y2={i * 100} stroke="var(--map-grid)" strokeWidth={1} />
-        ))}
+        <FitBounds points={staticPoints} />
 
-        {/* 主干道（亮一点） */}
-        <path d="M 0 350 L 1200 350" stroke="var(--map-road)" strokeWidth={3} />
-        <path d="M 600 0 L 600 700" stroke="var(--map-road)" strokeWidth={3} />
-
-        {/* 救护车行驶路径（虚线）— 返程时绿色，去程橙色 */}
-        {showAmbulance && (
-          <line
-            x1={startPt.x} y1={startPt.y} x2={evPos.x} y2={evPos.y}
-            stroke={isReturning ? '#16a34a' : '#d97706'}
-            strokeWidth={2}
-            strokeDasharray="6 6"
-            opacity={isReturning ? 0.4 : 0.55}
-          />
-        )}
-
-        {/* 站点 */}
-        {Object.entries(STATIONS).map(([id, info]) => {
-          const v = state.fleet.vehicles.find(x => x.id === id)
-          const busy = v?.status !== 'available'
-          const statusLabel = !v ? '● 待命'
-            : v.status === 'available' ? '● 待命'
-            : v.status === 'en_route' ? '○ 出击中'
-            : v.status === 'on_scene' ? '○ 救治中'
-            : '○ 返程中'
-          const statusColor = !v || v.status === 'available' ? '#16a34a'
-            : v.status === 'returning' ? '#d97706'
-            : '#dc2626'
+        {/* 站点（固定） */}
+        {Object.entries(STATION_COORDS).map(([id, info]) => {
+          const v: Ambulance | undefined = state.fleet.vehicles.find(x => x.id === id)
+          const status: AmbulanceStatus = v?.status ?? 'available'
           return (
-            <g key={id}>
-              <circle cx={info.pos.x} cy={info.pos.y} r={26}
-                fill={busy ? 'var(--map-grid)' : 'var(--bg-elevated)'}
-                stroke={busy ? statusColor : '#16a34a'} strokeWidth={2} />
-              <circle cx={info.pos.x} cy={info.pos.y} r={36}
-                fill="none" stroke={busy ? statusColor : '#16a34a'} strokeWidth={1}
-                opacity={busy ? 0.2 : 0.4} />
-              <text x={info.pos.x} y={info.pos.y + 4} textAnchor="middle"
-                fontSize={11} fill="var(--text-secondary)" fontFamily="monospace">{info.name}</text>
-              <text x={info.pos.x} y={info.pos.y + 50} textAnchor="middle"
-                fontSize={10} fill={busy ? statusColor : '#16a34a'}
-                fontFamily="monospace" fontWeight="bold">
-                {statusLabel}
-              </text>
-            </g>
+            <Marker
+              key={id}
+              position={[info.pos.lat, info.pos.lng]}
+              icon={stationIconFor(status)}
+            >
+              <Tooltip direction="right" offset={[8, 0]} opacity={0.95} permanent>
+                {info.name}
+                {v && status !== 'available' ? ` · ${statusLabel(status)}` : ''}
+              </Tooltip>
+            </Marker>
           )
         })}
 
-        {/* 事件点 */}
-        {hasCall && !isPrank && (
-          <g>
-            <circle cx={evPos.x} cy={evPos.y} r={20}
-              fill="rgba(220, 38, 38, 0.18)" stroke="#dc2626" strokeWidth={2}>
-              <animate attributeName="r" values="20;32;20" dur="1.6s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" />
-            </circle>
-            <circle cx={evPos.x} cy={evPos.y} r={6} fill="#dc2626" />
-            <text x={evPos.x} y={evPos.y - 30} textAnchor="middle"
-              fontSize={12} fill="#ef4444" fontFamily="monospace" fontWeight="bold">
-              事件现场
-            </text>
-          </g>
-        )}
-        {hasCall && isPrank && (
-          <g>
-            <text x={evPos.x} y={evPos.y} textAnchor="middle"
-              fontSize={14} fill="var(--text-muted)" fontFamily="monospace">? 待核实</text>
-          </g>
-        )}
+        {/* 事件点（mission 中所有 + 当前通话） */}
+        {state.fleet.vehicles
+          .filter(v => v.mission)
+          .map(v => v.mission!.eventLatLng)
+          .map((pos, i) => renderEvent(pos, false, `ev-mission-${i}`))}
+        {currentEventPos && renderEvent(currentEventPos, true, 'ev-current')}
 
-        {/* 救护车 */}
-        {showAmbulance && (
-          <AmbulanceSvg x={ambX} y={ambY} tier={state.fleet.vehicles.find(v => v.id === vehicleId)?.tier} />
-        )}
+        {/* 救护车 + 路径 */}
+        {state.fleet.vehicles
+          .filter(v => v.status !== 'available' && v.mission)
+          .map(v => {
+            const station = STATION_COORDS[v.id]?.pos
+            if (!station) return null
+            const m = v.mission!
+            let cur: LatLng
+            let path: LatLng[]
+            if (v.status === 'en_route') {
+              const remaining = state.ambulanceRemaining < 0 ? m.outboundTotal : state.ambulanceRemaining
+              const progress = 1 - remaining / Math.max(1, m.outboundTotal)
+              cur = lerpCoord(station, m.eventLatLng, progress)
+              path = [station, cur]
+            } else if (v.status === 'on_scene') {
+              cur = m.eventLatLng
+              path = [station, m.eventLatLng]
+            } else {
+              const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
+              cur = lerpCoord(m.eventLatLng, station, progress)
+              path = [m.eventLatLng, cur, station]
+            }
+            const isCurrent = v.id === state.rescue.vehicleId
+            return (
+              <div key={`amb-${v.id}`}>
+                <Polyline
+                  positions={path.map(p => [p.lat, p.lng])}
+                  pathOptions={{
+                    color: v.status === 'returning' ? '#16a34a' : '#d97706',
+                    weight: 2,
+                    opacity: v.status === 'returning' ? 0.5 : 0.7,
+                    dashArray: '6 6',
+                  }}
+                />
+                <Marker
+                  position={[cur.lat, cur.lng]}
+                  icon={ambulanceIconFor(v.status)}
+                  zIndexOffset={isCurrent ? 200 : 150}
+                >
+                  <Tooltip direction="top" offset={[0, -10]} opacity={0.95} permanent={isCurrent}>
+                    {v.name}
+                    {isCurrent && state.rescue.phase === 'success' ? ' · 救治成功' : ''}
+                    {isCurrent && state.rescue.phase === 'failed' ? ' · 救治失败' : ''}
+                  </Tooltip>
+                </Marker>
+              </div>
+            )
+          })}
 
-        {/* 到达结果 */}
-        {rescue.phase === 'success' && (
-          <ResultBadge x={evPos.x} y={evPos.y - 60} text="✓ 救治成功" color="#16a34a" />
+        {/* 角落状态徽章 */}
+        {hasCall && (
+          <CornerBadge text={isPrank ? '核实中' : '事故响应中'} />
         )}
-        {rescue.phase === 'failed' && (
-          <ResultBadge x={evPos.x} y={evPos.y - 60} text="✕ 救治失败" color="#dc2626" />
-        )}
-      </svg>
+        {!hasCall && <CornerBadge text="待命" />}
+      </MapContainer>
 
-      {/* 角标 */}
-      <div style={styles.corner}>
-        <span style={styles.cornerLabel}>DISTRICT MAP</span>
-        <span style={styles.cornerSub}>
-          {hasCall ? (isPrank ? '核实中' : '事故响应中') : '待命'}
-        </span>
-      </div>
+      {/* 自定义 marker 样式 */}
+      <style>{MARKER_CSS}</style>
     </div>
   )
 }
 
-function AmbulanceSvg({ x, y, tier }: { x: number; y: number; tier?: string }) {
-  const color = tier === 'MICU' ? '#a855f7' : tier === 'ALS' ? '#dc2626' : 'var(--text-secondary)'
+// -------------------- 角落状态徽章（叠加在地图左上） --------------------
+function CornerBadge({ text }: { text: string }) {
   return (
-    <g style={{ transition: 'transform 0.9s linear' }}>
-      <circle cx={x} cy={y} r={14} fill={color} opacity={0.25}>
-        <animate attributeName="r" values="14;20;14" dur="1s" repeatCount="indefinite" />
-      </circle>
-      <circle cx={x} cy={y} r={10} fill={color} stroke="#fff" strokeWidth={1.5} />
-      <text x={x} y={y + 4} textAnchor="middle" fontSize={11} fill="#fff" fontWeight="bold">+</text>
-    </g>
+    <div style={styles.corner}>
+      <span style={styles.cornerLabel}>DISTRICT MAP</span>
+      <span style={styles.cornerSub}>{text}</span>
+    </div>
   )
 }
 
-function ResultBadge({ x, y, text, color }: { x: number; y: number; text: string; color: string }) {
-  return (
-    <g>
-      <rect x={x - 60} y={y - 14} width={120} height={24} rx={4}
-        fill="var(--bg)" stroke={color} strokeWidth={1.5} />
-      <text x={x} y={y + 3} textAnchor="middle"
-        fontSize={13} fill={color} fontFamily="monospace" fontWeight="bold">{text}</text>
-    </g>
-  )
+function statusLabel(s: AmbulanceStatus): string {
+  if (s === 'en_route') return '出击中'
+  if (s === 'on_scene') return '救治中'
+  if (s === 'returning') return '返程中'
+  return '待命'
 }
 
-const styles: Record<string, CSSProperties> = {
+// -------------------- 内联样式 --------------------
+const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: 'var(--bg)',
+    backgroundColor: '#0a0e14',
     overflow: 'hidden',
+    // 显式 z-index + isolation 锁住 leaflet 内部 z-index（marker/tooltip/popup 默认 100-700），
+    // 避免泄漏到外部 stacking context 把 CallDrawer/GuidanceOverlay 盖住
+    zIndex: 0,
+    isolation: 'isolate',
   },
-  svg: {
+  map: {
     width: '100%',
     height: '100%',
-    display: 'block',
+    backgroundColor: '#0a0e14',
   },
   corner: {
     position: 'absolute',
@@ -227,18 +263,102 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: 'column',
     gap: 2,
     pointerEvents: 'none',
+    zIndex: 400,
+    padding: '4px 10px',
+    background: 'rgba(10, 14, 20, 0.7)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: 4,
   },
   cornerLabel: {
-    fontSize: 11,
-    color: 'var(--text-muted)',
+    fontSize: 10,
+    color: '#8b949e',
     fontFamily: 'monospace',
     letterSpacing: 2,
     fontWeight: 700,
   },
   cornerSub: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#d97706',
     fontFamily: 'monospace',
     fontWeight: 700,
   },
 }
+
+// -------------------- marker CSS（注入到全局） --------------------
+const MARKER_CSS = `
+.cmap-marker { background: transparent !important; border: none !important; }
+.cmap-station {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #16a34a;
+  background: rgba(10, 14, 20, 0.7);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+}
+.cmap-station.busy {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+  animation: cmap-pulse 1.4s ease-in-out infinite;
+}
+.cmap-station.returning {
+  border-color: #d97706;
+  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+}
+.cmap-station-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+.cmap-station.busy .cmap-station-dot { background: #dc2626; }
+.cmap-station.returning .cmap-station-dot { background: #d97706; }
+
+.cmap-amb {
+  font-size: 22px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+  text-align: center;
+  line-height: 28px;
+}
+.cmap-amb-onscene {
+  animation: cmap-amb-flash 0.6s ease-in-out infinite alternate;
+}
+
+.cmap-event-wrap { z-index: 100; }
+.cmap-event {
+  position: relative;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cmap-event-pulse {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.3);
+  border: 2px solid #dc2626;
+  animation: cmap-event-pulse 1.6s ease-in-out infinite;
+}
+.cmap-event-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #dc2626;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+  z-index: 1;
+}
+.cmap-event-dim .cmap-event-dot {
+  width: 6px; height: 6px;
+  background: #6e7681;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+@keyframes cmap-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.05); }
+}
+@keyframes cmap-amb-flash {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+@keyframes cmap-event-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0.3; }
+}
+`

@@ -27,6 +27,7 @@ import { buildDebrief } from './debrief'
 import { getPerkChoices, hasPerk } from './perks'
 import { isPrankVerified } from './judgments'
 import { findVehicleById, findFastestAvailable, advanceFleet, type Ambulance } from './fleet'
+import { lookupCoords, DEFAULT_CENTER } from '../locations'
 
 // ============================================================
 // 即时反馈事件工厂（push 到 state.patientEvents → 顶部 toast）
@@ -788,6 +789,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         baseEta - (hasPerk(state.perks, 'priority_channel') ? 5 : 0),
       )
       const onSceneTotal = calcOnSceneDuration(state.currentCall.correctTriage)
+      // 事件点真实坐标（用于地图跨通话显示）
+      const eventLatLng = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
 
       const systemLine: DialogueLine = {
         speaker: 'system',
@@ -863,6 +866,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
                     callId: state.currentCall!.id,
                     outboundTotal: eta,
                     onSceneTotal,
+                    eventLatLng,
                   },
                 }
               : v

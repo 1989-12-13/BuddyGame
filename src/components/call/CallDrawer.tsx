@@ -1,9 +1,11 @@
 // ============================================================
 // 零点接线台 — 右侧抽屉（折叠 72px / 展开 480px）
 // 地图始终可见，对话/操作浮在右侧
+// 宽度走 motion spring，内部折叠/展开态用 AnimatePresence 交叉淡入
 // ============================================================
 
 import type { CSSProperties, ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
 
 interface Props {
@@ -19,48 +21,68 @@ interface Props {
   active: boolean
 }
 
+const DRAWER_W_OPEN = 480
+const DRAWER_W_CLOSED = 72
+
 export function CallDrawer({ open, onToggle, mini, children, title, active }: Props) {
   return (
-    <aside
-      style={{
-        ...styles.drawer,
-        width: open ? 480 : 72,
-      }}
+    <motion.aside
+      animate={{ width: open ? DRAWER_W_OPEN : DRAWER_W_CLOSED }}
+      transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+      style={styles.drawer}
     >
-      {/* 折叠态：竖向窄条 */}
-      {!open && (
-        <button style={styles.collapsedBar} onClick={onToggle} title="展开通话面板">
-          <div style={styles.verticalStack}>
-            <span
-              style={{
-                ...styles.liveDot,
-                backgroundColor: active ? '#ff3b3b' : '#3a4452',
-                animation: active ? 'pulse-live 1s ease-in-out infinite' : 'none',
-              }}
-            />
-            <span style={styles.verticalText}>{title}</span>
-            <div style={styles.miniWrap}>{mini}</div>
-            <span style={styles.expandIcon}><ChevronLeft size={20} color="#8b949e" /></span>
-          </div>
-        </button>
-      )}
-
-      {/* 展开态：完整面板 */}
-      {open && (
-        <div style={styles.expanded}>
-          <header style={styles.header}>
-            <div style={styles.headerLeft}>
-              <Phone size={14} color={active ? '#ff3b3b' : '#6e7681'} strokeWidth={2.5} />
-              <span style={styles.headerTitle}>{title}</span>
-            </div>
-            <button style={styles.toggleBtn} onClick={onToggle} title="折叠（保留通话）">
-              <ChevronRight size={18} color="#8b949e" />
-            </button>
-          </header>
-          <div style={styles.body}>{children}</div>
-        </div>
-      )}
-    </aside>
+      <div style={styles.swapLayer}>
+        <AnimatePresence initial={false}>
+          {!open ? (
+            <motion.div
+              key="collapsed"
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              style={styles.swapChild}
+            >
+              <button style={styles.collapsedBar} onClick={onToggle} title="展开通话面板">
+                <div style={styles.verticalStack}>
+                  <span
+                    style={{
+                      ...styles.liveDot,
+                      backgroundColor: active ? '#ff3b3b' : '#3a4452',
+                      animation: active ? 'pulse-live 1s ease-in-out infinite' : 'none',
+                    }}
+                  />
+                  <span style={styles.verticalText}>{title}</span>
+                  <div style={styles.miniWrap}>{mini}</div>
+                  <span style={styles.expandIcon}><ChevronLeft size={20} color="#8b949e" /></span>
+                </div>
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="expanded"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              style={styles.swapChild}
+            >
+              <div style={styles.expanded}>
+                <header style={styles.header}>
+                  <div style={styles.headerLeft}>
+                    <Phone size={14} color={active ? '#ff3b3b' : '#6e7681'} strokeWidth={2.5} />
+                    <span style={styles.headerTitle}>{title}</span>
+                  </div>
+                  <button style={styles.toggleBtn} onClick={onToggle} title="折叠（保留通话）">
+                    <ChevronRight size={18} color="#8b949e" />
+                  </button>
+                </header>
+                <div style={styles.body}>{children}</div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.aside>
   )
 }
 
@@ -73,15 +95,22 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: '#11151c',
     borderLeft: '1px solid #2a323e',
     boxShadow: '-8px 0 24px rgba(0,0,0,0.4)',
-    transition: 'width 0.25s ease',
     overflow: 'hidden',
     zIndex: 50,
-    display: 'flex',
-    flexDirection: 'column',
+  },
+  // 内部交叉淡入层：相对定位，子元素 absolute 重叠避免布局抖动
+  swapLayer: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+  },
+  swapChild: {
+    position: 'absolute',
+    inset: 0,
   },
   // ---------- 折叠态 ----------
   collapsedBar: {
-    width: 72,
+    width: '100%',
     height: '100%',
     background: 'transparent',
     border: 'none',
@@ -131,7 +160,7 @@ const styles: Record<string, CSSProperties> = {
   expanded: {
     display: 'flex',
     flexDirection: 'column',
-    width: 480,
+    width: DRAWER_W_OPEN,
     height: '100%',
   },
   header: {

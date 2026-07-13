@@ -3,9 +3,11 @@
 // 展开态：居中模态卡片（半透明遮罩，地图仍可见）
 // 折叠态：左下角悬浮球（点击展开）
 // 折叠时 children 仍 mount，由调用方传 paused 冻结小游戏
+// FAB↔Modal 通过 AnimatePresence mode="wait" 做 morph 过渡
 // ============================================================
 
 import type { CSSProperties, ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, HeartPulse } from 'lucide-react'
 
 interface Props {
@@ -22,50 +24,68 @@ interface Props {
 }
 
 export function GuidanceOverlay({ collapsed, onToggle, title, subtitle, children }: Props) {
-  // 折叠态：左下角悬浮球
-  if (collapsed) {
-    return (
-      <button
-        style={styles.fab}
-        onClick={onToggle}
-        title="展开急救指导"
-        aria-label="展开急救指导"
-      >
-        <span style={styles.fabRing}>
-          <HeartPulse size={22} color="#ff5454" strokeWidth={2.5} />
-        </span>
-        <span style={styles.fabText}>
-          <span style={styles.fabTitle}>{title}</span>
-          {subtitle && <span style={styles.fabSub}>{subtitle}</span>}
-        </span>
-        <span style={styles.fabHint}>
-          <ChevronDown size={14} color="#8b949e" />
-        </span>
-      </button>
-    )
-  }
-
-  // 展开态：居中模态
   return (
-    <>
-      {/* 半透明遮罩：地图仍可见但不交互 */}
-      <div style={styles.backdrop} onClick={onToggle} />
-      {/* 居中卡片 */}
-      <div style={styles.card}>
-        <header style={styles.header}>
-          <span style={styles.headerTitle}>{title}</span>
-          <button
-            style={styles.collapseBtn}
-            onClick={onToggle}
-            title="折叠为悬浮球（小游戏暂停）"
-            aria-label="折叠为悬浮球"
-          >
-            <ChevronDown size={16} color="#8b949e" />
-          </button>
-        </header>
-        <div style={styles.body}>{children}</div>
-      </div>
-    </>
+    <AnimatePresence mode="wait" initial={false}>
+      {collapsed ? (
+        <motion.button
+          key="fab"
+          type="button"
+          initial={{ opacity: 0, scale: 0.5, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.4, y: 16 }}
+          transition={{ type: 'spring', stiffness: 360, damping: 22 }}
+          style={styles.fab}
+          onClick={onToggle}
+          title="展开急救指导"
+          aria-label="展开急救指导"
+        >
+          <span style={styles.fabRing}>
+            <HeartPulse size={22} color="#ff5454" strokeWidth={2.5} />
+          </span>
+          <span style={styles.fabText}>
+            <span style={styles.fabTitle}>{title}</span>
+            {subtitle && <span style={styles.fabSub}>{subtitle}</span>}
+          </span>
+          <span style={styles.fabHint}>
+            <ChevronDown size={14} color="#8b949e" />
+          </span>
+        </motion.button>
+      ) : (
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          style={styles.modalStage}
+        >
+          {/* 半透明遮罩：地图仍可见但不交互 */}
+          <div style={styles.backdrop} onClick={onToggle} />
+          {/* 居中卡片容器（flex 居中，子卡片走 motion scale） */}
+          <div style={styles.cardCenter}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26, delay: 0.04 }}
+              style={styles.card}
+            >
+              <header style={styles.header}>
+                <span style={styles.headerTitle}>{title}</span>
+                <button
+                  style={styles.collapseBtn}
+                  onClick={onToggle}
+                  title="折叠为悬浮球（小游戏暂停）"
+                  aria-label="折叠为悬浮球"
+                >
+                  <ChevronDown size={16} color="#8b949e" />
+                </button>
+              </header>
+              <div style={styles.body}>{children}</div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -127,18 +147,29 @@ const styles: Record<string, CSSProperties> = {
     marginLeft: 2,
   },
   // ---------- 展开态：居中模态 ----------
+  modalStage: {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    zIndex: 58,
+  },
   backdrop: {
     position: 'absolute',
     inset: 0,
     backgroundColor: 'rgba(0,0,0,0.55)',
-    zIndex: 58,
     cursor: 'pointer',
+    pointerEvents: 'auto',
+  },
+  cardCenter: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
   },
   card: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    pointerEvents: 'auto',
     zIndex: 60,
     width: 640,
     maxWidth: 'calc(100vw - 80px)',

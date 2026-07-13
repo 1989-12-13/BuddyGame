@@ -761,8 +761,30 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     // ==========================================
     case 'DISPATCH': {
       if (!state.currentCall || !state.callerState) return state
-      if (state.dispatchSent) return state
-      if (!state.terminal.determinant || !state.terminal.triage) return state
+      if (state.dispatchSent) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('info', '救护车已经在路上，无需重复派车', state.shiftElapsed)),
+        }
+      }
+      if (state.currentCall.isPrank && isPrankVerified(state.pendingJudgments)) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('warn', '已核实为无效来电，应结束通话而非派车', state.shiftElapsed)),
+        }
+      }
+      if (!state.callerState.askedMPDS.includes('step1_location')) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('warn', '派车前必须先确认位置', state.shiftElapsed)),
+        }
+      }
+      if (!state.terminal.determinant || !state.terminal.triage) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('warn', '派车前必须先选择 MPDS 判定码', state.shiftElapsed)),
+        }
+      }
 
       // 选车优先级：action.vehicleId → fleet.selectedVehicleId → 最快可用
       let vehicle: Ambulance | null =
@@ -770,7 +792,12 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       if (!vehicle || vehicle.status !== 'available') {
         vehicle = findFastestAvailable(state.fleet)
       }
-      if (!vehicle) return state   // 无可用车
+      if (!vehicle) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('bad', '暂无可用救护车，无法派车', state.shiftElapsed)),
+        }
+      }
 
       const dispatchTime = state.shiftElapsed - state.callStartTime
       const rawAddress = state.callerState.revealedInfo.address
@@ -990,6 +1017,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const cs = state.callerState
       const dispatchRecord = state.dispatchRecord
       const didDispatch = dispatchRecord !== null
+      const prankVerified = call.isPrank && isPrankVerified(state.pendingJudgments)
 
       // 计算本通电话得分
       let total: number
@@ -1005,9 +1033,30 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         ? false
         : (state.rescue.outcome === 'failed' || (state.patientStatus?.died ?? false))
 
+      if (call.isPrank && !didDispatch && !prankVerified) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('warn', '先完成恶作剧/非人体来电核实，再结束通话', state.shiftElapsed)),
+        }
+      }
+
+      if (!call.isPrank && !didDispatch && !rescueFailed) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('warn', '真实急救不能未派车就挂断', state.shiftElapsed)),
+        }
+      }
+
+      if (!call.isPrank && didDispatch && !rescueFailed && state.rescue.outcome === null) {
+        return {
+          ...state,
+          patientEvents: pushEvent(state.patientEvents, ev('info', '等待救护车现场反馈后再结算本通', state.shiftElapsed)),
+        }
+      }
+
       // 恶作剧电话特殊评分
       if (call.isPrank) {
-        if (!didDispatch && isPrankVerified(state.pendingJudgments)) {
+        if (!didDispatch && prankVerified) {
           total = 100
           speed = 35
           info = 30

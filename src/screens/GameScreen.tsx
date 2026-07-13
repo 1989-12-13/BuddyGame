@@ -5,7 +5,7 @@
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createInitialState } from '../game/core/initialState'
-import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
+import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel, WorldState } from '../game/types'
 import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF, TRIAGE_LABELS } from '../game/types'
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
@@ -32,12 +32,81 @@ interface Props {
   scenarioId?: string
 }
 
+const CORE_QUESTION_IDS = ['step1_location', 'step2_event', 'step3_age', 'step4_vitals'] as const
+
+function isPrankConfirmed(state: WorldState): boolean {
+  return state.pendingJudgments.some(j =>
+    j.questionId === 'mpds_prank_patient'
+    && j.chosenOptionIndex !== null
+    && j.options[j.chosenOptionIndex]?.isCorrect === true,
+  )
+}
+
+function getDispatchIssues(state: WorldState): string[] {
+  if (!state.currentCall || !state.callerState) return ['当前没有可调度的来电']
+  if (state.dispatchSent) return ['救护车已派出']
+  if (state.currentCall.isPrank && isPrankConfirmed(state)) return ['已核实为无效来电，应结束通话而非派车']
+
+  const issues: string[] = []
+  if (!state.callerState.askedMPDS.includes('step1_location')) issues.push('先确认位置，避免车辆派往错误地点')
+  if (!state.terminal.determinant) issues.push('先选择 MPDS 判定码')
+  if (!state.terminal.triage) issues.push('判定码尚未生成响应等级')
+  if (!state.fleet.vehicles.some(v => v.status === 'available')) issues.push('暂无可用救护车')
+  return issues
+}
+
+function getEndCallBlocker(state: WorldState): string | null {
+  if (!state.currentCall) return null
+  const prankVerified = state.currentCall.isPrank && isPrankConfirmed(state)
+  if (state.currentCall.isPrank) {
+    if (state.dispatchSent || prankVerified) return null
+    return '先完成恶作剧/非人体来电核实，再结束通话'
+  }
+  if (state.patientStatus?.died || state.rescue.outcome) return null
+  if (!state.dispatchSent) return '真实急救不能未派车就挂断'
+  return '救护车尚未完成现场反馈，等待地图救援结果'
+}
+
+function getCurrentObjective(state: WorldState): { title: string; detail: string; tone: 'urgent' | 'warn' | 'good' } {
+  if (!state.currentCall || !state.callerState) {
+    return { title: '等待下一通来电', detail: '接听后按位置、事件、年龄、意识呼吸推进。', tone: 'warn' }
+  }
+  if (state.currentCall.isPrank && isPrankConfirmed(state)) {
+    return { title: '核实完成：无效来电', detail: '不要派车，结束通话保留急救资源。', tone: 'good' }
+  }
+  const missingCore = CORE_QUESTION_IDS.find(id => !state.callerState?.askedMPDS.includes(id))
+  if (missingCore) {
+    const label = {
+      step1_location: '位置确认',
+      step2_event: '事件简述',
+      step3_age: '患者年龄',
+      step4_vitals: '意识与呼吸',
+    }[missingCore]
+    return { title: `下一步：${label}`, detail: '先拿到足够可靠的线索，再做判定和派车。', tone: 'urgent' }
+  }
+  if (!state.terminal.determinant) {
+    return { title: '下一步：确定 MPDS 判定码', detail: '选择判定码后系统会给出 HOT/COLD 与分诊响应。', tone: 'urgent' }
+  }
+  if (!state.dispatchSent) {
+    return { title: '下一步：选择车辆并派车', detail: '位置和判定已满足最低调度条件。', tone: 'urgent' }
+  }
+  if (state.callPhase === 'guidance') {
+    return { title: '下一步：完成现场急救指导', detail: '指导质量会影响患者生命条和最终结局。', tone: 'warn' }
+  }
+  if (!state.rescue.outcome) {
+    return { title: '下一步：等待现场反馈', detail: '不要提前结算，地图会给出救援成功/失败结果。', tone: 'warn' }
+  }
+  return { title: '本通可结算', detail: '查看患者结果与复盘，再进入下一通。', tone: 'good' }
+}
+
 export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(true)
   const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
+  const dispatchIssues = getDispatchIssues(state)
+  const endCallBlocker = getEndCallBlocker(state)
 
   // --- 启动班次 ---
   useEffect(() => {
@@ -244,7 +313,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     }
 
     startQueue()
-  }, [state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
+  }, [state.dialogueLog, state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
 
   // 通话结束 (currentCall 由有变无) → 停掉所有未播完的 TTS
   const prevCallRef = useRef(state.currentCall)
@@ -337,9 +406,9 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   // --- 处理派车：先弹车辆选择 ---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
-    if (!state.terminal.determinant) return // 必须选择判定码才能派车
+    if (getDispatchIssues(state).length > 0) return
     setVehicleSelectorOpen(true)
-  }, [state.currentCall, state.terminal.determinant])
+  }, [state])
 
   // --- 选定车辆后真正派出 ---
   const handleConfirmVehicle = useCallback((vehicleId: string) => {
@@ -363,9 +432,10 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
 
   // --- 处理挂断电话（预计算 Perk 选择以保证 reducer 确定性）---
   const handleEndCall = useCallback(() => {
+    if (getEndCallBlocker(state)) return
     const perkChoices = getPerkChoices(state.perks, 3)
     dispatch({ type: 'END_CALL', perkChoices })
-  }, [state.perks])
+  }, [state])
 
   if (state.lastDebrief) {
     return (
@@ -437,6 +507,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const call = state.currentCall!
   const caller = getCaller(call.callerId)
   const hasTriage = state.terminal.triage !== null
+  const objective = getCurrentObjective(state)
 
   // 抽屉标题与迷你信息
   const callElapsed = state.shiftElapsed - state.callStartTime
@@ -466,6 +537,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
 
       <div style={styles.mainArea}>
         <CityMap state={state} />
+        <ObjectiveCard objective={objective} />
 
         <CallDrawer
           open={drawerOpen}
@@ -581,6 +653,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
                 guidance={!!call.guidance}
                 ambulanceRemaining={state.ambulanceRemaining}
                 terminal={state.terminal}
+                endCallBlocker={endCallBlocker}
                 onEndCall={() => { interruptCallerVoice(); handleEndCall() }}
               />
             </div>
@@ -617,6 +690,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           terminal={state.terminal}
           dispatchSent={state.dispatchSent}
           ambulanceRemaining={state.ambulanceRemaining}
+          dispatchIssues={dispatchIssues}
+          endCallBlocker={endCallBlocker}
           onChange={(field, value) =>
             dispatch({ type: 'UPDATE_TERMINAL', field, value })
           }
@@ -737,6 +812,28 @@ function PerkSelection({
           )
         })}
       </div>
+    </div>
+  )
+}
+
+function ObjectiveCard({
+  objective,
+}: {
+  objective: { title: string; detail: string; tone: 'urgent' | 'warn' | 'good' }
+}) {
+  const color = objective.tone === 'good'
+    ? '#16a34a'
+    : objective.tone === 'warn'
+      ? '#d97706'
+      : '#dc2626'
+
+  return (
+    <div style={{ ...styles.objectiveCard, borderColor: color }}>
+      <div style={{ ...styles.objectiveKicker, color }}>
+        当前目标
+      </div>
+      <div style={styles.objectiveTitle}>{objective.title}</div>
+      <div style={styles.objectiveDetail}>{objective.detail}</div>
     </div>
   )
 }
@@ -1256,6 +1353,8 @@ function TerminalModal({
   terminal,
   dispatchSent,
   ambulanceRemaining,
+  dispatchIssues,
+  endCallBlocker,
   onChange,
   onSetStatus,
   onSetDeterminant,
@@ -1268,6 +1367,8 @@ function TerminalModal({
   terminal: TerminalState
   dispatchSent: boolean
   ambulanceRemaining: number
+  dispatchIssues: string[]
+  endCallBlocker: string | null
   onChange: (field: TerminalField, value: string) => void
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
@@ -1277,6 +1378,7 @@ function TerminalModal({
   onClose: () => void
   onEndCall: () => void
 }) {
+  const canDispatch = dispatchIssues.length === 0
 
   return (
     <div style={styles.modalOverlay} onClick={onClose}>
@@ -1324,7 +1426,29 @@ function TerminalModal({
         <div style={styles.modalFooter}>
           {!dispatchSent ? (
             <>
-              <button style={styles.modalEndCallBtn} onClick={onEndCall}>
+              <div style={styles.dispatchGate}>
+                <div style={{
+                  ...styles.dispatchGateTitle,
+                  color: canDispatch ? '#16a34a' : '#d97706',
+                }}>
+                  {canDispatch ? '✓ 可以派车' : '调度前还缺'}
+                </div>
+                <div style={styles.dispatchGateList}>
+                  {canDispatch
+                    ? '位置、判定码、车辆资源均满足最低条件。'
+                    : dispatchIssues.slice(0, 3).map(issue => `• ${issue}`).join('\n')}
+                </div>
+              </div>
+              <button
+                style={{
+                  ...styles.modalEndCallBtn,
+                  opacity: endCallBlocker ? 0.45 : 1,
+                  cursor: endCallBlocker ? 'not-allowed' : 'pointer',
+                }}
+                onClick={endCallBlocker ? undefined : onEndCall}
+                disabled={!!endCallBlocker}
+                title={endCallBlocker ?? '结束本通'}
+              >
                 ✕ 挂断
               </button>
               <div style={{ flex: 1 }} />
@@ -1332,9 +1456,14 @@ function TerminalModal({
                 ≡ 暂存关闭
               </button>
               <button
-                style={styles.modalDispatchBtn}
-                onClick={onDispatch}
-                title="确认派车"
+                style={{
+                  ...styles.modalDispatchBtn,
+                  opacity: canDispatch ? 1 : 0.45,
+                  cursor: canDispatch ? 'pointer' : 'not-allowed',
+                }}
+                onClick={canDispatch ? onDispatch : undefined}
+                disabled={!canDispatch}
+                title={canDispatch ? '确认派车' : dispatchIssues.join('；')}
               >
                 ▸ 确认派车
               </button>
@@ -1370,11 +1499,13 @@ function ClosingPanel({
   guidance,
   ambulanceRemaining,
   terminal,
+  endCallBlocker,
   onEndCall,
 }: {
   guidance: boolean
   ambulanceRemaining: number
   terminal: TerminalState
+  endCallBlocker: string | null
   onEndCall: () => void
 }) {
   const arrived = ambulanceRemaining <= 0
@@ -1466,11 +1597,29 @@ function ClosingPanel({
       </div>
 
       {/* 挂断按钮 */}
+      {endCallBlocker && (
+        <div style={styles.closingGuard}>
+          {endCallBlocker}
+        </div>
+      )}
       <button
-        style={styles.endCallBtn}
-        onClick={onEndCall}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ef4444'; e.currentTarget.style.transform = 'scale(1.02)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; e.currentTarget.style.transform = 'scale(1)' }}
+        style={{
+          ...styles.endCallBtn,
+          opacity: endCallBlocker ? 0.45 : 1,
+          cursor: endCallBlocker ? 'not-allowed' : 'pointer',
+        }}
+        onClick={endCallBlocker ? undefined : onEndCall}
+        disabled={!!endCallBlocker}
+        onMouseEnter={(e) => {
+          if (endCallBlocker) return
+          e.currentTarget.style.backgroundColor = '#ef4444'
+          e.currentTarget.style.transform = 'scale(1.02)'
+        }}
+        onMouseLeave={(e) => {
+          if (endCallBlocker) return
+          e.currentTarget.style.backgroundColor = '#dc2626'
+          e.currentTarget.style.transform = 'scale(1)'
+        }}
       >
         <span>📞</span>
         <span>结束通话</span>
@@ -1964,6 +2113,37 @@ const styles: Record<string, CSSProperties> = {
     overflow: 'hidden',
     minHeight: 0,
   },
+  objectiveCard: {
+    position: 'absolute' as const,
+    top: 72,
+    left: 16,
+    zIndex: 18,
+    width: 280,
+    padding: '10px 12px',
+    border: '1px solid #dc2626',
+    borderRadius: 10,
+    backgroundColor: 'rgba(8, 12, 18, 0.86)',
+    boxShadow: '0 12px 32px rgba(0,0,0,0.28)',
+    backdropFilter: 'blur(8px)',
+  },
+  objectiveKicker: {
+    fontSize: 10,
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 900,
+    letterSpacing: 1.4,
+    marginBottom: 4,
+  },
+  objectiveTitle: {
+    fontSize: 14,
+    fontWeight: 900,
+    color: 'var(--text-primary)',
+    marginBottom: 4,
+  },
+  objectiveDetail: {
+    fontSize: 11,
+    lineHeight: 1.45,
+    color: 'var(--text-secondary)',
+  },
   floatCard: {
     position: 'absolute' as const,
     top: '50%',
@@ -2380,6 +2560,18 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 'bold' as const,
     color: 'var(--text-primary)',
   },
+  closingGuard: {
+    width: '100%',
+    maxWidth: 280,
+    padding: '8px 10px',
+    borderRadius: 8,
+    border: '1px solid rgba(217,119,6,0.45)',
+    backgroundColor: 'rgba(217,119,6,0.10)',
+    color: '#f59e0b',
+    fontSize: 12,
+    lineHeight: 1.45,
+    textAlign: 'center' as const,
+  },
   endCallBtn: {
     width: '100%',
     maxWidth: 280,
@@ -2530,6 +2722,25 @@ const styles: Record<string, CSSProperties> = {
     padding: '10px 16px',
     borderTop: '1px solid var(--border)',
     backgroundColor: 'var(--bg-surface)',
+  },
+  dispatchGate: {
+    minWidth: 210,
+    maxWidth: 300,
+    padding: '7px 9px',
+    border: '1px solid var(--border)',
+    borderRadius: 8,
+    backgroundColor: 'var(--bg-elevated)',
+    whiteSpace: 'pre-line' as const,
+  },
+  dispatchGateTitle: {
+    fontSize: 11,
+    fontWeight: 900,
+    marginBottom: 3,
+  },
+  dispatchGateList: {
+    fontSize: 10,
+    lineHeight: 1.45,
+    color: 'var(--text-secondary)',
   },
   modalDispatchBtn: {
     padding: '10px 24px',

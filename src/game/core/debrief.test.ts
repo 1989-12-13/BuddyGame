@@ -51,6 +51,24 @@ function makeDebriefState(
   }
 }
 
+function askLocation(state: WorldState): WorldState {
+  return worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
+}
+
+function finishRescue(state: WorldState): WorldState {
+  return {
+    ...state,
+    ambulanceRemaining: 0,
+    rescue: {
+      ...state.rescue,
+      phase: 'success',
+      outcome: 'success',
+      successScore: 1,
+      failureReason: null,
+    },
+  }
+}
+
 describe('buildDebrief', () => {
   it('resolves a strong call as a good patient outcome', () => {
     const scenario = getScenario('cardiac_arrest')
@@ -121,10 +139,11 @@ describe('buildDebrief', () => {
       totalCalls: 1,
     }
     const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
-    const classified = worldReducer(answered, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
+    const located = askLocation(answered)
+    const classified = worldReducer(located, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
     const triaged = worldReducer(classified, { type: 'SET_TRIAGE', level: 'red' })
     const dispatched = worldReducer(triaged, { type: 'DISPATCH' })
-    const ended = worldReducer(dispatched, { type: 'END_CALL' })
+    const ended = worldReducer(finishRescue(dispatched), { type: 'END_CALL' })
 
     expect(ended.currentCall).toBeNull()
     expect(ended.dispatchRecord).toBeNull()
@@ -145,9 +164,10 @@ describe('buildDebrief', () => {
       totalCalls: 2,
     }
     const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
-    const classified = worldReducer(answered, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
+    const located = askLocation(answered)
+    const classified = worldReducer(located, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
     const triaged = worldReducer(classified, { type: 'SET_TRIAGE', level: 'red' })
-    const ended = worldReducer(worldReducer(triaged, { type: 'DISPATCH' }), { type: 'END_CALL' })
+    const ended = worldReducer(finishRescue(worldReducer(triaged, { type: 'DISPATCH' })), { type: 'END_CALL' })
 
     expect(ended.pendingPerkChoices).toHaveLength(3)
 
@@ -156,5 +176,15 @@ describe('buildDebrief', () => {
 
     expect(upgraded.perks).toContain(picked)
     expect(upgraded.pendingPerkChoices).toHaveLength(0)
+  })
+
+  it('blocks premature hangup for real emergencies before dispatch', () => {
+    const started = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['cardiac_arrest'] })
+    const answered = worldReducer(started, { type: 'ANSWER_CALL' })
+    const ended = worldReducer(answered, { type: 'END_CALL' })
+
+    expect(ended.currentCall?.id).toBe('cardiac_arrest')
+    expect(ended.lastDebrief).toBeNull()
+    expect(ended.patientEvents[ended.patientEvents.length - 1]?.text).toContain('未派车')
   })
 })

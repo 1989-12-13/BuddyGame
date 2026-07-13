@@ -13,6 +13,24 @@ function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
   return worldReducer(withScenario, { type: 'ANSWER_CALL' })
 }
 
+function askLocation(state: WorldState): WorldState {
+  return worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
+}
+
+function finishRescue(state: WorldState): WorldState {
+  return {
+    ...state,
+    ambulanceRemaining: 0,
+    rescue: {
+      ...state.rescue,
+      phase: 'success',
+      outcome: 'success',
+      successScore: 1,
+      failureReason: null,
+    },
+  }
+}
+
 describe('worldReducer', () => {
   it('advances game time for questions and records the caller purpose', () => {
     const answered = beginCall()
@@ -33,11 +51,16 @@ describe('worldReducer', () => {
 
   it('keeps MPDS determinant and triage independent and emits after-dispatch events', () => {
     const answered = beginCall()
-    const classified = worldReducer(answered, {
+    const classifiedBeforeLocation = worldReducer(answered, {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ECHO',
     })
-    // triage 从判定码自动推导，无需手动 SET_TRIAGE 即可派车
+    const blocked = worldReducer(classifiedBeforeLocation, { type: 'DISPATCH' })
+    const located = askLocation(answered)
+    const classified = worldReducer(located, {
+      type: 'SET_MPDS_DETERMINANT',
+      determinant: 'ECHO',
+    })
     const dispatched = worldReducer(classified, { type: 'DISPATCH' })
     // SET_TRIAGE 仍可作为手动覆盖使用
     const overridden = worldReducer(classified, { type: 'SET_TRIAGE', level: 'yellow' })
@@ -45,13 +68,15 @@ describe('worldReducer', () => {
     expect(classified.terminal.triage).toBe('red')
     expect(answered.terminal.hotCold).toBeNull()
     expect(classified.terminal.hotCold).toBe('HOT')
+    expect(blocked.dispatchRecord).toBeNull()
+    expect(blocked.patientEvents[blocked.patientEvents.length - 1]?.text).toContain('位置')
     expect(dispatched.dispatchRecord?.triage).toBe('red')
     expect(overridden.terminal.triage).toBe('yellow')
     expect(dispatched.dialogueLog).toHaveLength(classified.dialogueLog.length + 2)
   })
 
   it('derives HOT or COLD response mode from the player determinant', () => {
-    const answered = beginCall()
+    const answered = askLocation(beginCall())
     const alpha = worldReducer(answered, {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ALPHA',
@@ -61,7 +86,7 @@ describe('worldReducer', () => {
   })
 
   it('deducts points for an incorrect MPDS determinant', () => {
-    const answered = beginCall()
+    const answered = askLocation(beginCall())
 
     const correctClassified = worldReducer(answered, {
       type: 'SET_MPDS_DETERMINANT',
@@ -72,7 +97,7 @@ describe('worldReducer', () => {
       level: 'red',
     })
     const correctEnded = worldReducer(
-      worldReducer(correctTriaged, { type: 'DISPATCH' }),
+      finishRescue(worldReducer(correctTriaged, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
 
@@ -85,7 +110,7 @@ describe('worldReducer', () => {
       level: 'red',
     })
     const wrongEnded = worldReducer(
-      worldReducer(correctedTriage, { type: 'DISPATCH' }),
+      finishRescue(worldReducer(correctedTriage, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
 
@@ -93,7 +118,7 @@ describe('worldReducer', () => {
   })
 
   it('deducts points for an incorrect clinical judgment', () => {
-    const classified = worldReducer(beginCall(), {
+    const classified = worldReducer(askLocation(beginCall()), {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ECHO',
     })
@@ -111,14 +136,14 @@ describe('worldReducer', () => {
     }
 
     const correctEnded = worldReducer(
-      worldReducer({ ...triaged, pendingJudgments: [judgment] }, { type: 'DISPATCH' }),
+      finishRescue(worldReducer({ ...triaged, pendingJudgments: [judgment] }, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
     const wrongEnded = worldReducer(
-      worldReducer({
+      finishRescue(worldReducer({
         ...triaged,
         pendingJudgments: [{ ...judgment, chosenOptionIndex: 1 }],
-      }, { type: 'DISPATCH' }),
+      }, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
 
@@ -143,7 +168,8 @@ describe('worldReducer', () => {
     })
     const verifiedEnd = worldReducer(verified, { type: 'END_CALL' })
 
-    expect(unverifiedEnd.callScores[0]).toBe(40)
+    expect(unverifiedEnd.callScores[0]).toBeUndefined()
+    expect(unverifiedEnd.patientEvents[unverifiedEnd.patientEvents.length - 1]?.text).toContain('核实')
     expect(verifiedEnd.callScores[0]).toBe(100)
   })
 
@@ -163,11 +189,12 @@ describe('worldReducer', () => {
       { type: 'END_CALL' },
     )
 
-    expect(ended.callScores[0]).toBe(40)
+    expect(ended.callScores[0]).toBeUndefined()
+    expect(ended.patientEvents[ended.patientEvents.length - 1]?.text).toContain('核实')
   })
 
   it('deducts points when final vital signs are recorded incorrectly', () => {
-    const classified = worldReducer(beginCall(), {
+    const classified = worldReducer(askLocation(beginCall()), {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ECHO',
     })
@@ -182,11 +209,11 @@ describe('worldReducer', () => {
     )
 
     const correctEnded = worldReducer(
-      worldReducer(correctVitals, { type: 'DISPATCH' }),
+      finishRescue(worldReducer(correctVitals, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
     const wrongEnded = worldReducer(
-      worldReducer(wrongVitals, { type: 'DISPATCH' }),
+      finishRescue(worldReducer(wrongVitals, { type: 'DISPATCH' })),
       { type: 'END_CALL' },
     )
 

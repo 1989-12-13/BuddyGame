@@ -3,7 +3,7 @@
 // 120急救调度模拟游戏核心逻辑
 // ============================================================
 
-import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt } from '../types'
+import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt, PatientEvent } from '../types'
 import { stressToLevel, determinantToHotCold, determinantToTriage, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
@@ -13,12 +13,39 @@ import {
   buildScenarioQueue,
   calcAmbulanceETA,
   scoreCall,
+  createPatientStatus,
+  stabilityToVitalSign,
+  baseRescueRate,
+  calcRescueSuccessRate,
+  judgeRescueSuccess,
+  triageLevelDiff,
 } from './worldState'
 import { getScenario } from '../events/templates'
 import { getCaller } from '../npc/personas'
 import { buildDebrief } from './debrief'
 import { getPerkChoices, hasPerk } from './perks'
 import { isPrankVerified } from './judgments'
+import { findVehicleById, findFastestAvailable, type Ambulance } from './fleet'
+
+// ============================================================
+// 即时反馈事件工厂（push 到 state.patientEvents → 顶部 toast）
+// ============================================================
+let _eventSeq = 0
+function ev(kind: PatientEvent['kind'], text: string, at: number): PatientEvent {
+  _eventSeq += 1
+  return { id: `ev_${Date.now()}_${_eventSeq}`, kind, text, createdAt: at }
+}
+
+/** 推入一个事件（不重复） */
+function pushEvent(events: PatientEvent[], e: PatientEvent): PatientEvent[] {
+  return [...events, e]
+}
+
+/** 对玩家错误判断的"实际正确项"友好化（用于 toast） */
+function judgmentCorrectAnswer(j: JudgmentPrompt): string {
+  const correct = j.options.find(o => o.isCorrect)
+  return correct?.label ?? '—'
+}
 
 /** 根据情绪选择叙述式回答 */
 function pickNarrativeAnswer(
@@ -211,12 +238,18 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       // 终端不再自动填入 — 玩家从对话中提取
       const terminal = createTerminalState()
 
+      // 初始化患者生命体征（恶作剧电话无患者）
+      const patientStatus = scenario.isPrank ? null : createPatientStatus(scenario.correctTriage)
+
       return {
         ...state,
         currentCall: scenario,
         callPhase: 'questioning',
         callStartTime: state.shiftElapsed,
         callerState,
+        patientStatus,
+        patientEvents: [],
+        rescue: { phase: 'idle', vehicleId: null, vehicleName: null, etaTotal: 0, arrivalShiftTime: null, outcome: null, successScore: null, failureReason: null },
         terminal,
         dispatchSent: false,
         dispatchRecord: null,
@@ -665,7 +698,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const idx = state.pendingJudgments.findIndex(j => j.id === judgmentId)
       if (idx < 0) return state
 
-      const updatedJudgment = { ...state.pendingJudgments[idx], chosenOptionIndex }
+      const judgment = state.pendingJudgments[idx]
+      const updatedJudgment = { ...judgment, chosenOptionIndex }
       const newJudgments = [...state.pendingJudgments]
       newJudgments[idx] = updatedJudgment
 
@@ -686,20 +720,57 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         }
       }
 
+      // 即时反馈：对错→生命条 + 事件 toast
+      let newPatientStatus = state.patientStatus
+      let newEvents = state.patientEvents
+      if (state.patientStatus && !state.patientStatus.died) {
+        const isCorrect = !!selectedOption?.isCorrect
+        if (isCorrect) {
+          newPatientStatus = { ...state.patientStatus, stability: Math.min(100, state.patientStatus.stability + 4) }
+          newEvents = pushEvent(newEvents, ev('good', `✓ 判断准确：${judgment.question.slice(0, 18)}…`, state.shiftElapsed))
+        } else {
+          newPatientStatus = { ...state.patientStatus, stability: Math.max(0, state.patientStatus.stability - 8) }
+          const correctLabel = judgmentCorrectAnswer(judgment)
+          newEvents = pushEvent(newEvents, ev('bad', `✗ 误判 · 实际应为：${correctLabel}`, state.shiftElapsed))
+        }
+      }
+
       return {
         ...state,
         pendingJudgments: newJudgments,
         terminal: newTerminal,
+        patientStatus: newPatientStatus,
+        patientEvents: newEvents,
       }
     }
 
     // ==========================================
-    // DISPATCH — 派出救护车
+    // SELECT_VEHICLE — 玩家在派车 UI 中选定车辆（不触发派车）
+    // ==========================================
+    case 'SELECT_VEHICLE': {
+      const v = state.fleet.vehicles.find(x => x.id === action.vehicleId && x.status === 'available')
+      if (!v) return state
+      return {
+        ...state,
+        fleet: { ...state.fleet, selectedVehicleId: v.id },
+      }
+    }
+
+    // ==========================================
+    // DISPATCH — 派出救护车（可选指定 vehicleId）
     // ==========================================
     case 'DISPATCH': {
       if (!state.currentCall || !state.callerState) return state
       if (state.dispatchSent) return state
       if (!state.terminal.determinant || !state.terminal.triage) return state
+
+      // 选车优先级：action.vehicleId → fleet.selectedVehicleId → 最快可用
+      let vehicle: Ambulance | null =
+        findVehicleById(state.fleet, action.vehicleId ?? state.fleet.selectedVehicleId)
+      if (!vehicle || vehicle.status !== 'available') {
+        vehicle = findFastestAvailable(state.fleet)
+      }
+      if (!vehicle) return state   // 无可用车
 
       const dispatchTime = state.shiftElapsed - state.callStartTime
       const rawAddress = state.callerState.revealedInfo.address
@@ -709,14 +780,17 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       // 从MPDS判定码自动推导分诊等级（现场分诊由急救人员执行，调度员无需手动选择）
       const triage = state.terminal.triage
 
+      // ETA 受车辆速度影响（speed 越大 ETA 越短）+ 肉鸽收益 priority_channel
+      const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness)
+      const rawEta = Math.round(baseEta / Math.max(1, vehicle.speed * 0.6))
       const eta = Math.max(
         3,
-        calcAmbulanceETA(dispatchTime, addressCompleteness) - (hasPerk(state.perks, 'priority_channel') ? 2 : 0),
+        rawEta - (hasPerk(state.perks, 'priority_channel') ? 2 : 0),
       )
 
       const systemLine: DialogueLine = {
         speaker: 'system',
-        text: `【▸ 救护车已派出 — 分诊等级: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+        text: `【▸ ${vehicle.name}（${vehicle.tier}）已派出 — 分诊: ${triage === 'red' ? '红色(濒危)' : triage === 'yellow' ? '黄色(危重)' : triage === 'green' ? '绿色(轻伤)' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
         timestamp: state.shiftElapsed,
       }
 
@@ -734,6 +808,26 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           text: evt.dialogue,
           timestamp: state.shiftElapsed,
         }))
+
+      // 派车超时即时反馈
+      let newEvents = state.patientEvents
+      if (state.patientStatus && dispatchTime > 60) {
+        newEvents = pushEvent(newEvents, ev('bad', '⛔ 黄金抢救窗已过 · 患者生存率骤降', state.shiftElapsed))
+      } else if (state.patientStatus && dispatchTime > 45) {
+        newEvents = pushEvent(newEvents, ev('warn', '⚠ 进入派车预警区间（>45s）', state.shiftElapsed))
+      }
+
+      // 救援闭环初始化
+      const rescue = {
+        phase: 'enroute' as const,
+        vehicleId: vehicle.id,
+        vehicleName: vehicle.name,
+        etaTotal: eta,
+        arrivalShiftTime: null as number | null,
+        outcome: null as 'success' | 'failed' | null,
+        successScore: null as number | null,
+        failureReason: null as string | null,
+      }
 
       // 检查是否需要进入急救指导阶段
       const hasGuidance = state.currentCall.guidance !== null
@@ -753,6 +847,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           ? new Array(state.currentCall.guidance!.steps.length).fill(null)
           : [],
         dialogueLog: [...state.dialogueLog, systemLine, ...afterDispatchLines],
+        rescue,
+        fleet: { ...state.fleet, selectedVehicleId: vehicle.id },
+        patientEvents: newEvents,
       }
     }
 
@@ -787,6 +884,19 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const newResults = [...state.guidanceResults]
       newResults[action.stepIndex] = isCorrect ? 'correct' : 'incorrect'
 
+      // 即时反馈：急救指导对错→生命条 + toast
+      let newPatientStatus = state.patientStatus
+      let newEvents = state.patientEvents
+      if (state.patientStatus && !state.patientStatus.died) {
+        if (isCorrect) {
+          newPatientStatus = { ...state.patientStatus, stability: Math.min(100, state.patientStatus.stability + 3) }
+          newEvents = pushEvent(newEvents, ev('good', `✓ ${step.prompt}：操作正确`, state.shiftElapsed))
+        } else {
+          newPatientStatus = { ...state.patientStatus, stability: Math.max(0, state.patientStatus.stability - 6) }
+          newEvents = pushEvent(newEvents, ev('bad', `✗ ${step.prompt}：操作错误，患者情况恶化`, state.shiftElapsed))
+        }
+      }
+
       const nextIndex = action.stepIndex + 1
       const isLastStep = nextIndex >= guidanceDef.steps.length
 
@@ -795,6 +905,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         guidanceStepIndex: nextIndex,
         guidanceResults: newResults,
         callPhase: isLastStep ? 'closing' : 'guidance',
+        patientStatus: newPatientStatus,
+        patientEvents: newEvents,
         dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],
       }
     }
@@ -828,6 +940,22 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       const newScores = [...state.guidanceMinigameScores]
       newScores[action.stepIndex] = action.score
 
+      // 即时反馈：小游戏分数→生命条
+      let newPatientStatus = state.patientStatus
+      let newEvents = state.patientEvents
+      if (state.patientStatus && !state.patientStatus.died) {
+        const delta = Math.round((action.score - 0.5) * 20)   // -10 ~ +10
+        newPatientStatus = {
+          ...state.patientStatus,
+          stability: Math.max(0, Math.min(100, state.patientStatus.stability + delta)),
+        }
+        newEvents = pushEvent(newEvents, ev(
+          action.score >= 0.7 ? 'good' : action.score >= 0.4 ? 'warn' : 'bad',
+          `${action.score >= 0.7 ? '✓' : action.score >= 0.4 ? '◐' : '✗'} ${spec.title}：评分 ${(action.score * 100).toFixed(0)}`,
+          state.shiftElapsed,
+        ))
+      }
+
       const nextIndex = action.stepIndex + 1
       const isLastStep = nextIndex >= guidanceDef.steps.length
 
@@ -836,7 +964,19 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         guidanceStepIndex: nextIndex,
         guidanceMinigameScores: newScores,
         callPhase: isLastStep ? 'closing' : 'guidance',
+        patientStatus: newPatientStatus,
+        patientEvents: newEvents,
         dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],
+      }
+    }
+
+    // ==========================================
+    // DISMISS_PATIENT_EVENT — 关闭一个顶部 toast
+    // ==========================================
+    case 'DISMISS_PATIENT_EVENT': {
+      return {
+        ...state,
+        patientEvents: state.patientEvents.filter(e => e.id !== action.eventId),
       }
     }
 
@@ -860,6 +1000,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let guidanceScore = 0
       let penaltyScore = 0
 
+      // 患者死亡（救援失败）→ 本通 0 分
+      const rescueFailed = call.isPrank
+        ? false
+        : (state.rescue.outcome === 'failed' || (state.patientStatus?.died ?? false))
+
       // 恶作剧电话特殊评分
       if (call.isPrank) {
         if (!didDispatch && isPrankVerified(state.pendingJudgments)) {
@@ -881,6 +1026,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           triageScore = 0
           guidanceScore = 0
         }
+      } else if (rescueFailed) {
+        // 患者死亡：本通 0 分（不影响班次继续）
+        total = 0
       } else {
         // 统计信息质量加分
         const qualityCount = Object.values(cs.infoQuality)
@@ -951,7 +1099,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       // 通话结束的总结行
       const summaryLine: DialogueLine = {
         speaker: 'system',
-        text: `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore} 判断扣分:${penaltyScore}】`,
+        text: rescueFailed
+          ? `【通话结束 | 患者死亡 · 任务失败 · 本通 0 分】`
+          : `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore} 判断扣分:${penaltyScore}】`,
         timestamp: state.shiftElapsed,
       }
 
@@ -980,12 +1130,25 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         penalty: penaltyScore,
       })
 
+      // 派出的车在通话结束时复位为 available（P0 简化：忽略现实里的返程时间）
+      const newFleet = state.rescue.vehicleId
+        ? {
+          ...state.fleet,
+          vehicles: state.fleet.vehicles.map(v =>
+            v.id === state.rescue.vehicleId ? { ...v, status: 'available' as const, currentCallId: null } : v
+          ),
+        }
+        : state.fleet
+
       return {
         ...state,
         callIndex: nextCallIndex,
         callPhase: 'completed',
         currentCall: null,
         callerState: null,
+        patientStatus: null,
+        rescue: { phase: 'idle', vehicleId: null, vehicleName: null, etaTotal: 0, arrivalShiftTime: null, outcome: null, successScore: null, failureReason: null },
+        fleet: newFleet,
         dispatchSent: false,
         dispatchRecord: null,
         ambulanceRemaining: -1,
@@ -1040,8 +1203,12 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       let newAmbulanceRemaining = state.ambulanceRemaining
       const newCallPhase = state.callPhase as CallPhase
       const newDialogue: DialogueLine[] = []
+      let newPatientStatus = state.patientStatus
+      let newEvents = state.patientEvents
+      let newRescue = state.rescue
 
       // 救护车倒计时
+      const arrivedThisTick = state.dispatchSent && state.ambulanceRemaining > 0 && (state.ambulanceRemaining - 1) === 0
       if (state.dispatchSent && state.ambulanceRemaining > 0) {
         newAmbulanceRemaining -= 1
         if (newAmbulanceRemaining === 0) {
@@ -1050,6 +1217,90 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
             text: '【▸ 救护车已到达现场】',
             timestamp: newElapsed,
           })
+        }
+      }
+
+      // 患者生命体征每秒衰减（仅在通话未结束 & 未死亡）
+      if (state.currentCall && state.patientStatus && !state.patientStatus.died) {
+        const before = state.patientStatus
+        const nextStability = Math.max(0, before.stability - before.decayRate)
+        const beforeSign = before.vitalSign
+        const afterSign = stabilityToVitalSign(nextStability)
+
+        // 体征档位恶化 → push 事件（一次）
+        const worsened =
+          (afterSign === 'critical' && beforeSign !== 'critical' && beforeSign !== 'arrest') ||
+          (afterSign === 'arrest' && beforeSign !== 'arrest')
+
+        // stability 触底 → 患者死亡（不强制结束通话，END_CALL 时结算 0 分）
+        const diedNow = nextStability <= 0 && !before.died
+
+        if (worsened) {
+          newEvents = pushEvent(newEvents, ev(
+            afterSign === 'arrest' ? 'bad' : 'warn',
+            afterSign === 'arrest' ? '患者心搏骤停 · 生命体征消失' : `体征恶化至「${afterSign === 'critical' ? '危急' : '危重'}」`,
+            newElapsed,
+          ))
+        }
+        if (diedNow) {
+          newEvents = pushEvent(newEvents, ev('bad', '患者死亡 · 救援失败', newElapsed))
+        }
+
+        newPatientStatus = {
+          ...before,
+          stability: nextStability,
+          vitalSign: nextStability <= 0 ? 'arrest' : afterSign,
+          died: before.died || diedNow,
+        }
+      }
+
+      // 救护车到达 → 结算救援成败
+      if (arrivedThisTick && state.currentCall && !state.currentCall.isPrank && state.rescue.phase === 'enroute') {
+        const vehicle = findVehicleById(state.fleet, state.rescue.vehicleId)
+        const stability = newPatientStatus?.stability ?? 0
+        const guidanceWrong = state.guidanceResults.filter(r => r === 'incorrect').length
+        const mgScores = state.guidanceMinigameScores.filter((s): s is number => s != null)
+        const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
+        const triageDiff = triageLevelDiff(state.dispatchRecord?.triage ?? null, state.currentCall.correctTriage)
+
+        const rate = calcRescueSuccessRate({
+          base: baseRescueRate(state.currentCall.correctTriage),
+          stability,
+          capability: vehicle?.capability ?? 3,
+          dispatchTime: state.dispatchRecord?.dispatchTime ?? null,
+          triageDiff,
+          guidanceWrongCount: guidanceWrong,
+          miniGameAvg,
+        })
+        const success = judgeRescueSuccess(rate) && !(newPatientStatus?.died ?? false)
+
+        newRescue = {
+          ...state.rescue,
+          phase: success ? 'success' : 'failed',
+          arrivalShiftTime: newElapsed,
+          outcome: success ? 'success' : 'failed',
+          successScore: rate,
+          failureReason: success ? null : (triageDiff >= 2 ? '分诊严重不足，院前响应延误'
+            : triageDiff === 1 ? '分诊偏低，院前响应降级'
+            : (state.dispatchRecord?.dispatchTime ?? 0) > 60 ? '派车超时，错过黄金窗'
+            : stability < 30 ? '患者生命体征耗尽'
+            : '现场救治未成功'),
+        }
+
+        newDialogue.push({
+          speaker: 'system',
+          text: success
+            ? `【✓ 救治成功 · 救护车抵达后患者获救（成功率 ${(rate * 100).toFixed(0)}%）】`
+            : `【✗ 救治失败 · ${newRescue.failureReason}（成功率 ${(rate * 100).toFixed(0)}%）】`,
+          timestamp: newElapsed,
+        })
+        newEvents = pushEvent(newEvents, ev(
+          success ? 'good' : 'bad',
+          success ? `✓ 救治成功 · 患者获救` : `✗ 患者死亡 · ${newRescue.failureReason}`,
+          newElapsed,
+        ))
+        if (!success && newPatientStatus && !newPatientStatus.died) {
+          newPatientStatus = { ...newPatientStatus, died: true, vitalSign: 'arrest', stability: 0 }
         }
       }
 
@@ -1082,6 +1333,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         shiftElapsed: newElapsed,
         ambulanceRemaining: newAmbulanceRemaining,
         callPhase: newCallPhase,
+        patientStatus: newPatientStatus,
+        patientEvents: newEvents,
+        rescue: newRescue,
         dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
           ? [...state.dialogueLog, ...newDialogue]
           : state.dialogueLog,

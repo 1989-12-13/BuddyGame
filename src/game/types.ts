@@ -429,6 +429,39 @@ export interface TerminalState {
   conditionNote: string
 }
 
+// -------------------- 患者生命体征（实时反馈层） --------------------
+export type VitalSign = 'stable' | 'warning' | 'critical' | 'arrest'
+
+export interface PatientStatus {
+  stability: number           // 0-100，生命条；到 0 = 患者死亡
+  vitalSign: VitalSign        // 由 stability 派生
+  decayRate: number           // 每秒衰减量（按病种严重度）
+  initialStability: number    // 起始值（结算时参考）
+  died: boolean               // 是否已经死亡（到达时结算或 stability 触底）
+}
+
+/** 即时反馈事件 — 顶部 toast */
+export interface PatientEvent {
+  id: string
+  kind: 'warn' | 'bad' | 'good' | 'info'
+  text: string
+  createdAt: number           // shiftElapsed 时间戳
+}
+
+// -------------------- 救援闭环（派车后→到达→救治） --------------------
+export type RescuePhase = 'idle' | 'enroute' | 'arrived' | 'success' | 'failed'
+
+export interface RescueState {
+  phase: RescuePhase
+  vehicleId: string | null           // 派出的车
+  vehicleName: string | null
+  etaTotal: number                   // 派车时的总 ETA（游戏秒）
+  arrivalShiftTime: number | null    // 到达时刻的 shiftElapsed
+  outcome: 'success' | 'failed' | null
+  successScore: number | null        // 0-1 救治成功概率（确定性计算结果）
+  failureReason: string | null
+}
+
 // -------------------- 游戏全局状态 --------------------
 export type GameScreen = 'title' | 'briefing' | 'playing' | 'ending'
 
@@ -456,7 +489,10 @@ export interface WorldState {
   callStartTime: number       // 接通时的shiftElapsed
   callerState: CallerState | null
 
-
+  // 患者生命体征（实时反馈）
+  patientStatus: PatientStatus | null
+  patientEvents: PatientEvent[]   // 顶部 toast 事件队列
+  rescue: RescueState             // 救护车救援闭环
 
   // 终端（计算机登记）
   terminal: TerminalState

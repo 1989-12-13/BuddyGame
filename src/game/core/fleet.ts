@@ -4,6 +4,8 @@
 
 export type AmbulanceStatus = 'available' | 'en_route' | 'on_scene' | 'returning'
 
+export type AmbulanceTier = 'BLS' | 'ALS' | 'MICU'
+
 export interface Ambulance {
   id: string
   name: string
@@ -12,7 +14,11 @@ export interface Ambulance {
   eta: number
   /** 速度等级 1-3，影响 ETA */
   speed: number
-  /** 装备能力 */
+  /** 急救能力等级 1-5，影响救治成功率（ALS/MICU 高于 BLS） */
+  capability: number
+  /** 装备标识 */
+  tier: AmbulanceTier
+  /** 装备能力（保留兼容） */
   equipment: string[]
   /** 当前任务的目的地场景 ID（用于追踪） */
   currentCallId: string | null
@@ -24,13 +30,13 @@ export interface FleetState {
   selectedVehicleId: string | null
 }
 
-/** 创建默认车队（3 辆） */
+/** 创建默认车队（3 辆，差异化速度+能力，让选车有取舍） */
 export function createDefaultFleet(): FleetState {
   return {
     vehicles: [
-      { id: 'ambulance_a', name: '望京站-甲车', status: 'available', eta: 0, speed: 2, equipment: ['ALS', 'BLS'], currentCallId: null },
-      { id: 'ambulance_b', name: '中关村站-乙车', status: 'available', eta: 0, speed: 1, equipment: ['BLS'], currentCallId: null },
-      { id: 'ambulance_c', name: '方庄站-丙车', status: 'available', eta: 0, speed: 3, equipment: ['ALS', 'BLS', '4WD'], currentCallId: null },
+      { id: 'ambulance_a', name: '望京站 · 甲车', status: 'available', eta: 0, speed: 2, capability: 4, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null },
+      { id: 'ambulance_b', name: '中关村站 · 乙车', status: 'available', eta: 0, speed: 1, capability: 2, tier: 'BLS', equipment: ['BLS'], currentCallId: null },
+      { id: 'ambulance_c', name: '方庄站 · 丙车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null },
     ],
     selectedVehicleId: null,
   }
@@ -45,6 +51,12 @@ export function calcVehicleETA(addressCompleteness: 'vague' | 'partial' | 'full'
   return Math.max(4, eta)
 }
 
+/** 按 id 查车 */
+export function findVehicleById(fleet: FleetState, id: string | null): Ambulance | null {
+  if (!id) return null
+  return fleet.vehicles.find(v => v.id === id) ?? null
+}
+
 /** 查找最快可用的车辆 */
 export function findFastestAvailable(fleet: FleetState): Ambulance | null {
   const available = fleet.vehicles.filter(v => v.status === 'available')
@@ -52,7 +64,19 @@ export function findFastestAvailable(fleet: FleetState): Ambulance | null {
   return available.reduce((a, b) => a.speed >= b.speed ? a : b)
 }
 
+/** 查找能力最强的可用车辆 */
+export function findMostCapableAvailable(fleet: FleetState): Ambulance | null {
+  const available = fleet.vehicles.filter(v => v.status === 'available')
+  if (available.length === 0) return null
+  return available.reduce((a, b) => a.capability >= b.capability ? a : b)
+}
+
 /** 可用车辆数 */
 export function countAvailable(fleet: FleetState): number {
   return fleet.vehicles.filter(v => v.status === 'available').length
+}
+
+/** tier → 中文描述 */
+export function tierLabel(tier: AmbulanceTier): string {
+  return tier === 'MICU' ? '移动 ICU' : tier === 'ALS' ? '高级生命支持' : '基础生命支持'
 }

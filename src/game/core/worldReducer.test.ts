@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { JudgmentPrompt, WorldState } from '../types'
+import { determinantToHotCold } from '../types'
 import { createInitialState } from './worldState'
 import { worldReducer } from './worldReducer'
 
@@ -26,7 +27,7 @@ describe('worldReducer', () => {
 
     expect(afterLocation.shiftElapsed).toBe(answered.shiftElapsed + 2)
     expect(afterPurpose.shiftElapsed).toBe(answered.shiftElapsed + 3)
-    expect(afterPurpose.questionCost).toBe(3)
+    expect(afterPurpose.callerState?.questionCount).toBe(2)
     expect(afterPurpose.callerState?.revealedInfo.purpose).toBe(true)
   })
 
@@ -56,7 +57,7 @@ describe('worldReducer', () => {
       determinant: 'ALPHA',
     })
 
-    expect(alpha.terminal.hotCold).toBe('COLD')
+    expect(determinantToHotCold(alpha.terminal.determinant!)).toBe('COLD')
   })
 
   it('deducts points for an incorrect MPDS determinant', () => {

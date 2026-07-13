@@ -12,7 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 pnpm install          # 安装依赖
-pnpm dev              # vite dev server
+pnpm dev              # 同时启动 TTS 后端 + Vite dev server (推荐)
+pnpm dev:server       # 只跑 TTS 后端 (端口 8787)
+pnpm dev:vite         # 只跑 Vite (TTS 不可用)
 pnpm build            # tsc -b && vite build
 pnpm preview          # 预览构建产物
 pnpm typecheck        # tsc -b --noEmit
@@ -23,6 +25,42 @@ pnpm test -- src/game/core/worldReducer.test.ts   # 单文件测试
 ```
 
 路径别名：`@` → `src/`（在 `vite.config.ts` 和 `vitest.config.ts` 中配置）。
+
+## TTS 语音合成（火山引擎 seed-tts-2.0）
+
+来电话者 + 系统提示由 Node 后端代理调用火山引擎，按 stress 0-100 动态映射到 4 档情绪（镇定 / 紧张 / 恐慌 / 失控）。
+
+**首次启用**：
+
+- 复制 `.env.example` → `.env.local`
+- 在 `.env.local` 填入 `VOLCANO_TTS_KEY=你的 API key`
+- `pnpm dev` 一键同时启动后端 (8787) + Vite (5173)
+
+**架构**：
+
+```
+src/audio/
+├── AudioContext.tsx    # 同时暴露 play() 音效 + tts TTS 队列
+├── useGameAudio.ts     # WebAudio oscillator 合成提示音 (无音频资源)
+├── ttsClient.ts        # fetch('/api/tts') 封装, 返回 Blob + objectURL
+├── ttsEmotion.ts       # stress 0-100 → emotion 4 档映射
+└── ttsPlayer.ts        # 顺序播放队列 (最大并发 1, 通话结束 stop())
+
+server/
+├── tts-server.mjs      # Node native http, 零依赖代理, 流式读取火山响应
+└── tts-cache.mjs       # 简易 LRU (200 条), 按 cacheKey 命中
+
+scripts/dev.mjs         # 同时 spawn 后端 + vite, 跨平台, 零依赖
+```
+
+**情绪映射**（与后端 `EMOTION_CONTEXTS` 一一对应）：
+
+- `0-25 镇定` — context: "保持冷静、声音平稳..."
+- `25-50 紧张` — context: "声音紧张、语速偏快..."
+- `50-75 恐慌` — context: "声音发颤、带着哭腔..."
+- `75-100 失控` — context: "失控地大喊、带着哭腔..."
+
+**新增/修改来电者音色**：默认所有来电者用同一 speaker (`zh_female_vv_uranus_bigtts`)，由后端 `.env` 的 `VOLCANO_TTS_DEFAULT_SPEAKER` 控制。如需按性别/年龄切换，可在前端 `ttsClient.ts` 的 `TtsRequest.speaker` 字段透传，扩展 `CallerProfile` 加 `gender`/`ageBucket` 字段。
 
 ## 顶层架构
 

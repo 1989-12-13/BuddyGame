@@ -17,8 +17,13 @@ import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import { CallDebrief } from '../components/call/CallDebrief'
 import { ROGUE_PERKS, getPerkChoices } from '../game/core/perks'
 import type { RoguePerkId } from '../game/core/perks'
+import { VitalSignsBar } from '../components/feedback/VitalSignsBar'
+import { RescueProgressToast } from '../components/feedback/RescueProgressToast'
+import { EventToastStack } from '../components/feedback/EventToastStack'
+import { VehicleSelector } from '../components/feedback/VehicleSelector'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
+import { stressToEmotion, stressToTypewriterInterval } from '../audio/ttsEmotion'
 
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[]) => void
@@ -28,6 +33,7 @@ interface Props {
 export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
+  const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
 
   // --- 启动班次 ---
   useEffect(() => {
@@ -167,6 +173,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setStreamPos(0)
 
     let pos = 0
+    const interval = stressToTypewriterInterval(state.callerState?.stress ?? 50)
     timerId.current = window.setInterval(() => {
       pos += 1
       if (pos >= chars.length) {
@@ -181,8 +188,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       } else {
         setStreamPos(pos)
       }
-    }, 65)  // ~15 字符/秒，接近真实语速
-  }, [])
+    }, interval)  // 按 stress 分档: 65-120ms/char
+  }, [state.callerState?.stress])
 
   // 新对话行入队
   useEffect(() => {
@@ -193,20 +200,48 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     if (curLen <= oldLen) return
 
     for (let i = oldLen; i < curLen; i++) {
+      const line = state.dialogueLog[i]
       // 系统提示行不流式，直接显示；仅来电者/接线员行逐字输出
-      if (state.dialogueLog[i].speaker !== 'system') {
-        pendingQueue.current.push({ idx: i, text: state.dialogueLog[i].text })
+      if (line.speaker !== 'system') {
+        pendingQueue.current.push({ idx: i, text: line.text })
         pendingSet.current.add(i)
+      }
+      // TTS: 仅来电者发声 (接线员玩家自己, 系统提示不发声)
+      if (line.speaker === 'caller') {
+        const stress = state.callerState?.stress ?? 50
+        audio.tts.enqueue(`caller-${i}`, {
+          text: line.text,
+          kind: 'caller',
+          emotion: stressToEmotion(stress),
+        }).catch(() => undefined)
       }
     }
 
     startQueue()
-  }, [state.dialogueLog, state.dialogueLog.length, startQueue])
+  }, [state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
+
+  // 通话结束 (currentCall 由有变无) → 停掉所有未播完的 TTS
+  const prevCallRef = useRef(state.currentCall)
+  useEffect(() => {
+    if (prevCallRef.current && !state.currentCall) {
+      audio.tts.stop()
+    }
+    prevCallRef.current = state.currentCall
+  }, [state.currentCall, audio.tts])
+
+  /**
+   * 玩家动作会触发新的来电者回应 → 打断正在播放/排队的旧来电者语音
+   * (打字机按设计保留, 让旧文本继续打完整句, 不与 TTS 强同步)
+   */
+  const interruptCallerVoice = useCallback(() => {
+    audio.tts.stop()
+  }, [audio.tts])
 
   // --- 安抚来电者 ---
   const handleCalm = useCallback(() => {
+    interruptCallerVoice()
     dispatch({ type: 'CALM_CALLER' })
-  }, [])
+  }, [interruptCallerVoice])
 
   // --- 对话区 / 操作面板拖拽分割 ---
   const [dialogueHeight, setDialogueHeight] = useState<number | null>(null)
@@ -239,18 +274,32 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setTerminalModalOpen(true)
   }, [])
 
-  // --- 处理派车（从模态框调用）---
+  // --- 处理派车：先弹车辆选择 ---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
-    if (!state.terminal.determinant || !state.terminal.triage) return
+    if (!state.terminal.determinant) return // 必须选择判定码才能派车
+    setVehicleSelectorOpen(true)
+  }, [state.currentCall, state.terminal.determinant])
+
+  // --- 选定车辆后真正派出 ---
+  const handleConfirmVehicle = useCallback((vehicleId: string) => {
+    interruptCallerVoice()
+    setVehicleSelectorOpen(false)
     setTerminalModalOpen(false)
-    dispatch({ type: 'DISPATCH' })
-  }, [state.currentCall, state.terminal.determinant, state.terminal.triage])
+    dispatch({ type: 'DISPATCH', vehicleId })
+  }, [interruptCallerVoice])
+
+  // --- 关闭一个事件 toast ---
+  const handleDismissEvent = useCallback((eventId: string) => {
+    interruptCallerVoice()
+    dispatch({ type: 'DISMISS_PATIENT_EVENT', eventId })
+  }, [interruptCallerVoice])
 
   // --- 处理临床判断选择 ---
   const handleJudgment = useCallback((judgmentId: string, optionIndex: number) => {
+    interruptCallerVoice()
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
-  }, [])
+  }, [interruptCallerVoice])
 
   // --- 处理挂断电话（预计算 Perk 选择以保证 reducer 确定性）---
   const handleEndCall = useCallback(() => {
@@ -336,6 +385,22 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           stress={state.callerState?.stress ?? 50}
         />
 
+        {/* 即时反馈：患者生命体征 */}
+        {state.patientStatus && (
+          <VitalSignsBar status={state.patientStatus} />
+        )}
+
+        {/* 即时反馈：救护车救援闭环 */}
+        {state.rescue.phase !== 'idle' && (
+          <RescueProgressToast
+            rescue={state.rescue}
+            ambulanceRemaining={state.ambulanceRemaining}
+            vehicleTier={
+              state.fleet.vehicles.find(v => v.id === state.rescue.vehicleId)?.tier
+            }
+          />
+        )}
+
         {/* 对话区 — 每条来电者发言旁可能弹出临床判断卡 */}
         <div ref={dialogueRef} style={{
           ...styles.dialogueArea,
@@ -409,12 +474,14 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
                 guidance={call.guidance}
                 stepIndex={state.guidanceStepIndex}
                 results={state.guidanceResults}
-                onAnswer={(stepIdx, selectedIdx) =>
+                onAnswer={(stepIdx, selectedIdx) => {
+                  interruptCallerVoice()
                   dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
-                }
-                onCompleteMiniGame={(stepIdx, score, passed) =>
+                }}
+                onCompleteMiniGame={(stepIdx, score, passed) => {
+                  interruptCallerVoice()
                   dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
-                }
+                }}
               />
             </div>
           </div>
@@ -427,7 +494,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             askedMPDS={state.callerState?.askedMPDS ?? []}
             stressLevel={state.callerState?.stressLevel ?? '紧张'}
             stress={state.callerState?.stress ?? 50}
-            onAsk={(id) => dispatch({ type: 'ASK_QUESTION', questionId: id })}
+            onAsk={(id) => { interruptCallerVoice(); dispatch({ type: 'ASK_QUESTION', questionId: id }) }}
             onCalm={handleCalm}
             onOpenTerminal={handleOpenTerminal}
             hasTriage={hasTriage}
@@ -446,7 +513,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
                 guidance={!!call.guidance}
                 ambulanceRemaining={state.ambulanceRemaining}
                 terminal={state.terminal}
-                onEndCall={() => dispatch({ type: 'END_CALL' })}
+                onEndCall={() => { interruptCallerVoice(); handleEndCall() }}
               />
             </div>
           </div>
@@ -476,7 +543,23 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           }
           onDispatch={handleDispatch}
           onClose={() => setTerminalModalOpen(false)}
-          onEndCall={() => { setTerminalModalOpen(false); handleEndCall() }}
+          onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); handleEndCall() }}
+        />
+      )}
+
+      {/* 即时反馈：顶部事件 toast 堆叠 */}
+      <EventToastStack
+        events={state.patientEvents}
+        onDismiss={handleDismissEvent}
+      />
+
+      {/* 派车车辆选择模态 */}
+      {vehicleSelectorOpen && (
+        <VehicleSelector
+          fleet={state.fleet}
+          suggestedCapability={call.correctTriage}
+          onSelect={handleConfirmVehicle}
+          onCancel={() => setVehicleSelectorOpen(false)}
         />
       )}
     </div>

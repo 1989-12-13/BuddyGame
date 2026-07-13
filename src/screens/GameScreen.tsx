@@ -108,10 +108,11 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const prevDialogueLen = useRef(state.dialogueLog.length)
   const prevJudgments = useRef(state.pendingJudgments?.length ?? 0)
 
-  // 派车音效
+  // 派车音效（合成提示音 + 救护车鸣笛）
   useEffect(() => {
     if (state.dispatchSent && !prevDispatchSent.current) {
       audio.play('dispatch')
+      audio.playSiren()
     }
     prevDispatchSent.current = state.dispatchSent
   }, [state.dispatchSent, audio])

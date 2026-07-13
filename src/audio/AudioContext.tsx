@@ -11,6 +11,8 @@ const VOLUME_KEY = 'buddy-game-volume'
 export interface AudioAPI {
   /** 合成音效 (ring/connect/dispatch/...) */
   play: (cue: GameAudioCue) => void
+  /** 救护车鸣笛 — 单次 4 秒 + 渐入渐出包络 */
+  playSiren: () => void
   /** TTS 播放队列, 组件通过 enqueue() 让来电者/系统发声 */
   tts: TtsPlayer
   /** 当前音量 0-1 */
@@ -22,7 +24,7 @@ export interface AudioAPI {
 const AudioCtx = createContext<AudioAPI | null>(null)
 
 export function AudioProvider({ children }: { children: ReactNode }) {
-  const { play: rawPlay } = useGameAudio()
+  const { play: rawPlay, playSiren: rawPlaySiren } = useGameAudio()
   const ttsRef = useRef<TtsPlayer | null>(null)
   if (!ttsRef.current) ttsRef.current = new TtsPlayer()
 
@@ -42,8 +44,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     rawPlay(cue, volume)
   }, [rawPlay, volume])
 
+  const playSiren = useCallback(() => {
+    rawPlaySiren(volume)
+  }, [rawPlaySiren, volume])
+
   return (
-    <AudioCtx.Provider value={{ play, tts: ttsRef.current, volume, setVolume }}>
+    <AudioCtx.Provider value={{ play, playSiren, tts: ttsRef.current, volume, setVolume }}>
       {children}
     </AudioCtx.Provider>
   )

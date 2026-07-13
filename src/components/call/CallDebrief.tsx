@@ -6,10 +6,8 @@ import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Phone } from 'lucide-react'
 import type { DebriefEntry } from '../../game/core/debrief'
-import type { WorldState } from '../../game/types'
 
 interface Props {
-  state: WorldState
   debrief: DebriefEntry
   onNext: () => void
   nextLabel?: string

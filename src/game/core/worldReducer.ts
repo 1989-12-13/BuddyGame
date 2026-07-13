@@ -18,6 +18,7 @@ import { getScenario } from '../events/templates'
 import { getCaller } from '../npc/personas'
 import { buildDebrief } from './debrief'
 import { getPerkChoices, hasPerk } from './perks'
+import { isPrankVerified } from './judgments'
 
 /** 根据情绪选择叙述式回答 */
 function pickNarrativeAnswer(
@@ -143,14 +144,6 @@ function getQuestionTimeCost(questionId: string, call: { mpdsQuestions: { id: st
     ask_purpose: 1,
   }
   return fixedCosts[questionId] ?? call.mpdsQuestions.find(q => q.id === questionId)?.timeCost ?? 2
-}
-
-function isPrankVerified(judgments: JudgmentPrompt[]): boolean {
-  return judgments.some(j => (
-    j.questionId === 'mpds_prank_patient'
-    && j.chosenOptionIndex !== null
-    && j.options[j.chosenOptionIndex]?.isCorrect === true
-  ))
 }
 
 function countIncorrectJudgments(judgments: JudgmentPrompt[]): number {
@@ -1002,7 +995,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         screen: 'playing',
         shiftCompletePending: isShiftOver,
         lastDebrief,
-        pendingPerkChoices: isShiftOver ? [] : getPerkChoices(state.perks, 3),
+        pendingPerkChoices: isShiftOver ? [] : (action.perkChoices ?? getPerkChoices(state.perks, 3)),
       }
     }
 

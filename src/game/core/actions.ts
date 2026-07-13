@@ -22,7 +22,7 @@ export type GameAction =
   | { type: 'DISPATCH' }
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
-  | { type: 'END_CALL' }
+  | { type: 'END_CALL'; perkChoices?: RoguePerkId[] }
   | { type: 'DISMISS_DEBRIEF' }
   | { type: 'CHOOSE_PERK'; perkId: RoguePerkId }
   | { type: 'TICK' }

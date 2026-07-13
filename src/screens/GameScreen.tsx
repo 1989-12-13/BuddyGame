@@ -15,7 +15,7 @@ import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import { CallDebrief } from '../components/call/CallDebrief'
-import { ROGUE_PERKS } from '../game/core/perks'
+import { ROGUE_PERKS, getPerkChoices } from '../game/core/perks'
 import type { RoguePerkId } from '../game/core/perks'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
@@ -252,12 +252,17 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     dispatch({ type: 'MAKE_JUDGMENT', judgmentId, chosenOptionIndex: optionIndex })
   }, [])
 
+  // --- 处理挂断电话（预计算 Perk 选择以保证 reducer 确定性）---
+  const handleEndCall = useCallback(() => {
+    const perkChoices = getPerkChoices(state.perks, 3)
+    dispatch({ type: 'END_CALL', perkChoices })
+  }, [state.perks])
+
   if (state.lastDebrief) {
     return (
       <div style={styles.container}>
         <Hud state={state} />
         <CallDebrief
-          state={state}
           debrief={state.lastDebrief}
           onNext={() => dispatch({ type: 'DISMISS_DEBRIEF' })}
           nextLabel={state.shiftCompletePending ? '生成班次报告' : '查看班次收益'}
@@ -427,7 +432,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             <p style={{ color: '#22c55e', fontWeight: 'bold', marginBottom: 8 }}>
               {call.guidance ? '急救指导已完成，等待救护车到达。' : '派车指令已发出。'}
             </p>
-            <button style={styles.endCallBtn} onClick={() => dispatch({ type: 'END_CALL' })}>
+            <button style={styles.endCallBtn} onClick={handleEndCall}>
               挂断电话
             </button>
           </div>
@@ -457,7 +462,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           }
           onDispatch={handleDispatch}
           onClose={() => setTerminalModalOpen(false)}
-          onEndCall={() => { setTerminalModalOpen(false); dispatch({ type: 'END_CALL' }) }}
+          onEndCall={() => { setTerminalModalOpen(false); handleEndCall() }}
         />
       )}
     </div>

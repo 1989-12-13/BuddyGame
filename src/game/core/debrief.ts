@@ -4,6 +4,7 @@
 
 import type { WorldState, TriageLevel, JudgmentPrompt, MpdsDeterminant, EmergencyScenario } from '../types'
 import { hasPerk } from './perks'
+import { isPrankVerified } from './judgments'
 
 export type OutcomeTier = 'good' | 'normal' | 'bad' | 'special'
 
@@ -53,16 +54,8 @@ export interface DebriefEntry {
   isPrankHandledCorrectly: boolean | null
 }
 
-function isPrankVerified(judgments: JudgmentPrompt[]): boolean {
-  return judgments.some(j =>
-    j.questionId === 'mpds_prank_patient'
-    && j.chosenOptionIndex !== null
-    && j.options[j.chosenOptionIndex]?.isCorrect === true,
-  )
-}
-
 /** 从判定码字符串推导预期 MpdsDeterminant */
-export function determinantFromCode(code: string): MpdsDeterminant | null {
+function determinantFromCode(code: string): MpdsDeterminant | null {
   const letter = code.split('-')[1]?.toUpperCase()
   const map: Record<string, MpdsDeterminant> = {
     E: 'ECHO', D: 'DELTA', C: 'CHARLIE', B: 'BRAVO', A: 'ALPHA',

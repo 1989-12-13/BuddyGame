@@ -36,16 +36,17 @@ describe('worldReducer', () => {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ECHO',
     })
-    const blocked = worldReducer(classified, { type: 'DISPATCH' })
-    const triaged = worldReducer(classified, { type: 'SET_TRIAGE', level: 'red' })
-    const dispatched = worldReducer(triaged, { type: 'DISPATCH' })
+    // triage 从判定码自动推导，无需手动 SET_TRIAGE 即可派车
+    const dispatched = worldReducer(classified, { type: 'DISPATCH' })
+    // SET_TRIAGE 仍可作为手动覆盖使用
+    const overridden = worldReducer(classified, { type: 'SET_TRIAGE', level: 'yellow' })
 
-    expect(classified.terminal.triage).toBeNull()
+    expect(classified.terminal.triage).toBe('red')
     expect(answered.terminal.hotCold).toBeNull()
     expect(classified.terminal.hotCold).toBe('HOT')
-    expect(blocked.dispatchRecord).toBeNull()
     expect(dispatched.dispatchRecord?.triage).toBe('red')
-    expect(dispatched.dialogueLog).toHaveLength(triaged.dialogueLog.length + 2)
+    expect(overridden.terminal.triage).toBe('yellow')
+    expect(dispatched.dialogueLog).toHaveLength(classified.dialogueLog.length + 2)
   })
 
   it('derives HOT or COLD response mode from the player determinant', () => {

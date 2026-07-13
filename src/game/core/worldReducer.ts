@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt } from '../types'
-import { stressToLevel, determinantToHotCold, PROTOCOL_REF } from '../types'
+import { stressToLevel, determinantToHotCold, determinantToTriage, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
   createInitialState,
@@ -613,6 +613,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           ...state.terminal,
           determinant: action.determinant,
           hotCold: determinantToHotCold(action.determinant),
+          triage: determinantToTriage(action.determinant),
         },
       }
     }

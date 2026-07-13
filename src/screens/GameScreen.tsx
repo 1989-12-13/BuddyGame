@@ -6,7 +6,7 @@ import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
-import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF } from '../game/types'
+import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF, TRIAGE_LABELS } from '../game/types'
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { getCaller } from '../game/npc/personas'
@@ -1549,6 +1549,20 @@ function TerminalForm({
         current={terminal.determinant}
         onSelect={onSetDeterminant}
       />
+      {terminal.triage && (
+        <FieldRow icon="▲" label="分诊等级">
+          <span style={{
+            fontSize: 13,
+            fontWeight: 'bold',
+            color: terminal.triage === 'red' ? '#dc2626'
+              : terminal.triage === 'yellow' ? '#ff8c00'
+              : terminal.triage === 'green' ? '#16a34a'
+              : '#6b7280',
+          }}>
+            {TRIAGE_LABELS[terminal.triage]}
+          </span>
+        </FieldRow>
+      )}
       <FieldRow icon="#" label="子编码">
         <div style={{ display: 'flex', gap: 4 }}>
           {[

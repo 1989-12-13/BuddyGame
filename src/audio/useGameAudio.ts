@@ -75,8 +75,8 @@ export function useGameAudio() {
 
   useEffect(() => () => engineRef.current?.close(), [])
 
-  const play = useCallback((cue: GameAudioCue) => {
-    engineRef.current?.play(cue, DEFAULT_VOLUME)
+  const play = useCallback((cue: GameAudioCue, volume?: number) => {
+    engineRef.current?.play(cue, volume ?? DEFAULT_VOLUME)
   }, [])
 
   return { play }

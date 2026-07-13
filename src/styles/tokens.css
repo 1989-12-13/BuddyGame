@@ -55,6 +55,10 @@
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
   --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.15);
   --shadow-glow-green: 0 0 20px rgba(22, 163, 74, 0.1);
+
+  /* === 地图 SVG === */
+  --map-grid: #cbd5e1;
+  --map-road: #94a3b8;
 }
 
 /* ===== 深色主题（调度台夜间模式） ===== */
@@ -109,6 +113,10 @@
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
   --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.3);
   --shadow-glow-green: 0 0 20px rgba(22, 163, 74, 0.15);
+
+  /* === 地图 SVG === */
+  --map-grid: #1e252e;
+  --map-road: #2a323e;
 }
 
 /* === 共用令牌（两主题一致） === */

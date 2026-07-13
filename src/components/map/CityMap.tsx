@@ -54,25 +54,25 @@ export function CityMap({ state }: Props) {
     <div style={styles.wrap}>
       <svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" style={styles.svg}>
         {/* 背景 */}
-        <rect x={0} y={0} width={1200} height={700} fill="#0a0e14" />
+        <rect x={0} y={0} width={1200} height={700} fill="var(--bg)" />
 
         {/* 网格 */}
         {Array.from({ length: 13 }).map((_, i) => (
-          <line key={`v${i}`} x1={i * 100} y1={0} x2={i * 100} y2={700} stroke="#1e252e" strokeWidth={1} />
+          <line key={`v${i}`} x1={i * 100} y1={0} x2={i * 100} y2={700} stroke="var(--map-grid)" strokeWidth={1} />
         ))}
         {Array.from({ length: 8 }).map((_, i) => (
-          <line key={`h${i}`} x1={0} y1={i * 100} x2={1200} y2={i * 100} stroke="#1e252e" strokeWidth={1} />
+          <line key={`h${i}`} x1={0} y1={i * 100} x2={1200} y2={i * 100} stroke="var(--map-grid)" strokeWidth={1} />
         ))}
 
         {/* 主干道（亮一点） */}
-        <path d="M 0 350 L 1200 350" stroke="#2a323e" strokeWidth={3} />
-        <path d="M 600 0 L 600 700" stroke="#2a323e" strokeWidth={3} />
+        <path d="M 0 350 L 1200 350" stroke="var(--map-road)" strokeWidth={3} />
+        <path d="M 600 0 L 600 700" stroke="var(--map-road)" strokeWidth={3} />
 
         {/* 救护车行驶路径（虚线） */}
         {showAmbulance && (
           <line
             x1={startPt.x} y1={startPt.y} x2={evPos.x} y2={evPos.y}
-            stroke="#ffb000" strokeWidth={2} strokeDasharray="6 6" opacity={0.55}
+            stroke="#d97706" strokeWidth={2} strokeDasharray="6 6" opacity={0.55}
           />
         )}
 
@@ -83,15 +83,15 @@ export function CityMap({ state }: Props) {
           return (
             <g key={id}>
               <circle cx={info.pos.x} cy={info.pos.y} r={26}
-                fill={busy ? '#1e252e' : '#0d2818'}
-                stroke={busy ? '#3a4452' : '#16a34a'} strokeWidth={2} />
+                fill={busy ? 'var(--map-grid)' : 'var(--bg-elevated)'}
+                stroke={busy ? 'var(--border-bright)' : '#16a34a'} strokeWidth={2} />
               <circle cx={info.pos.x} cy={info.pos.y} r={36}
-                fill="none" stroke={busy ? '#3a4452' : '#16a34a'} strokeWidth={1}
+                fill="none" stroke={busy ? 'var(--border-bright)' : '#16a34a'} strokeWidth={1}
                 opacity={busy ? 0.2 : 0.4} />
               <text x={info.pos.x} y={info.pos.y + 4} textAnchor="middle"
-                fontSize={11} fill="#8b949e" fontFamily="monospace">{info.name}</text>
+                fontSize={11} fill="var(--text-secondary)" fontFamily="monospace">{info.name}</text>
               <text x={info.pos.x} y={info.pos.y + 50} textAnchor="middle"
-                fontSize={10} fill={busy ? '#6e7681' : '#16a34a'}
+                fontSize={10} fill={busy ? 'var(--text-muted)' : '#16a34a'}
                 fontFamily="monospace" fontWeight="bold">
                 {busy ? '○ 执勤中' : '● 待命'}
               </text>
@@ -103,13 +103,13 @@ export function CityMap({ state }: Props) {
         {hasCall && !isPrank && (
           <g>
             <circle cx={evPos.x} cy={evPos.y} r={20}
-              fill="rgba(255,59,59,0.18)" stroke="#ff3b3b" strokeWidth={2}>
+              fill="rgba(220, 38, 38, 0.18)" stroke="#dc2626" strokeWidth={2}>
               <animate attributeName="r" values="20;32;20" dur="1.6s" repeatCount="indefinite" />
               <animate attributeName="opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" />
             </circle>
-            <circle cx={evPos.x} cy={evPos.y} r={6} fill="#ff3b3b" />
+            <circle cx={evPos.x} cy={evPos.y} r={6} fill="#dc2626" />
             <text x={evPos.x} y={evPos.y - 30} textAnchor="middle"
-              fontSize={12} fill="#ff5454" fontFamily="monospace" fontWeight="bold">
+              fontSize={12} fill="#ef4444" fontFamily="monospace" fontWeight="bold">
               事件现场
             </text>
           </g>
@@ -117,7 +117,7 @@ export function CityMap({ state }: Props) {
         {hasCall && isPrank && (
           <g>
             <text x={evPos.x} y={evPos.y} textAnchor="middle"
-              fontSize={14} fill="#6e7681" fontFamily="monospace">? 待核实</text>
+              fontSize={14} fill="var(--text-muted)" fontFamily="monospace">? 待核实</text>
           </g>
         )}
 
@@ -131,7 +131,7 @@ export function CityMap({ state }: Props) {
           <ResultBadge x={evPos.x} y={evPos.y - 60} text="✓ 救治成功" color="#16a34a" />
         )}
         {rescue.phase === 'failed' && (
-          <ResultBadge x={evPos.x} y={evPos.y - 60} text="✕ 救治失败" color="#ff3b3b" />
+          <ResultBadge x={evPos.x} y={evPos.y - 60} text="✕ 救治失败" color="#dc2626" />
         )}
       </svg>
 
@@ -147,7 +147,7 @@ export function CityMap({ state }: Props) {
 }
 
 function AmbulanceSvg({ x, y, tier }: { x: number; y: number; tier?: string }) {
-  const color = tier === 'MICU' ? '#a855f7' : tier === 'ALS' ? '#ff3b3b' : '#8b949e'
+  const color = tier === 'MICU' ? '#a855f7' : tier === 'ALS' ? '#dc2626' : 'var(--text-secondary)'
   return (
     <g style={{ transition: 'transform 0.9s linear' }}>
       <circle cx={x} cy={y} r={14} fill={color} opacity={0.25}>
@@ -163,7 +163,7 @@ function ResultBadge({ x, y, text, color }: { x: number; y: number; text: string
   return (
     <g>
       <rect x={x - 60} y={y - 14} width={120} height={24} rx={4}
-        fill="#0a0e14" stroke={color} strokeWidth={1.5} />
+        fill="var(--bg)" stroke={color} strokeWidth={1.5} />
       <text x={x} y={y + 3} textAnchor="middle"
         fontSize={13} fill={color} fontFamily="monospace" fontWeight="bold">{text}</text>
     </g>
@@ -174,7 +174,7 @@ const styles: Record<string, CSSProperties> = {
   wrap: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: '#0a0e14',
+    backgroundColor: 'var(--bg)',
     overflow: 'hidden',
   },
   svg: {
@@ -193,14 +193,14 @@ const styles: Record<string, CSSProperties> = {
   },
   cornerLabel: {
     fontSize: 11,
-    color: '#6e7681',
+    color: 'var(--text-muted)',
     fontFamily: 'monospace',
     letterSpacing: 2,
     fontWeight: 700,
   },
   cornerSub: {
     fontSize: 13,
-    color: '#ffb000',
+    color: '#d97706',
     fontFamily: 'monospace',
     fontWeight: 700,
   },

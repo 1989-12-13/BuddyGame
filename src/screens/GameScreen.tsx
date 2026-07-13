@@ -338,6 +338,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
     if (!state.terminal.determinant) return // 必须选择判定码才能派车
+    setTerminalModalOpen(false) // 关闭调度卡，避免遮挡车辆选择
     setVehicleSelectorOpen(true)
   }, [state.currentCall, state.terminal.determinant])
 
@@ -1332,9 +1333,13 @@ function TerminalModal({
                 ≡ 暂存关闭
               </button>
               <button
-                style={styles.modalDispatchBtn}
+                style={{
+                  ...styles.modalDispatchBtn,
+                  ...(!terminal.determinant ? styles.modalDispatchBtnDisabled : {}),
+                }}
                 onClick={onDispatch}
-                title="确认派车"
+                disabled={!terminal.determinant}
+                title={terminal.determinant ? '确认派车' : '请先在调度卡中选择 MPDS 判定码'}
               >
                 ▸ 确认派车
               </button>
@@ -2541,6 +2546,12 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'all 0.15s',
+  },
+  modalDispatchBtnDisabled: {
+    backgroundColor: 'var(--bg-elevated)',
+    color: 'var(--text-muted)',
+    cursor: 'not-allowed',
+    opacity: 0.55,
   },
   modalSaveBtn: {
     padding: '8px 16px',

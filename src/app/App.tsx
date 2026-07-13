@@ -11,7 +11,7 @@ import { LevelSelectScreen } from '../screens/LevelSelectScreen'
 import { KnowledgeScreen } from '../screens/KnowledgeScreen'
 import { AudioProvider } from '../audio/AudioContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
-import { ThemeToggle } from '../components/ThemeToggle'
+import { SettingsPanel } from '../components/SettingsPanel'
 
 type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 
@@ -80,7 +80,7 @@ export default function App() {
     <ThemeProvider>
       <AudioProvider>
         {mainContent}
-        <ThemeToggle />
+        <SettingsPanel onNavigate={handleNavigate} />
       </AudioProvider>
     </ThemeProvider>
   )

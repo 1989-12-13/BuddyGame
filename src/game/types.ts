@@ -422,6 +422,7 @@ export interface TerminalState {
   protocolNumber: number | null  // 选定的MPDS协议号
   determinant: MpdsDeterminant | null
   determinantSubcode: number | null  // 判定码最后一位细分编码 (1-4)
+  hotCold: 'HOT' | 'COLD' | null
   // — 响应 —
   triage: TriageLevel | null
   // 自由备注
@@ -444,6 +445,7 @@ export interface WorldState {
 
   // 全局计时（秒）
   shiftElapsed: number
+  questionCost: number
 
   // 车队
   fleet: FleetState
@@ -482,6 +484,10 @@ export interface WorldState {
 
   // 结算
   endingId: string | null
+  lastDebrief: import('./core/debrief').DebriefEntry | null
+  pendingPerkChoices: import('./core/perks').RoguePerkId[]
+  perks: import('./core/perks').RoguePerkId[]
+  shiftCompletePending: boolean
 }
 
 export interface DialogueLine {

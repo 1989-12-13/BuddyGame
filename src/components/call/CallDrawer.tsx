@@ -19,12 +19,14 @@ interface Props {
   title: string
   /** 是否在通话中（控制折叠态指示灯颜色） */
   active: boolean
+  /** 历史任务徽章（如"历史任务"），覆盖 active 颜色提示 */
+  historyBadge?: string
 }
 
-const DRAWER_W_OPEN = 480
+const DRAWER_W_OPEN = 600
 const DRAWER_W_CLOSED = 72
 
-export function CallDrawer({ open, onToggle, mini, children, title, active }: Props) {
+export function CallDrawer({ open, onToggle, mini, children, title, active, historyBadge }: Props) {
   return (
     <motion.aside
       animate={{ width: open ? DRAWER_W_OPEN : DRAWER_W_CLOSED }}
@@ -69,8 +71,23 @@ export function CallDrawer({ open, onToggle, mini, children, title, active }: Pr
               <div style={styles.expanded}>
                 <header style={styles.header}>
                   <div style={styles.headerLeft}>
-                    <Phone size={14} color={active ? '#ff3b3b' : '#6e7681'} strokeWidth={2.5} />
+                    <Phone size={14} color={historyBadge ? '#fbbf24' : (active ? '#ff3b3b' : '#6e7681')} strokeWidth={2.5} />
                     <span style={styles.headerTitle}>{title}</span>
+                    {historyBadge && (
+                      <span style={{
+                        fontSize: 10,
+                        padding: '1px 6px',
+                        background: 'rgba(251, 191, 36, 0.15)',
+                        color: '#fbbf24',
+                        border: '1px solid rgba(251, 191, 36, 0.4)',
+                        borderRadius: 3,
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                      }}>
+                        {historyBadge}
+                      </span>
+                    )}
                   </div>
                   <button style={styles.toggleBtn} onClick={onToggle} title="折叠（保留通话）">
                     <ChevronRight size={18} color="#8b949e" />

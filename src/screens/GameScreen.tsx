@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import type { CSSProperties } from 'react'
 import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
@@ -13,6 +14,7 @@ import { getCaller } from '../game/npc/personas'
 import { detectEnding } from '../game/endings/endings'
 import { Phone } from 'lucide-react'
 import { Hud } from '../components/hud/Hud'
+import { CallInfoBar } from '../components/hud/CallInfoBar'
 import { MiniGameHost } from '../components/minigames/MiniGameHost'
 import { CallDebrief } from '../components/call/CallDebrief'
 import { ROGUE_PERKS, getPerkChoices } from '../game/core/perks'
@@ -22,6 +24,7 @@ import { EventToastStack } from '../components/feedback/EventToastStack'
 import { VehicleSelector } from '../components/feedback/VehicleSelector'
 import { CityMap } from '../components/map/CityMap'
 import { CallDrawer } from '../components/call/CallDrawer'
+import { HistoryPanel } from '../components/call/HistoryPanel'
 import { GuidanceOverlay } from '../components/guidance/GuidanceOverlay'
 import type { EndingDef } from '../game/types'
 import { useAudio } from '../audio/AudioContext'
@@ -37,6 +40,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(true)
+  // Drawer 显示模式：当前通话 vs 历史任务（点击地图上的救护车触发）
+  const [drawerMode, setDrawerMode] = useState<'current' | { type: 'history'; callId: string }>('current')
   const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
 
   // --- 启动班次 ---
@@ -44,10 +49,33 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     dispatch({ type: 'START_SHIFT', forceScenarios: scenarioId ? [scenarioId] : undefined })
   }, [scenarioId])
 
-  // --- 新通话时强制关闭调度卡 ---
+  // --- 新通话时自动展开调度卡 + 切回当前对话模式 ---
+  // 调度卡改为 leftsider，随通话自动展开；玩家可手动 ✕ 折叠
   useEffect(() => {
-    if (!state.currentCall) setTerminalModalOpen(false)
+    if (state.currentCall) {
+      setTerminalModalOpen(true)
+      setDrawerMode('current')
+    } else {
+      setTerminalModalOpen(false)
+    }
   }, [state.currentCall])
+
+  // --- 点击地图救护车 → 拉出该任务历史对话 drawer ---
+  const handleAmbulanceClick = useCallback((_vehicleId: string, callId: string) => {
+    setDrawerMode({ type: 'history', callId })
+    setDrawerOpen(true)
+  }, [])
+
+  // --- 关闭历史 view 回到当前通话 ---
+  const closeHistoryView = useCallback(() => {
+    setDrawerMode('current')
+  }, [])
+
+  // 当前 drawer 模式 + 历史条目查找
+  const isHistoryView = typeof drawerMode !== 'string'
+  const historyEntry = isHistoryView
+    ? state.callHistory.find(h => h.callId === (drawerMode as { type: 'history'; callId: string }).callId) ?? null
+    : null
 
   // --- 计时器 ---
   useEffect(() => {
@@ -465,27 +493,33 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   return (
     <div style={styles.container}>
       <Hud state={state} />
+      <CallInfoBar state={state} visible={drawerOpen} />
 
       <div style={styles.mainArea}>
-        <CityMap state={state} />
+        <CityMap state={state} onAmbulanceClick={handleAmbulanceClick} />
 
         <CallDrawer
           open={drawerOpen}
           onToggle={() => setDrawerOpen(o => !o)}
-          active={state.callPhase !== 'completed'}
+          active={state.callPhase !== 'completed' && !historyEntry}
           title={drawerTitle}
           mini={drawerMini}
+          historyBadge={historyEntry ? '历史任务' : undefined}
         >
-        <PhoneHeader
-          phoneNumber={call.phoneNumber}
-          baseStation={call.baseStation}
-          callerName={caller.name}
-          relationship={caller.relationship}
-          callPhase={state.callPhase}
-          elapsed={state.shiftElapsed - state.callStartTime}
-          stressLevel={state.callerState?.stressLevel ?? '紧张'}
-          stress={state.callerState?.stress ?? 50}
-        />
+        {historyEntry ? (
+          <HistoryPanel entry={historyEntry} onClose={closeHistoryView} />
+        ) : (
+          <>
+            <PhoneHeader
+              phoneNumber={call.phoneNumber}
+              baseStation={call.baseStation}
+              callerName={caller.name}
+              relationship={caller.relationship}
+              callPhase={state.callPhase}
+              elapsed={state.shiftElapsed - state.callStartTime}
+              stressLevel={state.callerState?.stressLevel ?? '紧张'}
+              stress={state.callerState?.stress ?? 50}
+            />
 
         {/* 即时反馈：患者生命体征 */}
         {state.patientStatus && (
@@ -588,6 +622,8 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             </div>
           </div>
         )}
+          </>
+        )}
         </CallDrawer>
 
         {/* ====== 急救指导浮层（居中模态 / 折叠为左下角悬浮球） ====== */}
@@ -613,32 +649,34 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           </GuidanceOverlay>
         )}
 
-      {/* ====== MPDS调度卡弹出模态框 ====== */}
-      {terminalModalOpen && (
-        <TerminalModal
-          terminal={state.terminal}
-          dispatchSent={state.dispatchSent}
-          ambulanceRemaining={state.ambulanceRemaining}
-          onChange={(field, value) =>
-            dispatch({ type: 'UPDATE_TERMINAL', field, value })
-          }
-          onSetStatus={(field, value) =>
-            dispatch({ type: 'SET_PATIENT_STATUS', field, value })
-          }
-          onSetDeterminant={(d) =>
-            dispatch({ type: 'SET_MPDS_DETERMINANT', determinant: d })
-          }
-          onSetDeterminantSubcode={(subcode) =>
-            dispatch({ type: 'SET_DETERMINANT_SUBCODE', subcode })
-          }
-          onSetProtocol={(protocol) =>
-            dispatch({ type: 'SET_PROTOCOL', protocolNumber: protocol })
-          }
-          onDispatch={handleDispatch}
-          onClose={() => setTerminalModalOpen(false)}
-          onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); handleEndCall() }}
-        />
-      )}
+      {/* ====== MPDS调度卡 leftsider ====== */}
+      <AnimatePresence>
+        {terminalModalOpen && (
+          <TerminalModal
+            terminal={state.terminal}
+            dispatchSent={state.dispatchSent}
+            ambulanceRemaining={state.ambulanceRemaining}
+            onChange={(field, value) =>
+              dispatch({ type: 'UPDATE_TERMINAL', field, value })
+            }
+            onSetStatus={(field, value) =>
+              dispatch({ type: 'SET_PATIENT_STATUS', field, value })
+            }
+            onSetDeterminant={(d) =>
+              dispatch({ type: 'SET_MPDS_DETERMINANT', determinant: d })
+            }
+            onSetDeterminantSubcode={(subcode) =>
+              dispatch({ type: 'SET_DETERMINANT_SUBCODE', subcode })
+            }
+            onSetProtocol={(protocol) =>
+              dispatch({ type: 'SET_PROTOCOL', protocolNumber: protocol })
+            }
+            onDispatch={handleDispatch}
+            onClose={() => setTerminalModalOpen(false)}
+            onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); handleEndCall() }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* 即时反馈：顶部事件 toast 堆叠 */}
       <EventToastStack
@@ -1253,7 +1291,7 @@ function AskBtnEx({
   )
 }
 
-/** MPDS 调度卡弹出模态框 */
+/** MPDS 调度卡 leftsider（替代 popup，自动展开动画） */
 function TerminalModal({
   terminal,
   dispatchSent,
@@ -1281,9 +1319,15 @@ function TerminalModal({
 }) {
 
   return (
-    <div style={styles.modalOverlay} onClick={onClose}>
-      <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-        {/* 模态框头部 */}
+    <motion.aside
+      initial={{ x: '-100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '-100%' }}
+      transition={{ type: 'spring', stiffness: 240, damping: 30 }}
+      style={styles.modalOverlay}
+    >
+      <div style={styles.modalCard}>
+        {/* sider 头部 */}
         <div style={styles.modalHeader}>
           <div style={styles.modalHeaderLeft}>
             <span style={styles.mpdsModalBadge}>
@@ -1307,7 +1351,7 @@ function TerminalModal({
           </div>
         </div>
 
-        {/* 模态框内容 */}
+        {/* sider 内容 */}
         <div style={styles.modalBody}>
           {/* 终端登记表单 */}
           <div style={{ marginTop: 8 }}>
@@ -1322,7 +1366,7 @@ function TerminalModal({
           </div>
         </div>
 
-        {/* 模态框底部 — 操作按钮 */}
+        {/* sider 底部 — 操作按钮 */}
         <div style={styles.modalFooter}>
           {!dispatchSent ? (
             <>
@@ -1331,7 +1375,7 @@ function TerminalModal({
               </button>
               <div style={{ flex: 1 }} />
               <button style={styles.modalSaveBtn} onClick={onClose}>
-                ≡ 暂存关闭
+                ≡ 暂存
               </button>
               <button
                 style={{
@@ -1367,7 +1411,7 @@ function TerminalModal({
 
 
       </div>
-    </div>
+    </motion.aside>
   )
 }
 
@@ -2404,27 +2448,30 @@ const styles: Record<string, CSSProperties> = {
     transition: 'all 0.15s',
   },
 
-  // ---------- MPDS 调度卡模态框 ----------
+  // ---------- MPDS 调度卡 leftsider（从左滑入式）----------
   modalOverlay: {
     position: 'fixed' as const,
-    inset: 0,
-    zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.65)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backdropFilter: 'blur(2px)',
-  },
-  modalCard: {
-    width: 560,
-    maxHeight: '90vh',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 420,
+    zIndex: 60,  // 低于 CallDrawer + 上面 InfoBar
     backgroundColor: 'var(--bg-elevated)',
-    borderRadius: 10,
-    border: '1px solid var(--border)',
+    borderRight: '1px solid var(--border)',
     display: 'flex',
     flexDirection: 'column' as const,
     overflow: 'hidden',
-    boxShadow: '0 10px 40px rgba(0,0,0,0.5), 0 0 0 2px #dc2626',
+    boxShadow: '6px 0 30px rgba(0,0,0,0.6)',
+  },
+  modalCard: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'var(--bg-elevated)',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+    borderLeft: '2px solid #dc2626',
+    boxShadow: 'none',
   },
   modalHeader: {
     display: 'flex',

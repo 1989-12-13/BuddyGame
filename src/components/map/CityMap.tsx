@@ -13,6 +13,8 @@ import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
 
 interface Props {
   state: WorldState
+  /** 点击地图上的救护车 → 拉出该任务历史对话 */
+  onAmbulanceClick?: (vehicleId: string, callId: string) => void
 }
 
 // -------------------- 辅助：lat/lng 线性插值 --------------------
@@ -43,7 +45,15 @@ function stationIconFor(status: AmbulanceStatus): L.DivIcon {
 const AMB_ENROUTE = makeDivIcon(`<div class="cmap-amb cmap-amb-enroute">🚑</div>`)
 const AMB_ONSCENE = makeDivIcon(`<div class="cmap-amb cmap-amb-onscene">🚑</div>`)
 const AMB_RETURNING = makeDivIcon(`<div class="cmap-amb cmap-amb-returning">🚑</div>`)
-function ambulanceIconFor(status: AmbulanceStatus): L.DivIcon {
+const AMB_ENROUTE_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-dim">🚑</div>`)
+const AMB_ONSCENE_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-onscene cmap-amb-dim">🚑</div>`)
+const AMB_RETURNING_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-returning cmap-amb-dim">🚑</div>`)
+function ambulanceIconFor(status: AmbulanceStatus, dim: boolean): L.DivIcon {
+  if (dim) {
+    if (status === 'on_scene') return AMB_ONSCENE_DIM
+    if (status === 'returning') return AMB_RETURNING_DIM
+    return AMB_ENROUTE_DIM
+  }
   if (status === 'on_scene') return AMB_ONSCENE
   if (status === 'returning') return AMB_RETURNING
   return AMB_ENROUTE
@@ -51,6 +61,7 @@ function ambulanceIconFor(status: AmbulanceStatus): L.DivIcon {
 
 const EVENT_ICON = makeDivIcon(`<div class="cmap-event"><div class="cmap-event-pulse"></div><div class="cmap-event-dot"></div></div>`, 'cmap-event-wrap')
 const EVENT_ICON_DIM = makeDivIcon(`<div class="cmap-event cmap-event-dim"><div class="cmap-event-dot"></div></div>`)
+const EVENT_ICON_HISTORY = makeDivIcon(`<div class="cmap-event cmap-event-history"><div class="cmap-event-dot"></div></div>`)
 
 // -------------------- 视口自适应：站点 + 事件点（不含救护车当前位置，避免每秒重 fit） --------------------
 function FitBounds({ points }: { points: LatLng[] }) {
@@ -75,12 +86,18 @@ function FitBounds({ points }: { points: LatLng[] }) {
 }
 
 // -------------------- 主组件 --------------------
-export function CityMap({ state }: Props) {
+export function CityMap({ state, onAmbulanceClick }: Props) {
   const hasCall = state.currentCall !== null
   const isPrank = state.currentCall?.isPrank ?? false
-  // 当前通话事件点：优先用车 mission，回退到 baseStation lookup（接通未派车时也显示）
+
+  // 当前通话事件点：
+  // - 地址未揭示（none）→ 不显示（玩家尚未确认地点，避免假信息）
+  // - 揭示后 → 优先用 mission 真实坐标，回退到 baseStation
   const currentEventPos: LatLng | null = (() => {
     if (!state.currentCall) return null
+    if (!state.callerState) return null
+    const revealed = state.callerState.revealedInfo.address
+    if (revealed === 'none') return null
     if (state.rescue.vehicleId) {
       const v = state.fleet.vehicles.find(x => x.id === state.rescue.vehicleId)
       if (v?.mission) return v.mission.eventLatLng
@@ -99,22 +116,36 @@ export function CityMap({ state }: Props) {
 
   // 渲染所有 mission 的事件点（用 Set 去重 + 标 dim）
   const renderedEventKeys = new Set<string>()
-  const renderEvent = (pos: LatLng, isCurrent: boolean, key: string) => {
-    if (renderedEventKeys.has(`${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`)) return null
-    renderedEventKeys.add(`${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`)
+  const renderEvent = (pos: LatLng, callState: 'current' | 'active' | 'history', key: string) => {
+    const flatKey = `${pos.lat.toFixed(4)},${pos.lng.toFixed(4)}`
+    if (renderedEventKeys.has(flatKey)) return null
+    renderedEventKeys.add(flatKey)
+    const icon = callState === 'current' && hasCall && !isPrank
+      ? EVENT_ICON
+      : callState === 'active'
+        ? EVENT_ICON_DIM
+        : EVENT_ICON_HISTORY
+    const tipText = callState === 'current' && hasCall && !isPrank
+      ? '事件现场（当前）'
+      : callState === 'active'
+        ? '事件现场（车辆出动中）'
+        : '历史事件点'
     return (
       <Marker
         key={key}
         position={[pos.lat, pos.lng]}
-        icon={isCurrent && hasCall && !isPrank ? EVENT_ICON : EVENT_ICON_DIM}
-        zIndexOffset={isCurrent ? 100 : 50}
+        icon={icon}
+        zIndexOffset={callState === 'current' ? 100 : 50}
       >
         <Tooltip direction="top" offset={[0, -8]} opacity={0.95}>
-          {isCurrent && hasCall && !isPrank ? '事件现场' : '历史事件点'}
+          {tipText}
         </Tooltip>
       </Marker>
     )
   }
+
+  // 当前通话的场景 id（用于判定哪些 mission 属于"历史"/"执行中背景"）
+  const currentCallId = state.currentCall?.id ?? null
 
   return (
     <div style={styles.wrap}>
@@ -155,9 +186,16 @@ export function CityMap({ state }: Props) {
         {/* 事件点（mission 中所有 + 当前通话） */}
         {state.fleet.vehicles
           .filter(v => v.mission)
-          .map(v => v.mission!.eventLatLng)
-          .map((pos, i) => renderEvent(pos, false, `ev-mission-${i}`))}
-        {currentEventPos && renderEvent(currentEventPos, true, 'ev-current')}
+          .map(v => {
+            const isCurrentMission = v.mission?.callId === currentCallId
+            return { pos: v.mission!.eventLatLng, state: isCurrentMission ? 'current' as const : 'active' as const, key: `ev-mission-${v.id}` }
+          })
+          .map(({ pos, state: s, key }) => renderEvent(pos, s, key))}
+        {currentEventPos && currentCallId && state.fleet.vehicles.every(v => v.mission?.callId !== currentCallId)
+          && renderEvent(currentEventPos, 'current', 'ev-current')}
+        {currentEventPos && state.fleet.vehicles.some(v => v.mission?.callId === currentCallId)
+          ? null  // 已由 mission 渲染，避免重复
+          : null}
 
         {/* 救护车 + 路径 */}
         {state.fleet.vehicles
@@ -169,39 +207,50 @@ export function CityMap({ state }: Props) {
             let cur: LatLng
             let path: LatLng[]
             if (v.status === 'en_route') {
-              const remaining = state.ambulanceRemaining < 0 ? m.outboundTotal : state.ambulanceRemaining
-              const progress = 1 - remaining / Math.max(1, m.outboundTotal)
-              cur = lerpCoord(station, m.eventLatLng, progress)
+              // 进度由 fleet 自身维护的 v.eta 推算（跨通话不再依赖全局 ambulanceRemaining）
+              const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
+              const clamped = Math.max(0, Math.min(1, progress))
+              cur = lerpCoord(station, m.eventLatLng, clamped)
               path = [station, cur]
             } else if (v.status === 'on_scene') {
               cur = m.eventLatLng
               path = [station, m.eventLatLng]
             } else {
+              // returning：v.eta 从 outboundTotal 减到 0，从现场返回站点
               const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
-              cur = lerpCoord(m.eventLatLng, station, progress)
+              const clamped = Math.max(0, Math.min(1, progress))
+              cur = lerpCoord(m.eventLatLng, station, clamped)
               path = [m.eventLatLng, cur, station]
             }
-            const isCurrent = v.id === state.rescue.vehicleId
+            // 跨通话车辆：mission.callId !== 当前通话 → 历史/背景任务，dim 化
+            const isMissionOfCurrentCall = m.callId === currentCallId
+            const isCurrentRescue = v.id === state.rescue.vehicleId && isMissionOfCurrentCall
+            const dim = !isMissionOfCurrentCall && !isCurrentRescue
             return (
               <div key={`amb-${v.id}`}>
                 <Polyline
                   positions={path.map(p => [p.lat, p.lng])}
                   pathOptions={{
                     color: v.status === 'returning' ? '#16a34a' : '#d97706',
-                    weight: 2,
-                    opacity: v.status === 'returning' ? 0.5 : 0.7,
-                    dashArray: '6 6',
+                    weight: dim ? 1 : 2,
+                    opacity: dim ? 0.3 : (v.status === 'returning' ? 0.5 : 0.7),
+                    dashArray: dim ? '2 8' : '6 6',
                   }}
                 />
                 <Marker
                   position={[cur.lat, cur.lng]}
-                  icon={ambulanceIconFor(v.status)}
-                  zIndexOffset={isCurrent ? 200 : 150}
+                  icon={ambulanceIconFor(v.status, dim)}
+                  zIndexOffset={isCurrentRescue ? 200 : 100}
+                  eventHandlers={{
+                    click: () => onAmbulanceClick?.(v.id, m.callId),
+                  }}
                 >
-                  <Tooltip direction="top" offset={[0, -10]} opacity={0.95} permanent={isCurrent}>
+                  <Tooltip direction="top" offset={[0, -10]} opacity={0.95} permanent={isCurrentRescue}>
                     {v.name}
-                    {isCurrent && state.rescue.phase === 'success' ? ' · 救治成功' : ''}
-                    {isCurrent && state.rescue.phase === 'failed' ? ' · 救治失败' : ''}
+                    {v.status === 'on_scene' ? ' · 救治中' : v.status === 'returning' ? ' · 返程中' : ' · 出击中'}
+                    {dim ? '（历史任务）' : ''}
+                    {isCurrentRescue && state.rescue.phase === 'success' ? ' · 救治成功' : ''}
+                    {isCurrentRescue && state.rescue.phase === 'failed' ? ' · 救治失败' : ''}
                   </Tooltip>
                 </Marker>
               </div>
@@ -347,6 +396,18 @@ const MARKER_CSS = `
   background: #6e7681;
   box-shadow: none;
   opacity: 0.6;
+}
+.cmap-event-history {
+  opacity: 0.4;
+}
+.cmap-event-history .cmap-event-dot {
+  width: 5px; height: 5px;
+  background: #4b5563;
+  box-shadow: none;
+}
+.cmap-amb-dim {
+  opacity: 0.45;
+  filter: saturate(0.5);
 }
 
 @keyframes cmap-pulse {

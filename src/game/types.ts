@@ -344,8 +344,14 @@ export interface DispatchRecord {
   callId: string
   dispatchTime: number       // 接通后多少秒派车
   triage: TriageLevel
+  /** 场景期望的正确分诊（用于救援 outcome 跨通话判定） */
+  correctTriage: TriageLevel
   addressCompleteness: 'vague' | 'partial' | 'full'
   ambulanceETA: number       // 预计到达时间（游戏内秒数）
+  /** 派车时刻的 shiftElapsed（用于背景车 ETA 渲染） */
+  dispatchedAt: number
+  /** 是否恶作剧（用于救援 outcome 跳过判定） */
+  isPrank: boolean
 }
 
 // -------------------- 来电者状态（通话中追踪） --------------------
@@ -520,12 +526,39 @@ export interface WorldState {
   totalScore: number
   callScores: number[]        // 每通电话的得分
 
+  // 历史通话快照（点击地图救护车查看历史通话）
+  callHistory: CallHistoryEntry[]
+
   // 结算
   endingId: string | null
   lastDebrief: import('./core/debrief').DebriefEntry | null
   pendingPerkChoices: import('./core/perks').RoguePerkId[]
   perks: import('./core/perks').RoguePerkId[]
   shiftCompletePending: boolean
+}
+
+/** 归档的通话 — 玩家点击地图救护车时查看该任务的完整对话 + 救援结果 */
+export interface CallHistoryEntry {
+  callId: string
+  scenarioTitle: string
+  /** 调度摘要（首句主诉 / 地点 / 分诊）— 用于地图标识 */
+  shortSummary: string
+  phoneNumber: string
+  baseStation: string
+  /** 揭示的最终地址（玩家提取） */
+  addressResolved: string
+  startShiftTime: number
+  endShiftTime: number
+  dispatchTime: number | null
+  triage: TriageLevel | null
+  vehicleName: string | null
+  isPrank: boolean
+  /** 救援结局 — 'pending' 表示救护车仍在 background 跑 */
+  outcome: 'success' | 'failed' | 'pending' | 'no_dispatch'
+  /** 单通电话得分（rescue 仍 pending 时为 null） */
+  score: number | null
+  /** 该通话完整对话流（END_CALL 时快照） */
+  dialogueLog: DialogueLine[]
 }
 
 export interface DialogueLine {

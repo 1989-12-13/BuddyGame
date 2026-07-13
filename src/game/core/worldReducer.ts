@@ -3,7 +3,7 @@
 // 120急救调度模拟游戏核心逻辑
 // ============================================================
 
-import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt, PatientEvent } from '../types'
+import type { WorldState, DialogueLine, CallPhase, InfoQuality, JudgmentPrompt, PatientEvent, CallHistoryEntry } from '../types'
 import { stressToLevel, determinantToHotCold, determinantToTriage, PROTOCOL_REF } from '../types'
 import type { GameAction } from './actions'
 import {
@@ -802,8 +802,11 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         callId: state.currentCall.id,
         dispatchTime,
         triage,
+        correctTriage: state.currentCall.correctTriage,
+        isPrank: state.currentCall.isPrank,
         addressCompleteness,
         ambulanceETA: eta,
+        dispatchedAt: state.shiftElapsed,
       }
       const afterDispatchLines: DialogueLine[] = state.currentCall.specialEvents
         .filter(evt => evt.trigger === 'after_dispatch')
@@ -1155,7 +1158,40 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
       // 车辆不在此处复位 — 由 advanceFleet 自然推进 on_scene→returning→available
       // 这样伪并发下下一通电话能看到真实占用（车还没回来就不能选）
+      // 同时保留 rescue / patientStatus / dispatchRecord / guidanceResults / ambulanceRemaining，
+      // 让玩家在前台接新任务时，背景车仍在路上/救治；到达时仍正确触发救援 outcome 判定
+      // + 终点音效（仅在当前通话抢救中由 dispatchSent=true 时 HUD 显示 ETA）
+      // 由下一次 ANSWER_CALL 时再重置（新一轮的入口）
       const newFleet = state.fleet
+
+      // 归档：把当前通话快照推入 callHistory，玩家可在地图点击救护车查看历史对话
+      // outcome 标记：如果 rescue 已 finalized（success/failed），标对应结局；否则 pending
+      const archivedOutcome: CallHistoryEntry['outcome'] =
+        call.isPrank
+          ? (didDispatch ? 'failed' : 'success')
+          : !didDispatch
+            ? 'no_dispatch'
+            : state.rescue.outcome ?? 'pending'
+      const shortSummary = call.openingLine.length > 16
+        ? call.openingLine.slice(0, 16) + '…'
+        : call.openingLine
+      const historyEntry: CallHistoryEntry = {
+        callId: call.id,
+        scenarioTitle: call.title,
+        shortSummary,
+        phoneNumber: call.phoneNumber,
+        baseStation: call.baseStation,
+        addressResolved: state.terminal.address,
+        startShiftTime: state.callStartTime,
+        endShiftTime: state.shiftElapsed,
+        dispatchTime: dispatchRecord?.dispatchTime ?? null,
+        triage: dispatchRecord?.triage ?? null,
+        vehicleName: state.rescue.vehicleName,
+        isPrank: call.isPrank,
+        outcome: archivedOutcome,
+        score: rescueFailed ? 0 : total,
+        dialogueLog: [...state.dialogueLog, summaryLine],
+      }
 
       return {
         ...state,
@@ -1163,12 +1199,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         callPhase: 'completed',
         currentCall: null,
         callerState: null,
-        patientStatus: null,
-        rescue: { phase: 'idle', vehicleId: null, vehicleName: null, etaTotal: 0, arrivalShiftTime: null, outcome: null, successScore: null, failureReason: null },
+        // patientStatus / rescue / dispatchRecord / guidanceResults / ambulanceRemaining 保留
+        // 由 ANSWER_CALL 时统一重置
         fleet: newFleet,
-        dispatchSent: false,
-        dispatchRecord: null,
-        ambulanceRemaining: -1,
+        dispatchSent: false,  // HUD 不再显示当前通话 ETA
         guidanceActive: false,
         totalScore: state.totalScore + total,
         callScores: nextCallScores,
@@ -1177,6 +1211,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         shiftCompletePending: isShiftOver,
         lastDebrief,
         pendingPerkChoices: isShiftOver ? [] : (action.perkChoices ?? getPerkChoices(state.perks, 3)),
+        callHistory: [historyEntry, ...state.callHistory],
       }
     }
 
@@ -1217,18 +1252,34 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       if (state.screen !== 'playing') return state
 
       const newElapsed = state.shiftElapsed + 1
-      let newAmbulanceRemaining = state.ambulanceRemaining
       const newCallPhase = state.callPhase as CallPhase
       const newDialogue: DialogueLine[] = []
       let newPatientStatus = state.patientStatus
       let newEvents = state.patientEvents
       let newRescue = state.rescue
+      let newCallHistory = state.callHistory
 
-      // 救护车倒计时
-      const arrivedThisTick = state.dispatchSent && state.ambulanceRemaining > 0 && (state.ambulanceRemaining - 1) === 0
+      // 救护车到达判定：基于 fleet 状态机 en_route→on_scene 转移（独立于 currentCall，
+      // 玩家手动挂断电话后救援仍在背景跑完）
+      const beforeFleet = state.fleet
+      const afterFleet = advanceFleet(state.fleet)
+      const rescueVid = state.rescue.vehicleId
+      const beforeRescueVehicle = rescueVid
+        ? beforeFleet.vehicles.find(v => v.id === rescueVid) ?? null
+        : null
+      const afterRescueVehicle = rescueVid
+        ? afterFleet.vehicles.find(v => v.id === rescueVid) ?? null
+        : null
+      const justArrivedAtScene =
+        state.rescue.phase === 'enroute' &&
+        beforeRescueVehicle?.status === 'en_route' &&
+        afterRescueVehicle?.status === 'on_scene'
+
+      // 当前通话全局 ETA（HUD 用，仅当 currentCall 还在时刷新；END_CALL 后保留 -1）
+      let newAmbulanceRemaining = state.ambulanceRemaining
       if (state.dispatchSent && state.ambulanceRemaining > 0) {
         newAmbulanceRemaining -= 1
-        if (newAmbulanceRemaining === 0) {
+        if (newAmbulanceRemaining === 0 && justArrivedAtScene) {
           newDialogue.push({
             speaker: 'system',
             text: '【▸ 救护车已到达现场】',
@@ -1237,8 +1288,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         }
       }
 
-      // 患者生命体征每秒衰减（仅在通话未结束 & 未死亡）
-      if (state.currentCall && state.patientStatus && !state.patientStatus.died) {
+      // 患者生命体征每秒衰减（不依赖 currentCall：玩家已 END_CALL 时救护车仍在 background 跑，
+      // patientStatus 继续递减，到达时根据 stability 判定救援成败）
+      if (state.patientStatus && !state.patientStatus.died) {
         const before = state.patientStatus
         const nextStability = Math.max(0, before.stability - before.decayRate)
         const beforeSign = before.vitalSign
@@ -1272,19 +1324,29 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       }
 
       // 救护车到达 → 结算救援成败
-      if (arrivedThisTick && state.currentCall && !state.currentCall.isPrank && state.rescue.phase === 'enroute') {
-        const vehicle = findVehicleById(state.fleet, state.rescue.vehicleId)
+      // 判定条件改为基于 fleet 状态机转移（独立于 currentCall），玩家手动 END_CALL 后
+      // 车仍在 background 跑完，到达时救援 outcome 仍正确触发
+      if (
+        justArrivedAtScene &&
+        state.rescue.phase === 'enroute' &&
+        state.dispatchRecord &&
+        !state.dispatchRecord.isPrank
+      ) {
+        const vehicle = afterRescueVehicle
         const stability = newPatientStatus?.stability ?? 0
         const guidanceWrong = state.guidanceResults.filter(r => r === 'incorrect').length
         const mgScores = state.guidanceMinigameScores.filter((s): s is number => s != null)
         const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
-        const triageDiff = triageLevelDiff(state.dispatchRecord?.triage ?? null, state.currentCall.correctTriage)
+        const triageDiff = triageLevelDiff(
+          state.dispatchRecord.triage,
+          state.dispatchRecord.correctTriage,
+        )
 
         const rate = calcRescueSuccessRate({
-          base: baseRescueRate(state.currentCall.correctTriage),
+          base: baseRescueRate(state.dispatchRecord.correctTriage),
           stability,
           capability: vehicle?.capability ?? 3,
-          dispatchTime: state.dispatchRecord?.dispatchTime ?? null,
+          dispatchTime: state.dispatchRecord.dispatchTime,
           triageDiff,
           guidanceWrongCount: guidanceWrong,
           miniGameAvg,
@@ -1299,7 +1361,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
           successScore: rate,
           failureReason: success ? null : (triageDiff >= 2 ? '分诊严重不足，院前响应延误'
             : triageDiff === 1 ? '分诊偏低，院前响应降级'
-            : (state.dispatchRecord?.dispatchTime ?? 0) > 60 ? '派车超时，错过黄金窗'
+            : state.dispatchRecord.dispatchTime > 60 ? '派车超时，错过黄金窗'
             : stability < 30 ? '患者生命体征耗尽'
             : '现场救治未成功'),
         }
@@ -1318,6 +1380,16 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         ))
         if (!success && newPatientStatus && !newPatientStatus.died) {
           newPatientStatus = { ...newPatientStatus, died: true, vitalSign: 'arrest', stability: 0 }
+        }
+
+        // 救援完成 → 回填对应 callHistory 条目的 outcome（玩家手动挂断在 background 跑完时关键）
+        const completedCallId = state.dispatchRecord?.callId
+        if (completedCallId) {
+          const idx = newCallHistory.findIndex(h => h.callId === completedCallId)
+          if (idx >= 0 && newCallHistory[idx].outcome === 'pending') {
+            newCallHistory = [...newCallHistory]
+            newCallHistory[idx] = { ...newCallHistory[idx], outcome: success ? 'success' : 'failed' }
+          }
         }
       }
 
@@ -1353,7 +1425,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
         patientStatus: newPatientStatus,
         patientEvents: newEvents,
         rescue: newRescue,
-        fleet: advanceFleet(state.fleet),
+        callHistory: newCallHistory,
+        fleet: afterFleet,
         dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
           ? [...state.dialogueLog, ...newDialogue]
           : state.dialogueLog,

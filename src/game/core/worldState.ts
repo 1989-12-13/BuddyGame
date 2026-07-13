@@ -112,6 +112,7 @@ export function createInitialState(): WorldState {
     pendingJudgments: [],
     totalScore: 0,
     callScores: [],
+    callHistory: [],
     endingId: null,
     lastDebrief: null,
     pendingPerkChoices: [],

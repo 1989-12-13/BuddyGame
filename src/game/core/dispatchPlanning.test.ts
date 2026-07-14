@@ -19,7 +19,7 @@ describe('automatic ambulance dispatch planning', () => {
     const plan = buildDispatchPlan(classifiedCall())
     expect(plan?.requiredCapability).toBe(5)
     expect(plan?.vehicle.id).toBe('ambulance_c')
-    expect(plan?.routes).toHaveLength(3)
+    expect(plan?.routes).toHaveLength(8)
   })
 
   it('falls back to the next most capable available ambulance', () => {

@@ -226,8 +226,8 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                         dashArray: dim ? '2 8' : undefined,
                       }}
                     >
-                      <Tooltip direction="top" opacity={0.95}>
-                        {segment.conditionLabel} · {segment.description}
+                      <Tooltip direction="top" opacity={0.95} permanent={isMissionOfCurrentCall && !dim}>
+                        <strong>{segment.conditionLabel}</strong> · {segment.description}
                       </Tooltip>
                     </Polyline>
                   )

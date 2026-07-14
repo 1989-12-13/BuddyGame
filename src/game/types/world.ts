@@ -21,7 +21,9 @@ export interface DispatchRecord {
   dispatchedAt: number
   /** 是否恶作剧（用于救援 outcome 跳过判定） */
   isPrank: boolean
-  routeId?: RouteStrategy
+  /** 具体路径 ID；同一种策略可包含多条不同节点组合。 */
+  routeId?: string
+  routeStrategy?: RouteStrategy
   routeLabel?: string
   routeRisk?: 'low' | 'medium' | 'high'
 }

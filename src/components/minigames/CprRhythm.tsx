@@ -2,20 +2,34 @@
 // 零点接线台 — CPR 节拍按压小游戏
 // 玩家需跟随 100-120 BPM 节奏点击按压区域，
 // 30 次按压 + 2 次人工呼吸为一个周期，共 2 个周期。
+//
+// @deprecated 此组件未被任何场景引用（orphaned component）。
+//   功能已被 CprGame (src/components/minigames/engines/CprGame.tsx) 替代。
+//   删除前需确认 minigameTypes.ts 中的 CprRhythmState 类型是否有其他依赖。
 // ============================================================
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { MiniGameResult, HitQuality } from '../../game/core/minigameTypes'
+import {
+  CPR_TARGET_BPM,
+  CPR_TARGET_INTERVAL_MS,
+  CPR_SWEET_SPOT_MS,
+  CPR_GOOD_WINDOW_MS,
+  assessHitQuality,
+  calcHitAccuracy,
+  hitQualityColor,
+  hitQualityLabel,
+} from './engines/cprUtils'
 
 interface Props {
   onComplete: (result: MiniGameResult) => void
 }
 
-const BPM = 110
-const BEAT_INTERVAL_MS = 60000 / BPM
-const SWEET_SPOT_WINDOW_MS = 120     // ±120ms 为 perfect
-const GOOD_WINDOW_MS = 250           // ±250ms 为 good
-const COMPRESSIONS_PER_CYCLE = 10    // 演示版缩短为 10 次（实际应为 30）
+const BPM = CPR_TARGET_BPM
+const BEAT_INTERVAL_MS = CPR_TARGET_INTERVAL_MS
+const SWEET_SPOT_WINDOW_MS = CPR_SWEET_SPOT_MS
+const GOOD_WINDOW_MS = CPR_GOOD_WINDOW_MS
+const COMPRESSIONS_PER_CYCLE = 10
 const TOTAL_CYCLES = 2
 const BREATH_DURATION_MS = 2000
 
@@ -74,9 +88,7 @@ export function CprRhythm({ onComplete }: Props) {
     const goodCount = hits.filter(h => h.quality === 'good').length
     const missCount = hits.filter(h => h.quality === 'miss').length
     const total = hits.length
-    const accuracy = total > 0
-      ? (perfectCount * 1 + goodCount * 0.5) / total
-      : 0
+    const accuracy = calcHitAccuracy(hits.map(h => h.quality))
 
     onComplete({
       miniGameId: 'cpr_rhythm',
@@ -96,11 +108,7 @@ export function CprRhythm({ onComplete }: Props) {
     const now = performance.now()
     const beatElapsed = now - lastBeatRef.current
     const deviation = Math.abs(beatElapsed - BEAT_INTERVAL_MS / 2)
-
-    let quality: HitQuality
-    if (deviation <= SWEET_SPOT_WINDOW_MS) quality = 'perfect'
-    else if (deviation <= GOOD_WINDOW_MS) quality = 'good'
-    else quality = 'miss'
+    const quality = assessHitQuality(deviation) as HitQuality
 
     setLastHitQuality(quality)
     setShowFeedback(true)
@@ -176,11 +184,7 @@ export function CprRhythm({ onComplete }: Props) {
                 style={{
                   ...styles.beatBall,
                   bottom: `${beatProgress * 80 + 10}%`,
-                  backgroundColor:
-                    lastHitQuality === 'perfect' ? '#16a34a'
-                    : lastHitQuality === 'good' ? '#d97706'
-                    : lastHitQuality === 'miss' ? '#ef4444'
-                    : '#38bdf8',
+                  backgroundColor: hitQualityColor(lastHitQuality, '#38bdf8'),
                   transform: `scale(${isSweetSpot ? 1.3 : 1})`,
                   transition: showFeedback
                     ? 'background-color 0.1s, transform 0.1s'
@@ -209,14 +213,10 @@ export function CprRhythm({ onComplete }: Props) {
             <div
               style={{
                 ...styles.feedbackPopup,
-                color:
-                  lastHitQuality === 'perfect' ? '#16a34a'
-                  : lastHitQuality === 'good' ? '#d97706'
-                  : '#ef4444',
+                color: hitQualityColor(lastHitQuality, '#ef4444'),
               }}
             >
-              {lastHitQuality === 'perfect' ? '完美！' :
-               lastHitQuality === 'good' ? '不错' : 'miss'}
+              {lastHitQuality ? hitQualityLabel(lastHitQuality) : 'miss'}
             </div>
           )}
 
@@ -227,10 +227,7 @@ export function CprRhythm({ onComplete }: Props) {
                 key={i}
                 style={{
                   ...styles.historyDot,
-                  backgroundColor:
-                    hit.quality === 'perfect' ? '#16a34a'
-                    : hit.quality === 'good' ? '#d97706'
-                    : '#ef4444',
+                  backgroundColor: hitQualityColor(hit.quality, '#ef4444'),
                 }}
               />
             ))}

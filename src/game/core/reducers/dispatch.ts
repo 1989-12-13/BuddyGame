@@ -8,7 +8,8 @@ import { hasPerk } from '../perks'
 import { calcAmbulanceETA, calcOnSceneDuration } from '../worldState'
 import { findVehicleById, findFastestAvailable, type Ambulance } from '../fleet'
 import { lookupCoords, DEFAULT_CENTER } from '../../locations'
-import { ev, pushEvent } from './helpers'
+import { createEventSink, sinkEvent } from './helpers'
+import { DISPATCH_WARN_TIME, DISPATCH_CRITICAL_TIME } from '../constants'
 
 export function handleDispatch(state: WorldState, vehicleId?: string): WorldState {
   if (!state.currentCall || !state.callerState) return state
@@ -66,11 +67,11 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
     }))
 
   // 派车超时即时反馈
-  let newEvents = state.patientEvents
-  if (state.patientStatus && dispatchTime > 60) {
-    newEvents = pushEvent(newEvents, ev('bad', '⛔ 黄金抢救窗已过 · 患者生存率骤降', state.shiftElapsed))
-  } else if (state.patientStatus && dispatchTime > 45) {
-    newEvents = pushEvent(newEvents, ev('warn', '⚠ 进入派车预警区间（>45s）', state.shiftElapsed))
+  const sink = createEventSink(state)
+  if (state.patientStatus && dispatchTime > DISPATCH_CRITICAL_TIME) {
+    sinkEvent(sink, 'bad', '⛔ 黄金抢救窗已过 · 患者生存率骤降', state.shiftElapsed)
+  } else if (state.patientStatus && dispatchTime > DISPATCH_WARN_TIME) {
+    sinkEvent(sink, 'warn', `⚠ 进入派车预警区间（>${DISPATCH_WARN_TIME}s）`, state.shiftElapsed)
   }
 
   // 救援闭环初始化
@@ -90,6 +91,7 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
 
   return {
     ...state,
+    eventSeq: sink.seq,
     dispatchSent: true,
     dispatchRecord: record,
     ambulanceRemaining: eta,
@@ -124,6 +126,6 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
           : v
       ),
     },
-    patientEvents: newEvents,
+    patientEvents: sink.events,
   }
 }

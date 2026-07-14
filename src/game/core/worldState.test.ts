@@ -219,7 +219,7 @@ describe('vitalSignColor', () => {
     expect(vitalSignColor('stable')).toBe('#16a34a')
     expect(vitalSignColor('warning')).toBe('#f59e0b')
     expect(vitalSignColor('critical')).toBe('#ef4444')
-    expect(vitalSignColor('arrest')).toBe('#7f1d1d')
+    expect(vitalSignColor('arrest')).toBe('#dc2626')
   })
 })
 

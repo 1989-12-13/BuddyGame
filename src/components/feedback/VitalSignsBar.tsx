@@ -6,17 +6,14 @@
 import { Activity, HeartPulse, HeartCrack } from 'lucide-react'
 import type { PatientStatus, VitalSign } from '../../game/types'
 import { vitalSignLabel } from '../../game/core/worldState'
+import { VITAL_SIGN_COLORS } from '../../game/core/colors'
+import { VITAL_STABLE_THRESHOLD, VITAL_WARNING_THRESHOLD, VITAL_CRITICAL_THRESHOLD } from '../../game/core/constants'
 
 interface Props {
   status: PatientStatus
 }
 
-const SIGN_COLOR: Record<VitalSign, string> = {
-  stable: '#16a34a',
-  warning: '#f59e0b',
-  critical: '#ef4444',
-  arrest: '#7f1d1d',
-}
+const SIGN_COLOR: Record<VitalSign, string> = VITAL_SIGN_COLORS as Record<VitalSign, string>
 
 export function VitalSignsBar({ status }: Props) {
   const color = SIGN_COLOR[status.vitalSign]
@@ -54,7 +51,7 @@ export function VitalSignsBar({ status }: Props) {
           boxShadow: `0 0 6px ${color}80`,
         }} />
         {/* 档位刻度 */}
-        {[15, 40, 70].map(t => (
+        {[VITAL_CRITICAL_THRESHOLD, VITAL_WARNING_THRESHOLD, VITAL_STABLE_THRESHOLD].map(t => (
           <div key={t} style={{
             position: 'absolute',
             left: `${t}%`,

@@ -6,6 +6,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, PositionDragSpec } from '../../../game/types'
 import { Readout } from '../Readout'
+import { usePauseRef } from './hooks'
+import { useMiniGameFinish } from './useMiniGameFinish'
+import { computePassed } from './scoring'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -21,8 +24,8 @@ export function PositionDrag({ spec, onComplete, paused }: MiniGameProps) {
   const dragging = useRef(false)
   const lastX = useRef(0)
   const finished = useRef(false)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  const pausedRef = usePauseRef(paused)
+  const { complete } = useMiniGameFinish(onComplete, 600)
 
   const dev = Math.abs(((angle - s.targetAngle + 540) % 360) - 180)
   const aligned = dev <= s.angleTolerance
@@ -55,7 +58,7 @@ export function PositionDrag({ spec, onComplete, paused }: MiniGameProps) {
   const confirm = () => {
     if (finished.current || pausedRef.current) return
     finished.current = true
-    setTimeout(() => onComplete(score, score >= s.passThreshold), 600)
+    complete(score, computePassed(score, s.passThreshold))
   }
 
   const rad = -90  // 0° 朝上

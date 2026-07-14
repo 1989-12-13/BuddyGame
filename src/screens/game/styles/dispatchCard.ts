@@ -1,0 +1,177 @@
+import type { CSSProperties } from 'react'
+
+/** MPDS 调度卡 leftsider（从左滑入式） */
+export const modalOverlay: CSSProperties = {
+  position: 'fixed',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  width: 420,
+  zIndex: 60,
+  backgroundColor: 'var(--bg-elevated)',
+  borderRight: '1px solid var(--border)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  boxShadow: '6px 0 30px rgba(0,0,0,0.6)',
+}
+
+export const modalCard: CSSProperties = {
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'var(--bg-elevated)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  borderLeft: '2px solid #dc2626',
+  boxShadow: 'none',
+}
+
+export const modalHeader: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '12px 16px',
+  backgroundColor: 'var(--bg-surface)',
+  borderBottom: '2px solid #dc2626',
+}
+
+export const modalHeaderLeft: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+}
+
+export const modalHeaderRight: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+}
+
+export const mpdsModalBadge: CSSProperties = {
+  backgroundColor: 'var(--border-light)',
+  border: '2px solid #3b82f6',
+  borderRadius: 6,
+  padding: '6px 12px',
+  color: '#3b82f6',
+  fontSize: 16,
+  fontWeight: 900,
+  fontFamily: 'monospace',
+}
+
+export const modalCloseBtn: CSSProperties = {
+  padding: '4px 10px',
+  backgroundColor: 'transparent',
+  color: 'var(--text-muted)',
+  border: '1px solid var(--border-bright)',
+  borderRadius: 4,
+  cursor: 'pointer',
+  fontSize: 14,
+  fontWeight: 'bold',
+}
+
+export const modalBody: CSSProperties = {
+  flex: 1,
+  padding: '10px 16px',
+  overflowY: 'auto',
+  minHeight: 0,
+}
+
+export const modalFooter: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '10px 16px',
+  borderTop: '1px solid var(--border)',
+  backgroundColor: 'var(--bg-surface)',
+}
+
+export const modalDispatchBtn: CSSProperties = {
+  padding: '10px 24px',
+  backgroundColor: '#dc2626',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 6,
+  fontSize: 15,
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  transition: 'all 0.15s',
+}
+
+export const modalDispatchBtnDisabled: CSSProperties = {
+  backgroundColor: 'var(--bg-elevated)',
+  color: 'var(--text-muted)',
+  cursor: 'not-allowed',
+  opacity: 0.55,
+}
+
+export const modalSaveBtn: CSSProperties = {
+  padding: '8px 16px',
+  backgroundColor: 'var(--bg-elevated)',
+  color: 'var(--text-secondary)',
+  border: '1px solid var(--border)',
+  borderRadius: 6,
+  fontSize: 12,
+  cursor: 'pointer',
+}
+
+export const modalEndCallBtn: CSSProperties = {
+  padding: '8px 12px',
+  backgroundColor: 'transparent',
+  color: 'var(--text-muted)',
+  border: '1px solid var(--border)',
+  borderRadius: 6,
+  fontSize: 11,
+  cursor: 'pointer',
+}
+
+export const modalWarning: CSSProperties = {
+  padding: '6px 16px',
+  backgroundColor: 'rgba(220, 38, 38, 0.08)',
+  borderTop: '1px solid #dc2626',
+  color: '#dc2626',
+  fontSize: 12,
+  fontWeight: 'bold',
+  textAlign: 'center',
+}
+
+/** 终端登记表单 */
+export const terminalForm: CSSProperties = {
+  padding: '0',
+}
+
+export const dispatchSent: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '8px 12px',
+  backgroundColor: 'var(--bg-elevated)',
+  borderRadius: 6,
+  border: '1px solid #15803d',
+  flex: 1,
+}
+
+export const formField: CSSProperties = {
+  marginBottom: 10,
+}
+
+export const formLabel: CSSProperties = {
+  display: 'block',
+  fontSize: 13,
+  fontWeight: 'bold',
+  color: 'var(--text-secondary)',
+  marginBottom: 4,
+}
+
+export const formInput: CSSProperties = {
+  width: '100%',
+  padding: '8px 10px',
+  borderRadius: 4,
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--bg-elevated)',
+  color: 'var(--text-primary)',
+  fontSize: 13,
+  fontFamily: 'monospace',
+  resize: 'vertical',
+  boxSizing: 'border-box',
+}

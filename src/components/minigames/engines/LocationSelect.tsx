@@ -3,8 +3,8 @@
 // 显示身体部位图 + 伤口标记，从选项中选择正确的止血点
 // ============================================================
 
-import { useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, LocationSelectSpec } from '../../../game/types'
+import { usePauseRef, useAttemptScoring } from './hooks'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -31,33 +31,12 @@ const colLeft: React.CSSProperties = {
 
 export function LocationSelect({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as LocationSelectSpec
-  const [selected, setSelected] = useState<number | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const finished = useRef(false)
-  const attemptsRef = useRef(0)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
-
-  const handleSelect = (idx: number) => {
-    if (finished.current || showResult || pausedRef.current) return
-    attemptsRef.current += 1
-    setSelected(idx)
-    setShowResult(true)
-
-    const correct = idx === s.correctIndex
-    if (correct) {
-      finished.current = true
-      const score = Math.max(0.3, 1 - (attemptsRef.current - 1) * 0.3)
-      setTimeout(() => onComplete(score, score >= s.passThreshold), 1000)
-    } else {
-      setTimeout(() => {
-        setShowResult(false)
-        setSelected(null)
-      }, 1500)
-    }
-  }
-
-  const isCorrect = selected === s.correctIndex
+  const pausedRef = usePauseRef(paused)
+  const { selected, showResult, handleSelect, isCorrect } = useAttemptScoring(
+    { correctIndex: s.correctIndex, passThreshold: s.passThreshold },
+    onComplete,
+    pausedRef,
+  )
 
   return (
     <div style={wrap}>

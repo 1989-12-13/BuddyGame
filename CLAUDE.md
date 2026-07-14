@@ -8,20 +8,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 常用命令
 
-包管理器：**pnpm**（虽然存在 `package-lock.json`，主锁文件是 `pnpm-lock.yaml`；`pnpm-workspace.yaml` 也存在）。
+包管理器：**npm**（锁文件为 `package-lock.json`）。
 
 ```bash
-pnpm install          # 安装依赖
-pnpm dev              # 同时启动 TTS 后端 + Vite dev server (推荐)
-pnpm dev:server       # 只跑 TTS 后端 (端口 8787)
-pnpm dev:vite         # 只跑 Vite (TTS 不可用)
-pnpm build            # tsc -b && vite build
-pnpm preview          # 预览构建产物
-pnpm typecheck        # tsc -b --noEmit
-pnpm lint             # eslint .
-pnpm test             # vitest（默认 watch 模式）
-pnpm test -- --run    # vitest 跑一次即退出
-pnpm test -- src/game/core/worldReducer.test.ts   # 单文件测试
+npm install           # 安装依赖
+npm run dev           # 同时启动 TTS 后端 + Vite dev server (推荐)
+npm run dev:server    # 只跑 TTS 后端 (端口 8787)
+npm run dev:vite      # 只跑 Vite (TTS 不可用)
+npm run build         # tsc -b && vite build
+npm run preview       # 预览构建产物
+npm run typecheck     # tsc -b --noEmit
+npm run lint          # eslint .
+npm test              # vitest（默认 watch 模式）
+npx vitest run        # vitest 跑一次即退出
+npx vitest run src/game/core/worldReducer.test.ts   # 单文件测试
 ```
 
 路径别名：`@` → `src/`（在 `vite.config.ts` 和 `vitest.config.ts` 中配置）。
@@ -73,19 +73,44 @@ src/
 │   └── useGameAudio.ts    # WebAudio 频率提示音（无音频资源，合成 oscillator）
 ├── screens/               # 五个屏幕组件
 ├── game/
-│   ├── types.ts           # 全部共享类型 + 常量 + PROTOCOL_REF（33 个 MPDS 协议）
-│   ├── core/              # 状态机核心
-│   ├── events/templates.ts# 场景选择 + getScenario()
-│   ├── events/cards/      # 33 个 MPDS 场景卡片（每个 .ts 一类主诉）
-│   ├── npc/personas.ts    # 来电者人物档案
-│   ├── endings/endings.ts # 班次结局定义
-│   └── knowledge/         # 教学参考数据（dispatcherNotes / examples / guidanceDetails）
+│   ├── types/                # 共享类型（已拆分为 caller / mpds / scenario / world 子模块）
+│   │   ├── index.ts          # 桶导出
+│   │   ├── caller.ts         # CallerId、CallerProfile、CallerState、STRESS_INFO
+│   │   ├── mpds.ts           # MpdsDeterminant、TriageLevel、PROTOCOL_REF（33 个 MPDS 协议）、TerminalState
+│   │   ├── scenario.ts       # CallPhase、MPDSQuestion、JudgmentPrompt、GuidanceStep、MiniGameSpec、EmergencyScenario
+│   │   └── world.ts          # WorldState、DispatchRecord、PatientStatus、RescueState、DialogueLine、EndingDef
+│   ├── core/                 # 状态机核心
+│   │   ├── worldReducer.ts   # 薄调度层（~100 行，所有 case 委托到 reducers/ 子模块）
+│   │   ├── reducers/         # 子 reducer 处理器（每个 action type 一个文件 + 共用 helpers/narrative）
+│   │   │   ├── answerCall.ts | askQuestion.ts | calmCaller.ts | makeJudgment.ts
+│   │   │   ├── dispatch.ts | answerGuidance.ts | completeMinigame.ts | tick.ts
+│   │   │   ├── endCall.ts | miscHandlers.ts
+│   │   │   ├── helpers.ts    # 共有辅助：EventSink(createEventSink/sinkEvent)、对话/压力辅助、tone→stress
+│   │   │   └── narrative.ts  # 来电者叙述式回答生成（按 stress→clear→vague 衰减）
+│   │   ├── actions.ts        # GameAction 联合类型（约 20 种 action）
+│   │   ├── worldState.ts     # 工厂函数（createInitialState / createCallerState）、ETA、评分 scoreCall
+│   │   ├── constants.ts      # 游戏可调常量（压力阈值、情绪映射、分值权重、安抚参数）
+│   │   ├── fleet.ts          # 救护车队状态机
+│   │   ├── random.ts         # 随机数工具
+│   │   ├── seededRandom.ts   # 确定性 PRNG（Mulberry32）
+│   │   ├── debrief.ts        # 复盘/评分卡类型
+│   │   └── perks.ts          # Roguelike 技能系统
+│   ├── events/templates.ts   # 场景选择 + getScenario()
+│   ├── events/cards/         # 33 个 MPDS 场景卡片（每个 .ts 一类主诉）
+│   ├── npc/personas.ts       # 来电者人物档案
+│   ├── endings/endings.ts    # 班次结局定义
+│   └── knowledge/            # 教学参考数据（dispatcherNotes / examples / guidanceDetails）
 ├── components/
 │   ├── hud/Hud.tsx        # 顶部状态栏
 │   ├── call/CallDebrief.tsx  # 单通电话结束评分卡
 │   └── minigames/
 │       ├── MiniGameHost.tsx    # 按 spec.kind 分发到 7 个引擎
-│       └── engines/            # RhythmPress / QuickChoice / HoldPressure / PositionDrag / StepOrder / LocationSelect / CprGame
+│       └── engines/
+│           ├── hooks.ts          # usePauseRef / useAttemptScoring（选择题类共享）
+│           ├── useGameClock.ts   # 计时引擎共享 rAF 倒计时（暂停累积，修复假暂停）
+│           ├── useMiniGameFinish.ts # 完成守卫（防重复 onComplete + 延时回传）
+│           ├── scoring.ts        # computePassed(score, threshold) 纯函数 + 单测
+│           └── RhythmPress / QuickChoice / HoldPressure / PositionDrag / StepOrder / LocationSelect / CprGame
 ├── styles/                # tokens.css / global.css / animations.css（纯 CSS 变量）
 └── test/setup.ts          # jsdom + jest-dom
 ```
@@ -94,10 +119,26 @@ src/
 
 游戏状态是单个 `WorldState` 对象，通过 `worldReducer(state: WorldState, action: GameAction): WorldState` 推进。**所有业务逻辑都应落入 reducer**，UI 只负责分发 action 和渲染。
 
-- `actions.ts` — 全部 `GameAction` 联合类型（约 17 种）。
-- `worldState.ts` — 工厂函数（`createInitialState` / `createCallerState` / `createTerminalState`）、场景队列（`buildScenarioQueue`）、ETA 计算、**单通电话评分函数 `scoreCall`**。
-- `worldReducer.ts` — 唯一的状态转换器：处理 `START_SHIFT` / `ANSWER_CALL` / `ASK_QUESTION` / `CALM_CALLER` / `MAKE_JUDGMENT` / `UPDATE_TERMINAL` / `SET_PATIENT_STATUS` / `SET_MPDS_DETERMINANT` / `SET_TRIAGE` / `DISPATCH` / `ANSWER_GUIDANCE` / `COMPLETE_MINIGAME` / `END_CALL` / `TICK` / `SHOW_ENDING` / `BACK_TO_TITLE`。文件较大（~40KB），包含来电者回答的叙述式生成（按 stress 级别从 clear → vague 衰减）。
-- `worldReducer.test.ts` — 已有的覆盖（确定性 action 序列 → 状态断言）；新逻辑优先在 reducer 里加测试。
+- `core/actions.ts` — 全部 `GameAction` 联合类型（约 20 种 action）。
+- `core/worldState.ts` — 工厂函数（`createInitialState` / `createCallerState` / `createTerminalState`）、场景队列（`buildScenarioQueue`）、ETA 计算（`calcAmbulanceETA`）、患者生命体征（`createPatientStatus` / `stabilityToVitalSign`）、救治成功率（`calcRescueSuccessRate`）、**单通电话评分函数 `scoreCall`**。
+- `core/constants.ts` — 游戏可调常量：压力阈值（`STRESS_CALM_MAX` / `STRESS_PANIC_MAX`）、安抚参数（`CALM_STRESS_DROP_BASE`）、判断/指导分值、小游戏稳定性系数。
+- `core/worldReducer.ts` — 薄调度层（~100 行），仅做 `switch(action.type)` 分发，每个 case 委托到 `core/reducers/` 的独立处理器文件。处理 20 种 action：`START_SHIFT` / `ANSWER_CALL` / `ASK_QUESTION` / `CALM_CALLER` / `MAKE_JUDGMENT` / `UPDATE_TERMINAL` / `SET_PATIENT_STATUS` / `SET_MPDS_DETERMINANT` / `SET_DETERMINANT_SUBCODE` / `SET_PROTOCOL` / `SET_TRIAGE` / `SELECT_VEHICLE` / `DISPATCH` / `ANSWER_GUIDANCE` / `COMPLETE_MINIGAME` / `DISMISS_PATIENT_EVENT` / `END_CALL` / `DISMISS_DEBRIEF` / `CHOOSE_PERK` / `TICK` / `SHOW_ENDING` / `BACK_TO_TITLE`。
+- `core/reducers/` — 每个 action type 一个处理器文件：
+  - `answerCall.ts` — 接听电话、加载场景、初始化来电者/患者状态
+  - `askQuestion.ts` — 问询逻辑、压力变更、揭示信息、生成判断选择题
+  - `calmCaller.ts` — 安抚来电者（降低 stress，消耗时间）
+  - `makeJudgment.ts` — 临床判断选择题处理
+  - `dispatch.ts` — 派车逻辑、ETA 计算、救援闭环初始化
+  - `answerGuidance.ts` — 急救指导问答步骤处理
+  - `completeMinigame.ts` — 小游戏完成后的状态更新
+  - `endCall.ts` — 通话结束结算、评分、通话历史归档、技能奖励
+  - `tick.ts` — 时间流逝、患者稳定性衰减、救护车到达检查
+  - `miscHandlers.ts` — 轻量 handler 收拢（终端更新、MPDS 判定、选择车辆、导航等）
+  - `helpers.ts` — 共有辅助：`EventSink`（`createEventSink`/`sinkEvent`，事件 ID 由 `eventSeq` 单调派生）、对话/压力辅助、`toneToInitialStress`
+  - `narrative.ts` — 来电者叙述式回答生成（按 stress 级别从 clear → vague 衰减）
+- `core/perks.ts` — Roguelike 技能系统（技能定义与效果）
+- `core/debrief.ts` — 复盘/评分卡类型
+- `core/worldReducer.test.ts` — 已有覆盖（确定性 action 序列 → 状态断言）；新逻辑优先在 reducer 里加测试。
 
 ## WorldState 关键字段
 
@@ -106,11 +147,15 @@ src/
 - `terminal: TerminalState` — 调度卡字段（address / chiefComplaint / patientAge / protocolNumber / determinant / triage 等），玩家通过 `UPDATE_TERMINAL` 写入。
 - `dialogueLog: DialogueLine[]` — 系统/接线员/来电者三方的对话流。
 - `pendingJudgments: JudgmentPrompt[]` — 协议判断 + 临床判断选择题队列。
+- `patientStatus: PatientStatus | null` — 患者生命体征（stability 0-100、vitalSign、decayRate），TICK 时每秒衰减。
+- `rescue: RescueState` — 救护车救援闭环（idle → enroute → arrived → success/failed）。
 - `dispatchRecord` / `callScores` — 派车与评分。
+- `fleet: FleetState` — 救护车队状态（车辆可用性、selectedVehicleId）。
+- `perks: RoguePerkId[]` — 已获得的 Roguelike 技能。
 
 ## MPDS 协议参考
 
-`PROTOCOL_REF` 在 `src/game/types.ts` 顶部，是一个 `[number, name][]` 元组，覆盖 33 种主诉。`dispatcherNotes.ts` / `examples.ts` / `guidanceDetails.ts` 三个知识库文件按协议 key 提供教学描述、临床要点和电话指导脚本。**新增主诉**时需同步：场景卡片（`events/cards/`）+ 调度员笔记 + 范例 + 指导详情。
+`PROTOCOL_REF` 在 `src/game/types/mpds.ts` 中导出，是一个 `[number, name][]` 元组，覆盖 33 种主诉。`dispatcherNotes.ts` / `examples.ts` / `guidanceDetails.ts` 三个知识库文件按协议 key 提供教学描述、临床要点和电话指导脚本。**新增主诉**时需同步：场景卡片（`events/cards/`）+ 调度员笔记 + 范例 + 指导详情。
 
 ## 屏幕路由
 
@@ -129,16 +174,22 @@ src/
 interface MiniGameProps {
   spec: MiniGameSpec
   onComplete: (score: number, passed: boolean) => void
+  paused?: boolean            // 浮层折叠时冻结计时/输入
 }
 ```
 
-每个引擎自管理计时 / 动画 / 评分逻辑，最终调用 `onComplete(score, passed)`。`passThreshold` 在 spec 中定义。
+每个引擎自管理动画 / 评分逻辑，最终调用 `onComplete(score, passed)`。`passThreshold` 在 spec 中定义。共享逻辑抽出到 `engines/` 的 hook：
+
+- `useGameClock(durationSec, pausedRef, { onTick, onFinish })` — 计时类引擎（RhythmPress）复用的 rAF 倒计时，含正确的暂停累积（修复旧版 `pausedAccumRef` 永不赋值导致的「假暂停」）。
+- `useMiniGameFinish(onComplete, delayMs)` — 所有引擎统一的完成守卫：防重复回传 + 延时回传，各引擎保留原有延时值（700/600/500/1000/1500ms）。
+- `scoring.ts#computePassed(score, threshold)` — 通过判定的纯函数，已配 `scoring.test.ts`。
+- `hooks.ts#useAttemptScoring` — QuickChoice / LocationSelect 选择题类共享（含尝试次数计分）。
 
 ## 测试
 
 - Vitest + jsdom 环境，setup 文件加载 `@testing-library/jest-dom`。
 - 现有覆盖：`worldReducer.test.ts`（核心逻辑）、`App.test.tsx`、`GameScreen.test.ts`（与 `screens/GameScreen.test.ts` 共存，注意区别）。
-- 跑单测：`pnpm test -- src/game/core/worldReducer.test.ts --run` 或 `pnpm test -- -t "test name"`。
+- 跑单测：`npm test -- --run`；针对单个文件：`npm test -- src/game/core/worldReducer.test.ts --run`；按名字：`npm test -- -t "test name" --run`。
 
 ## 构建与样式
 
@@ -148,11 +199,12 @@ interface MiniGameProps {
 
 ## 关键约定
 
-- **新功能落点**：业务逻辑 → reducer / `worldState.ts`；数据 → `game/events/cards/` 或 `game/knowledge/`；UI → `screens/` 或 `components/`。
+- **新功能落点**：业务逻辑 → `core/reducers/` 对应处理器文件；数据 → `game/events/cards/` 或 `game/knowledge/`；UI → `screens/` 或 `components/`；可调参数 → `core/constants.ts`。
 - **不使用 React Context 共享游戏状态**：所有游戏状态经由 `useReducer` 在 `GameScreen.tsx` 内部持有（screen-level），屏幕切换通过 `gameKey` 整体重置。
 - **随机数**：当前生产代码使用 `Math.random()`；测试代码不依赖随机输出。`core/seededRandom.ts` 提供 Mulberry32 PRNG 以备需要确定性复现的场合。
-- **类型先行**：所有 action / state 字段均在 `types.ts` 集中定义；新增 action 先扩展联合类型再实现 case。
-- **文件大小**：参考根目录用户 CLAUDE.md 的 `Keep files ≤ 500 lines` 约束；`worldReducer.ts` 已偏大，新增 case 优先评估是否能拆分子 reducer。
+- **类型先行**：所有 action / state 字段均在 `types/` 子模块中定义，通过 `types/index.ts` 桶导出；新增 action 先扩展 `actions.ts` 的联合类型，再在 `worldReducer.ts` 加 case，并在 `core/reducers/` 新建处理器文件。
+- **文件大小**：`worldReducer.ts` 已从 ~40KB 瘦身至 ~100 行的薄调度层，所有业务逻辑落到 `core/reducers/` 的独立文件中。新增 action 时在 `core/reducers/` 新建文件，不修改 `worldReducer.ts`（仅加一行 case 分发），保持每个文件 ≤500 行。
+- **reducer 处理器命名**：新建文件以 action type 的 camelCase 命名（如 `askQuestion.ts`、`answerGuidance.ts`），导出 `handleXxx` 函数。轻量 handler（≤15 行）收拢到 `miscHandlers.ts`。
 
 ## 探索代码的优先工具
 

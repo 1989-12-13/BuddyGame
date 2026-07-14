@@ -3,16 +3,15 @@
 // 按空格/点击模拟按压，检测频率与稳定度
 // ============================================================
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, RhythmPressSpec } from '../../../game/types'
 import { Readout } from '../Readout'
-
-const wrap: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 10,
-}
+import { usePauseRef } from './hooks'
+import { useGameClock } from './useGameClock'
+import { useMiniGameFinish } from './useMiniGameFinish'
+import { computePassed } from './scoring'
+import { calcLiveBpm } from './cprUtils'
+import { engineWrap, readoutRow } from './styles'
 
 export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as RhythmPressSpec
@@ -23,27 +22,15 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
   const [done, setDone] = useState(false)
 
   const pressTimes = useRef<number[]>([])
-  const startRef = useRef<number>(0)
-  const rafRef = useRef<number | null>(null)
-  const finished = useRef(false)
-  const pausedRef = useRef(false)
-  const pausedAtRef = useRef(0)
-  const pausedAccumRef = useRef(0)
-  useEffect(() => {
-    pausedRef.current = !!paused
-    if (paused && !pausedAtRef.current) {
-      pausedAtRef.current = performance.now()
-    } else if (!paused && pausedAtRef.current) {
-      pausedAccumRef.current += performance.now() - pausedAtRef.current
-      pausedAtRef.current = 0
-    }
-  }, [paused])
+  const doneRef = useRef(false)
+  const pausedRef = usePauseRef(paused)
+  const { complete } = useMiniGameFinish(onComplete, 700)
 
   const targetInterval = 60000 / s.targetBpm
   const tolFrac = s.bpmTolerance / s.targetBpm
 
   const registerPress = () => {
-    if (finished.current || pausedRef.current) return
+    if (doneRef.current || pausedRef.current) return
     const now = performance.now()
     pressTimes.current.push(now)
     setPresses(pressTimes.current.length)
@@ -51,52 +38,9 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
     setTimeout(() => setFlash(false), 90)
   }
 
-  useEffect(() => {
-    startRef.current = performance.now()
-    const loop = () => {
-      const now = performance.now()
-      const elapsed = (now - startRef.current - pausedAccumRef.current) / 1000
-      if (pausedRef.current) {
-        rafRef.current = requestAnimationFrame(loop)
-        return
-      }
-      const left = Math.max(0, s.durationSec - elapsed)
-      setTimeLeft(left)
-      // 实时 BPM：取最近 4 次按压
-      const pts = pressTimes.current
-      if (pts.length >= 2) {
-        const recent = pts.slice(-4)
-        const ivals = []
-        for (let i = 1; i < recent.length; i++) ivals.push(recent[i] - recent[i - 1])
-        const avg = ivals.reduce((a, b) => a + b, 0) / ivals.length
-        setBpm(Math.round(60000 / avg))
-      }
-      if (elapsed >= s.durationSec && !finished.current) {
-        finish()
-        return
-      }
-      rafRef.current = requestAnimationFrame(loop)
-    }
-    rafRef.current = requestAnimationFrame(loop)
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault()
-        if (pausedRef.current) return
-        registerPress()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      window.removeEventListener('keydown', onKey)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const finish = () => {
-    if (finished.current) return
-    finished.current = true
+  const finish = useCallback(() => {
+    if (doneRef.current) return
+    doneRef.current = true
     const pts = pressTimes.current
     let score = 0
     if (pts.length >= 2) {
@@ -114,16 +58,41 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
       score = Math.max(0, Math.min(1, rateScore * (0.6 + 0.4 * countFactor)))
     }
     setDone(true)
-    setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
-  }
+    complete(score, computePassed(score, s.passThreshold))
+  }, [s.durationSec, s.targetBpm, s.bpmTolerance, s.passThreshold, complete])
+
+  useGameClock(s.durationSec, pausedRef, {
+    onTick: (elapsedSec) => {
+      const left = Math.max(0, s.durationSec - elapsedSec)
+      setTimeLeft(left)
+      // 实时 BPM
+      const pts = pressTimes.current
+      if (pts.length >= 2) {
+        setBpm(calcLiveBpm(pts))
+      }
+      return elapsedSec >= s.durationSec
+    },
+    onFinish: finish,
+  })
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault()
+        registerPress()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const pulseAnim = flash
     ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ef4444' }
     : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
 
   return (
-    <div style={wrap}>
-      <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
+    <div style={engineWrap}>
+      <div style={readoutRow}>
         <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#16a34a' : '#d97706'} />
         <Readout label="目标" value={String(s.targetBpm)} color="var(--text-muted)" />
         <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />

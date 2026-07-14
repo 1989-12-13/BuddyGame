@@ -26,7 +26,14 @@ const AudioCtx = createContext<AudioAPI | null>(null)
 export function AudioProvider({ children }: { children: ReactNode }) {
   const { play: rawPlay, playSiren: rawPlaySiren } = useGameAudio()
   const ttsRef = useRef<TtsPlayer | null>(null)
-  if (!ttsRef.current) ttsRef.current = new TtsPlayer()
+  if (!ttsRef.current) {
+    try {
+      ttsRef.current = new TtsPlayer()
+    } catch (e) {
+      console.error('[audio] TtsPlayer init failed:', e)
+      ttsRef.current = new TtsPlayer({ enabled: false })
+    }
+  }
 
   const [volume, setVolumeState] = useState(() => {
     if (typeof window === 'undefined') return 0.65
@@ -41,11 +48,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const play = useCallback((cue: GameAudioCue) => {
-    rawPlay(cue, volume)
+    try { rawPlay(cue, volume) } catch (e) { console.warn('[audio] play failed:', e) }
   }, [rawPlay, volume])
 
   const playSiren = useCallback(() => {
-    rawPlaySiren(volume)
+    try { rawPlaySiren(volume) } catch (e) { console.warn('[audio] siren failed:', e) }
   }, [rawPlaySiren, volume])
 
   return (

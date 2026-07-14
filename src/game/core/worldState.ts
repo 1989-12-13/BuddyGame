@@ -7,6 +7,31 @@ import { stressToLevel } from '../types'
 import { SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
 import { rng, rngInt, shuffle as shuffleArray } from './random'
+import { VITAL_SIGN_COLORS } from './colors'
+import {
+  VITAL_STABLE_THRESHOLD,
+  VITAL_WARNING_THRESHOLD,
+  VITAL_CRITICAL_THRESHOLD,
+  DISPATCH_GOLD_TIME,
+  DISPATCH_SILVER_TIME,
+  DISPATCH_BRONZE_TIME,
+  DISPATCH_COPPER_TIME,
+  SPEED_SCORE_PERFECT,
+  SPEED_SCORE_GOOD,
+  SPEED_SCORE_BRONZE,
+  SPEED_SCORE_COPPER,
+  SPEED_SCORE_BAD,
+  TRIAGE_PERFECT_SCORE,
+  TRIAGE_OFFBY1_SCORE,
+  ADDRESS_FULL_SCORE,
+  ADDRESS_PARTIAL_SCORE,
+  ADDRESS_VAGUE_SCORE,
+  CONTACT_SCORE,
+  COMPLAINT_SCORE,
+  PURPOSE_SCORE,
+  GUIDANCE_MAX_SCORE,
+  INFO_QUALITY_MAX_BONUS,
+} from './constants'
 
 /** 创建空白的来电者追踪状态 */
 export function createCallerState(callerId: CallerId, initialStress = 40): CallerState {
@@ -103,6 +128,7 @@ export function createInitialState(): WorldState {
     guidanceMinigameScores: [],
     dialogueLog: [],
     pendingJudgments: [],
+    eventSeq: 0,
     totalScore: 0,
     callScores: [],
     callHistory: [],
@@ -142,9 +168,9 @@ export function createPatientStatus(triage: TriageLevel): PatientStatus {
 
 /** stability → vitalSign 阈值映射 */
 export function stabilityToVitalSign(s: number): VitalSign {
-  if (s >= 70) return 'stable'
-  if (s >= 40) return 'warning'
-  if (s >= 15) return 'critical'
+  if (s >= VITAL_STABLE_THRESHOLD) return 'stable'
+  if (s >= VITAL_WARNING_THRESHOLD) return 'warning'
+  if (s >= VITAL_CRITICAL_THRESHOLD) return 'critical'
   return 'arrest'
 }
 
@@ -153,7 +179,7 @@ export function vitalSignLabel(v: VitalSign): string {
 }
 
 export function vitalSignColor(v: VitalSign): string {
-  return v === 'stable' ? '#16a34a' : v === 'warning' ? '#f59e0b' : v === 'critical' ? '#ef4444' : '#7f1d1d'
+  return VITAL_SIGN_COLORS[v]
 }
 
 /** 该 triage 的救治基线（暴露给 reducer） */
@@ -220,9 +246,9 @@ export function calcAmbulanceETA(
   let eta = 70
 
   // 派车越快，ETA 越短
-  if (dispatchTime <= 27) eta -= 15
-  else if (dispatchTime <= 43) eta -= 8
-  else if (dispatchTime > 60) eta += 12
+  if (dispatchTime <= DISPATCH_GOLD_TIME) eta -= 15
+  else if (dispatchTime <= DISPATCH_SILVER_TIME) eta -= 8
+  else if (dispatchTime > DISPATCH_BRONZE_TIME) eta += 12
 
   // 地址越完整，ETA 越短
   if (addressCompleteness === 'full') eta -= 10
@@ -277,21 +303,21 @@ export function scoreCall(
   const netTime = dispatchTime
   let speed = 0
   if (netTime !== null) {
-    if (netTime <= 27) speed = 35
-    else if (netTime <= 43) speed = 30
-    else if (netTime <= 60) speed = 20
-    else if (netTime <= 90) speed = 10
-    else speed = 5
+    if (netTime <= DISPATCH_GOLD_TIME) speed = SPEED_SCORE_PERFECT
+    else if (netTime <= DISPATCH_SILVER_TIME) speed = SPEED_SCORE_GOOD
+    else if (netTime <= DISPATCH_BRONZE_TIME) speed = SPEED_SCORE_BRONZE
+    else if (netTime <= DISPATCH_COPPER_TIME) speed = SPEED_SCORE_COPPER
+    else speed = SPEED_SCORE_BAD
   }
 
   // 2. 四要素信息分（0-30） + 信息质量加分
   let info = 0
-  if (addressCompleteness === 'full') info += 10
-  else if (addressCompleteness === 'partial') info += 6
-  else if (addressCompleteness === 'vague') info += 3
-  if (hasContact) info += 5
-  if (hasCondition) info += 10
-  if (hasPurpose) info += 5
+  if (addressCompleteness === 'full') info += ADDRESS_FULL_SCORE
+  else if (addressCompleteness === 'partial') info += ADDRESS_PARTIAL_SCORE
+  else if (addressCompleteness === 'vague') info += ADDRESS_VAGUE_SCORE
+  if (hasContact) info += CONTACT_SCORE
+  if (hasCondition) info += COMPLAINT_SCORE
+  if (hasPurpose) info += PURPOSE_SCORE
 
   // 信息质量加分（最多+5）
   info = Math.min(30, info + infoQualityBonus)
@@ -299,11 +325,11 @@ export function scoreCall(
   // 3. 分诊准确度分（0-20）
   let triage = 0
   if (triageDecision === correctTriage) {
-    triage = 20
+    triage = TRIAGE_PERFECT_SCORE
   } else if (triageDecision && correctTriage) {
     const order = ['red', 'yellow', 'green', 'black'] as const
     const diff = Math.abs(order.indexOf(triageDecision) - order.indexOf(correctTriage))
-    if (diff === 1) triage = 10
+    if (diff === 1) triage = TRIAGE_OFFBY1_SCORE
     else triage = 0
   }
 
@@ -328,7 +354,7 @@ export function scoreCall(
     if (guidanceTotal > 0 && miniGameAvg > 0) combined = choiceFrac * 0.5 + miniGameAvg * 0.5
     else if (miniGameAvg > 0) combined = miniGameAvg
     else combined = choiceFrac
-    guidance = Math.round(combined * 10)
+    guidance = Math.round(combined * GUIDANCE_MAX_SCORE)
   }
 
   const total = speed + info + triage + decision + guidance

@@ -16,6 +16,7 @@ import {
   generateVitalsNarrative,
   getQuestionTimeCost,
 } from './narrative'
+import { createEventSink } from './helpers'
 
 export function handleAskQuestion(state: WorldState, questionId: string): WorldState {
   const call = state.currentCall
@@ -35,6 +36,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   let stressEffect = 0
   const newJudgments: JudgmentPrompt[] = [...(state.pendingJudgments ?? [])]
   let newTerminal = { ...state.terminal }
+  const sink = createEventSink(state)
 
   // ==========================================
   // 5步标准协议 (Protocol 0) — 每通电话必须依次完成
@@ -110,7 +112,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     const protoNameMap = Object.fromEntries(PROTOCOL_REF)
     const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
     newJudgments.push({
-      id: `judge_step2_protocol_${Date.now()}`,
+      id: `judge_step2_protocol_${sink.seq++}`,
       questionId: 'step2_event',
       dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
       question: '根据来电者描述，此情况最可能对应哪个 MPDS 协议？',
@@ -138,7 +140,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     const isAgePrecise = ageStripped === age
     const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
     newJudgments.push({
-      id: `judge_step3_${Date.now()}`,
+      id: `judge_step3_${sink.seq++}`,
       questionId: 'step3_age',
       dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
       question: '来电者描述的年龄信息，你应该如何记录？',
@@ -170,7 +172,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     const isBreathingAbnormal = breathing.includes('急促') || breathing.includes('喘') || breathing.includes('异常')
     const callerIdx2 = newDialogue.findIndex(d => d.speaker === 'caller')
     newJudgments.push({
-      id: `judge_step4_${Date.now()}`,
+      id: `judge_step4_${sink.seq++}`,
       questionId: 'step4_vitals',
       dialogueIndex: state.dialogueLog.length + (callerIdx2 >= 0 ? callerIdx2 : 1),
       question: '根据来电者描述，请判断患者意识与呼吸状态：',
@@ -256,7 +258,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     if (mpdsQ.judgment) {
       const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
       newJudgments.push({
-        id: `judge_${questionId}_${Date.now()}`,
+        id: `judge_${questionId}_${sink.seq++}`,
         questionId,
         dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
         question: mpdsQ.judgment.question,
@@ -298,6 +300,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
 
   return {
     ...state,
+    eventSeq: sink.seq,
     shiftElapsed: state.shiftElapsed + questionTimeCost,
     questionCost: state.questionCost + questionTimeCost,
     callPhase: 'questioning',

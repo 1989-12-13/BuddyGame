@@ -20,7 +20,6 @@ export type {
   JudgmentOption,
   JudgmentPrompt,
   TerminalJudgmentField,
-  InfoFragment,
   FragmentTargetField,
   GuidanceStep,
   FirstAidGuidance,
@@ -52,6 +51,5 @@ export type {
   WorldState,
   CallHistoryEntry,
   DialogueLine,
-  CallResult,
   EndingDef,
 } from './world'

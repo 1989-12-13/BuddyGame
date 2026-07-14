@@ -75,17 +75,7 @@ export type TerminalJudgmentField =
   | 'conscious' | 'breathing' | 'conditionNote'
   | 'protocolNumber'
 
-// -------------------- 信息碎片（已弃用，保留类型兼容） --------------------
-/** @deprecated 已改为 JudgmentPrompt 系统 */
-export interface InfoFragment {
-  id: string
-  targetField: FragmentTargetField
-  value: string
-  snippet: string
-  quality: InfoQuality
-  isDistorted: boolean
-}
-
+// -------------------- 终端字段（UPDATE_TERMINAL 可更新字段的完整并集） --------------------
 export type FragmentTargetField =
   | 'address' | 'contact' | 'chiefComplaint'
   | 'patientAge' | 'patientGender'

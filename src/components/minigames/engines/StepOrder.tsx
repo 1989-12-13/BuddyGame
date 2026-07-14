@@ -6,6 +6,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps, StepOrderSpec } from '../../../game/types'
 import { shuffle } from '../../../game/core/random'
+import { usePauseRef } from './hooks'
+import { useMiniGameFinish } from './useMiniGameFinish'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -17,8 +19,8 @@ const wrap: React.CSSProperties = {
 export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as StepOrderSpec
   const finished = useRef(false)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  const pausedRef = usePauseRef(paused)
+  const { complete } = useMiniGameFinish(onComplete, 500)
 
   // 打乱步骤
   const shuffled = useMemo(
@@ -54,7 +56,7 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
       // 全部完成
       if (newIdx >= s.steps.length) {
         finished.current = true
-        setTimeout(() => onComplete(1, true), 500)
+        complete(1, true)
       }
     } else {
       setWrongIdx(shufIdx)

@@ -6,17 +6,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CprSpec, MiniGameProps } from '../../../game/types'
 import { Readout } from '../Readout'
+import { usePauseRef } from './hooks'
+import { useMiniGameFinish } from './useMiniGameFinish'
+import { computePassed } from './scoring'
+import {
+  CPR_TARGET_BPM,
+  CPR_COMPRESSIONS_PER_CYCLE,
+  CPR_BREATHS_PER_CYCLE,
+  CPR_BREATH_PAUSE_MS,
+  CPR_BLOW_IDEAL_MIN,
+  CPR_BLOW_OVER_THRESHOLD,
+  calcBpm,
+  assessBpmQuality,
+  calcRhythmScore,
+  calcCprFinalScore,
+  bpmDeviationColor,
+  rhythmQualityColor,
+  type RhythmQuality,
+} from './cprUtils'
+import {
+  engineWrap,
+  readoutRow,
+  pressCircle,
+  progressTrack,
+  progressFill,
+  qualityDot,
+  qualityRow,
+  doneText,
+  pressHint,
+  pressHintActive,
+} from './styles'
 
 type Phase = 'compressing' | 'blowing_1' | 'pause_1to2' | 'blowing_2' | 'done'
-
-const wrap: React.CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }
-
-const TARGET_BPM = 110
-const COMPRESSIONS = 30
-const BREATHS = 2
-const PAUSE_MS = 1000
-const idealMin = 0.30
-const overThreshold = 0.72
 
 export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as CprSpec
@@ -29,7 +50,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const [fill, setFill] = useState(0)
   const [pulse, setPulse] = useState(false)
   const [goodBreath, setGoodBreath] = useState(false)
-  const [rhythmQualities, setRhythmQualities] = useState<string[]>([])
+  const [rhythmQualities, setRhythmQualities] = useState<RhythmQuality[]>([])
   const [currentBpm, setCurrentBpm] = useState<number | null>(null)
 
   const rafRef = useRef(0)
@@ -41,10 +62,10 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const holdingRef = useRef(false)
   const lastCompTime = useRef(0)
   const overBreathRef = useRef(false)
-  const rhythmQRef = useRef<string[]>([])
+  const rhythmQRef = useRef<RhythmQuality[]>([])
   const doneRef = useRef(false)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  const pausedRef = usePauseRef(paused)
+  const { complete } = useMiniGameFinish(onComplete, 700)
 
   // 泄气循环
   useEffect(() => {
@@ -80,17 +101,11 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
 
     // 实时 BPM
     if (gap > 0) {
-      const bpm = Math.round(60000 / gap)
-      setCurrentBpm(bpm)
+      setCurrentBpm(calcBpm(gap))
     }
 
-    // 节奏质量（按 BPM 偏差）
-    let quality = 'good'
-    if (gap > 0) {
-      const bpm = 60000 / gap
-      const bpmDev = Math.abs(bpm - TARGET_BPM)
-      quality = bpmDev <= 10 ? 'good' : bpmDev <= 20 ? 'ok' : 'bad'
-    }
+    // 节奏质量
+    const quality = gap > 0 ? assessBpmQuality(gap, CPR_TARGET_BPM) : 'good'
     rhythmQRef.current.push(quality)
     setRhythmQualities([...rhythmQRef.current])
 
@@ -100,7 +115,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     setPulse(true)
     setTimeout(() => setPulse(false), 100)
 
-    if (n >= COMPRESSIONS) {
+    if (n >= CPR_COMPRESSIONS_PER_CYCLE) {
       setPhase('blowing_1')
       setBreathCount(0)
       breathCountRef.current = 0
@@ -115,9 +130,9 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     if (pausedRef.current || (p !== 'blowing_1' && p !== 'blowing_2') || !holdingRef.current) return
     holdingRef.current = false
     const f = fillRef.current
-    if (f >= overThreshold) {
+    if (f >= CPR_BLOW_OVER_THRESHOLD) {
       overBreathRef.current = true
-    } else if (f >= idealMin) {
+    } else if (f >= CPR_BLOW_IDEAL_MIN) {
       const n = breathCountRef.current + 1
       breathCountRef.current = n
       setBreathCount(n)
@@ -125,12 +140,10 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       setTimeout(() => setGoodBreath(false), 400)
 
       if (n === 1) {
-        // 第1次吹气完成 → 暂停1秒
         fillRef.current = 0
         setFill(0)
         setPhase('pause_1to2')
-      } else if (n >= BREATHS) {
-        // 2次完成
+      } else if (n >= CPR_BREATHS_PER_CYCLE) {
         if (cycle < cycles) {
           fillRef.current = 0
           setFill(0)
@@ -190,7 +203,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         setPhase('blowing_2')
         fillRef.current = 0
         setFill(0)
-      }, PAUSE_MS)
+      }, CPR_BREATH_PAUSE_MS)
       return () => clearTimeout(t)
     }
   }, [phase, paused])
@@ -198,27 +211,24 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const finish = () => {
     if (finished.current) return
     finished.current = true
-    const qualities = rhythmQRef.current
-    const good = qualities.filter(q => q === 'good').length
-    const ok = qualities.filter(q => q === 'ok').length
-    const totalHealth = qualities.length > 5 ? (good * 1 + ok * 0.5) / qualities.length : 0.5
+    const rhythmScore = calcRhythmScore(rhythmQRef.current)
     const breathPenalty = overBreathRef.current ? 0.15 : 0
-    const score = Math.max(0, Math.min(1, totalHealth * 0.8 + 0.2 - breathPenalty))
-    setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
+    const score = calcCprFinalScore(rhythmScore, breathPenalty)
+    complete(score, computePassed(score, s.passThreshold))
   }
 
-  const barColor = fill >= overThreshold ? '#ef4444' : fill >= idealMin ? '#16a34a' : fill > 0 ? '#3b82f6' : 'var(--border)'
+  const barColor = fill >= CPR_BLOW_OVER_THRESHOLD ? '#ef4444' : fill >= CPR_BLOW_IDEAL_MIN ? '#16a34a' : fill > 0 ? '#3b82f6' : 'var(--border)'
 
   // 节奏指标统计
   const goodCount = rhythmQualities.filter(q => q === 'good').length
 
   return (
-    <div style={wrap}>
-      <div style={{ display: 'flex', gap: 16, fontFamily: 'monospace' }}>
+    <div style={engineWrap}>
+      <div style={readoutRow}>
         <Readout label="循环" value={`${cycle}/${cycles}`} color="#3b82f6" />
-        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${COMPRESSIONS}`} color="#dc2626" />}
+        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${CPR_COMPRESSIONS_PER_CYCLE}`} color="#dc2626" />}
         {(phase === 'blowing_1' || phase === 'blowing_2') && (
-          <Readout label="吹气" value={`${breathCount}/${BREATHS}`} color="#16a34a" />
+          <Readout label="吹气" value={`${breathCount}/${CPR_BREATHS_PER_CYCLE}`} color="#16a34a" />
         )}
         {compCount > 0 && phase === 'compressing' && (
           <Readout label="✓" value={String(goodCount)} color="#16a34a" />
@@ -232,7 +242,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           <div style={{ fontSize: 11, marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: 'var(--text-secondary)' }}>目标:</span>
             <span style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
-              {TARGET_BPM}
+              {CPR_TARGET_BPM}
             </span>
             <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>BPM</span>
             {currentBpm !== null && (
@@ -240,8 +250,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
                 <span style={{ color: 'var(--text-muted)' }}>|</span>
                 <span style={{ color: 'var(--text-secondary)' }}>当前:</span>
                 <span style={{
-                  color: Math.abs(currentBpm - TARGET_BPM) <= 10 ? '#16a34a' :
-                         Math.abs(currentBpm - TARGET_BPM) <= 20 ? '#d97706' : '#ef4444',
+                  color: bpmDeviationColor(currentBpm, CPR_TARGET_BPM),
                   fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15,
                 }}>
                   {currentBpm}
@@ -250,42 +259,22 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
               </>
             )}
           </div>
-          <div
-            onPointerDown={doCompress}
-            style={{
-              width: 130, height: 130, borderRadius: '50%',
-              background: pulse
-                ? 'radial-gradient(circle at 50% 50%, #fecaca, var(--bg-surface))'
-                : 'radial-gradient(circle at 50% 50%, var(--border-light), var(--bg-elevated))',
-              border: `4px solid ${pulse ? '#ef4444' : 'var(--text-muted)'}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', userSelect: 'none',
-              transform: pulse ? 'scale(0.9)' : 'scale(1)',
-              transition: 'transform 0.08s',
-              boxShadow: pulse ? '0 0 20px rgba(239,68,68,0.3)' : 'none',
-              position: 'relative',
-            }}
-          >
-            <span style={{ fontSize: 13, color: pulse ? '#ef4444' : 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center', lineHeight: 1.3 }}>
-              按压{'\n'}空格
-            </span>
+          <div onPointerDown={doCompress} style={pressCircle({ pulse })}>
+            <span style={pulse ? pressHintActive : pressHint}>按压{'\n'}空格</span>
           </div>
 
           {/* 进度条 */}
-          <div style={{ width: 240, height: 6, borderRadius: 3, backgroundColor: 'var(--border-light)', overflow: 'hidden' }}>
-            <div style={{ width: `${(compCount / COMPRESSIONS) * 100}%`, height: '100%', backgroundColor: '#dc2626', transition: 'width 0.1s' }} />
+          <div style={progressTrack}>
+            <div style={progressFill((compCount / CPR_COMPRESSIONS_PER_CYCLE) * 100)} />
           </div>
 
           {/* 节奏准确度视觉化 */}
           {compCount > 0 && compCount <= 30 && (
             <div style={{ width: 240 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>节奏准确度：</div>
-              <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <div style={qualityRow}>
                 {rhythmQualities.map((q, i) => (
-                  <div key={i} style={{
-                    width: 6, height: 6, borderRadius: 1,
-                    backgroundColor: q === 'good' ? '#16a34a' : q === 'ok' ? '#d97706' : '#ef4444',
-                  }} />
+                  <div key={i} style={qualityDot(rhythmQualityColor(q))} />
                 ))}
               </div>
             </div>
@@ -299,7 +288,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       {/* === 1秒间隔 === */}
       {phase === 'pause_1to2' && (
         <div style={{ fontSize: 14, color: '#d97706', fontWeight: 'bold', padding: '20px 0' }}>
-          ⏸ 等待 {PAUSE_MS / 1000} 秒后再次吹气…
+          ⏸ 等待 {CPR_BREATH_PAUSE_MS / 1000} 秒后再次吹气…
         </div>
       )}
 
@@ -308,9 +297,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
 
       {/* === 完成 === */}
       {phase === 'done' && (
-        <div style={{ fontSize: 16, color: '#16a34a', fontWeight: 'bold', padding: '10px 0' }}>
-          ✓ {cycles} 个循环 CPR 完成！
-        </div>
+        <div style={doneText}>✓ {cycles} 个循环 CPR 完成！</div>
       )}
     </div>
   )

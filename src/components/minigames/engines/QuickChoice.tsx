@@ -3,8 +3,8 @@
 // 纯文字版急救知识点选择题，选择正确的急救操作方法
 // ============================================================
 
-import { useRef, useState } from 'react'
 import type { MiniGameProps, QuickChoiceSpec } from '../../../game/types'
+import { usePauseRef, useAttemptScoring } from './hooks'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -45,33 +45,14 @@ const progressBar: React.CSSProperties = {
   overflow: 'hidden',
 }
 
-export function QuickChoice({ spec, onComplete }: MiniGameProps) {
+export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
   const s = spec as QuickChoiceSpec
-  const [selected, setSelected] = useState<number | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const finished = useRef(false)
-  const attemptsRef = useRef(0)
-
-  const handleSelect = (idx: number) => {
-    if (finished.current || showResult) return
-    attemptsRef.current += 1
-    setSelected(idx)
-    setShowResult(true)
-
-    const correct = idx === s.correctIndex
-    if (correct) {
-      finished.current = true
-      const score = Math.max(0.3, 1 - (attemptsRef.current - 1) * 0.3)
-      setTimeout(() => onComplete(score, score >= s.passThreshold), 1000)
-    } else {
-      setTimeout(() => {
-        setShowResult(false)
-        setSelected(null)
-      }, 1500)
-    }
-  }
-
-  const isCorrect = selected === s.correctIndex
+  const pausedRef = usePauseRef(paused)
+  const { selected, showResult, attempts, handleSelect, isCorrect } = useAttemptScoring(
+    { correctIndex: s.correctIndex, passThreshold: s.passThreshold },
+    onComplete,
+    pausedRef,
+  )
 
   return (
     <div style={wrap}>
@@ -165,7 +146,7 @@ export function QuickChoice({ spec, onComplete }: MiniGameProps) {
           <div style={{
             height: '100%',
             borderRadius: 2,
-            width: `${(attemptsRef.current / 2) * 100}%`,
+            width: `${(attempts / 2) * 100}%`,
             background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-cyan))',
             transition: 'width 0.3s',
           }} />

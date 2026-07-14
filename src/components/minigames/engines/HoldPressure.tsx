@@ -6,6 +6,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { HoldPressureSpec, MiniGameProps } from '../../../game/types'
 import { Readout } from '../Readout'
+import { usePauseRef } from './hooks'
+import { useMiniGameFinish } from './useMiniGameFinish'
+import { computePassed } from './scoring'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -26,9 +29,9 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
   const rafRef = useRef<number | null>(null)
   const lastRef = useRef(0)
   const finished = useRef(false)
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  const pausedRef = usePauseRef(paused)
   const maxTime = s.holdSec * 3 + 6
+  const { complete } = useMiniGameFinish(onComplete, 700)
 
   useEffect(() => {
     lastRef.current = performance.now()
@@ -80,7 +83,7 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
     setHolding(false)
     const reached = safeRef.current >= s.holdSec
     const score = reached ? 1 : Math.max(0, Math.min(1, safeRef.current / s.holdSec))
-    setTimeout(() => onComplete(score, score >= s.passThreshold), 700)
+    complete(score, computePassed(score, s.passThreshold))
   }
 
   const bloodColor = blood < 30 ? '#16a34a' : blood < 70 ? '#d97706' : '#ef4444'

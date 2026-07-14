@@ -4,8 +4,11 @@
 // ============================================================
 
 import { useEffect } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { AlertTriangle, CheckCircle2, XCircle, Info, X } from 'lucide-react'
 import type { PatientEvent } from '../../game/types'
+import { C_SUCCESS, C_WARNING, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
+import { slideInRight, DUR_NORMAL, DUR_QUICK } from '../animations/presets'
 
 interface Props {
   events: PatientEvent[]
@@ -15,10 +18,18 @@ interface Props {
 }
 
 const KIND_STYLE: Record<PatientEvent['kind'], { color: string; bg: string; Icon: typeof Info }> = {
-  good: { color: '#16a34a', bg: '#f0fdf4', Icon: CheckCircle2 },
-  warn: { color: '#d97706', bg: '#fffbeb', Icon: AlertTriangle },
-  bad:  { color: '#dc2626', bg: '#fef2f2', Icon: XCircle },
-  info: { color: '#2563eb', bg: '#eff6ff', Icon: Info },
+  good: { color: C_SUCCESS, bg: '#f0fdf4', Icon: CheckCircle2 },
+  warn: { color: C_WARNING, bg: '#fffbeb', Icon: AlertTriangle },
+  bad:  { color: C_DARK_DANGER, bg: '#fef2f2', Icon: XCircle },
+  info: { color: C_DEEP_BLUE, bg: '#eff6ff', Icon: Info },
+}
+
+/** Toast 自动消失时长（毫秒） */
+const TOAST_TTL: Record<PatientEvent['kind'], number> = {
+  good: 2800,
+  warn: 4500,
+  bad: 4500,
+  info: 2800,
 }
 
 export function EventToastStack({ events, onDismiss, maxVisible = 4 }: Props) {
@@ -28,7 +39,7 @@ export function EventToastStack({ events, onDismiss, maxVisible = 4 }: Props) {
   return (
     <div style={{
       position: 'fixed',
-      top: 50,           // HUD 下方
+      top: 50,
       right: 16,
       display: 'flex',
       flexDirection: 'column',
@@ -37,9 +48,11 @@ export function EventToastStack({ events, onDismiss, maxVisible = 4 }: Props) {
       pointerEvents: 'none',
       maxWidth: 340,
     }}>
-      {visible.map(e => (
-        <ToastItem key={e.id} event={e} onDismiss={onDismiss} />
-      ))}
+      <AnimatePresence mode="popLayout">
+        {visible.map(e => (
+          <ToastItem key={e.id} event={e} onDismiss={onDismiss} />
+        ))}
+      </AnimatePresence>
     </div>
   )
 }
@@ -48,29 +61,35 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
   const style = KIND_STYLE[event.kind]
   const { Icon } = style
 
-  // 自动 3.5s 后消失（good/info 更快）
   useEffect(() => {
-    const ttl = event.kind === 'good' || event.kind === 'info' ? 2800 : 4500
+    const ttl = TOAST_TTL[event.kind]
     const id = setTimeout(() => onDismiss(event.id), ttl)
     return () => clearTimeout(id)
   }, [event.id, event.kind, onDismiss])
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '8px 10px',
-      backgroundColor: style.bg,
-      border: `1px solid ${style.color}40`,
-      borderLeft: `3px solid ${style.color}`,
-      borderRadius: 4,
-      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-      fontSize: 12,
-      color: '#1e293b',
-      animation: 'slide-in-right 0.25s ease-out',
-      pointerEvents: 'auto',
-    }}>
+    <motion.div
+      variants={slideInRight}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      transition={{ duration: DUR_NORMAL }}
+      layout
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '8px 10px',
+        backgroundColor: style.bg,
+        border: `1px solid ${style.color}40`,
+        borderLeft: `3px solid ${style.color}`,
+        borderRadius: 4,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        fontSize: 12,
+        color: '#1e293b',
+        pointerEvents: 'auto',
+      }}
+    >
       <Icon size={14} color={style.color} />
       <span style={{ flex: 1, lineHeight: 1.4 }}>{event.text}</span>
       <button
@@ -88,6 +107,6 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
       >
         <X size={12} />
       </button>
-    </div>
+    </motion.div>
   )
 }

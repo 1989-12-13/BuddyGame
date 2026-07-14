@@ -197,6 +197,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     callerState: null,
     fleet: newFleet,
     dispatchSent: false,  // HUD 不再显示当前通话 ETA
+    dispatchRecord: null,  // 清除当前通话派车记录
     guidanceActive: false,
     totalScore: state.totalScore + total,
     callScores: nextCallScores,

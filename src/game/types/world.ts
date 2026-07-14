@@ -102,6 +102,9 @@ export interface WorldState {
   // 对话历史
   dialogueLog: DialogueLine[]
 
+  // 确定性事件序列号（用于生成可复现的事件 ID）
+  eventSeq: number
+
   // 临床判断
   pendingJudgments: JudgmentPrompt[]   // 等待玩家做出判断的选择题
 
@@ -148,21 +151,6 @@ export interface DialogueLine {
   speaker: 'caller' | 'operator' | 'system'
   text: string
   timestamp: number           // shiftElapsed 时间戳
-}
-
-// -------------------- 通话结果（用于日志/结算） --------------------
-export interface CallResult {
-  scenarioId: string
-  scenarioTitle: string
-  isPrank: boolean
-  dispatchTime: number | null
-  triageDecision: TriageLevel | null
-  correctTriage: TriageLevel
-  addressCompleteness: 'vague' | 'partial' | 'full'
-  guidanceStepsCorrect: number
-  guidanceStepsTotal: number
-  score: number
-  dispatchedInTime: boolean   // 是否1分钟内派车
 }
 
 // -------------------- 结局 --------------------

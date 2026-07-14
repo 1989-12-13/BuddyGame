@@ -33,8 +33,8 @@ export const ROGUE_PERKS: Record<RoguePerkId, RoguePerkDef> = {
     id: 'priority_channel',
     title: '优先通道',
     category: 'time',
-    description: '派车后预计到达时间减少 2 秒。',
-    effect: 'ETA -2',
+    description: '系统为所有候选道路开启优先通道，预计到达时间减少 5 秒。',
+    effect: '路线 ETA -5',
   },
   field_first_aid: {
     id: 'field_first_aid',

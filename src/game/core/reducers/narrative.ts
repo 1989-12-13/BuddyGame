@@ -110,8 +110,7 @@ export function generateEventNarrative(
 }
 
 /** 生成步骤3（患者年龄）的叙述式回答 */
-export function generateAgeNarrative(age: string, stress: number, gender: string): string {
-  const pronoun = getPronoun(gender)
+export function generateAgeNarrative(age: string, stress: number): string {
   const cleanAge = age.replace(/男性|女性|男|女|不详/g, '').trim()
   if (stress >= 75) return `${cleanAge}！！反正就是这么大年纪！！你们快来啊！！`
   if (stress >= 50) return `好像是${cleanAge}...我也记不清了...应该是${cleanAge}吧，这很重要吗？`

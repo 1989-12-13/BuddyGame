@@ -1,2 +1,2 @@
 export { SCENARIOS, SCENARIO_IDS } from './templates'
-export { triggerEngine } from './triggerEngine'
+export { canAnswerNextCall, canDispatch } from './triggerEngine'

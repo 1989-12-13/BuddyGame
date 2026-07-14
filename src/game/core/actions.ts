@@ -4,6 +4,7 @@
 
 import type { TriageLevel, MpdsDeterminant, FragmentTargetField } from '../types'
 import type { RoguePerkId } from './perks'
+import type { RoutePlan } from './routing'
 
 export type TerminalField = 'address' | 'contact' | 'chiefComplaint' | 'patientAge' | 'patientGender' | 'conditionNote'
 
@@ -19,8 +20,7 @@ export type GameAction =
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
-  | { type: 'SELECT_VEHICLE'; vehicleId: string }                 // 玩家在派车 UI 中选定车辆
-  | { type: 'DISPATCH'; vehicleId?: string }                      // 派车；可选指定车辆，否则用 selectedVehicleId 或自动选最快
+  | { type: 'DISPATCH'; vehicleId?: string; route?: RoutePlan }   // 系统车辆 + 玩家逐节点确认的路线
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL'; perkChoices?: RoguePerkId[] }

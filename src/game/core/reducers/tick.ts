@@ -34,15 +34,36 @@ export function handleTick(state: WorldState): WorldState {
     beforeRescueVehicle?.status === 'en_route' &&
     afterRescueVehicle?.status === 'on_scene'
 
+  const justReceivedTrafficUpdate =
+    state.rescue.phase === 'enroute' &&
+    beforeRescueVehicle?.mission?.trafficUpdateApplied !== true &&
+    afterRescueVehicle?.mission?.trafficUpdateApplied === true
+  const trafficUpdate = justReceivedTrafficUpdate
+    ? afterRescueVehicle?.mission?.lastTrafficUpdate ?? null
+    : null
+
   let newAmbulanceRemaining = state.ambulanceRemaining
   if (state.dispatchSent && state.ambulanceRemaining > 0) {
-    newAmbulanceRemaining -= 1
-    if (newAmbulanceRemaining === 0 && justArrivedAtScene) {
+    newAmbulanceRemaining = afterRescueVehicle?.status === 'en_route'
+      ? afterRescueVehicle.eta
+      : 0
+    if (justArrivedAtScene) {
       newDialogue.push({
         speaker: 'system',
         text: '【▸ 救护车已到达现场】',
         timestamp: newElapsed,
       })
+    }
+  }
+
+  if (trafficUpdate && afterRescueVehicle) {
+    const prefix = trafficUpdate.deltaSeconds > 0 ? '⚠ 路况更新' : '✓ 路况更新'
+    const text = `${prefix} · ${afterRescueVehicle.name}：${trafficUpdate.message}`
+    newDialogue.push({ speaker: 'system', text: `【${text}】`, timestamp: newElapsed })
+    sinkEvent(sink, trafficUpdate.deltaSeconds > 0 ? 'warn' : 'good', text, newElapsed)
+    newRescue = {
+      ...newRescue,
+      etaTotal: Math.max(1, newRescue.etaTotal + trafficUpdate.deltaSeconds),
     }
   }
 

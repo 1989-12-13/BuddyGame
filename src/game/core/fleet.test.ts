@@ -14,6 +14,7 @@ import {
   tierLabel,
 } from './fleet'
 import type { FleetState } from './fleet'
+import { buildRouteOptions } from './routing'
 
 // ============================================================
 // createDefaultFleet
@@ -129,6 +130,37 @@ describe('advanceFleet', () => {
     expect(next.vehicles[0].eta).toBe(5) // unchanged
     expect(next.vehicles[0].status).toBe('en_route')
   })
+
+  it('按路线节点推进，并且实时路况只应用一次', () => {
+    const route = buildRouteOptions({
+      start: { lat: 39.9, lng: 116.3 },
+      end: { lat: 40.0, lng: 116.5 },
+      baseEta: 70,
+      seed: 'fleet-live-traffic',
+    })[0]
+    let fleet: FleetState = {
+      vehicles: [{
+        id: 'v1', name: 'A', status: 'en_route', eta: route.totalEta, speed: 2, capability: 4,
+        tier: 'ALS', equipment: [], currentCallId: 'c1',
+        mission: {
+          callId: 'c1', outboundTotal: route.totalEta, onSceneTotal: 2,
+          eventLatLng: route.nodes[route.nodes.length - 1].pos,
+          route, routeElapsed: 0, trafficUpdateApplied: false, lastTrafficUpdate: null,
+        },
+      }],
+      selectedVehicleId: 'v1',
+    }
+
+    for (let i = 0; i < route.scheduledUpdate.atSecond; i += 1) fleet = advanceFleet(fleet)
+    const afterUpdate = fleet.vehicles[0]
+    expect(afterUpdate.mission?.trafficUpdateApplied).toBe(true)
+    expect(afterUpdate.mission?.routeElapsed).toBe(route.scheduledUpdate.atSecond)
+    expect(afterUpdate.mission?.route?.totalEta).toBe(route.totalEta + route.scheduledUpdate.deltaSeconds)
+
+    const next = advanceFleet(fleet).vehicles[0]
+    expect(next.mission?.route?.totalEta).toBe(afterUpdate.mission?.route?.totalEta)
+    expect(next.eta).toBe(afterUpdate.eta - 1)
+  })
 })
 
 // ============================================================
@@ -186,7 +218,7 @@ describe('findFastestAvailable', () => {
     const fleet = createDefaultFleet()
     const v = findFastestAvailable(fleet)
     expect(v).not.toBeNull()
-    expect(v!.speed).toBe(3) // 方庄丙车 speed=3
+    expect(v!.speed).toBe(3) // 方庄站救护车 speed=3
   })
 
   it('没有可用车辆时返回 null', () => {
@@ -210,7 +242,7 @@ describe('findMostCapableAvailable', () => {
     const fleet = createDefaultFleet()
     const v = findMostCapableAvailable(fleet)
     expect(v).not.toBeNull()
-    expect(v!.capability).toBe(5) // 方庄丙车 capability=5
+    expect(v!.capability).toBe(5) // 方庄站救护车 capability=5
   })
 
   it('没有可用车辆时返回 null', () => {

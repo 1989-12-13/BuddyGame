@@ -3,6 +3,7 @@ import type { JudgmentPrompt, WorldState } from '../types'
 import { determinantToHotCold } from '../types'
 import { createInitialState } from './worldState'
 import { worldReducer } from './worldReducer'
+import { buildDispatchPlan } from './dispatchPlanning'
 
 function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
   const started = worldReducer(createInitialState(), { type: 'START_SHIFT' })
@@ -48,6 +49,29 @@ describe('worldReducer', () => {
     expect(dispatched.dispatchRecord?.triage).toBe('red')
     expect(overridden.terminal.triage).toBe('yellow')
     expect(dispatched.dialogueLog).toHaveLength(classified.dialogueLog.length + 2)
+  })
+
+  it('persists the system-assigned vehicle and completed node route in the mission', () => {
+    const classified = worldReducer(beginCall(), {
+      type: 'SET_MPDS_DETERMINANT',
+      determinant: 'ECHO',
+    })
+    const plan = buildDispatchPlan(classified)
+    expect(plan).not.toBeNull()
+    const selectedRoute = plan!.routes[1]
+    const dispatched = worldReducer(classified, {
+      type: 'DISPATCH',
+      vehicleId: plan!.vehicle.id,
+      route: selectedRoute,
+    })
+    const vehicle = dispatched.fleet.vehicles.find(item => item.id === plan!.vehicle.id)
+
+    expect(dispatched.rescue.vehicleId).toBe(plan!.vehicle.id)
+    expect(dispatched.dispatchRecord?.routeId).toBe(selectedRoute.id)
+    expect(dispatched.dispatchRecord?.routeStrategy).toBe(selectedRoute.strategy)
+    expect(vehicle?.mission?.route).toEqual(selectedRoute)
+    expect(vehicle?.mission?.route?.nodes[0].id).toBe('route-start')
+    expect(vehicle?.mission?.route?.nodes[vehicle.mission.route.nodes.length - 1].id).toBe('route-scene')
   })
 
   it('derives HOT or COLD response mode from the player determinant', () => {

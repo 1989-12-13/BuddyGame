@@ -131,7 +131,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     stressEffect = -4
     newDialogue.push({ speaker: 'operator', text: '患者多大年龄了？', timestamp: now })
     const age = call.fourElements.condition.age
-    const ageText = generateAgeNarrative(age, newStress, call.fourElements.condition.gender)
+    const ageText = generateAgeNarrative(age, newStress)
     newDialogue.push({ speaker: 'caller', text: ageText, timestamp: now })
     newRevealed.age = newStress < 75
     newInfoQuality['age'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'

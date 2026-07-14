@@ -124,8 +124,7 @@ export function generateEventNarrative(
 }
 
 /** 生成步骤3（患者年龄）的叙述式回答 */
-export function generateAgeNarrative(age: string, stress: number, gender: string): string {
-  const pronoun = getPronoun(gender)
+export function generateAgeNarrative(age: string, stress: number): string {
   const cleanAge = age.replace(/男性|女性|男|女|不详/g, '').trim()
   const isNumericAge = /^\d+/.test(cleanAge)
 

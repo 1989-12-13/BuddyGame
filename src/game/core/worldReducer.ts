@@ -22,7 +22,6 @@ import {
   handleSetDeterminantSubcode,
   handleSetProtocol,
   handleSetTriage,
-  handleSelectVehicle,
   handleDismissPatientEvent,
   handleDismissDebrief,
   handleChoosePerk,
@@ -65,11 +64,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     case 'SET_TRIAGE':
       return handleSetTriage(state, action.level)
 
-    case 'SELECT_VEHICLE':
-      return handleSelectVehicle(state, action.vehicleId)
-
     case 'DISPATCH':
-      return handleDispatch(state, action.vehicleId)
+      return handleDispatch(state, action.vehicleId, action.route)
 
     case 'ANSWER_GUIDANCE':
       return handleAnswerGuidance(state, action.stepIndex, action.selectedIndex)
@@ -96,7 +92,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleShowEnding(state)
 
     case 'BACK_TO_TITLE':
-      return handleBackToTitle(state)
+      return handleBackToTitle()
 
     default:
       return state

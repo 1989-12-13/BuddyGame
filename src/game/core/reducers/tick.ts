@@ -35,14 +35,32 @@ export function handleTick(state: WorldState): WorldState {
     afterRescueVehicle?.status === 'on_scene'
 
   // 从 fleet 救援车辆实时读取 ETA，消除冗余状态不同步风险
-  const rescueVehicle = rescueVid ? afterFleet.vehicles.find(v => v.id === rescueVid) : null
-  const newAmbulanceRemaining = rescueVehicle?.status === 'en_route' ? rescueVehicle.eta : 0
+  const newAmbulanceRemaining = afterRescueVehicle?.status === 'en_route' ? afterRescueVehicle.eta : 0
   if (justArrivedAtScene) {
     newDialogue.push({
       speaker: 'system',
       text: '【▸ 救护车已到达现场】',
       timestamp: newElapsed,
     })
+  }
+
+  const justReceivedTrafficUpdate =
+    state.rescue.phase === 'enroute' &&
+    beforeRescueVehicle?.mission?.trafficUpdateApplied !== true &&
+    afterRescueVehicle?.mission?.trafficUpdateApplied === true
+  const trafficUpdate = justReceivedTrafficUpdate
+    ? afterRescueVehicle?.mission?.lastTrafficUpdate ?? null
+    : null
+
+  if (trafficUpdate && afterRescueVehicle) {
+    const prefix = trafficUpdate.deltaSeconds > 0 ? '⚠ 路况更新' : '✓ 路况更新'
+    const text = `${prefix} · ${afterRescueVehicle.name}：${trafficUpdate.message}`
+    newDialogue.push({ speaker: 'system', text: `【${text}】`, timestamp: newElapsed })
+    sinkEvent(sink, trafficUpdate.deltaSeconds > 0 ? 'warn' : 'good', text, newElapsed)
+    newRescue = {
+      ...newRescue,
+      etaTotal: Math.max(1, newRescue.etaTotal + trafficUpdate.deltaSeconds),
+    }
   }
 
   // 患者生命体征每秒衰减

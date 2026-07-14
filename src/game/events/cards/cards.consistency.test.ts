@@ -5,7 +5,7 @@
 // ============================================================
 
 import { describe, it, expect } from 'vitest'
-import { PROTOCOLS, getProtocolByNumber, getPronoun } from '../../content'
+import { getProtocolByNumber, getPronoun } from '../../content'
 import {
   cardiacArrestCard,
   traumaCarCard,
@@ -80,15 +80,6 @@ const ALL_CARDS = [
 ]
 
 // ==================== IPA 代词匹配模式 ====================
-/** 从一段文本中检查某个代词的出现次数（忽略注释/代码结构） */
-function countPronounIn(text: string, pronoun: string): number {
-  // 只匹配中文正文中的代词，避免匹配 CSS/JS 代码标记
-  // 典型使用场景：outcomeNarrative.good/bad 中的 "他/她/TA"
-  const regex = new RegExp(`(?<=[，。！？；、：））"])?${pronoun}(?=[，。！？；、：（）(（]|\\s|$)`, 'g')
-  const matches = text.match(regex)
-  return matches ? matches.length : 0
-}
-
 /** 获取文本中的所有中英文代词出现 */
 function findPronouns(text: string): string[] {
   const result: string[] = []

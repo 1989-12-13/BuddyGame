@@ -3,13 +3,14 @@
 // 跨通话显示所有占用车辆（en_route/on_scene/returning）
 // ============================================================
 
-import { useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet'
+import { Fragment, useEffect, useMemo } from 'react'
+import { CircleMarker, MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { WorldState } from '../../game/types'
 import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
 import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
+import { positionAlongRoute, roadConditionColor } from '../../game/core/routing'
 import {
   stationIconFor,
   ambulanceIconFor,
@@ -25,11 +26,6 @@ interface Props {
 }
 
 // -------------------- 辅助：lat/lng 线性插值 --------------------
-function lerpCoord(a: LatLng, b: LatLng, t: number): LatLng {
-  const c = Math.max(0, Math.min(1, t))
-  return { lat: a.lat + (b.lat - a.lat) * c, lng: a.lng + (b.lng - a.lng) * c }
-}
-
 // -------------------- 缩放控件（放在左下角） --------------------
 function ZoomControl() {
   const map = useMap()
@@ -182,46 +178,71 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
           ? null  // 已由 mission 渲染，避免重复
           : null}
 
-        {/* 救护车 + 路径 */}
+        {/* 救护车 + 玩家确认的节点路线 */}
         {state.fleet.vehicles
           .filter((v): v is Ambulance & { mission: NonNullable<Ambulance['mission']> } => v.status !== 'available' && v.mission != null)
           .map(v => {
             const station = STATION_COORDS[v.id]?.pos
             if (!station) return null
             const m = v.mission
+            const routePoints = m.route?.nodes.map(node => node.pos) ?? [station, m.eventLatLng]
             let cur: LatLng
-            let path: LatLng[]
             if (v.status === 'en_route') {
-              // 进度由 fleet 自身维护的 v.eta 推算（跨通话不再依赖全局 ambulanceRemaining）
-              const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
-              const clamped = Math.max(0, Math.min(1, progress))
-              cur = lerpCoord(station, m.eventLatLng, clamped)
-              path = [station, cur]
+              const elapsed = m.routeElapsed ?? Math.max(0, m.outboundTotal - v.eta)
+              cur = positionAlongRoute(routePoints, elapsed / Math.max(1, elapsed + v.eta))
             } else if (v.status === 'on_scene') {
               cur = m.eventLatLng
-              path = [station, m.eventLatLng]
             } else {
-              // returning：v.eta 从 outboundTotal 减到 0，从现场返回站点
               const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
-              const clamped = Math.max(0, Math.min(1, progress))
-              cur = lerpCoord(m.eventLatLng, station, clamped)
-              path = [m.eventLatLng, cur, station]
+              cur = positionAlongRoute([...routePoints].reverse(), progress)
             }
             // 跨通话车辆：mission.callId !== 当前通话 → 历史/背景任务，dim 化
             const isMissionOfCurrentCall = m.callId === currentCallId
             const isCurrentRescue = v.id === state.rescue.vehicleId && isMissionOfCurrentCall
             const dim = !isMissionOfCurrentCall && !isCurrentRescue
             return (
-              <div key={`amb-${v.id}`}>
-                <Polyline
-                  positions={path.map(p => [p.lat, p.lng])}
-                  pathOptions={{
-                    color: v.status === 'returning' ? 'var(--accent-green)' : 'var(--accent-amber)',
-                    weight: dim ? 1 : 2,
-                    opacity: dim ? 0.3 : (v.status === 'returning' ? 0.5 : 0.7),
-                    dashArray: dim ? '2 8' : '6 6',
-                  }}
-                />
+              <Fragment key={`amb-${v.id}`}>
+                {v.status === 'returning' || !m.route ? (
+                  <Polyline
+                    positions={routePoints.map(point => [point.lat, point.lng])}
+                    pathOptions={{
+                      color: v.status === 'returning' ? '#16a34a' : '#d97706',
+                      weight: dim ? 1 : 2,
+                      opacity: dim ? 0.3 : 0.65,
+                      dashArray: dim ? '2 8' : '6 6',
+                    }}
+                  />
+                ) : m.route.segments.map((segment, segmentIndex) => {
+                  const from = m.route!.nodes[segmentIndex].pos
+                  const to = m.route!.nodes[segmentIndex + 1].pos
+                  return (
+                    <Polyline
+                      key={segment.id}
+                      positions={[[from.lat, from.lng], [to.lat, to.lng]]}
+                      pathOptions={{
+                        color: roadConditionColor(segment.condition),
+                        weight: dim ? 2 : 4,
+                        opacity: dim ? 0.28 : 0.82,
+                        dashArray: dim ? '2 8' : undefined,
+                      }}
+                    >
+                      <Tooltip direction="top" opacity={0.95}>
+                        {segment.conditionLabel} · {segment.description}
+                      </Tooltip>
+                    </Polyline>
+                  )
+                })}
+
+                {m.route && isMissionOfCurrentCall && m.route.nodes.slice(1, -1).map(node => (
+                  <CircleMarker
+                    key={node.id}
+                    center={[node.pos.lat, node.pos.lng]}
+                    radius={4}
+                    pathOptions={{ color: '#e2e8f0', weight: 1, fillColor: '#0f172a', fillOpacity: 0.9 }}
+                  >
+                    <Tooltip direction="top" opacity={0.95}>{node.label}</Tooltip>
+                  </CircleMarker>
+                ))}
                 <Marker
                   position={[cur.lat, cur.lng]}
                   icon={ambulanceIconFor(v.status, dim)}
@@ -238,7 +259,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                     {isCurrentRescue && state.rescue.phase === 'failed' ? ' · 救治失败' : ''}
                   </Tooltip>
                 </Marker>
-              </div>
+              </Fragment>
             )
           })}
 

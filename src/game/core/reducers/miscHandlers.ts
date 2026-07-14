@@ -74,17 +74,6 @@ export function handleSetTriage(state: WorldState, level: TriageLevel): WorldSta
   }
 }
 
-// -------------------- 车辆选择 --------------------
-
-export function handleSelectVehicle(state: WorldState, vehicleId: string): WorldState {
-  const v = state.fleet.vehicles.find(x => x.id === vehicleId && x.status === 'available')
-  if (!v) return state
-  return {
-    ...state,
-    fleet: { ...state.fleet, selectedVehicleId: v.id },
-  }
-}
-
 // -------------------- 事件/结果 --------------------
 
 export function handleDismissPatientEvent(state: WorldState, eventId: string): WorldState {
@@ -124,6 +113,6 @@ export function handleShowEnding(state: WorldState): WorldState {
   return { ...state, screen: 'ending' }
 }
 
-export function handleBackToTitle(_state: WorldState): WorldState {
+export function handleBackToTitle(): WorldState {
   return createInitialState()
 }

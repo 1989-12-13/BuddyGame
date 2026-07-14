@@ -10,7 +10,8 @@ import { VITAL_SIGN_COLORS, C_DARK_DANGER } from '../../game/core/colors'
 import { Z_CLOSING_OVERLAY, Z_PERK } from '../../game/core/zIndex'
 import { fmtDuration } from '../../utils/timeFormat'
 import type { EndingDef } from '../../game/types'
-import { getPerkChoices } from '../../game/core/perks'
+import { buildDispatchPlan, type DispatchPlan } from '../../game/core/dispatchPlanning'
+import { getPerkChoices, hasPerk } from '../../game/core/perks'
 import { worldReducer } from '../../game/core/worldReducer'
 import { getCaller } from '../../game/npc/personas'
 import { Hud } from '../../components/hud/Hud'
@@ -18,7 +19,7 @@ import { CallInfoBar } from '../../components/hud/CallInfoBar'
 import { CallDebrief } from '../../components/call/CallDebrief'
 import { VitalSignsBar } from '../../components/feedback/VitalSignsBar'
 import { EventToastStack } from '../../components/feedback/EventToastStack'
-import { VehicleSelector } from '../../components/feedback/VehicleSelector'
+import { RoutePlanner } from '../../components/feedback/RoutePlanner'
 import { CityMap } from '../../components/map/CityMap'
 import { CallDrawer } from '../../components/call/CallDrawer'
 import { HistoryPanel } from '../../components/call/HistoryPanel'
@@ -47,7 +48,7 @@ interface Props {
 export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
-  const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false)
+  const [dispatchPlan, setDispatchPlan] = useState<DispatchPlan | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(true)
   // Drawer 显示模式：当前通话 vs 历史任务（点击地图上的救护车触发）
   const [drawerMode, setDrawerMode] = useState<'current' | { type: 'history'; callId: string }>('current')
@@ -69,6 +70,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       setDrawerMode('current')
     } else {
       setTerminalModalOpen(false)
+      setDispatchPlan(null)
     }
   }, [state.currentCall])
 
@@ -154,21 +156,24 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setTerminalModalOpen(true)
   }, [])
 
-  // --- 处理派车：先弹车辆选择 ---
+  // --- 处理派车：系统自动配车，玩家只负责逐节点规划路线 ---
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
     if (!state.terminal.determinant) return // 必须选择判定码才能派车
-    setTerminalModalOpen(false) // 关闭调度卡，避免遮挡车辆选择
-    setVehicleSelectorOpen(true)
-  }, [state.currentCall, state.terminal.determinant])
-
-  // --- 选定车辆后真正派出 ---
-  const handleConfirmVehicle = useCallback((vehicleId: string) => {
-    interruptCallerVoice()
-    setVehicleSelectorOpen(false)
+    const plan = buildDispatchPlan(state)
+    if (!plan) return
     setTerminalModalOpen(false)
-    dispatch({ type: 'DISPATCH', vehicleId })
-  }, [interruptCallerVoice])
+    setDispatchPlan(plan)
+  }, [state])
+
+  // --- 抵达现场节点后，按已冻结的车辆与路线真正派出 ---
+  const handleConfirmRoute = useCallback((route: DispatchPlan['routes'][number]) => {
+    if (!dispatchPlan) return
+    interruptCallerVoice()
+    setDispatchPlan(null)
+    setTerminalModalOpen(false)
+    dispatch({ type: 'DISPATCH', vehicleId: dispatchPlan.vehicle.id, route })
+  }, [dispatchPlan, interruptCallerVoice])
 
   // --- 关闭一个事件 toast ---
   const handleDismissEvent = useCallback((eventId: string) => {
@@ -434,17 +439,16 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           />
         )}
 
-        {/* ====== 派车车辆选择模态 ====== */}
-        <AnimatePresence>
-          {vehicleSelectorOpen && call && (
-            <VehicleSelector
-              fleet={state.fleet}
-              suggestedCapability={call.correctTriage}
-              onSelect={handleConfirmVehicle}
-              onCancel={() => setVehicleSelectorOpen(false)}
-            />
-          )}
-        </AnimatePresence>
+        {/* ====== 节点式路线规划：车辆由系统自动分配 ====== */}
+        {dispatchPlan && (
+          <RoutePlanner
+            vehicle={dispatchPlan.vehicle}
+            routes={dispatchPlan.routes}
+            priorityChannelActive={hasPerk(state.perks, 'priority_channel')}
+            onConfirm={handleConfirmRoute}
+            onCancel={() => setDispatchPlan(null)}
+          />
+        )}
       </div>
 
       {/* ====== 收尾阶段 — 全屏遮罩（移出 Drawer，在 container 层级）====== */}

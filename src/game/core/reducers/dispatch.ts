@@ -4,23 +4,33 @@
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
-import { hasPerk } from '../perks'
-import { calcAmbulanceETA, calcOnSceneDuration } from '../worldState'
-import { findVehicleById, findFastestAvailable, type Ambulance } from '../fleet'
+import { calcOnSceneDuration } from '../worldState'
+import { findVehicleById, type Ambulance } from '../fleet'
 import { lookupCoords, DEFAULT_CENTER } from '../../locations'
 import { createEventSink, sinkEvent } from './helpers'
 import { DISPATCH_WARN_TIME, DISPATCH_CRITICAL_TIME } from '../constants'
+import { buildDispatchPlan, buildVehicleRouteOptions } from '../dispatchPlanning'
+import type { RoutePlan } from '../routing'
 
-export function handleDispatch(state: WorldState, vehicleId?: string): WorldState {
+function isValidRouteSelection(route: RoutePlan): boolean {
+  return route.nodes[0]?.id === 'route-start'
+    && route.nodes[route.nodes.length - 1]?.id === 'route-scene'
+    && route.segments.length === route.nodes.length - 1
+    && route.segments.every((segment, index) =>
+      segment.fromId === route.nodes[index]?.id && segment.toId === route.nodes[index + 1]?.id)
+}
+
+export function handleDispatch(state: WorldState, vehicleId?: string, selectedRoute?: RoutePlan): WorldState {
   if (!state.currentCall || !state.callerState) return state
   if (state.dispatchSent) return state
   if (!state.terminal.determinant || !state.terminal.triage) return state
 
-  // 选车优先级：vehicleId → fleet.selectedVehicleId → 最快可用
+  // 正常流程由系统配车；保留 vehicleId 仅用于锁定路线规划界面已经展示的车辆。
+  const automaticPlan = buildDispatchPlan(state)
   let vehicle: Ambulance | null =
     findVehicleById(state.fleet, vehicleId ?? state.fleet.selectedVehicleId)
   if (!vehicle || vehicle.status !== 'available') {
-    vehicle = findFastestAvailable(state.fleet)
+    vehicle = automaticPlan?.vehicle ?? null
   }
   if (!vehicle) return state   // 无可用车
 
@@ -32,19 +42,20 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
   // 从MPDS判定码自动推导分诊等级（现场分诊由急救人员执行，调度员无需手动选择）
   const triage = state.terminal.triage
 
-  // ETA 受车辆速度影响（speed 越大 ETA 越短）+ 肉鸽收益 priority_channel
-  const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness, vehicle.speed)
-  const eta = Math.max(
-    20,
-    baseEta - (hasPerk(state.perks, 'priority_channel') ? 5 : 0),
-  )
   const onSceneTotal = calcOnSceneDuration(state.currentCall.correctTriage)
   // 事件点真实坐标（用于地图跨通话显示）
   const eventLatLng = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
+  const routes = automaticPlan?.vehicle.id === vehicle.id
+    ? automaticPlan.routes
+    : buildVehicleRouteOptions(state, vehicle)
+  const route = selectedRoute && isValidRouteSelection(selectedRoute)
+    ? selectedRoute
+    : routes.reduce((best, candidate) => candidate.totalEta < best.totalEta ? candidate : best)
+  const eta = route.totalEta
 
   const systemLine: DialogueLine = {
     speaker: 'system',
-    text: `【▸ ${vehicle.name}（${vehicle.tier}）已派出 — 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+    text: `【▸ ${vehicle.name}（${vehicle.tier}）已派出 — 路线: ${route.label} | 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
     timestamp: state.shiftElapsed,
   }
 
@@ -57,6 +68,9 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
     addressCompleteness,
     ambulanceETA: eta,
     dispatchedAt: state.shiftElapsed,
+    routeId: route.id,
+    routeLabel: route.label,
+    routeRisk: route.risk,
   }
   const afterDispatchLines: DialogueLine[] = state.currentCall.specialEvents
     .filter(evt => evt.trigger === 'after_dispatch')
@@ -121,6 +135,10 @@ export function handleDispatch(state: WorldState, vehicleId?: string): WorldStat
                 outboundTotal: eta,
                 onSceneTotal,
                 eventLatLng,
+                route,
+                routeElapsed: 0,
+                trafficUpdateApplied: false,
+                lastTrafficUpdate: null,
               },
             }
           : v

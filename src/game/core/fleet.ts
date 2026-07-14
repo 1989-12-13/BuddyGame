@@ -2,6 +2,8 @@
 // 120调度台 — 救护车队管理
 // ============================================================
 
+import { applyScheduledTrafficUpdate, type AppliedTrafficUpdate, type RoutePlan } from './routing'
+
 export type AmbulanceStatus = 'available' | 'en_route' | 'on_scene' | 'returning'
 
 export type AmbulanceTier = 'BLS' | 'ALS' | 'MICU'
@@ -15,6 +17,12 @@ export interface AmbulanceMission {
   onSceneTotal: number
   /** 事件点真实经纬度（用于地图渲染 + 跨通话显示） */
   eventLatLng: { lat: number; lng: number }
+  /** 玩家确认的节点路线；缺省时地图兼容旧任务并显示直线。 */
+  route?: RoutePlan
+  /** 去程已经行驶的游戏秒数。 */
+  routeElapsed?: number
+  trafficUpdateApplied?: boolean
+  lastTrafficUpdate?: AppliedTrafficUpdate | null
 }
 
 export interface Ambulance {
@@ -61,14 +69,33 @@ export function advanceFleet(fleet: FleetState): FleetState {
     ...fleet,
     vehicles: fleet.vehicles.map(v => {
       if (v.status === 'available' || !v.mission) return v
-      const newEta = v.eta - 1
-      if (newEta > 0) return { ...v, eta: newEta }
+      let mission = v.mission
+      let newEta = v.eta - 1
+
+      const activeRoute = mission.route
+      if (v.status === 'en_route' && activeRoute) {
+        const routeElapsed = (mission.routeElapsed ?? 0) + 1
+        mission = { ...mission, routeElapsed }
+        if (!mission.trafficUpdateApplied && routeElapsed >= activeRoute.scheduledUpdate.atSecond) {
+          const applied = applyScheduledTrafficUpdate(activeRoute)
+          newEta = Math.max(1, newEta + applied.update.deltaSeconds)
+          mission = {
+            ...mission,
+            route: applied.route,
+            outboundTotal: Math.max(routeElapsed + newEta, mission.outboundTotal + applied.update.deltaSeconds),
+            trafficUpdateApplied: true,
+            lastTrafficUpdate: applied.update,
+          }
+        }
+      }
+
+      if (newEta > 0) return { ...v, eta: newEta, mission }
       // 阶段切换
       switch (v.status) {
         case 'en_route':
-          return { ...v, status: 'on_scene', eta: v.mission.onSceneTotal }
+          return { ...v, status: 'on_scene', eta: mission.onSceneTotal, mission }
         case 'on_scene':
-          return { ...v, status: 'returning', eta: v.mission.outboundTotal }
+          return { ...v, status: 'returning', eta: mission.outboundTotal, mission }
         case 'returning':
           return { ...v, status: 'available', eta: 0, mission: null, currentCallId: null }
       }

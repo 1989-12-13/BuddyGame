@@ -6,6 +6,7 @@ import type { FleetState } from '../core/fleet'
 import type { TriageLevel } from './mpds'
 import type { EmergencyScenario, CallPhase, JudgmentPrompt } from './scenario'
 import type { CallerState } from './caller'
+import type { RouteStrategy } from '../core/routing'
 
 // -------------------- 调度记录 --------------------
 export interface DispatchRecord {
@@ -20,6 +21,9 @@ export interface DispatchRecord {
   dispatchedAt: number
   /** 是否恶作剧（用于救援 outcome 跳过判定） */
   isPrank: boolean
+  routeId?: RouteStrategy
+  routeLabel?: string
+  routeRisk?: 'low' | 'medium' | 'high'
 }
 
 // -------------------- 患者生命体征（实时反馈层） --------------------

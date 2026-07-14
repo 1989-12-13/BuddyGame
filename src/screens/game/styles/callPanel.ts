@@ -27,25 +27,25 @@ export const callLiveBar: CSSProperties = {
 }
 
 export const liveDot: CSSProperties = {
-  fontSize: 12,
+  fontSize: 'var(--fs-caption)',
   color: 'var(--danger-red)',
   animation: 'pulse-live 1s ease-in-out infinite',
   display: 'inline-block',
 }
 
 export const liveLabel: CSSProperties = {
-  fontSize: 13,
-  fontWeight: 900,
+  fontSize: 'var(--fs-body-sm)',
+  fontWeight: 'var(--fw-black)',
   color: 'var(--danger-red)',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
   letterSpacing: 2,
   textTransform: 'uppercase',
 }
 
 export const callTimer: CSSProperties = {
-  fontSize: 24,
-  fontWeight: 700,
-  fontFamily: 'monospace',
+  fontSize: 'var(--fs-heading)',
+  fontWeight: 'var(--fw-bold)',
+  fontFamily: 'var(--font-mono)',
   letterSpacing: 2,
 }
 
@@ -54,23 +54,23 @@ export const targetBadge: CSSProperties = {
   padding: '2px 8px',
   borderRadius: 10,
   border: '1px solid',
-  fontSize: 12,
-  fontWeight: 700,
-  fontFamily: 'monospace',
+  fontSize: 'var(--fs-caption)',
+  fontWeight: 'var(--fw-bold)',
+  fontFamily: 'var(--font-mono)',
 }
 
 export const phoneHeaderInfo: CSSProperties = {
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   display: 'flex',
   gap: 6,
   color: 'var(--text-secondary)',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
 }
 
 export const callPhaseTag: CSSProperties = {
-  fontSize: 12,
+  fontSize: 'var(--fs-caption)',
   color: 'var(--text-muted)',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
 }
 
 /** 对话区 — 通话逐字稿 */
@@ -86,18 +86,18 @@ export const dialogueArea: CSSProperties = {
 }
 
 export const transcript: CSSProperties = {
-  fontSize: 14,
+  fontSize: 'var(--fs-body)',
   lineHeight: 1.7,
-  fontFamily: '"Source Code Pro", "Consolas", "Courier New", monospace',
+  fontFamily: 'var(--font-mono)',
   padding: '4px 0',
   borderBottom: '1px solid var(--border-light)',
 }
 
 export const transcriptSpeaker: CSSProperties = {
   display: 'inline',
-  fontWeight: 700,
+  fontWeight: 'var(--fw-bold)',
   marginRight: 6,
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
 }
 
 export const transcriptText: CSSProperties = {
@@ -106,8 +106,8 @@ export const transcriptText: CSSProperties = {
 
 export const streamCursor: CSSProperties = {
   display: 'inline-block',
-  color: '#ef4444',
-  fontSize: 14,
+  color: 'var(--danger-red)',
+  fontSize: 'var(--fs-body)',
   marginLeft: 0,
   animation: 'pulse-live 0.7s step-end infinite',
   verticalAlign: 'baseline',

@@ -149,9 +149,47 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  --font-display: 'Georgia', 'Noto Serif SC', serif;
+  /* === 字体族（三套）=== */
   --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+
+  /* === 字号层级 === */
+  --fs-micro: 10px;      /* 极次要信息、角标 */
+  --fs-small: 11px;      /* 标签、辅助文字 */
+  --fs-caption: 12px;    /* 说明文字、徽章 */
+  --fs-body-sm: 13px;    /* 小正文、详情文字 */
+  --fs-body: 14px;       /* 正文 */
+  --fs-body-lg: 16px;    /* 大正文 */
+  --fs-subtitle: 17px;   /* 副标题 */
+  --fs-title: 20px;      /* 标题 */
+  --fs-heading: 24px;    /* 大标题 */
+  --fs-heading-lg: 28px; /* 页面大标题、大分数 */
+  --fs-heading-xl: 30px; /* 结束画面标题 */
+  --fs-hero: 42px;       /* 标题画面主标题 */
+  --fs-score: 48px;      /* 结束画面分数 */
+
+  /* === 字重语义化 === */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+  --fw-black: 900;
+
+  /* === 圆角层级 === */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+  --radius-full: 9999px;
+
+  /* === 新增语义色（两主题一致） === */
+  --accent-cyan-bright: #00d4ff;  /* 天赋选择面板专用 */
+  --text-muted-alt: #b1bac4;      /* 终端/按钮辅助文字 */
+  --danger-soft: #ff6b6b;         /* 软危险色（扣分提示） */
+  --accent-orange: #ff8c00;       /* 来电者"恐慌"状态色 */
 
   --hud-height: 48px;
   --resource-bar-height: 44px;

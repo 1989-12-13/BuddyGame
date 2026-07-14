@@ -2,14 +2,14 @@
 // MPDS 知识库 — 科普 MPDS 医疗优先调度系统
 // ============================================================
 
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useAudio } from '../audio/AudioContext'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { SCENARIOS, SCENARIO_IDS } from '../game/events/templates'
-import type { EmergencyScenario, GuidanceStep, MpdsDeterminant } from '../game/types'
+import type { EmergencyScenario, MpdsDeterminant } from '../game/types'
 import { MPDS_DETERMINANT_INFO } from '../game/types'
 import { SCENARIO_EXAMPLES, DISPATCHER_NOTES, GUIDANCE_DETAILS } from '../game/knowledge'
-import type { GuidanceStepDetail } from '../game/knowledge'
 import { styles } from './KnowledgeScreen.styles'
 
 interface Props {
@@ -46,6 +46,16 @@ export function KnowledgeScreen({ onBack }: Props) {
     audio.play('confirm')
     setSelectedId(null)
   }, [audio])
+
+  // Escape 关闭弹窗
+  useEffect(() => {
+    if (!selectedId) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleCloseModal()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedId, handleCloseModal])
 
   const scenarios = useMemo(() => {
     const list = SCENARIO_IDS
@@ -151,9 +161,25 @@ export function KnowledgeScreen({ onBack }: Props) {
       </div>
 
       {/* ====== 详情弹窗 ====== */}
-      {selected && selectedNotes && (
-        <div style={styles.modalOverlay} onClick={handleCloseModal}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <AnimatePresence>
+        {selected && selectedNotes && (
+        <motion.div
+          key="knowledge-modal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          style={styles.modalOverlay}
+          onClick={handleCloseModal}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 12 }}
+            transition={{ duration: 0.15 }}
+            style={styles.modal}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* 弹窗头部 */}
             <div style={{ ...styles.modalHeader, borderBottomColor: MPDS_DETERMINANT_INFO[parseDeterminant(selected.mpdsCard.determinantCode)].color }}>
               <div style={styles.modalHeaderLeft}>
@@ -178,7 +204,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 if (!ex) return null
                 return (
                   <DetailSection icon="▸" title="典型现场案例">
-                    <p style={{ ...styles.paragraph, fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+                    <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginBottom: 4 }}>
                       ★ 粗体为游戏中本协议所采用的案例
                     </p>
                     <ul style={styles.list}>
@@ -224,20 +250,22 @@ export function KnowledgeScreen({ onBack }: Props) {
                 const detail = GUIDANCE_DETAILS[selected.id]
                 return (
                 <DetailSection icon="♥" title={`急救指导案例`}>
-                  <p style={{ ...styles.paragraph, fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginBottom: 6 }}>
                     ★ 以下为游戏中本协议所采用的急救方案及临床分析
                   </p>
-                  <p style={{ ...styles.paragraph, fontWeight: 600, marginBottom: 4 }}>{selected.guidance.title}</p>
+                  <p style={{ ...styles.paragraph, fontWeight: 'var(--fw-semibold)', marginBottom: 4 }}>{selected.guidance.title}</p>
                   <p style={styles.paragraph}>{selected.guidance.intro}</p>
                   <ol style={styles.list}>
-                    {(detail?.steps ?? selected.guidance.steps).map((step: GuidanceStepDetail | GuidanceStep, i: number) => {
-                      const isDetailed = 'explanation' in step
+                    {selected.guidance.steps.map((step, i) => {
+                      const stepDetail = detail?.steps[i]
+                      const merged = { ...step, ...stepDetail }
+                      const isDetailed = !!stepDetail
                       return (
                         <li key={i} style={{ marginBottom: 10, lineHeight: 1.7 }}>
-                          <div style={{ fontWeight: 'bold', fontSize: 13, color: 'var(--text-primary)' }}>{step.prompt}</div>
-                          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                            {step.options.map((o: string, j: number) => {
-                              const isCorrect = j === step.correctIndex
+              <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body-sm)', color: 'var(--text-primary)' }}>{merged.prompt}</div>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginTop: 2 }}>
+                            {merged.options.map((o: string, j: number) => {
+                              const isCorrect = j === merged.correctIndex
                               return (
                                 <span key={j} style={{
                                   display: 'inline-block',
@@ -247,8 +275,8 @@ export function KnowledgeScreen({ onBack }: Props) {
                                   backgroundColor: isCorrect ? 'var(--success-green-bg)' : 'var(--bg-surface)',
                                   border: `1px solid ${isCorrect ? 'var(--accent-green)' : 'var(--border)'}`,
                                   color: isCorrect ? 'var(--accent-green)' : 'var(--text-secondary)',
-                                  fontWeight: isCorrect ? 600 : 400,
-                                  fontSize: 12,
+                                  fontWeight: isCorrect ? 'var(--fw-semibold)' : 'var(--fw-normal)',
+                                  fontSize: 'var(--fs-caption)',
                                 }}>
                                   {isCorrect ? '✓ ' : ''}{o}
                                 </span>
@@ -257,14 +285,14 @@ export function KnowledgeScreen({ onBack }: Props) {
                           </div>
                           {isDetailed && (
                             <>
-                              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>
-                                <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>临床分析：</span>
-                                {step.explanation}
+                              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>
+                                <span style={{ fontWeight: 'var(--fw-bold)', color: 'var(--text-secondary)' }}>临床分析：</span>
+                                {merged.explanation}
                               </div>
                               <div style={{ marginTop: 4, paddingLeft: 8, borderLeft: '2px solid var(--border)' }}>
-                                {(step.optionAnalysis as string[]).map((oa: string, j: number) => (
-                                  <div key={j} style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 1 }}>
-                                    {j === step.correctIndex ? '✓' : '✕'} {oa}
+                                {(merged.optionAnalysis as string[]).map((oa: string, j: number) => (
+                                  <div key={j} style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 1 }}>
+                                    {j === merged.correctIndex ? '✓' : '✕'} {oa}
                                   </div>
                                 ))}
                               </div>
@@ -281,7 +309,7 @@ export function KnowledgeScreen({ onBack }: Props) {
               <DetailSection icon="#" title="判定信息">
                 <div style={styles.infoRow}>
                   <span style={styles.infoLabel}>判定码</span>
-                  <span style={{ ...styles.infoValue, fontFamily: 'monospace', fontWeight: 'bold', color: MPDS_DETERMINANT_INFO[parseDeterminant(selected.mpdsCard.determinantCode)].color }}>
+                  <span style={{ ...styles.infoValue, fontFamily: 'var(--font-mono)', fontWeight: 'var(--fw-bold)', color: MPDS_DETERMINANT_INFO[parseDeterminant(selected.mpdsCard.determinantCode)].color }}>
                     {selected.mpdsCard.determinantCode}
                   </span>
                 </div>
@@ -295,9 +323,10 @@ export function KnowledgeScreen({ onBack }: Props) {
                 </div>
               </DetailSection>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

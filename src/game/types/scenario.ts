@@ -107,8 +107,6 @@ export interface FirstAidGuidance {
 export type MiniGameKind =
   | 'rhythmPress'   // 胸外按压：目标 BPM
   | 'quickChoice'   // 快速选择题：选择正确的急救操作
-  | 'holdPressure'  // 按压止血
-  | 'positionDrag'  // 摆位拖拽（已弃用）
   | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
   | 'locationSelect'// 位置选择：选择正确的止血点位置
   | 'cpr'           // 心肺复苏：30:2 循环
@@ -139,23 +137,6 @@ export interface QuickChoiceSpec extends BaseMiniGame {
   correctIndex: number       // 正确选项索引
 }
 
-/** 按压止血：长按保持压力 N 秒，松手血量回升 */
-export interface HoldPressureSpec extends BaseMiniGame {
-  kind: 'holdPressure'
-  holdSec: number           // 需维持的秒数
-  bleedRatePerSec: number   // 松手时血量条回升速度（每秒）
-  regainPerSec: number      // 按压时血量条下降速度（每秒）
-}
-
-/** 摆位拖拽：拖拽/旋转身体到目标角度 */
-export interface PositionDragSpec extends BaseMiniGame {
-  kind: 'positionDrag'
-  targetAngle: number       // 目标角度（度）
-  angleTolerance: number    // 角度容差（度）
-  bodyLabel: string         // 姿态描述，如"复苏体位"
-  useDetailedFigure?: boolean // 使用详细人体图
-}
-
 /** 步骤排序：将打乱的步骤按正确顺序逐一选中 */
 export interface StepOrderSpec extends BaseMiniGame {
   kind: 'stepOrder'
@@ -180,11 +161,16 @@ export interface CprSpec extends BaseMiniGame {
 export type MiniGameSpec =
   | RhythmPressSpec
   | QuickChoiceSpec
-  | HoldPressureSpec
-  | PositionDragSpec
   | StepOrderSpec
   | LocationSelectSpec
   | CprSpec
+
+// -------- 小游戏类型守卫（消除各引擎中的 as XSpec 断言） --------
+export function isRhythmPress(spec: MiniGameSpec): spec is RhythmPressSpec { return spec.kind === 'rhythmPress' }
+export function isQuickChoice(spec: MiniGameSpec): spec is QuickChoiceSpec { return spec.kind === 'quickChoice' }
+export function isStepOrder(spec: MiniGameSpec): spec is StepOrderSpec { return spec.kind === 'stepOrder' }
+export function isLocationSelect(spec: MiniGameSpec): spec is LocationSelectSpec { return spec.kind === 'locationSelect' }
+export function isCpr(spec: MiniGameSpec): spec is CprSpec { return spec.kind === 'cpr' }
 
 /** 小游戏组件统一契约 */
 export interface MiniGameProps {

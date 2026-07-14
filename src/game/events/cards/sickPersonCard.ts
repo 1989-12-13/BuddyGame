@@ -18,7 +18,7 @@ export const sickPersonCard: EmergencyScenario = {
     number: 26,
     title: '非特异性病患',
     chiefComplaint: '儿童持续发烧三天精神萎靡食欲不振',
-    determinantCode: '26-B-1',
+    determinantCode: '26-D-2',
     hotCold: 'COLD',
     keyQuestions: [
       '发烧多少度烧了多久？',

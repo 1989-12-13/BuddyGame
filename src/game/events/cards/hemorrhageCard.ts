@@ -159,7 +159,6 @@ export const hemorrhageCard: EmergencyScenario = {
       },
       {
         id: 'hem_position_game',
-        instruction: '伤者前臂中段被玻璃割伤、动脉喷射状出血。应该在哪个位置按压止血？',
         prompt: '实操环节：选择止血位置',
         options: ['完成'],
         correctIndex: 0,
@@ -171,7 +170,7 @@ export const hemorrhageCard: EmergencyScenario = {
         },
         miniGame: {
           kind: 'locationSelect',
-          title: '选择止血位置',
+          title: '手臂止血位置',
           instruction: '伤者前臂中段被玻璃割伤、动脉喷射状出血。应该在哪个位置按压止血？',
           passThreshold: 0.5,
           bodyPart: 'arm',

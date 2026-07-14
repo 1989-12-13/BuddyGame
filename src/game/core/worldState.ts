@@ -145,10 +145,10 @@ export function createInitialState(): WorldState {
 
 interface SeverityConfig { decayRate: number; initialStability: number; baseRescue: number }
 
-/** 偏宽容的难度曲线：red 患者每秒 -0.8（仍有 60+ 秒缓冲），green 几乎不掉血 */
+/** 宽松难度曲线：red 患者每秒 -0.5（约 2.5 分钟缓冲），提供充足容错空间 */
 const SEVERITY_CONFIG: Record<TriageLevel, SeverityConfig> = {
-  red:    { decayRate: 0.8, initialStability: 60, baseRescue: 0.45 },
-  yellow: { decayRate: 0.4, initialStability: 75, baseRescue: 0.70 },
+  red:    { decayRate: 0.5, initialStability: 75, baseRescue: 0.45 },
+  yellow: { decayRate: 0.3, initialStability: 80, baseRescue: 0.70 },
   green:  { decayRate: 0.1, initialStability: 90, baseRescue: 0.95 },
   black:  { decayRate: 1.5, initialStability: 30, baseRescue: 0.10 },
 }
@@ -242,7 +242,7 @@ export function calcAmbulanceETA(
   addressCompleteness: 'vague' | 'partial' | 'full',
   vehicleSpeed = 1,
 ): number {
-  let eta = 70
+  let eta = 55
 
   // 派车越快，ETA 越短
   if (dispatchTime <= DISPATCH_GOLD_TIME) eta -= 15

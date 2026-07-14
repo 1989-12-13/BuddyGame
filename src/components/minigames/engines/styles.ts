@@ -17,7 +17,7 @@ export const engineWrap: React.CSSProperties = {
 export const readoutRow: React.CSSProperties = {
   display: 'flex',
   gap: 16,
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
 }
 
 /** 圆形按压区域 */
@@ -88,17 +88,17 @@ export const qualityRow: React.CSSProperties = {
 /** 反馈文字 */
 export function feedbackText(color: string): React.CSSProperties {
   return {
-    fontSize: 14,
+    fontSize: 'var(--fs-body)',
     color,
-    fontWeight: 'bold',
+    fontWeight: 'var(--fw-bold)',
   }
 }
 
 /** 完成状态文字 */
 export const doneText: React.CSSProperties = {
-  fontSize: 16,
-  color: '#16a34a',
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body)',
+  color: 'var(--success-green)',
+  fontWeight: 'var(--fw-bold)',
   padding: '10px 0',
 }
 
@@ -112,17 +112,17 @@ export const statusRow: React.CSSProperties = {
 
 /** 状态标签 */
 export const statusLabel: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-caption)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-muted)',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
 }
 
 /** 按压提示（按钮内） */
 export const pressHint: React.CSSProperties = {
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   color: 'var(--text-secondary)',
-  fontWeight: 'bold',
+  fontWeight: 'var(--fw-bold)',
   textAlign: 'center',
   lineHeight: 1.3,
 }

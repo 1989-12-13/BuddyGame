@@ -18,7 +18,7 @@ export const stabGunshotCard: EmergencyScenario = {
     number: 27,
     title: '刺伤/枪伤/穿透伤',
     chiefComplaint: '青年男性在街头斗殴中被刀刺伤胸部伤口处有气泡血',
-    determinantCode: '27-D-2',
+    determinantCode: '27-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '是什么武器刺伤的',
@@ -151,7 +151,6 @@ export const stabGunshotCard: EmergencyScenario = {
       },
       {
         id: 'stab_position_game',
-        instruction: '伤者胸部被刀刺伤出血，应该在哪个位置按压止血？',
         prompt: '实操环节：选择止血位置',
         options: ['完成'],
         correctIndex: 0,
@@ -163,7 +162,7 @@ export const stabGunshotCard: EmergencyScenario = {
         },
         miniGame: {
           kind: 'locationSelect',
-          title: '选择止血位置',
+          title: '胸部止血位置',
           instruction: '伤者胸部被刀刺伤出血，应该在哪个位置按压止血？',
           passThreshold: 0.5,
           bodyPart: 'chest',

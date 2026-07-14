@@ -18,7 +18,7 @@ export const entrapmentCard: EmergencyScenario = {
     number: 22,
     title: '无法进入的现场/被困',
     chiefComplaint: '电梯故障停运，内有孕妇呼吸困难、情绪激动',
-    determinantCode: '22-C-2',
+    determinantCode: '22-D-2',
     hotCold: 'COLD',
     keyQuestions: [
       '被困在哪里？',

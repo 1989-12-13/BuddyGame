@@ -1,7 +1,6 @@
 import { Phone } from 'lucide-react'
 import type { EmergencyScenario, CalleeStressLevel } from '../../../game/types'
 import { STRESS_INFO } from '../../../game/types'
-import { getQuestionTimeCost } from '../../../game/core/reducers/narrative'
 import { PROTOCOL_STEPS, getVitalsStepQText } from '../../../game/content/phrases'
 import { styles, CATEGORY_ICON } from '../styles'
 import { AskBtnEx } from './AskBtnEx'
@@ -12,6 +11,7 @@ export function QuestionPanel({
   askedMPDS,
   stressLevel,
   stress,
+  disabled = false,
   onAsk,
   onCalm,
   onOpenTerminal,
@@ -21,6 +21,8 @@ export function QuestionPanel({
   askedMPDS: string[]
   stressLevel: CalleeStressLevel
   stress: number
+  /** 流式输出进行中，禁止操作 */
+  disabled?: boolean
   onAsk: (id: string) => void
   onCalm: () => void
   onOpenTerminal: () => void
@@ -68,7 +70,6 @@ export function QuestionPanel({
             const done = isAsked(ps.id)
             const isCurrent = ps.step === nextStepLabel
             const locked = !done && !isCurrent
-            const timeCost = getQuestionTimeCost(ps.id, call)
 
             return (
               <div key={ps.id} style={{
@@ -89,32 +90,37 @@ export function QuestionPanel({
                 {/* 步骤信息 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontSize: 12,
+                    fontSize: 'var(--fs-caption)',
                     fontWeight: done ? 'normal' : 'bold',
                     color: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--text-secondary)',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', marginTop: 1 }}>
                     {ps.qText}
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 {done ? (
-                  <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)', whiteSpace: 'nowrap' }}>
                     ✓ 完成
                   </span>
                 ) : isCurrent ? (
                   <button
-                    style={styles.protocolStepBtn}
-                    onClick={() => onAsk(ps.id)}
+                    style={{
+                      ...styles.protocolStepBtn,
+                      opacity: disabled ? 0.45 : 1,
+                      cursor: disabled ? 'not-allowed' : 'pointer',
+                    }}
+                    onClick={() => !disabled && onAsk(ps.id)}
+                    disabled={disabled}
                   >
-                    询问 ({timeCost}s)
+                    询问
                   </button>
                 ) : (
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                     🔒 等待
                   </span>
                 )}
@@ -135,8 +141,8 @@ export function QuestionPanel({
                 id="ask_landmark"
                 label="标志建筑"
                 icon="🏢"
-                timeCost={getQuestionTimeCost('ask_landmark', call)}
                 done={false}
+                disabled={disabled}
                 tier="important"
                 onClick={() => onAsk('ask_landmark')}
               />
@@ -153,8 +159,8 @@ export function QuestionPanel({
                 id="ask_contact"
                 label="联系电话"
                 icon={<Phone size={10} />}
-                timeCost={getQuestionTimeCost('ask_contact', call)}
                 done={false}
+                disabled={disabled}
                 tier="detail"
                 onClick={() => onAsk('ask_contact')}
               />
@@ -172,9 +178,8 @@ export function QuestionPanel({
                 id={q.id}
                 label={q.label}
                 icon={CATEGORY_ICON[q.category] || '≡'}
-                timeCost={q.timeCost}
                 done={isAsked(q.id)}
-                disabled={isAsked(q.id)}
+                disabled={disabled || isAsked(q.id)}
                 tier={q.tier}
                 onClick={() => onAsk(q.id)}
               />
@@ -183,47 +188,55 @@ export function QuestionPanel({
         </div>
       )}
 
-      {/* ====== 安抚按钮 + 调度卡入口 + 压力提示 ====== */}
-      <div style={styles.bottomToolbar}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 11, color: si.color, display: 'flex', alignItems: 'center', gap: 4 }}>
-            {si.emoji} {si.label} ({stress}%)
-            {(stressLevel === '恐慌' || stressLevel === '失控') && (
-              <span style={{ color: 'var(--accent-amber)', fontSize: 10 }}>答案不可靠</span>
-            )}
+      {/* ====== 第一行：压力指示器 + 安抚按钮 ====== */}
+      <div style={{ ...styles.bottomToolbar, justifyContent: 'flex-start', gap: 8 }}>
+        <div style={{ ...styles.stressBar, flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+            {si.emoji} {si.label}
+          </span>
+          <div style={styles.stressTrack}>
+            <div style={{
+              ...styles.stressFill,
+              width: `${stress}%`,
+              backgroundColor: si.color,
+            }} />
           </div>
-          <button
-            style={{
-              ...styles.calmBtn,
-              opacity: stress < 15 ? 0.4 : 1,
-              cursor: stress < 15 ? 'not-allowed' : 'pointer',
-            }}
-            onClick={stress >= 15 ? onCalm : undefined}
-            disabled={stress < 15}
-            title="消耗2秒安抚来电者"
-          >
-            🫂 安抚
-          </button>
+          <span style={{ fontSize: 'var(--fs-micro)', color: si.color, fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>
+            {stress}%
+          </span>
         </div>
+        <button
+          style={{
+            ...styles.calmBtn,
+            opacity: disabled || stress < 15 ? 0.4 : 1,
+            cursor: disabled || stress < 15 ? 'not-allowed' : 'pointer',
+          }}
+          onClick={!disabled && stress >= 15 ? onCalm : undefined}
+          disabled={disabled || stress < 15}
+          title="消耗2秒安抚来电者"
+        >
+          🫂 安抚
+        </button>
+      </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            style={{
-              ...styles.terminalBtn,
-              animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
-              borderColor: hasTriage ? 'var(--accent-green)' : '#dc2626',
-              backgroundColor: hasTriage ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
-            }}
-            onClick={onOpenTerminal}
-          >
-            {hasTriage ? '✓' : '⚠'} 调度卡
-            {!hasTriage && (
-              <span style={{ fontSize: 9, color: '#ff6b6b', display: 'block' }}>
-                未分诊
-              </span>
-            )}
-          </button>
-        </div>
+      {/* ====== 第二行：调度卡入口 ====== */}
+      <div style={{ ...styles.bottomToolbar, justifyContent: 'flex-end' }}>
+        <button
+          style={{
+            ...styles.terminalBtn,
+            animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
+            borderColor: hasTriage ? 'var(--accent-green)' : 'var(--danger-red)',
+            backgroundColor: hasTriage ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
+          }}
+          onClick={onOpenTerminal}
+        >
+          {hasTriage ? '✓' : '⚠'} 调度卡
+          {!hasTriage && (
+            <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--danger-soft)', display: 'block' }}>
+              未分诊
+            </span>
+          )}
+        </button>
       </div>
     </div>
   )

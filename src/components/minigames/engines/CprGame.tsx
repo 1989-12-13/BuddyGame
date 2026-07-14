@@ -1,317 +1,343 @@
 // ============================================================
-// CprGame — 心肺复苏 30:2 循环
-// 30次胸外按压（带节奏指示）→ 人工呼吸2次（中间间隔1秒）×2循环
+// CprGame — 心肺复苏 30:2 循环小游戏
+// 30次胸外按压（空格）→ 2次人工呼吸（按住空格在理想区松手）
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { MiniGameProps } from '../../../game/types'
+import { isCpr } from '../../../game/types'
 import { Readout } from '../Readout'
 import { useKeyboard, usePauseRef } from './hooks'
 import { useMiniGameFinish } from './useMiniGameFinish'
-import { computePassed } from './scoring'
+import { useGameClock } from './useGameClock'
 import {
   CPR_TARGET_BPM,
-  CPR_COMPRESSIONS_PER_CYCLE,
-  CPR_BREATHS_PER_CYCLE,
   CPR_BREATH_PAUSE_MS,
   CPR_BLOW_IDEAL_MIN,
   CPR_BLOW_OVER_THRESHOLD,
-  calcBpm,
+  CPR_BPM_GOOD_THRESHOLD,
+  CPR_COMPRESSIONS_PER_CYCLE,
+  calcLiveBpm,
   assessBpmQuality,
-  calcRhythmScore,
-  calcCprFinalScore,
-  bpmDeviationColor,
-  rhythmQualityColor,
-  type RhythmQuality,
 } from './cprUtils'
-import type { CprSpec, MiniGameProps } from '../../../game/types'
-import { C_DANGER, C_SUCCESS, C_INFO } from '../../../game/core/colors'
-import {
-  engineWrap,
-  readoutRow,
-  pressCircle,
-  progressTrack,
-  progressFill,
-  qualityDot,
-  qualityRow,
-  doneText,
-  pressHint,
-  pressHintActive,
-} from './styles'
+import { computePassed } from './cprUtils'
+import { engineWrap, readoutRow } from './styles'
 
-type Phase = 'compressing' | 'blowing_1' | 'pause_1to2' | 'blowing_2' | 'done'
+interface BreathResult {
+  ratio: number
+  quality: 'perfect' | 'good' | 'bad'
+}
+
+type CprPhase = 'compression' | 'breath' | 'done'
 
 export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
-  const s = spec as CprSpec
+  // 类型安全守卫
+  if (!isCpr(spec)) {
+    throw new Error('CprGame 收到的 spec 不是 CprSpec')
+  }
+  const s = spec
   const cycles = s.cycles || 2
 
-  const [phase, setPhase] = useState<Phase>('compressing')
+  const [phase, setPhase] = useState<CprPhase>('compression')
   const [cycle, setCycle] = useState(1)
   const [compCount, setCompCount] = useState(0)
   const [breathCount, setBreathCount] = useState(0)
-  const [fill, setFill] = useState(0)
-  const [pulse, setPulse] = useState(false)
-  const [goodBreath, setGoodBreath] = useState(false)
-  const [rhythmQualities, setRhythmQualities] = useState<RhythmQuality[]>([])
-  const [currentBpm, setCurrentBpm] = useState<number | null>(null)
+  const [flash, setFlash] = useState(false)
+  const [breathRatio, setBreathRatio] = useState(0)
+  const [breathHolding, setBreathHolding] = useState(false)
+  const [blowFill, setBlowFill] = useState(0) // 由 rAF 驱动的吹气进度
 
-  const rafRef = useRef(0)
-  const lastTRef = useRef(0)
-  const finished = useRef(false)
-  const compCountRef = useRef(0)
-  const breathCountRef = useRef(0)
-  const fillRef = useRef(0)
-  const holdingRef = useRef(false)
-  const lastCompTime = useRef(0)
-  const overBreathRef = useRef(false)
-  const rhythmQRef = useRef<RhythmQuality[]>([])
+  const pressTimes = useRef<number[]>([])
+  const breathStart = useRef(0)
+  const breathQualities = useRef<BreathResult[]>([])
+  const compQualities = useRef<string[]>([])
   const doneRef = useRef(false)
+  const compCountRef = useRef(0) // 与 compCount 同步，避免闭包陈旧
   const pausedRef = usePauseRef(paused)
   const { complete } = useMiniGameFinish(onComplete, 700)
 
-  // 泄气循环
+  const blowTargetMs = 1000
+
+  // 用 ref 暴露 finishGame，使超时和呼吸回调总能拿到最新版本
+  const finishGameRef = useRef<() => void>()
+
+  // ---- 修复 #3: 超时机制 ----
+  // 每轮最多给 90 秒（远大于正常操作时长），超时自动低分结束
+  useGameClock(
+    cycles * 90,
+    pausedRef,
+    {
+      onTick: () => {
+        if (doneRef.current) return true // 已结束则停止时钟
+        return false
+      },
+      onFinish: () => {
+        finishGameRef.current?.()
+      },
+    },
+  )
+
+  // ---- 修复 #1: 吹气进度条实时动画 ----
   useEffect(() => {
-    lastTRef.current = performance.now()
-    const loop = (now: number) => {
-      const dt = Math.min((now - lastTRef.current) / 1000, 0.05)
-      lastTRef.current = now
-      if (pausedRef.current) {
-        rafRef.current = requestAnimationFrame(loop)
+    if (!breathHolding) return
+    let rafId: number
+    const tick = () => {
+      if (doneRef.current) {
+        cancelAnimationFrame(rafId)
         return
       }
-      const p = phase
-      if (p === 'blowing_1' || p === 'blowing_2') {
-        if (holdingRef.current) {
-          fillRef.current = Math.min(1, fillRef.current + 0.28 * dt)
-        } else {
-          fillRef.current = Math.max(0, fillRef.current - 0.35 * dt)
-        }
-        setFill(fillRef.current)
-      }
-      rafRef.current = requestAnimationFrame(loop)
+      const fill = Math.min(100, ((performance.now() - breathStart.current) / CPR_BREATH_PAUSE_MS) * 100)
+      setBlowFill(fill)
+      rafId = requestAnimationFrame(tick)
     }
-    rafRef.current = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(rafRef.current)
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [breathHolding])
+
+  // ---- 修复 #2: 按压阶段 30 次上限 ----
+  const registerPress = useCallback(() => {
+    if (doneRef.current || pausedRef.current || phase !== 'compression') return
+    if (compCountRef.current >= CPR_COMPRESSIONS_PER_CYCLE) return
+    const now = performance.now()
+    pressTimes.current.push(now)
+    const count = pressTimes.current.length
+    compCountRef.current = count
+    setCompCount(count)
+    setFlash(true)
+    setTimeout(() => setFlash(false), 90)
+
+    if (pressTimes.current.length >= 2) {
+      const prev = pressTimes.current[pressTimes.current.length - 2]
+      const interval = now - prev
+      compQualities.current.push(assessBpmQuality(interval, CPR_TARGET_BPM))
+    }
   }, [phase])
 
-  // 按压
-  const doCompress = useCallback(() => {
-    if (doneRef.current || pausedRef.current) return
-    const now = performance.now()
-    const gap = lastCompTime.current ? now - lastCompTime.current : 0
-    lastCompTime.current = now
+  const startBreath = useCallback(() => {
+    if (doneRef.current || pausedRef.current || phase !== 'breath' || breathHolding) return
+    breathStart.current = performance.now()
+    setBreathHolding(true)
+    setBlowFill(0)
+    setBreathRatio(0)
+  }, [phase, breathHolding])
 
-    // 实时 BPM
-    if (gap > 0) {
-      setCurrentBpm(calcBpm(gap))
-    }
-
-    // 节奏质量
-    const quality = gap > 0 ? assessBpmQuality(gap, CPR_TARGET_BPM) : 'good'
-    rhythmQRef.current.push(quality)
-    setRhythmQualities([...rhythmQRef.current])
-
-    const n = compCountRef.current + 1
-    compCountRef.current = n
-    setCompCount(n)
-    setPulse(true)
-    setTimeout(() => setPulse(false), 100)
-
-    if (n >= CPR_COMPRESSIONS_PER_CYCLE) {
-      setPhase('blowing_1')
-      setBreathCount(0)
-      breathCountRef.current = 0
-      fillRef.current = 0
-      setFill(0)
-    }
-  }, [])
-
-  // 吹气
+  // ---- 修复 #4: 完整依赖，通过 finishGameRef 避免闭包陈旧 ----
   const releaseBreath = useCallback(() => {
-    const p = phase
-    if (pausedRef.current || (p !== 'blowing_1' && p !== 'blowing_2') || !holdingRef.current) return
-    holdingRef.current = false
-    const f = fillRef.current
-    if (f >= CPR_BLOW_OVER_THRESHOLD) {
-      overBreathRef.current = true
-    } else if (f >= CPR_BLOW_IDEAL_MIN) {
-      const n = breathCountRef.current + 1
-      breathCountRef.current = n
-      setBreathCount(n)
-      setGoodBreath(true)
-      setTimeout(() => setGoodBreath(false), 400)
+    if (doneRef.current || pausedRef.current || phase !== 'breath' || !breathHolding) return
+    const holdMs = performance.now() - breathStart.current
+    const ratio = holdMs / CPR_BREATH_PAUSE_MS
+    setBreathRatio(ratio)
+    setBreathHolding(false)
+    setBlowFill(0)
 
-      if (n === 1) {
-        fillRef.current = 0
-        setFill(0)
-        setPhase('pause_1to2')
-      } else if (n >= CPR_BREATHS_PER_CYCLE) {
-        if (cycle < cycles) {
-          fillRef.current = 0
-          setFill(0)
-          setCycle(c => c + 1)
-          setCompCount(0)
-          compCountRef.current = 0
-          lastCompTime.current = 0
-          setCurrentBpm(null)
-          setPhase('compressing')
-        } else {
-          fillRef.current = 0
-          setFill(0)
-          setPhase('done')
-          doneRef.current = true
-          finish()
-        }
-      }
+    let quality: BreathResult['quality']
+    if (ratio >= CPR_BLOW_IDEAL_MIN && ratio <= CPR_BLOW_OVER_THRESHOLD) {
+      quality = 'perfect'
+    } else if (ratio > 0.1) {
+      quality = 'good'
     } else {
-      fillRef.current = 0
-      setFill(0)
+      quality = 'bad'
     }
-  }, [phase, cycle, cycles])
+    breathQualities.current.push({ ratio, quality })
+
+    const next = breathCount + 1
+    setBreathCount(next)
+
+    if (next >= 2) {
+      if (cycle >= cycles) {
+        finishGameRef.current?.()
+      } else {
+        setCycle(c => c + 1)
+        setCompCount(0)
+        setBreathCount(0)
+        setBreathRatio(0)
+        setBlowFill(0)
+        pressTimes.current = []
+        compQualities.current = []
+        breathQualities.current = []
+        compCountRef.current = 0
+        setPhase('compression')
+      }
+    }
+  }, [phase, breathHolding, breathCount, cycle])
 
   useKeyboard('Space', {
     onDown: () => {
-      if (pausedRef.current || doneRef.current) return
-      if (phase === 'compressing') {
-        doCompress()
-      } else if (phase === 'blowing_1' || phase === 'blowing_2') {
-        holdingRef.current = true
-      }
+      if (phase === 'compression') registerPress()
+      else if (phase === 'breath') startBreath()
     },
     onUp: () => {
-      if (pausedRef.current) return
-      if (phase === 'blowing_1' || phase === 'blowing_2') releaseBreath()
+      if (phase === 'breath') releaseBreath()
     },
   })
 
-  // 1秒间隔自动过渡（blowing_1 → pause_1to2 →自动→ blowing_2）
-  useEffect(() => {
-    if (phase === 'pause_1to2' && !pausedRef.current) {
-      const t = setTimeout(() => {
-        setPhase('blowing_2')
-        fillRef.current = 0
-        setFill(0)
-      }, CPR_BREATH_PAUSE_MS)
-      return () => clearTimeout(t)
-    }
-  }, [phase, paused])
-
-  const finish = () => {
-    if (finished.current) return
-    finished.current = true
-    const rhythmScore = calcRhythmScore(rhythmQRef.current)
-    const breathPenalty = overBreathRef.current ? 0.15 : 0
-    const score = calcCprFinalScore(rhythmScore, breathPenalty)
-    complete(score, computePassed(score, s.passThreshold))
+  const handlePointerDown = () => {
+    if (phase === 'compression') registerPress()
+    else if (phase === 'breath') startBreath()
   }
 
-  const barColor = fill >= CPR_BLOW_OVER_THRESHOLD ? C_DANGER : fill >= CPR_BLOW_IDEAL_MIN ? C_SUCCESS : fill > 0 ? C_INFO : 'var(--border)'
+  const handlePointerUp = () => {
+    if (phase === 'breath') releaseBreath()
+  }
 
-  // 节奏指标统计
-  const goodCount = rhythmQualities.filter(q => q === 'good').length
+  const nextPhase = () => {
+    if (phase === 'compression') {
+      setPhase('breath')
+      setBreathCount(0)
+      setBreathRatio(0)
+      setBlowFill(0)
+      breathQualities.current = []
+    }
+  }
+
+  // ---- 修复 #4: finishGame 用 useCallback + 完整 deps ----
+  const finishGame = useCallback(() => {
+    if (doneRef.current) return
+    doneRef.current = true
+    setPhase('done')
+
+    const compScore = compQualities.current.length > 0
+      ? compQualities.current.reduce((sum, q) => {
+          if (q === 'good') return sum + 1
+          if (q === 'ok') return sum + 0.5
+          return sum
+        }, 0) / compQualities.current.length
+      : 0
+
+    const breathScore = breathQualities.current.length > 0
+      ? breathQualities.current.reduce((sum, b) => {
+          if (b.quality === 'perfect') return sum + 1
+          if (b.quality === 'good') return sum + 0.6
+          return sum + 0.2
+        }, 0) / breathQualities.current.length
+      : 0
+
+    const finalScore = Math.max(0, Math.min(1, compScore * 0.6 + breathScore * 0.4))
+    complete(finalScore, computePassed(finalScore, s.passThreshold))
+  }, [complete, s.passThreshold])
+
+  finishGameRef.current = finishGame
+
+  const liveBpm = pressTimes.current.length >= 2
+    ? calcLiveBpm(pressTimes.current)
+    : 0
+
+  const pulseStyle = flash
+    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px var(--danger-red)' }
+    : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
+
+  // 吹气进度显示：按住时用 rAF 动画值，松开后用最终比例
+  const displayBlowFill = breathHolding
+    ? blowFill
+    : breathRatio > 0
+      ? Math.min(100, breathRatio * 100)
+      : 0
+
+  const blowColor = breathHolding
+    ? 'var(--accent-blue)'
+    : breathRatio >= CPR_BLOW_IDEAL_MIN && breathRatio <= CPR_BLOW_OVER_THRESHOLD
+      ? 'var(--accent-green)'
+      : 'var(--danger-red)'
+
+  const idealStart = CPR_BLOW_IDEAL_MIN * 100
+  const idealEnd = CPR_BLOW_OVER_THRESHOLD * 100
+
+  // Helper to build cycle display string
+  const cycleLabel = cycle + '/' + cycles
+  const breathLabel = breathCount + '/2'
+
+  // Phase-specific text
+  let phaseText: string
+  if (phase === 'compression') {
+    phaseText = '第 ' + cycle + ' 轮 · 胸外按压 ' + compCount + '/30'
+  } else if (phase === 'breath') {
+    phaseText = '第 ' + cycle + ' 轮 · 人工呼吸 ' + breathCount + '/2'
+  } else {
+    phaseText = '✓ 操作完成！'
+  }
 
   return (
     <div style={engineWrap}>
       <div style={readoutRow}>
-        <Readout label="循环" value={`${cycle}/${cycles}`} color="var(--accent-blue)" />
-        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${CPR_COMPRESSIONS_PER_CYCLE}`} color="var(--danger-red)" />}
-        {(phase === 'blowing_1' || phase === 'blowing_2') && (
-          <Readout label="吹气" value={`${breathCount}/${CPR_BREATHS_PER_CYCLE}`} color="var(--accent-green)" />
-        )}
-        {compCount > 0 && phase === 'compressing' && (
-          <Readout label="✓" value={String(goodCount)} color="var(--accent-green)" />
-        )}
+        <Readout label="BPM" value={String(Math.round(liveBpm))}
+          color={Math.abs(liveBpm - CPR_TARGET_BPM) <= CPR_BPM_GOOD_THRESHOLD
+            ? 'var(--accent-green)' : 'var(--accent-amber)'} />
+        <Readout label="目标" value={String(CPR_TARGET_BPM)} color="var(--text-muted)" />
+        <Readout label="循环" value={cycleLabel} color="var(--accent-blue)" />
+        <Readout label={phase === 'compression' ? '按压' : '吹气'}
+          value={phase === 'compression' ? String(compCount) : breathLabel}
+          color={phase === 'compression' ? 'var(--border)' : 'var(--accent-cyan)'} />
       </div>
 
-      {/* === 按压阶段 === */}
-      {phase === 'compressing' && (
-        <>
-          {/* 频率指示器 */}
-          <div style={{ fontSize: 11, marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'var(--text-secondary)' }}>目标:</span>
-            <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
-              {CPR_TARGET_BPM}
-            </span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>BPM</span>
-            {currentBpm !== null && (
-              <>
-                <span style={{ color: 'var(--text-muted)' }}>|</span>
-                <span style={{ color: 'var(--text-secondary)' }}>当前:</span>
-                <span style={{
-                  color: bpmDeviationColor(currentBpm, CPR_TARGET_BPM),
-                  fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15,
-                }}>
-                  {currentBpm}
-                </span>
-                <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>BPM</span>
-              </>
-            )}
-          </div>
-          <div onPointerDown={doCompress} style={pressCircle({ pulse })}>
-            <span style={pulse ? pressHintActive : pressHint}>按压{'\n'}空格</span>
-          </div>
+      <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', fontWeight: 'var(--fw-bold)' }}>
+        {phaseText}
+      </div>
 
-          {/* 进度条 */}
-          <div style={progressTrack}>
-            <div style={progressFill((compCount / CPR_COMPRESSIONS_PER_CYCLE) * 100)} />
-          </div>
-
-          {/* 节奏准确度视觉化 */}
-          {compCount > 0 && compCount <= 30 && (
-            <div style={{ width: 240 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>节奏准确度：</div>
-              <div style={qualityRow}>
-                {rhythmQualities.map((q, i) => (
-                  <div key={i} style={qualityDot(rhythmQualityColor(q))} />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* === 吹气阶段 1 === */}
-      {phase === 'blowing_1' && <BlowPhase fill={fill} barColor={barColor} goodBreath={goodBreath} />}
-
-      {/* === 1秒间隔 === */}
-      {phase === 'pause_1to2' && (
-        <div style={{ fontSize: 14, color: 'var(--accent-amber)', fontWeight: 'bold', padding: '20px 0' }}>
-          ⏸ 等待 {CPR_BREATH_PAUSE_MS / 1000} 秒后再次吹气…
+      {phase !== 'done' && (
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          style={{
+            width: 160, height: 160, borderRadius: '50%',
+            backgroundColor: 'var(--border-light)',
+            border: '3px solid ' + (phase === 'compression' ? 'var(--danger-red)' : 'var(--accent-cyan)'),
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', userSelect: 'none',
+            transition: 'transform 0.09s ease, box-shadow 0.09s ease',
+            ...(phase === 'compression' ? pulseStyle : {}),
+            background: phase === 'breath' ? 'var(--bg-elevated)' : undefined,
+          }}
+        >
+          <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', textAlign: 'center', lineHeight: 1.4, color: 'var(--text-secondary)' }}>
+            {phase === 'compression' ? '按空格\n或点击'
+              : breathHolding ? '保持按住……' : '按住 →\n理想区松手'}
+          </span>
         </div>
       )}
 
-      {/* === 吹气阶段 2 === */}
-      {phase === 'blowing_2' && <BlowPhase fill={fill} barColor={barColor} goodBreath={goodBreath} />}
+      {phase === 'breath' && (
+        <div style={{ width: 200, position: 'relative' }}>
+          <div style={{
+            width: '100%', height: 12, borderRadius: 6,
+            backgroundColor: 'var(--border-light)', overflow: 'hidden', position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute', left: idealStart + '%', width: (idealEnd - idealStart) + '%',
+              height: '100%', backgroundColor: 'var(--success-green-bg)', borderRadius: 2, opacity: 0.6,
+            }} />
+            <div style={{
+              height: '100%', borderRadius: 6, width: displayBlowFill + '%',
+              backgroundColor: blowColor, transition: 'none',
+            }} />
+          </div>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', marginTop: 2,
+          }}>
+            <span>太短</span><span>理想</span><span>过量</span>
+          </div>
+        </div>
+      )}
 
-      {/* === 完成 === */}
+      {phase === 'compression' && compCount >= 30 && (
+        <button
+          onClick={nextPhase}
+          style={{
+            padding: '8px 24px', borderRadius: 8, border: 'none',
+            backgroundColor: 'var(--accent-blue)', color: '#fff',
+            fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', cursor: 'pointer',
+          }}
+        >
+          开始人工呼吸 →
+        </button>
+      )}
+
       {phase === 'done' && (
-        <div style={doneText}>✓ {cycles} 个循环 CPR 完成！</div>
+        <div style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)' }}>
+          ✓ CPR 操作完成！
+        </div>
       )}
     </div>
-  )
-}
-
-// 吹气阶段 UI
-function BlowPhase({ fill, barColor, goodBreath }: { fill: number; barColor: string; goodBreath: boolean }) {
-  return (
-    <>
-      <div style={{ width: 240 }}>
-        <div style={{ width: '100%', height: 24, backgroundColor: 'var(--border-light)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden', position: 'relative' }}>
-          <div style={{ position: 'absolute', left: '30%', width: '42%', top: 0, bottom: 0, backgroundColor: 'rgba(5,150,105,0.12)' }} />
-          <div style={{ position: 'absolute', left: '72%', width: '28%', top: 0, bottom: 0, backgroundColor: 'rgba(239,68,68,0.12)' }} />
-          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: 2, backgroundColor: 'var(--accent-green)' }} />
-          <div style={{ position: 'absolute', left: '72%', top: 0, bottom: 0, width: 2, backgroundColor: 'var(--danger-red)' }} />
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `calc(${fill * 100}%)`, backgroundColor: barColor, boxShadow: fill > 0.01 ? `0 0 6px ${barColor}` : 'none' }} />
-        </div>
-        <div style={{ position: 'relative', width: '100%', height: 14, fontSize: 9 }}>
-          <span style={{ position: 'absolute', left: 0, width: '30%', textAlign: 'center', color: 'var(--text-muted)' }}>不足</span>
-          <span style={{ position: 'absolute', left: '30%', width: '42%', textAlign: 'center', color: 'var(--accent-green)', fontWeight: 'bold' }}>理想区</span>
-          <span style={{ position: 'absolute', left: '72%', width: '28%', textAlign: 'center', color: 'var(--danger-red)' }}>过量</span>
-        </div>
-      </div>
-      {goodBreath && <div style={{ fontSize: 14, color: 'var(--accent-green)', fontWeight: 'bold' }}>✓ 吹气成功</div>}
-      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-        {fill < 0.01 ? '按住空格吹气' : fill >= 0.72 ? '⚠ 过量！' : fill >= 0.30 ? '✓ 理想区 — 松手' : '继续吹气…'}
-      </div>
-    </>
   )
 }

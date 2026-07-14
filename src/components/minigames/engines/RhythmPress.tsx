@@ -5,16 +5,19 @@
 
 import { useCallback, useRef, useState } from 'react'
 import type { MiniGameProps, RhythmPressSpec } from '../../../game/types'
+import { isRhythmPress } from '../../../game/types'
 import { Readout } from '../Readout'
 import { useKeyboard, usePauseRef } from './hooks'
 import { useGameClock } from './useGameClock'
 import { useMiniGameFinish } from './useMiniGameFinish'
-import { computePassed } from './scoring'
-import { calcLiveBpm } from './cprUtils'
+import { computePassed } from './cprUtils'
+import { calcLiveBpm, assessBpmQuality, calcRhythmScore, bpmToIntervalMs, bpmDeviationColor } from './cprUtils'
+import type { RhythmQuality } from './cprUtils'
 import { engineWrap, readoutRow } from './styles'
 
 export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
-  const s = spec as RhythmPressSpec
+  if (!isRhythmPress(spec)) return null
+  const s: RhythmPressSpec = spec
   const [timeLeft, setTimeLeft] = useState(s.durationSec)
   const [bpm, setBpm] = useState(0)
   const [presses, setPresses] = useState(0)
@@ -25,9 +28,6 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
   const doneRef = useRef(false)
   const pausedRef = usePauseRef(paused)
   const { complete } = useMiniGameFinish(onComplete, 700)
-
-  const targetInterval = 60000 / s.targetBpm
-  const tolFrac = s.bpmTolerance / s.targetBpm
 
   const registerPress = () => {
     if (doneRef.current || pausedRef.current) return
@@ -44,14 +44,11 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
     const pts = pressTimes.current
     let score = 0
     if (pts.length >= 2) {
-      const ivals: number[] = []
-      for (let i = 1; i < pts.length; i++) ivals.push(pts[i] - pts[i - 1])
-      let rateSum = 0
-      for (const iv of ivals) {
-        const dev = Math.abs(iv - targetInterval) / targetInterval
-        rateSum += Math.max(0, 1 - dev / tolFrac)
+      const qualities: RhythmQuality[] = []
+      for (let i = 1; i < pts.length; i++) {
+        qualities.push(assessBpmQuality(pts[i] - pts[i - 1], s.targetBpm))
       }
-      const rateScore = rateSum / ivals.length
+      const rateScore = calcRhythmScore(qualities)
       // 按压数量要求：达到目标频率的 65% 才算合格节奏
       const expected = (s.durationSec * s.targetBpm) / 60
       const countFactor = Math.min(1, pts.length / (expected * 0.65))
@@ -109,12 +106,12 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
           ...pulseAnim,
         }}
       >
-        <span style={{ fontSize: 13, color: '#fca5a5', fontWeight: 'bold', textAlign: 'center' }}>
+        <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--danger-soft)', fontWeight: 'var(--fw-bold)', textAlign: 'center' }}>
           {done ? '完成' : '按空格\n或点击'}
         </span>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-        保持每 {targetInterval.toFixed(0)} 毫秒一次的稳定节奏
+      <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)' }}>
+        保持稳定的按压节奏，目标 {s.targetBpm} 次/分钟
       </div>
     </div>
   )

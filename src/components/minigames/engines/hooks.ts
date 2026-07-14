@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MiniGameProps } from '../../../game/types'
-import { computePassed } from './scoring'
+import { computePassed } from './cprUtils'
 import { useMiniGameFinish } from './useMiniGameFinish'
 
 // -------------------- 暂停跟踪 --------------------

@@ -182,7 +182,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     const contactAnswer = newStress >= 50
       ? '就是我这个手机吧...哎我现在脑子都是乱的...你打我这个号就行...这个是...等一下我看看...'
       : newStress >= 25
-        ? '就我这个手机！138那个...你打过来应该看得到吧？就是现在这个号码。'
+        ? '138...后面是...等一下 7162？不对...你等一下我念给你...'
         : call.fourElements.contact
     const cq: { text: string; quality: InfoQuality; distorted: boolean } =
       newStress >= 75 ? { text: '我...我不知道...你打这个能打通吧...', quality: 'vague', distorted: true } :
@@ -199,7 +199,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   // --- 求助诉求（补充闭环信息）---
   else if (questionId === 'ask_purpose') {
     stressEffect = -1
-    newDialogue.push({ speaker: 'operator', text: '您现在最需要我们协助处理什么？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '您现在最需要我们帮您做什么？', timestamp: now })
     newDialogue.push({ speaker: 'caller', text: call.fourElements.purpose, timestamp: now })
     newRevealed.purpose = true
     newInfoQuality['purpose'] = newStress >= 50 ? 'partial' : 'clear'

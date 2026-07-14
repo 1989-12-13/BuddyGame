@@ -13,23 +13,23 @@ export const perkScreen: CSSProperties = {
 }
 
 export const perkHeader: CSSProperties = {
-  fontSize: 12,
-  color: '#00d4ff',
+  fontSize: 'var(--fs-caption)',
+  color: 'var(--accent-cyan-bright)',
   fontFamily: 'var(--font-mono)',
   letterSpacing: 2,
-  fontWeight: 800,
+  fontWeight: 'var(--fw-extrabold)',
 }
 
 export const perkTitle: CSSProperties = {
   margin: 0,
   color: 'var(--text-primary)',
-  fontSize: 24,
+  fontSize: 'var(--fs-heading)',
 }
 
 export const perkSubtitle: CSSProperties = {
   margin: 0,
   color: 'var(--text-muted)',
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   maxWidth: 560,
   textAlign: 'center',
   lineHeight: 1.5,
@@ -59,20 +59,20 @@ export const perkCard: CSSProperties = {
 }
 
 export const perkCategory: CSSProperties = {
-  fontSize: 10,
-  color: '#00d4ff',
+  fontSize: 'var(--fs-micro)',
+  color: 'var(--accent-cyan-bright)',
   fontFamily: 'var(--font-mono)',
   letterSpacing: 1.2,
-  fontWeight: 800,
+  fontWeight: 'var(--fw-extrabold)',
 }
 
 export const perkName: CSSProperties = {
-  fontSize: 18,
-  fontWeight: 800,
+  fontSize: 'var(--fs-title)',
+  fontWeight: 'var(--fw-extrabold)',
 }
 
 export const perkDesc: CSSProperties = {
-  fontSize: 12,
+  fontSize: 'var(--fs-caption)',
   color: 'var(--text-secondary)',
   lineHeight: 1.5,
   flex: 1,
@@ -81,9 +81,9 @@ export const perkDesc: CSSProperties = {
 export const perkEffect: CSSProperties = {
   alignSelf: 'flex-start',
   padding: '4px 8px',
-  border: '1px solid #00d4ff',
+  border: '1px solid var(--accent-cyan-bright)',
   borderRadius: 999,
-  color: '#00d4ff',
-  fontSize: 11,
-  fontWeight: 800,
+  color: 'var(--accent-cyan-bright)',
+  fontSize: 'var(--fs-small)',
+  fontWeight: 'var(--fw-extrabold)',
 }

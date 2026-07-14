@@ -23,16 +23,16 @@ export function JudgmentSection({ judgments }: Props) {
           }}>
             <div style={styles.judgmentQuestion}>{j.question}</div>
             <div style={styles.judgmentChoices}>
-              <span style={{ color: j.isCorrect ? 'var(--success-green)' : 'var(--danger-red)', fontSize: 12 }}>
+              <span style={{ color: j.isCorrect ? 'var(--success-green)' : 'var(--danger-red)', fontSize: 'var(--fs-caption)' }}>
                 你的选择：{j.playerChoice ?? '未作答'}
               </span>
               {!j.isCorrect && (
                 <>
-                  <span style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 8 }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-small)', marginLeft: 8 }}>
                     ✓ 正确：{j.correctAnswer}
                   </span>
                   {j.reason && (
-                    <div style={{ color: 'var(--warning-amber)', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
+                    <div style={{ color: 'var(--warning-amber)', fontSize: 'var(--fs-micro)', marginTop: 2, fontStyle: 'italic' }}>
                       ℹ {j.reason}
                     </div>
                   )}

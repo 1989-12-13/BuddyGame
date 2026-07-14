@@ -26,8 +26,8 @@ export function badgeStyle(rating: string): CSSProperties {
     border: `1px solid ${ratingColor(rating)}`,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     color: ratingColor(rating),
-    fontSize: 12,
-    fontWeight: 700,
+    fontSize: 'var(--fs-caption)',
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
   }
@@ -47,8 +47,8 @@ export function scoreBoxStyle(rating: string): CSSProperties {
 
 export function scoreValueStyle(rating: string): CSSProperties {
   return {
-    fontSize: 48,
-    fontWeight: 800,
+    fontSize: 'var(--fs-score)',
+    fontWeight: 'var(--fw-extrabold)',
     color: ratingColor(rating),
     lineHeight: 1,
     fontFamily: 'var(--font-mono)',
@@ -58,8 +58,8 @@ export function scoreValueStyle(rating: string): CSSProperties {
 
 export function savedSummaryStyle(saved: number, total: number): CSSProperties {
   return {
-    fontSize: 14,
-    fontWeight: 800,
+    fontSize: 'var(--fs-body)',
+    fontWeight: 'var(--fw-extrabold)',
     fontFamily: 'var(--font-mono)',
     color: saved === total ? C_SUCCESS : saved > total / 2 ? C_WARNING : C_DANGER,
     letterSpacing: 1,
@@ -82,8 +82,8 @@ export function callCardStyle(saved: boolean): CSSProperties {
 
 export function callCardScoreStyle(saved: boolean): CSSProperties {
   return {
-    fontSize: 20,
-    fontWeight: 800,
+    fontSize: 'var(--fs-title)',
+    fontWeight: 'var(--fw-extrabold)',
     color: saved ? C_SUCCESS : C_DANGER,
     fontFamily: 'var(--font-mono)',
     lineHeight: 1,
@@ -95,10 +95,10 @@ export function callCardStatusStyle(saved: boolean): CSSProperties {
     display: 'flex',
     alignItems: 'center',
     gap: 1,
-    fontSize: 10,
+    fontSize: 'var(--fs-micro)',
     color: saved ? C_SUCCESS : C_DANGER,
     fontFamily: 'var(--font-mono)',
-    fontWeight: 600,
+    fontWeight: 'var(--fw-semibold)',
   }
 }
 
@@ -152,15 +152,15 @@ export const styles: Record<string, CSSProperties> = {
     marginBottom: 4,
   },
   title: {
-    fontSize: 30,
-    fontWeight: 800,
+    fontSize: 'var(--fs-heading-xl)',
+    fontWeight: 'var(--fw-extrabold)',
     color: 'var(--text-primary)',
     margin: 0,
     fontFamily: 'var(--font-mono)',
     letterSpacing: 3,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 'var(--fs-body)',
     color: 'var(--text-muted)',
     margin: 0,
     fontStyle: 'italic',
@@ -173,13 +173,13 @@ export const styles: Record<string, CSSProperties> = {
     margin: '8px 0',
   },
   scoreLabel: {
-    fontSize: 13,
+    fontSize: 'var(--fs-body)',
     color: 'var(--text-secondary)',
     fontFamily: 'var(--font-mono)',
-    fontWeight: 600,
+    fontWeight: 'var(--fw-semibold)',
   },
   scoreMax: {
-    fontSize: 14,
+    fontSize: 'var(--fs-caption)',
     color: 'var(--text-muted)',
     fontFamily: 'var(--font-mono)',
   },
@@ -191,9 +191,9 @@ export const styles: Record<string, CSSProperties> = {
     maxWidth: 420,
   },
   callsHeaderText: {
-    fontSize: 12,
+    fontSize: 'var(--fs-caption)',
     color: 'var(--text-muted)',
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
     textTransform: 'uppercase' as const,
@@ -206,9 +206,9 @@ export const styles: Record<string, CSSProperties> = {
     maxWidth: 420,
   },
   callCardNum: {
-    fontSize: 10,
+    fontSize: 'var(--fs-micro)',
     color: 'var(--text-muted)',
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
   callCardInfo: {
@@ -218,9 +218,9 @@ export const styles: Record<string, CSSProperties> = {
     gap: 1,
   },
   callCardMax: {
-    fontSize: 9,
+    fontSize: 'var(--fs-micro)',
     color: 'var(--text-dim)',
-    fontWeight: 500,
+    fontWeight: 'var(--fw-medium)',
   },
   callCardBar: {
     width: '100%',
@@ -231,7 +231,7 @@ export const styles: Record<string, CSSProperties> = {
     marginTop: 2,
   },
   description: {
-    fontSize: 13,
+    fontSize: 'var(--fs-body)',
     color: 'var(--text-secondary)',
     lineHeight: 1.8,
     padding: '0 10px',
@@ -243,8 +243,8 @@ export const styles: Record<string, CSSProperties> = {
     gap: 4,
     marginTop: 8,
     padding: '12px 48px',
-    fontSize: 16,
-    fontWeight: 700,
+    fontSize: 'var(--fs-subtitle)',
+    fontWeight: 'var(--fw-bold)',
     color: '#fff',
     backgroundColor: C_DANGER,
     border: 'none',

@@ -12,6 +12,7 @@ import {
   hitQualityColor,
   bpmDeviationColor,
   hitQualityLabel,
+  computePassed,
   CPR_TARGET_BPM,
   CPR_TARGET_INTERVAL_MS,
   CPR_SWEET_SPOT_MS,
@@ -202,7 +203,7 @@ describe('hitQualityLabel', () => {
   it('返回正确的中文标签', () => {
     expect(hitQualityLabel('perfect')).toBe('完美！')
     expect(hitQualityLabel('good')).toBe('不错')
-    expect(hitQualityLabel('miss')).toBe('miss')
+    expect(hitQualityLabel('miss')).toBe('偏了')
   })
 })
 
@@ -216,5 +217,24 @@ describe('常量验证', () => {
     expect(CPR_GOOD_WINDOW_MS).toBe(250)
     expect(CPR_BPM_GOOD_THRESHOLD).toBe(10)
     expect(CPR_BPM_OK_THRESHOLD).toBe(20)
+  })
+})
+
+describe('computePassed', () => {
+  it('达标：分数等于阈值算通过', () => {
+    expect(computePassed(0.6, 0.6)).toBe(true)
+  })
+
+  it('达标：分数高于阈值算通过', () => {
+    expect(computePassed(0.9, 0.6)).toBe(true)
+  })
+
+  it('不达标：分数低于阈值算失败', () => {
+    expect(computePassed(0.59, 0.6)).toBe(false)
+  })
+
+  it('边界：满分与零分', () => {
+    expect(computePassed(1, 0.6)).toBe(true)
+    expect(computePassed(0, 0.6)).toBe(false)
   })
 })

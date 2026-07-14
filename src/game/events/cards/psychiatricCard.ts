@@ -18,7 +18,7 @@ export const psychiatricCard: EmergencyScenario = {
     number: 25,
     title: '精神问题/自杀企图',
     chiefComplaint: '年轻女性因抑郁症发作微信告知朋友准备服药自杀现已失联',
-    determinantCode: '25-D-2',
+    determinantCode: '25-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '患者现在在哪里',

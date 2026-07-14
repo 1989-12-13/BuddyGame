@@ -36,7 +36,7 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
       borderLeft: `4px solid ${accentColor}`,
       borderRadius: 6,
       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-      fontSize: 12,
+      fontSize: 'var(--fs-caption)',
     }}>
       {/* 顶部行：标题 + 状态徽章 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -50,14 +50,14 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
             backgroundColor: 'var(--accent-blue)',
             color: '#ffffff',
             borderRadius: 3,
-            fontSize: 10,
-            fontWeight: 'bold',
+            fontSize: 'var(--fs-micro)',
+            fontWeight: 'var(--fw-bold)',
             border: '1px solid var(--accent-blue)',
           }}>
             {tierLabel(vehicleTier)}
           </span>
         )}
-        <span style={{ marginLeft: 'auto', color: accentColor, fontWeight: 'bold', fontSize: 11 }}>
+        <span style={{ marginLeft: 'auto', color: accentColor, fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-small)' }}>
           {success && '✓ 救治成功'}
           {failed && '✗ 救治失败'}
           {rescue.phase === 'enroute' && `ETA ${ambulanceRemaining}s`}
@@ -89,7 +89,7 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
             left: `calc(${progress}% - 7px)`,
             top: -4,
             transition: 'left 0.3s linear',
-            fontSize: 10,
+            fontSize: 'var(--fs-micro)',
           }}>
             🚐
           </div>
@@ -98,13 +98,13 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
       </div>
 
       {/* 底部：成功率 / 失败原因 */}
-      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-small)' }}>
         {success && <><CheckCircle2 size={11} color={accentSolid} /><span style={{ color: 'var(--accent-green)' }}>患者获救</span></>}
         {failed && <><XCircle size={11} color={accentSolid} /><span style={{ color: 'var(--danger-red)' }}>{rescue.failureReason ?? '现场救治未成功'}</span></>}
         {rescue.phase === 'enroute' && <span style={{ color: 'var(--text-secondary)' }}>正在赶往现场 · 患者仍在等待</span>}
         {rescue.phase === 'arrived' && <span style={{ color: 'var(--text-secondary)' }}>院前急救进行中…</span>}
         {rescue.successScore !== null && (
-          <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+          <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
             概率 {Math.round((rescue.successScore ?? 0) * 100)}%
           </span>
         )}

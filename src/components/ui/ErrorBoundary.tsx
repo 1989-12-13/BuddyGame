@@ -52,16 +52,16 @@ export class ErrorBoundary extends Component<Props, State> {
           gap: 12,
           color: 'var(--text-primary)',
         }}>
-          <span style={{ fontSize: 40 }}>⚠️</span>
-          <h2 style={{ margin: 0, fontSize: 18, color: 'var(--danger-red)' }}>
+          <span style={{ fontSize: 'var(--fs-hero)' }}>⚠️</span>
+          <h2 style={{ margin: 0, fontSize: 'var(--fs-title)', color: 'var(--danger-red)' }}>
             {this.props.title ?? '页面发生异常'}
           </h2>
-          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', maxWidth: 400, textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body-sm)', color: 'var(--text-secondary)', maxWidth: 400, textAlign: 'center' }}>
             {this.props.description ?? '组件渲染过程中遇到意外错误。请尝试刷新页面或重试。'}
           </p>
           {process.env.NODE_ENV === 'development' && this.state.error && (
             <pre style={{
-              fontSize: 11, color: '#ff6b6b', maxWidth: '100%', overflow: 'auto',
+              fontSize: 'var(--fs-small)', color: 'var(--danger-soft)', maxWidth: '100%', overflow: 'auto',
               padding: 8, backgroundColor: 'var(--danger-red-bg)', borderRadius: 6,
             }}>
               {this.state.error.message}
@@ -71,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
             onClick={this.handleRetry}
             style={{
               padding: '8px 24px', backgroundColor: 'var(--danger-red)', color: '#fff',
-              border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 'bold',
+              border: 'none', borderRadius: 6, fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
               cursor: 'pointer', marginTop: 4,
             }}
           >

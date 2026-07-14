@@ -18,7 +18,7 @@ export const assaultCard: EmergencyScenario = {
     number: 4,
     title: '袭击/性侵犯',
     chiefComplaint: '青年男性在街头被人打伤头部脸部流血意识模糊',
-    determinantCode: '4-D-2',
+    determinantCode: '4-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '发生了什么事',
@@ -151,7 +151,6 @@ export const assaultCard: EmergencyScenario = {
       },
       {
         id: 'assault_position_game',
-        instruction: '伤者面部出血，应该在哪个位置按压止血？',
         prompt: '实操环节：选择止血位置',
         options: ['完成'],
         correctIndex: 0,
@@ -163,7 +162,7 @@ export const assaultCard: EmergencyScenario = {
         },
         miniGame: {
           kind: 'locationSelect',
-          title: '选择止血位置',
+          title: '头部止血位置',
           instruction: '伤者面部出血，应该在哪个位置按压止血？',
           passThreshold: 0.5,
           bodyPart: 'head',

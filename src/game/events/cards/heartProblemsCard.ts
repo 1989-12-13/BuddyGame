@@ -18,7 +18,7 @@ export const heartProblemsCard: EmergencyScenario = {
     number: 19,
     title: '心脏问题/起搏器',
     chiefComplaint: '中年女性突发心悸心慌心跳极快伴胸闷头晕约半小时',
-    determinantCode: '19-C-2',
+    determinantCode: '19-C-1',
     hotCold: 'HOT',
     keyQuestions: [
       '心跳大概多快有没有规律',

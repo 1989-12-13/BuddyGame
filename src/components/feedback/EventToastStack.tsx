@@ -85,7 +85,7 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
         borderLeft: `3px solid ${style.color}`,
         borderRadius: 4,
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-        fontSize: 12,
+        fontSize: 'var(--fs-caption)',
         color: 'var(--text-primary)',
         pointerEvents: 'auto',
       }}

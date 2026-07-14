@@ -1,0 +1,912 @@
+﻿
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/Lenovo/Desktop/buddy/BuddyGame[39m
+
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mhasPerk[2m > [22m已拥有 → true[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mhasPerk[2m > [22m未拥有 → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mhasPerk[2m > [22m空 perks 数组 → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mhasPerk[2m > [22m所有 perk 都存在[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m默认返回 3 个选项[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m不返回已拥有的 perk[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m可用选项不足 count 时返回尽可能多的[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m全部拥有时返回空数组[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22mcount=0 返回空数组[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22mcount=2 返回 2 个[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m随机注入后顺序可确定[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mgetPerkChoices[2m > [22m选项不重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mROGUE_PERKS[2m > [22m共 6 个 perk[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mROGUE_PERKS[2m > [22m每个 perk 有非空 title/description/effect[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/perks.test.ts[2m > [22mROGUE_PERKS[2m > [22mcategory 合法[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m所有卡片 ID 唯一[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 9 (cardiac_arrest) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 9 (cardiac_arrest) 标题 "[心脏/呼吸骤停/死亡]" 匹配 PROTOCOLS "[心脏/呼吸骤停/死亡]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 9 (cardiac_arrest) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 9 (cardiac_arrest) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 9 (cardiac_arrest) 判定码 "9-E-1" 以 "9-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 29 (trauma_car) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 29 (trauma_car) 标题 "[交通/运输事故]" 匹配 PROTOCOLS "[交通/运输事故]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 29 (trauma_car) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 29 (trauma_car) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 29 (trauma_car) 判定码 "29-D-1" 以 "29-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 28 (stroke) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 28 (stroke) 标题 "[卒中（脑血管意外）]" 匹配 PROTOCOLS "[卒中（脑血管意外）]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 28 (stroke) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 28 (stroke) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 28 (stroke) 判定码 "28-C-1" 以 "28-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 24 (obstetric) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 24 (obstetric) 标题 "[妊娠/分娩/流产]" 匹配 PROTOCOLS "[妊娠/分娩/流产]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 24 (obstetric) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 24 (obstetric) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 24 (obstetric) 判定码 "24-D-3" 以 "24-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 7 (chemical_burn) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 7 (chemical_burn) 标题 "[烧伤（烫伤）/爆炸伤]" 匹配 PROTOCOLS "[烧伤（烫伤）/爆炸伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 7 (chemical_burn) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 7 (chemical_burn) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 7 (chemical_burn) 判定码 "7-C-3" 以 "7-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 32 (prank_call) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 32 (prank_call) 标题 "[未知问题（有人倒下）]" 匹配 PROTOCOLS "[未知问题（有人倒下）]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 32 (prank_call) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 32 (prank_call) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 14 (drowning) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 14 (drowning) 标题 "[溺水/水域事故]" 匹配 PROTOCOLS "[溺水/水域事故]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 14 (drowning) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 14 (drowning) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 14 (drowning) 判定码 "14-D-2" 以 "14-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 10 (chest_pain) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 10 (chest_pain) 标题 "[胸痛/心脏问题]" 匹配 PROTOCOLS "[胸痛/心脏问题]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 10 (chest_pain) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 10 (chest_pain) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 10 (chest_pain) 判定码 "10-D-1" 以 "10-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 12 (seizure) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 12 (seizure) 标题 "[抽搐/癫痫]" 匹配 PROTOCOLS "[抽搐/癫痫]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 12 (seizure) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 12 (seizure) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 12 (seizure) 判定码 "12-D-1" 以 "12-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 13 (diabetic) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 13 (diabetic) 标题 "[糖尿病问题]" 匹配 PROTOCOLS "[糖尿病问题]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 13 (diabetic) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 13 (diabetic) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 13 (diabetic) 判定码 "13-D-2" 以 "13-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 2 (anaphylaxis) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 2 (anaphylaxis) 标题 "[过敏反应/蜇伤]" 匹配 PROTOCOLS "[过敏反应/蜇伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 2 (anaphylaxis) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 2 (anaphylaxis) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 2 (anaphylaxis) 判定码 "2-D-2" 以 "2-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 21 (hemorrhage) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 21 (hemorrhage) 标题 "[出血/撕裂伤]" 匹配 PROTOCOLS "[出血/撕裂伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 21 (hemorrhage) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 21 (hemorrhage) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 21 (hemorrhage) 判定码 "21-D-3" 以 "21-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 23 (overdose) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 23 (overdose) 标题 "[过量/中毒]" 匹配 PROTOCOLS "[过量/中毒]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 23 (overdose) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 23 (overdose) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 23 (overdose) 判定码 "23-D-2" 以 "23-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 6 (asthma) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 6 (asthma) 标题 "[呼吸困难]" 匹配 PROTOCOLS "[呼吸困难]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 6 (asthma) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 6 (asthma) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 6 (asthma) 判定码 "6-D-2" 以 "6-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 17 (falls_elderly) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 17 (falls_elderly) 标题 "[坠落/跌倒]" 匹配 PROTOCOLS "[坠落/跌倒]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 17 (falls_elderly) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 17 (falls_elderly) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 17 (falls_elderly) 判定码 "17-C-2" 以 "17-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 15 (electrocution) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 15 (electrocution) 标题 "[触电/雷击]" 匹配 PROTOCOLS "[触电/雷击]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 15 (electrocution) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 15 (electrocution) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 15 (electrocution) 判定码 "15-D-2" 以 "15-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 1 (abdominal_pain) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 1 (abdominal_pain) 标题 "[腹痛/背痛]" 匹配 PROTOCOLS "[腹痛/背痛]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 1 (abdominal_pain) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 1 (abdominal_pain) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 1 (abdominal_pain) 判定码 "1-D-1" 以 "1-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 3 (animal_bite) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 3 (animal_bite) 标题 "[动物咬伤/攻击]" 匹配 PROTOCOLS "[动物咬伤/攻击]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 3 (animal_bite) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 3 (animal_bite) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 3 (animal_bite) 判定码 "3-C-3" 以 "3-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 4 (assault) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 4 (assault) 标题 "[袭击/性侵犯]" 匹配 PROTOCOLS "[袭击/性侵犯]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 4 (assault) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 4 (assault) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 4 (assault) 判定码 "4-D-2" 以 "4-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 5 (back_pain) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 5 (back_pain) 标题 "[背痛（非创伤/非近期）]" 匹配 PROTOCOLS "[背痛（非创伤/非近期）]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 5 (back_pain) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 5 (back_pain) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 5 (back_pain) 判定码 "5-C-1" 以 "5-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 8 (carbon_monoxide) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 8 (carbon_monoxide) 标题 "[一氧化碳/吸入/危险品]" 匹配 PROTOCOLS "[一氧化碳/吸入/危险品]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 8 (carbon_monoxide) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 8 (carbon_monoxide) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 8 (carbon_monoxide) 判定码 "8-D-2" 以 "8-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 11 (choking) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 11 (choking) 标题 "[窒息]" 匹配 PROTOCOLS "[窒息]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 11 (choking) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 11 (choking) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 11 (choking) 判定码 "11-D-2" 以 "11-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 16 (eye_injury) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 16 (eye_injury) 标题 "[眼部问题/损伤]" 匹配 PROTOCOLS "[眼部问题/损伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 16 (eye_injury) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 16 (eye_injury) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 16 (eye_injury) 判定码 "16-C-1" 以 "16-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 18 (severe_headache) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 18 (severe_headache) 标题 "[头痛]" 匹配 PROTOCOLS "[头痛]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 18 (severe_headache) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 18 (severe_headache) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 18 (severe_headache) 判定码 "18-C-2" 以 "18-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 20 (heat_stroke) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 20 (heat_stroke) 标题 "[中暑/热损伤]" 匹配 PROTOCOLS "[中暑/热损伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 20 (heat_stroke) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 20 (heat_stroke) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 20 (heat_stroke) 判定码 "20-D-2" 以 "20-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 19 (heart_problems) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 19 (heart_problems) 标题 "[心脏问题/起搏器]" 匹配 PROTOCOLS "[心脏问题/起搏器]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 19 (heart_problems) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 19 (heart_problems) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 19 (heart_problems) 判定码 "19-C-2" 以 "19-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 25 (psychiatric) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 25 (psychiatric) 标题 "[精神问题/自杀企图]" 匹配 PROTOCOLS "[精神问题/自杀企图]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 25 (psychiatric) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 25 (psychiatric) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 25 (psychiatric) 判定码 "25-D-2" 以 "25-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 27 (stab_gunshot) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 27 (stab_gunshot) 标题 "[刺伤/枪伤/穿透伤]" 匹配 PROTOCOLS "[刺伤/枪伤/穿透伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 27 (stab_gunshot) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 27 (stab_gunshot) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 27 (stab_gunshot) 判定码 "27-D-2" 以 "27-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 31 (unconscious_fainting) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 31 (unconscious_fainting) 标题 "[晕厥/无意识]" 匹配 PROTOCOLS "[晕厥/无意识]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 31 (unconscious_fainting) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 31 (unconscious_fainting) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 31 (unconscious_fainting) 判定码 "31-C-2" 以 "31-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 26 (sick_person) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 26 (sick_person) 标题 "[非特异性病患]" 匹配 PROTOCOLS "[非特异性病患]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 26 (sick_person) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 26 (sick_person) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 26 (sick_person) 判定码 "26-B-1" 以 "26-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 30 (trauma) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 30 (trauma) 标题 "[创伤]" 匹配 PROTOCOLS "[创伤]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 30 (trauma) hotCold "HOT" 匹配预期 "HOT"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 30 (trauma) correctTriage "red" 匹配预期 "red"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 30 (trauma) 判定码 "30-D-2" 以 "30-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 22 (entrapment) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 22 (entrapment) 标题 "[无法进入的现场/被困]" 匹配 PROTOCOLS "[无法进入的现场/被困]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 22 (entrapment) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 22 (entrapment) correctTriage "yellow" 匹配预期 "yellow"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 22 (entrapment) 判定码 "22-C-2" 以 "22-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 33 (urinary) 号存在 PROTOCOLS 中[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 33 (urinary) 标题 "[泌尿系统问题]" 匹配 PROTOCOLS "[泌尿系统问题]"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 33 (urinary) hotCold "COLD" 匹配预期 "COLD"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 33 (urinary) correctTriage "green" 匹配预期 "green"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mMPDS 协议信息一致性[2m > [22m协议 33 (urinary) 判定码 "33-B-2" 以 "33-" 开头[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mcardiac_arrest 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mtrauma_car 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mstroke 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mobstetric 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mchemical_burn 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mprank_call 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mdrowning 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mchest_pain 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mseizure 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mdiabetic 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22manaphylaxis 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mhemorrhage 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22moverdose 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22masthma 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mfalls_elderly 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22melectrocution 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mabdominal_pain 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22manimal_bite 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22massault 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mback_pain 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mcarbon_monoxide 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mchoking 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22meye_injury 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22msevere_headache 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mheat_stroke 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mheart_problems 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mpsychiatric 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mstab_gunshot 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22munconscious_fainting 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22msick_person 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mtrauma 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22mentrapment 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsQuestions ID 唯一性[2m > [22murinary 的 mpdsQuestions ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mcardiac_arrest 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mtrauma_car 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mstroke 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mobstetric 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mchemical_burn 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mprank_call 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mdrowning 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mchest_pain 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mseizure 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mdiabetic 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22manaphylaxis 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mhemorrhage 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22moverdose 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22masthma 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mfalls_elderly 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22melectrocution 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mabdominal_pain 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22manimal_bite 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22massault 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mback_pain 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mcarbon_monoxide 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mchoking 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22meye_injury 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22msevere_headache 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mheat_stroke 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mheart_problems 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mpsychiatric 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mstab_gunshot 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22munconscious_fainting 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22msick_person 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mtrauma 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22mentrapment 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mguidance step ID 唯一性[2m > [22murinary 的 guidance step ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mcardiac_arrest 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mtrauma_car 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mstroke 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mobstetric 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mchemical_burn 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mprank_call 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mdrowning 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mchest_pain 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mseizure 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mdiabetic 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22manaphylaxis 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mhemorrhage 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22moverdose 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22masthma 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mfalls_elderly 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22melectrocution 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mabdominal_pain 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22manimal_bite 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22massault 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mback_pain 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mcarbon_monoxide 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mchoking 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22meye_injury 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22msevere_headache 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mheat_stroke 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mheart_problems 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mpsychiatric 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mstab_gunshot 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22munconscious_fainting 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22msick_person 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mtrauma 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22mentrapment 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mspecialEvents ID 唯一性[2m > [22murinary 的 specialEvents ID 无重复[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mcardiac_arrest(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mtrauma_car(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mstroke(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mobstetric(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mchemical_burn(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mprank_call(gender=不详) outcomeNarrative 使用正确人称 "TA"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mdrowning(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mchest_pain(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mseizure(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mdiabetic(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22manaphylaxis(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mhemorrhage(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22moverdose(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22masthma(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mfalls_elderly(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22melectrocution(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mabdominal_pain(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22manimal_bite(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22massault(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mback_pain(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mcarbon_monoxide(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mchoking(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22meye_injury(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22msevere_headache(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mheat_stroke(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mheart_problems(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mpsychiatric(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mstab_gunshot(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22munconscious_fainting(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22msick_person(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mtrauma(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22mentrapment(gender=女性) outcomeNarrative 使用正确人称 "她"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22moutcomeNarrative 人称与 gender 一致[2m > [22murinary(gender=男性) outcomeNarrative 使用正确人称 "他"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcardiac_arrest outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma_car outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstroke outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mobstetric outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchemical_burn outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mprank_call outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdrowning outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchest_pain outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mseizure outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mdiabetic outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manaphylaxis outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mhemorrhage outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22moverdose outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22masthma outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mfalls_elderly outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22melectrocution outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mabdominal_pain outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22manimal_bite outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22massault outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mback_pain outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mcarbon_monoxide outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mchoking outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22meye_injury outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.condition.breathing 非空[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msevere_headache outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheat_stroke outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mheart_problems outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mpsychiatric outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mstab_gunshot outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22munconscious_fainting outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22msick_person outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mtrauma outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22mentrapment outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary openingLine 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.address 字段完整[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.contact 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.condition.chiefComplaint 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.condition.age 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.condition.consciousness 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.condition.breathing 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary fourElements.purpose 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22m必填字段完整性[2m > [22murinary outcomeNarrative 非空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mcardiac_arrest correctTriage 为合法值[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mtrauma_car correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mstroke correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mobstetric correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mchemical_burn correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mprank_call correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mdrowning correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mchest_pain correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mseizure correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mdiabetic correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22manaphylaxis correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mhemorrhage correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22moverdose correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22masthma correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mfalls_elderly correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22melectrocution correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mabdominal_pain correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22manimal_bite correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22massault correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mback_pain correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mcarbon_monoxide correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mchoking correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22meye_injury correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22msevere_headache correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mheat_stroke correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mheart_problems correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mpsychiatric correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mstab_gunshot correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22munconscious_fainting correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22msick_person correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mtrauma correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22mentrapment correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mcorrectTriage 合法[2m > [22murinary correctTriage 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mcardiac_arrest mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mtrauma_car mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mstroke mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mobstetric mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mchemical_burn mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mprank_call mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mdrowning mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mchest_pain mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mseizure mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mdiabetic mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22manaphylaxis mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mhemorrhage mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22moverdose mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22masthma mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mfalls_elderly mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22melectrocution mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mabdominal_pain mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22manimal_bite mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22massault mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mback_pain mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mcarbon_monoxide mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mchoking mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22meye_injury mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22msevere_headache mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mheat_stroke mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mheart_problems mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mpsychiatric mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mstab_gunshot mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22munconscious_fainting mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22msick_person mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mtrauma mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22mentrapment mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mhotCold 合法[2m > [22murinary mpdsCard.hotCold 为合法值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mcardiac_arrest 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mtrauma_car 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mstroke 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mobstetric 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mchemical_burn 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mprank_call 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mdrowning 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mchest_pain 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mseizure 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mdiabetic 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22manaphylaxis 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mhemorrhage 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22moverdose 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22masthma 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mfalls_elderly 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22melectrocution 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mabdominal_pain 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22manimal_bite 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22massault 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mback_pain 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mcarbon_monoxide 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mchoking 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22meye_injury 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22msevere_headache 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mheat_stroke 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mheart_problems 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mpsychiatric 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mstab_gunshot 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22munconscious_fainting 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22msick_person 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mtrauma 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22mentrapment 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/events/cards/cards.consistency.test.ts[2m > [22m跨卡片一致性校验[2m > [22mmpdsCard.keyQuestions 非空[2m > [22murinary 至少有 1 个 keyQuestion[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateCallerState[2m > [22m用默认压力值创建来电者（initialStress=40）[32m 3[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateCallerState[2m > [22m允许自定义初始压力[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateCallerState[2m > [22mrevealedInfo 全部为初始状态[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateCallerState[2m > [22maskedMPDS 和 infoQuality 为空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateTerminalState[2m > [22m所有终端字段为初始空值[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateInitialState[2m > [22mscreen 为 title，班次编号和通话索引为 0[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateInitialState[2m > [22m没有活跃通话，对话和判定均为空[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateInitialState[2m > [22m无 perks 和 debrief[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreateInitialState[2m > [22mfleet 有 3 辆车[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mbuildScenarioQueue[2m > [22m总是返回 5 个场景[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mbuildScenarioQueue[2m > [22m序列不含空值[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mbuildScenarioQueue[2m > [22m当 rng() 始终 >= 0.2 时（即概率判定失败），不插入恶作剧电话[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mbuildScenarioQueue[2m > [22m当 rng() < 0.2 时，插入恶作剧电话[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreatePatientStatus[2m > [22mred triage 起始 stability 60，decayRate 0.8[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreatePatientStatus[2m > [22myellow triage 起始 stability 75，decayRate 0.4[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreatePatientStatus[2m > [22mgreen triage 起始 stability 90，decayRate 0.1[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcreatePatientStatus[2m > [22mblack triage 起始 stability 30，decayRate 1.5[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mstabilityToVitalSign[2m > [22m>=70 → stable[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mstabilityToVitalSign[2m > [22m40-69 → warning[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mstabilityToVitalSign[2m > [22m15-39 → critical[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mstabilityToVitalSign[2m > [22m<15 → arrest[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mvitalSignLabel[2m > [22m返回中文标签[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mvitalSignColor[2m > [22m返回颜色 hex[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mbaseRescueRate[2m > [22mred 0.45, yellow 0.70, green 0.95, black 0.10[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m完美条件应接近 1[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m最差条件应接近 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m分诊差一档扣除 10%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m分诊差两档及以上扣除 20%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m派车超过 90 秒额外扣除 25%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m派车 61-90 秒扣除 15%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m指导错答每题扣 3%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m结果裁剪到 [0, 1][32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m车辆能力每高/低于 3 一级 ±4%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcRescueSuccessRate[2m > [22m小游戏每高/低于 0.5 一步 ±5%[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mjudgeRescueSuccess[2m > [22mrate >= 0.5 → 成功[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mjudgeRescueSuccess[2m > [22mrate < 0.5 → 失败[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mtriageLevelDiff[2m > [22m相同分诊差值为 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mtriageLevelDiff[2m > [22m相邻分诊差值为 1[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mtriageLevelDiff[2m > [22m隔档分诊差值为 2[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mtriageLevelDiff[2m > [22mnull triage → 差值 2[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mtriageLevelDiff[2m > [22m最远分诊 red↔black 差值 3[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22mETA 裁剪在 25-120 区间[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m最快派车（<=27s）减 15 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m地址完整度 full 减 10 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m地址模糊 vague 加 15 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m车速 3 比车速 1 快 14 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m极端慢条件不低过 25[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcAmbulanceETA[2m > [22m极端快条件不高过 120[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcOnSceneDuration[2m > [22mred ~20s[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcOnSceneDuration[2m > [22myellow ~15s[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcOnSceneDuration[2m > [22mgreen ~8s[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mcalcOnSceneDuration[2m > [22mblack ~10s[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m完美一通电话应接近 100[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m最差一通电话总分极低[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m速度分：<=27→35, <=43→30, <=60→20, <=90→10, >90→5[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22mnull dispatchTime → speed = 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m信息分：full地址+电话+病情+目的 = 30[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m信息分：vague+无要素 = 3[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m信息分上限 30（含 bonus）[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m分诊正确 → 20 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m分诊差一档 → 10 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m分诊差两档以上 → 0 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m未分诊 → 0 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m指导全对 → 10 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m指导全错 → 0 分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22m协议正确 +2，判定字母正确 +2，子码正确 +1 = 5[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldState.test.ts[2m > [22mscoreCall[2m > [22mtotal = speed + info + triage + decision + guidance[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcBpm[2m > [22m标准 110 BPM 间隔应计算为 110[32m 2[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcBpm[2m > [22m慢速按压 80 BPM 应计算为 80[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcBpm[2m > [22m快速按压 140 BPM 应计算为 140[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcBpm[2m > [22m零界值：极大间隔应返回 1[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcLiveBpm[2m > [22m4 次规律按压应返回预期 BPM[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcLiveBpm[2m > [22m少于 2 次按压应返回 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcLiveBpm[2m > [22m空数组应返回 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcLiveBpm[2m > [22m仅取最近 N 次计算[32m 1[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessBpmQuality[2m > [22m偏差 ≤ 10 BPM 应返回 good[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessBpmQuality[2m > [22m偏差 11-20 BPM 应返回 ok[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessBpmQuality[2m > [22m偏差 > 20 BPM 应返回 bad[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessHitQuality[2m > [22m偏差 ≤ sweet spot 应返回 perfect[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessHitQuality[2m > [22m偏差在 good window 内应返回 good[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22massessHitQuality[2m > [22m偏差 > good window 应返回 miss[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcRhythmScore[2m > [22m全员 good 应得 1.0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcRhythmScore[2m > [22m一半 good 一半 ok 应得 0.75[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcRhythmScore[2m > [22m全员 bad 应得 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcRhythmScore[2m > [22m空数组应得 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcRhythmScore[2m > [22m混合阵容计算正确[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcHitAccuracy[2m > [22m全员 perfect 应得 1.0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcHitAccuracy[2m > [22m全员 miss 应得 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcHitAccuracy[2m > [22m空数组应得 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcCprFinalScore[2m > [22m完美节奏无惩罚应得 1.0[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcCprFinalScore[2m > [22m中等节奏应得中间值[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcCprFinalScore[2m > [22m吹气过量应扣分[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcalcCprFinalScore[2m > [22m分数裁剪在 [0, 1] 范围内[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcountQualities[2m > [22m统计正确分布[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcountQualities[2m > [22m空数组[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22m颜色映射函数[2m > [22mrhythmQualityColor 映射正确[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22m颜色映射函数[2m > [22mhitQualityColor 映射正确[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22m颜色映射函数[2m > [22mbpmDeviationColor 映射正确[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mhitQualityLabel[2m > [22m返回正确的中文标签[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22m常量验证[2m > [22mCPR 核心常量值正确[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcomputePassed[2m > [22m达标：分数等于阈值算通过[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcomputePassed[2m > [22m达标：分数高于阈值算通过[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcomputePassed[2m > [22m不达标：分数低于阈值算失败[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/minigames/engines/cprUtils.test.ts[2m > [22mcomputePassed[2m > [22m边界：满分与零分[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcreateDefaultFleet[2m > [22m创建 3 辆车的默认车队[32m 3[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcreateDefaultFleet[2m > [22m初始无选中车辆[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcreateDefaultFleet[2m > [22m所有车辆初始状态为 available[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcreateDefaultFleet[2m > [22m车辆有差异化 speed 和 capability[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22mavailable 车辆不受 TICK 影响[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22men_route 车辆 eta 每 tick 减 1[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22meta 归零时 en_route → on_scene，eta 重置为 onSceneTotal[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22meta 归零时 on_scene → returning，eta 重置为 outboundTotal[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22meta 归零时 returning → available，清除 mission[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22madvanceFleet[2m > [22m没有 mission 的占用车辆直接返回原样[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcalcVehicleETA[2m > [22m地址完整度 full 减 2 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcalcVehicleETA[2m > [22m地址模糊 vague 加 3 秒[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcalcVehicleETA[2m > [22m速度 2 比速度 1 ETA 减半[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcalcVehicleETA[2m > [22m最低不低于 4[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindVehicleById[2m > [22m找到存在的车辆[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindVehicleById[2m > [22m找不到不存在的车辆[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindVehicleById[2m > [22mnull id → null[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindFastestAvailable[2m > [22m返回可用车辆中最快的[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindFastestAvailable[2m > [22m没有可用车辆时返回 null[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindMostCapableAvailable[2m > [22m返回可用车辆中能力最强的[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mfindMostCapableAvailable[2m > [22m没有可用车辆时返回 null[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcountAvailable[2m > [22m初始车队 3 辆均可用[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mcountAvailable[2m > [22m所有车均占用 → 0[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/fleet.test.ts[2m > [22mtierLabel[2m > [22m返回中文描述[32m 0[2mms[22m[39m
+ [32m✓[39m src/app/App.test.tsx[2m > [22mApp[2m > [22mshould render title screen[32m 3[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22mresolves a strong call as a good patient outcome[32m 3[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22mresolves missing dispatch as a bad outcome[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22mresolves a close triage miss as a normal patient outcome[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22mresolves a verified prank as a special outcome[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22mstores structured dispatch data in lastDebrief and clears the active call after END_CALL[32m 4[2mms[22m[39m
+ [32m✓[39m src/game/core/debrief.test.ts[2m > [22mbuildDebrief[2m > [22moffers a shift perk after non-final calls and applies the selected perk[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22madvances game time for questions and records the caller purpose[32m 5[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mkeeps MPDS determinant and triage independent and emits after-dispatch events[32m 4[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mderives HOT or COLD response mode from the player determinant[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mdeducts points for an incorrect MPDS determinant[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mdeducts points for an incorrect clinical judgment[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mdoes not award a perfect prank score before the caller is verified[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mdoes not accept an unrelated correct judgment as prank verification[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/worldReducer.test.ts[2m > [22mworldReducer[2m > [22mdeducts points when final vital signs are recorded incorrectly[32m 1[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画时长常量[2m > [22m时长值递增[32m 2[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画时长常量[2m > [22m时长值在合理范围内[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画变体结构[2m > [22mslideInRight 包含 hidden/visible/exit[32m 1[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画变体结构[2m > [22mfadeInUp 包含 hidden/visible/exit[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画变体结构[2m > [22mscalePop 包含 spring transition[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画变体结构[2m > [22mpageTransition 包含 hidden/visible/exit[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m动画变体结构[2m > [22mstaggerList 含 container 和 item[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m关键帧字符串[2m > [22mKEYFRAMES_SLIDE_IN_RIGHT 包含 keyframes 定义[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m关键帧字符串[2m > [22mKEYFRAMES_FADE_IN_UP 包含 keyframes 定义[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m缓动曲线[2m > [22mEASE_OUT_FAST 是长度 4 的 cubic-bezier 数组[32m 2[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m缓动曲线[2m > [22mEASE_OUT 是长度 4 的 cubic-bezier 数组[32m 0[2mms[22m[39m
+ [32m✓[39m src/components/animations/presets.test.ts[2m > [22m缓动曲线[2m > [22mEASE_SPRING 包含 type/stiffness/damping[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m正确识别恶作剧（chosenOptionIndex 指向 isCorrect=true）[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m错误判断（选了 isCorrect=false）→ false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m未作答（chosenOptionIndex=null）→ false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m空判定数组 → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m无恶作剧相关判定（其他类型）→ false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/judgments.test.ts[2m > [22misPrankVerified[2m > [22m多个判定中有一个恶作剧正确即可[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m语义色常量[2m > [22m所有语义色是有效的十六进制颜色[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m语义色常量[2m > [22m亮色值不为空[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m颜色映射表[2m > [22mVITAL_SIGN_COLORS 包含所有体征等级[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m颜色映射表[2m > [22mHIT_QUALITY_COLORS 包含所有命中等级[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m颜色映射表[2m > [22mRHYTHM_QUALITY_COLORS 包含所有节奏等级[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/colors.test.ts[2m > [22m颜色映射表[2m > [22m所有映射值都是有效的十六进制颜色[32m 1[2mms[22m[39m
+ [32m✓[39m src/screens/GameScreen.test.ts[2m > [22mdispatch timing status[2m > [22mwarns at 45 seconds and only marks overtime after 60 seconds[32m 2[2mms[22m[39m
+ [32m✓[39m src/screens/GameScreen.test.ts[2m > [22mdispatch timing status[2m > [22mdoes not reveal the expected determinant before the player selects one[32m 0[2mms[22m[39m
+ [32m✓[39m src/screens/GameScreen.test.ts[2m > [22mdispatch timing status[2m > [22mdetects warning thresholds even when an action skips over the exact second[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22m合法初始状态 → null（无错误）[32m 1[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mtotalCalls = 0 → 报错[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mtotalCalls < 0 → 报错[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mcallIndex < 0 → 报错[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mshiftElapsed < 0 → 报错[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mtotalScore < 0 → 报错[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22mtotalScore = 0 合法[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22mvalidateState[2m > [22m只有一个字段异常时返回第一个（totalCalls 优先）[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22misStateConsistent[2m > [22m合法状态 → true[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/validators.test.ts[2m > [22misStateConsistent[2m > [22m非法状态 → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mgetDispatchTimingState[2m > [22m<45 秒 → normal[32m 2[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mgetDispatchTimingState[2m > [22m45-60 秒 → warning[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mgetDispatchTimingState[2m > [22m>60 秒 → overtime[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m从 normal 进入 warning（44→45）→ true[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m从 warning 进入 overtime（60→61）→ true[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m一直停留在 normal → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m一直停留在 warning → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m一直停留在 overtime → false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m从 normal 直接跳到 overtime（30→65）→ true[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m刚好碰到 45 边界（从 45 到 45）→ false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m刚好碰到 60 边界（从 60 到 60）→ false[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mcrossedDispatchWarning[2m > [22m正常递减（时间不应递减，但防御性测试）[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mformatPlayerDeterminantCode[2m > [22m有 determinant 时格式为 "协议号-字母-?"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mformatPlayerDeterminantCode[2m > [22m无 determinant 时格式为 "协议号-?-?"[32m 0[2mms[22m[39m
+ [32m✓[39m src/game/core/dispatchTiming.test.ts[2m > [22mformatPlayerDeterminantCode[2m > [22mdeterminant 取首字母[32m 0[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m      Tests [22m [1m[32m903 passed[39m[22m[90m (903)[39m
+[2m   Start at [22m 23:29:27
+[2m   Duration [22m 8.15s[2m (transform 1.06s, setup 9.58s, collect 3.09s, tests 185ms, environment 77.29s, prepare 7.62s)[22m
+

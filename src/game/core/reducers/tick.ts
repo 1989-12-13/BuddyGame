@@ -34,16 +34,15 @@ export function handleTick(state: WorldState): WorldState {
     beforeRescueVehicle?.status === 'en_route' &&
     afterRescueVehicle?.status === 'on_scene'
 
-  let newAmbulanceRemaining = state.ambulanceRemaining
-  if (state.dispatchSent && state.ambulanceRemaining > 0) {
-    newAmbulanceRemaining -= 1
-    if (newAmbulanceRemaining === 0 && justArrivedAtScene) {
-      newDialogue.push({
-        speaker: 'system',
-        text: '【▸ 救护车已到达现场】',
-        timestamp: newElapsed,
-      })
-    }
+  // 从 fleet 救援车辆实时读取 ETA，消除冗余状态不同步风险
+  const rescueVehicle = rescueVid ? afterFleet.vehicles.find(v => v.id === rescueVid) : null
+  const newAmbulanceRemaining = rescueVehicle?.status === 'en_route' ? rescueVehicle.eta : 0
+  if (justArrivedAtScene) {
+    newDialogue.push({
+      speaker: 'system',
+      text: '【▸ 救护车已到达现场】',
+      timestamp: newElapsed,
+    })
   }
 
   // 患者生命体征每秒衰减

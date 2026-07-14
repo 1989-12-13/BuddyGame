@@ -18,7 +18,7 @@ export const abdominalPainCard: EmergencyScenario = {
     number: 1,
     title: '腹痛/背痛',
     chiefComplaint: '中年男性右下腹剧烈疼痛、恶心呕吐、疼痛逐渐加重',
-    determinantCode: '1-D-1',
+    determinantCode: '1-D-2',
     hotCold: 'COLD',
     keyQuestions: [
       '疼痛从什么时候开始的',

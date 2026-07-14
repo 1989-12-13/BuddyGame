@@ -18,7 +18,7 @@ export const chemicalBurnCard: EmergencyScenario = {
     number: 7,
     title: '烧伤（烫伤）/爆炸伤',
     chiefComplaint: '98%浓硫酸溅到右手背，单部位化学灼伤',
-    determinantCode: '7-C-3',
+    determinantCode: '7-D-2',
     hotCold: 'HOT',
     keyQuestions: [
       '是什么化学品？（化学品名和浓度）',

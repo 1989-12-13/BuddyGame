@@ -17,7 +17,7 @@ export function ThemeToggle({ style }: { style?: React.CSSProperties }) {
         right: 16,
         zIndex: 1000,
         padding: '6px 10px',
-        fontSize: 16,
+        fontSize: 'var(--fs-body-lg)',
         lineHeight: 1,
         border: '1px solid var(--border)',
         borderRadius: 6,

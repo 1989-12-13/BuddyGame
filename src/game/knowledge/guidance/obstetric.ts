@@ -6,18 +6,10 @@ import type { GuidanceDetail } from '../guidanceDetails'
 
 export const OBSTETRIC_GUIDANCE: Record<string, GuidanceDetail> = {
   obstetric: {
-    title: '院前分娩指导',
-    intro: '救护车正在赶来。请您保持冷静，我来指导您。首先让您妻子平躺，用枕头垫高头部。',
+
     steps: [
       {
-        prompt: '第一步：准备体位',
-        options: [
-          '让产妇平躺，双腿弯曲分开',
-          '让产妇站起来走动',
-          '让产妇坐着用力',
-        ],
-        correctIndex: 0,
-        explanation:
+explanation:
           '破水后脐带脱垂是最危险的并发症之一——脐带随羊水流出被挤压于胎头和骨盆之间，导致胎儿急性缺氧。平躺体位利用重力使胎头下降贴紧宫颈口，封堵产道间隙，减少脐带脱垂风险。双腿弯曲分开可扩大骨盆出口径线，为胎儿娩出创造空间。',
         optionAnalysis: [
           '正确。平躺双腿弯曲分开（截石位）是最安全的分娩体位，既能最大限度降低脐带脱垂风险，又能为接生者提供清晰的视野和操作空间。',
@@ -26,14 +18,7 @@ export const OBSTETRIC_GUIDANCE: Record<string, GuidanceDetail> = {
         ],
       },
       {
-        prompt: '第二步：指导用力',
-        options: [
-          '宫缩时向下用力，间歇时休息',
-          '一直持续用力',
-          '不要用力，等医生来',
-        ],
-        correctIndex: 0,
-        explanation:
+explanation:
           '宫缩是子宫平滑肌的节律性收缩，每次宫缩持续约30-60秒。宫缩时用力利用子宫收缩和腹肌收缩的协同作用，产生最大的腹内压推动胎儿下降。宫缩间歇期子宫肌放松、胎盘血流恢复，此时休息可保证胎儿氧供并保存产妇体力。',
         optionAnalysis: [
           '正确。配合宫缩节律用力是产科学的基本原则。宫缩时加用腹压可产生约100-150mmHg的腹腔压力，推动胎儿娩出；间歇期休息可恢复体力和胎儿氧供。',
@@ -42,14 +27,7 @@ export const OBSTETRIC_GUIDANCE: Record<string, GuidanceDetail> = {
         ],
       },
       {
-        prompt: '第三步：接住婴儿',
-        options: [
-          '轻轻托住婴儿头部，不要拉拽',
-          '用力把婴儿拉出来',
-          '不要碰婴儿',
-        ],
-        correctIndex: 0,
-        explanation:
+explanation:
           '胎头娩出后，胎肩和身体应自然旋转娩出。用力拉拽可能导致臂丛神经牵拉损伤（Erb-Duchenne麻痹）或锁骨骨折。轻轻托住头部可保护胎儿颈椎，同时观察脐带是否绕颈，待身体自然娩出后立即擦干保暖、刺激呼吸。',
         optionAnalysis: [
           '正确。轻轻托住头部顺应胎儿自然娩出方向，保护颈椎和臂丛神经。待前肩娩出后身体会快速自然滑出，此时只需接住即可。',

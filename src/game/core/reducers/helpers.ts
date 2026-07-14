@@ -37,3 +37,19 @@ export function judgmentCorrectAnswer(j: JudgmentPrompt): string {
 export function toneToInitialStress(tone: string): number {
   return TONE_INITIAL_STRESS[tone] ?? 40
 }
+
+// -------------------- Guidance 步骤推进公用逻辑 --------------------
+/** 检查 guidance 阶段是否活跃（三条件：有 guidance、guidanceActive、phase === guidance） */
+export function isGuidanceActive(state: WorldState): boolean {
+  return !!(state.currentCall?.guidance && state.guidanceActive && state.callPhase === 'guidance')
+}
+
+/** 返回推进下一步后的 { guidanceStepIndex, callPhase } */
+export function advanceGuidanceStep(state: WorldState, nextIndex: number) {
+  const guidanceDef = state.currentCall!.guidance!
+  const isLastStep = nextIndex >= guidanceDef.steps.length
+  return {
+    guidanceStepIndex: nextIndex,
+    callPhase: isLastStep ? 'closing' : 'guidance' as const,
+  }
+}

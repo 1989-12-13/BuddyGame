@@ -30,8 +30,17 @@ export function handleCalmCaller(state: WorldState): WorldState {
   const phrase = calmPhrases[rngInt(calmPhrases.length)]
 
   const opLine: DialogueLine = { speaker: 'operator', text: phrase, timestamp: now }
+  // 按压力级别差异化安抚回应
+  let callerResponse: string
+  if (newStressLevel === '镇定') {
+    callerResponse = '好，你说，我听着。'
+  } else if (cs.stressLevel === '镇定' || cs.stressLevel === '紧张') {
+    callerResponse = '行，我冷静了，你问。'
+  } else {
+    callerResponse = '好...好的，我尽量...你说...'
+  }
   const callerLine: DialogueLine = {
-    speaker: 'caller', text: '好...好的，我尽量...你说...',
+    speaker: 'caller', text: callerResponse,
     timestamp: now,
   }
 

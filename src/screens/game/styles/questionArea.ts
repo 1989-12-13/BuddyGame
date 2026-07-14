@@ -15,8 +15,8 @@ export const qSection: CSSProperties = {
 }
 
 export const qSectionTitle: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-caption)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-muted)',
   marginBottom: 3,
   textTransform: 'uppercase',
@@ -50,9 +50,9 @@ export const protocolStepNum: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: 12,
-  fontWeight: 900,
-  fontFamily: 'monospace',
+  fontSize: 'var(--fs-caption)',
+  fontWeight: 'var(--fw-black)',
+  fontFamily: 'var(--font-mono)',
   flexShrink: 0,
 }
 
@@ -62,19 +62,19 @@ export const protocolStepBtn: CSSProperties = {
   border: 'none',
   backgroundColor: 'var(--warning-amber)',
   color: '#fff',
-  fontSize: 11,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-small)',
+  fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   transition: 'all 0.15s',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
 }
 
 export const qBtnSmall: CSSProperties = {
   padding: '3px 8px',
   borderRadius: 4,
   border: '1px solid',
-  fontSize: 11,
+  fontSize: 'var(--fs-small)',
   lineHeight: '1.3',
   textAlign: 'center',
 }
@@ -89,7 +89,7 @@ export const qBtn: CSSProperties = {
   padding: '5px 10px',
   borderRadius: 4,
   border: '1px solid',
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   transition: 'all 0.15s',
   lineHeight: '1.4',
 }
@@ -131,23 +131,25 @@ export const terminalBtn: CSSProperties = {
   borderRadius: 6,
   border: '2px solid',
   backgroundColor: 'transparent',
-  color: '#b1bac4',
-  fontSize: 14,
-  fontWeight: 'bold',
+  color: 'var(--text-muted-alt)',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
-  fontFamily: 'monospace',
+  fontFamily: 'var(--font-mono)',
   letterSpacing: 0.5,
   transition: 'all 0.2s',
 }
 
 export const calmBtn: CSSProperties = {
-  padding: '5px 12px',
+  padding: '4px 12px',
   borderRadius: 4,
-  border: '1px solid var(--accent-blue)',
-  backgroundColor: 'rgba(14, 165, 233, 0.08)',
-  color: '#b1bac4',
-  fontSize: 13,
-  fontWeight: 'bold',
+  border: 'none',
+  backgroundColor: 'var(--accent-blue)',
+  color: '#fff',
+  fontSize: 'var(--fs-small)',
+  fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
+  transition: 'all 0.15s',
+  fontFamily: 'var(--font-mono)',
 }

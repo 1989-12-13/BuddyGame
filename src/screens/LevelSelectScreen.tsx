@@ -135,7 +135,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
         {Object.entries(TAGS).map(([emoji, label]) => (
           <span key={emoji} style={styles.legendItem}>
             <span style={{ marginRight: 2 }}>{emoji}</span>
-            <span style={{ fontSize: 11 }}>{label}</span>
+            <span style={{ fontSize: 'var(--fs-small)' }}>{label}</span>
           </span>
         ))}
       </div>

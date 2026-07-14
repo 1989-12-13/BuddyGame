@@ -3,18 +3,16 @@
 // 纯文字版急救知识点选择题，选择正确的急救操作方法
 // ============================================================
 
+import { useMemo } from 'react'
 import type { MiniGameProps, QuickChoiceSpec } from '../../../game/types'
+import { isQuickChoice } from '../../../game/types'
 import { usePauseRef, useAttemptScoring } from './hooks'
-
-const wrap: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 10,
-}
+import { engineWrap, progressTrack } from './styles'
+import { createShuffleMap } from '../../../utils/shuffleUtils'
 
 const questionCard: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-primary)',
   textAlign: 'left',
   padding: '12px 14px',
@@ -23,49 +21,49 @@ const questionCard: React.CSSProperties = {
   borderRadius: 10,
   borderLeft: '3px solid var(--accent-blue)',
   width: '100%',
-  maxWidth: 300,
 }
 
-const OPTION_LABELS = ['A', 'B', 'C', 'D']
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E', 'F']
 
 const resultBox: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body-sm)',
+  fontWeight: 'var(--fw-bold)',
   padding: '8px 14px',
   borderRadius: 8,
   textAlign: 'center',
 }
 
-const progressBar: React.CSSProperties = {
-  width: '100%',
-  maxWidth: 300,
-  height: 4,
-  borderRadius: 2,
-  backgroundColor: 'var(--border)',
-  overflow: 'hidden',
-}
-
 export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
-  const s = spec as QuickChoiceSpec
+  if (!isQuickChoice(spec)) return null
+  const s = spec
   const pausedRef = usePauseRef(paused)
+
+  // 打乱选项顺序，防止玩家通过位置记忆作答
+  const shuffleMap = useMemo(
+    () => createShuffleMap(s.options.length),
+    [s.options.length],
+  )
+  const displayOptions = shuffleMap.toOriginal.map(i => s.options[i])
+  const displayCorrectIndex = shuffleMap.toDisplay[s.correctIndex]
+
   const { selected, showResult, attempts, handleSelect, isCorrect } = useAttemptScoring(
-    { correctIndex: s.correctIndex, passThreshold: s.passThreshold },
+    { correctIndex: displayCorrectIndex, passThreshold: s.passThreshold },
     onComplete,
     pausedRef,
   )
 
   return (
-    <div style={wrap}>
+    <div style={engineWrap}>
       {/* 题目 */}
       <div style={questionCard}>
         {s.question}
       </div>
 
       {/* 选项 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', maxWidth: 300 }}>
-        {s.options.map((opt, i) => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+        {displayOptions.map((opt, i) => {
           const isSelected = selected === i
-          const isThisCorrect = i === s.correctIndex
+          const isThisCorrect = i === displayCorrectIndex
 
           let bg = 'var(--bg-surface)'
           let border = 'var(--border)'
@@ -92,7 +90,7 @@ export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
                 border: `1.5px solid ${border}`,
                 backgroundColor: bg,
                 color,
-                fontSize: 13,
+                fontSize: 'var(--fs-body-sm)',
                 cursor: showResult ? 'default' : 'pointer',
                 transition: 'all 0.15s ease',
                 textAlign: 'left',
@@ -101,12 +99,7 @@ export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
                 gap: 10,
                 opacity: showResult && !isSelected && !isThisCorrect ? 0.35 : 1,
               }}
-              onMouseEnter={(e) => {
-                if (!showResult) e.currentTarget.style.borderColor = 'var(--accent-blue)'
-              }}
-              onMouseLeave={(e) => {
-                if (!showResult) e.currentTarget.style.borderColor = 'var(--border)'
-              }}
+
             >
               <span style={{
                 display: 'inline-flex',
@@ -117,8 +110,8 @@ export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
                 borderRadius: '50%',
                 backgroundColor: isThisCorrect && showResult ? 'var(--success-green)' : isSelected && showResult ? 'var(--danger-red)' : 'var(--bg-elevated)',
                 color: '#fff',
-                fontSize: 11,
-                fontWeight: 'bold',
+                fontSize: 'var(--fs-small)',
+                fontWeight: 'var(--fw-bold)',
                 flexShrink: 0,
               }}>
                 {isThisCorrect && showResult ? '✓' : isSelected && showResult ? '✕' : OPTION_LABELS[i]}
@@ -136,17 +129,17 @@ export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
           backgroundColor: isCorrect ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
           color: isCorrect ? 'var(--success-green)' : 'var(--danger-red)',
         }}>
-          {isCorrect ? '✓ 回答正确！' : '✗ 答错了，正确答案已标出'}
+          {isCorrect ? '✓ 回答正确！' : '✗ 答错了。绿色标注的是正确答案，记住下次要选这个哦！'}
         </div>
       )}
 
       {/* 尝试进度 */}
       {!showResult && (
-        <div style={progressBar}>
+        <div style={{ ...progressTrack, width: '100%', height: 4, borderRadius: 2, backgroundColor: 'var(--border)' }}>
           <div style={{
             height: '100%',
             borderRadius: 2,
-            width: `${(attempts / 2) * 100}%`,
+            width: `${Math.min(100, attempts * 40)}%`,
             background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-cyan))',
             transition: 'width 0.3s',
           }} />

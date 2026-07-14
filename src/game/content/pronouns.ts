@@ -38,11 +38,23 @@ export function getTitle(gender: PatientGender | string): string {
 export function getPatientDescriptor(gender: PatientGender | string, relationship?: string): string {
   const p = getPronoun(gender)
   const formal = getTitle(gender)
-  if (relationship === '家人' || relationship === '家属') return `家属（${gender === '女性' ? '女' : gender === '男性' ? '男' : ''}）`
+  if (relationship === '家人' || relationship === '家属') {
+    if (gender === '不详') return '您的家人'
+    return p === 'TA' ? '患者' : (gender === '女性' ? '她' : '他')
+  }
   if (relationship === '路人') return `这位${formal}`
   if (relationship === '同事') return `这位${p === 'TA' ? '同事' : (gender === '女性' ? '女同事' : '男同事')}`
   if (relationship === '朋友') return `这位朋友`
   if (relationship === '邻居') return `邻居`
   if (relationship === '伴侣' || relationship === '夫妻') return p === 'TA' ? '伴侣' : (gender === '女性' ? '妻子' : '丈夫')
+  if (relationship === '母亲') return `您母亲`
+  if (relationship === '父亲') return `您父亲`
+  if (relationship === '儿子') return `您儿子`
+  if (relationship === '妻子') return `您妻子`
+  if (relationship === '丈夫') return `您丈夫`
+  if (relationship === '本人') return `您自己`
+  if (relationship === '小孩') return `这个小朋友`
+  if (relationship === '室友') return `您的室友`
+  if (relationship === '工友') return `您的工友`
   return `这位${formal}`
 }

@@ -33,15 +33,15 @@ export function DeterminantSelector({
               border: `2px solid ${info.color}`,
               backgroundColor: isActive ? info.color : 'transparent',
               color: isActive ? '#fff' : info.color,
-              fontSize: 11,
-              fontWeight: isActive ? 'bold' : 'normal',
+              fontSize: 'var(--fs-small)',
+              fontWeight: isActive ? 'var(--fw-bold)' : 'var(--fw-normal)',
               cursor: 'pointer',
               minWidth: 50,
             }}
             onClick={() => onSelect(l.key)}
           >
-            <div style={{ fontWeight: 'bold' }}>{l.label}</div>
-            <div style={{ fontSize: 9, opacity: 0.85 }}>{l.desc}</div>
+            <div style={{ fontWeight: 'var(--fw-bold)' }}>{l.label}</div>
+            <div style={{ fontSize: 'var(--fs-micro)', opacity: 0.85 }}>{l.desc}</div>
           </button>
         )
       })}

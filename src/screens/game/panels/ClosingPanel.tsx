@@ -24,13 +24,13 @@ export function ClosingPanel({
     <div style={styles.closingPanel}>
       {/* 状态卡片 */}
       <div style={styles.closingStatusCard}>
-        <div style={{ fontSize: 36, marginBottom: 8, filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
+        <div style={{ fontSize: 'var(--fs-score)', marginBottom: 8, filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
           🚑
         </div>
-        <div style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)', marginBottom: 4 }}>
           {arrived ? '救护车已到达现场' : '等待救护车到达'}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginBottom: 12 }}>
           {arrived ? '急救人员正在接手处理' : guidance ? '急救指导已完成' : '派车指令已发出'}
         </div>
         {!arrived && (
@@ -53,14 +53,14 @@ export function ClosingPanel({
                 transition: 'width 1s linear',
               }} />
             </div>
-            <div style={{ fontSize: 20, fontWeight: 'bold', color: ambulanceRemaining > 10 ? 'var(--accent-blue)' : 'var(--danger-red)' }}>
+            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 'var(--fw-bold)', color: ambulanceRemaining > 10 ? 'var(--accent-blue)' : 'var(--danger-red)' }}>
               {ambulanceRemaining}s
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>预计到达时间</div>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>预计到达时间</div>
           </>
         )}
         {arrived && (
-          <div style={{ fontSize: 14, fontWeight: 'bold', color: 'var(--success-green)' }}>
+          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--success-green)' }}>
             ✓ 任务完成
           </div>
         )}

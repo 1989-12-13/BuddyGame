@@ -31,8 +31,8 @@ export function TranscriptLine({
       </span>
       <span style={{
         ...styles.transcriptText,
-        color: isCaller ? '#ff6b6b' : '#b1bac4',
-        fontWeight: isCaller ? 700 : 500,
+        color: isCaller ? 'var(--danger-soft)' : 'var(--text-muted-alt)',
+        fontWeight: isCaller ? 'var(--fw-bold)' : 'var(--fw-medium)',
       }}>
         {text}
         {showCursor && (

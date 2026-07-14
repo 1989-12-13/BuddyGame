@@ -47,15 +47,15 @@ export const guidancePanel: CSSProperties = {
 }
 
 export const guidanceTitle: CSSProperties = {
-  fontSize: 17,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-subtitle)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--danger-red)',
   marginBottom: 8,
   letterSpacing: 0.5,
 }
 
 export const guidanceIntro: CSSProperties = {
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   color: 'var(--text-secondary)',
   marginBottom: 10,
   padding: '10px 12px',
@@ -70,8 +70,8 @@ export const guidanceStep: CSSProperties = {
 }
 
 export const guidancePrompt: CSSProperties = {
-  fontSize: 14,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-primary)',
   marginBottom: 6,
   padding: '6px 0',
@@ -83,7 +83,7 @@ export const guidanceOption: CSSProperties = {
   borderRadius: 8,
   backgroundColor: 'var(--bg-elevated)',
   cursor: 'pointer',
-  fontSize: 13,
+  fontSize: 'var(--fs-body-sm)',
   color: 'var(--text-primary)',
   textAlign: 'left',
   transition: 'all 0.12s ease',
@@ -128,14 +128,14 @@ export const closingSummaryItem: CSSProperties = {
 }
 
 export const closingSummaryLabel: CSSProperties = {
-  fontSize: 10,
+  fontSize: 'var(--fs-micro)',
   color: 'var(--text-muted)',
   marginBottom: 2,
 }
 
 export const closingSummaryValue: CSSProperties = {
-  fontSize: 13,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body-sm)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-primary)',
 }
 
@@ -147,8 +147,8 @@ export const endCallBtn: CSSProperties = {
   color: '#fff',
   border: 'none',
   borderRadius: 8,
-  fontSize: 14,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',

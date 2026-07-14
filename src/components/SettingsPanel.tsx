@@ -3,9 +3,11 @@
 // ============================================================
 
 import { useState, useRef, useEffect } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { Settings, Home, Volume2, Moon, Sun } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAudio } from '../audio/AudioContext'
+import { Z_SETTINGS } from '../game/core/zIndex'
 
 interface Props {
   /** 回到主菜单回调 */
@@ -18,16 +20,23 @@ export function SettingsPanel({ onNavigate }: Props) {
   const { theme, toggle } = useTheme()
   const { volume, setVolume } = useAudio()
 
-  // 点击面板外部关闭
+  // 点击面板外部关闭 + Escape 关闭
   useEffect(() => {
     if (!open) return
-    const handler = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         setOpen(false)
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [open])
 
   const menuItemBase: React.CSSProperties = {
@@ -38,14 +47,14 @@ export function SettingsPanel({ onNavigate }: Props) {
     border: 'none',
     background: 'none',
     color: 'var(--text-primary)',
-    fontSize: 14,
+    fontSize: 'var(--fs-body)',
     cursor: 'pointer',
     textAlign: 'left',
     transition: 'background 0.15s',
   }
 
   return (
-    <div ref={panelRef} style={{ position: 'fixed', top: 85, left: 16, zIndex: 1000 }}>
+    <div ref={panelRef} style={{ position: 'fixed', top: 85, left: 16, zIndex: Z_SETTINGS }}>
       {/* 齿轮按钮 */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -53,7 +62,7 @@ export function SettingsPanel({ onNavigate }: Props) {
         style={{
           width: 36,
           height: 36,
-          fontSize: 18,
+          fontSize: 'var(--fs-title)',
           border: '1px solid var(--border)',
           borderRadius: 8,
           backgroundColor: 'var(--bg-surface)',
@@ -69,8 +78,13 @@ export function SettingsPanel({ onNavigate }: Props) {
       </button>
 
       {/* 下拉面板 */}
-      {open && (
-        <div
+      <AnimatePresence>
+        {open && (
+        <motion.div
+          initial={{ opacity: 0, y: -8, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.96 }}
+          transition={{ duration: 0.12 }}
           style={{
             position: 'absolute',
             top: 44,
@@ -83,6 +97,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             boxShadow: 'var(--shadow-lg)',
             display: 'flex',
             flexDirection: 'column',
+            transformOrigin: 'top left',
           }}
         >
           {/* 回到主菜单 */}
@@ -115,7 +130,7 @@ export function SettingsPanel({ onNavigate }: Props) {
               }}
             >
               <Volume2 size={16} />
-              <span style={{ color: 'var(--text-primary)', fontSize: 14 }}>
+              <span style={{ color: 'var(--text-primary)', fontSize: 'var(--fs-body)' }}>
                 音量 {Math.round(volume * 100)}%
               </span>
             </div>
@@ -146,8 +161,9 @@ export function SettingsPanel({ onNavigate }: Props) {
             {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             {theme === 'light' ? '切换深色主题' : '切换浅色主题'}
           </button>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

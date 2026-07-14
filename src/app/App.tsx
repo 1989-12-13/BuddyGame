@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useState, useCallback } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import type { EndingDef } from '../game/types'
 import { TitleScreen } from '../screens/TitleScreen'
 import { GameScreen } from '../screens/game/GameScreen'
@@ -57,29 +58,41 @@ export default function App() {
     setFinalCallScores([])
   }, [])
 
-  const mainContent = (() => {
-    switch (screen) {
-      case 'title':
-        return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} onKnowledge={() => setScreen('knowledge')} />
-      case 'level_select':
-        return <LevelSelectScreen onStart={handleStart} onBack={() => setScreen('title')} />
-      case 'knowledge':
-        return <KnowledgeScreen onBack={() => setScreen('title')} />
-      case 'ending':
-        return ending ? (
-          <EndingScreen ending={ending} totalScore={finalScore} callScores={finalCallScores} onRestart={handleRestart} />
-        ) : (
-          <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
-        )
-      case 'game':
-      default:
-        return (
-          <ErrorBoundary title="游戏异常" description="游戏主界面发生了意外错误。将自动返回标题画面。">
-            <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
-          </ErrorBoundary>
-        )
-    }
-  })()
+  const mainContent = (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={screen}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.15 }}
+      >
+      {(() => {
+        switch (screen) {
+          case 'title':
+            return <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} onKnowledge={() => setScreen('knowledge')} />
+          case 'level_select':
+            return <LevelSelectScreen onStart={handleStart} onBack={() => setScreen('title')} />
+          case 'knowledge':
+            return <KnowledgeScreen onBack={() => setScreen('title')} />
+          case 'ending':
+            return ending ? (
+              <EndingScreen ending={ending} totalScore={finalScore} callScores={finalCallScores} onRestart={handleRestart} />
+            ) : (
+              <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
+            )
+          case 'game':
+          default:
+            return (
+              <ErrorBoundary title="游戏异常" description="游戏主界面发生了意外错误。将自动返回标题画面。">
+                <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
+              </ErrorBoundary>
+            )
+        }
+      })()}
+      </motion.div>
+    </AnimatePresence>
+  )
 
   return (
     <ThemeProvider>

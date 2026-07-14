@@ -103,7 +103,7 @@ export function HistoryPanel({ entry, onClose }: Props) {
               分诊: {TRIAGE_LABELS[entry.triage].split(' — ')[0]}
             </span>
           )}
-          <span style={{ ...styles.metaItem, color: outcomeInfo.color, fontWeight: 700 }}>
+          <span style={{ ...styles.metaItem, color: outcomeInfo.color, fontWeight: 'var(--fw-bold)' }}>
             {outcomeInfo.label}
           </span>
         </div>
@@ -201,10 +201,10 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 4,
   },
   titleText: {
-    fontSize: 11,
+    fontSize: 'var(--fs-small)',
     color: 'var(--accent-gold)',
     fontFamily: 'var(--font-mono)',
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     letterSpacing: 1,
     textTransform: 'uppercase',
     flex: 1,
@@ -220,7 +220,7 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: 'center',
   },
   summary: {
-    fontSize: 13,
+    fontSize: 'var(--fs-body-sm)',
     color: 'var(--text-primary)',
     marginBottom: 6,
     fontFamily: 'var(--font-mono)',
@@ -235,7 +235,7 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
-    fontSize: 11,
+    fontSize: 'var(--fs-small)',
     color: 'var(--text-secondary)',
     fontFamily: 'var(--font-mono)',
   },
@@ -251,17 +251,17 @@ const styles: Record<string, CSSProperties> = {
     marginTop: 6,
   },
   scoreLabel: {
-    fontSize: 10,
+    fontSize: 'var(--fs-micro)',
     color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
   scoreValue: {
-    fontSize: 14,
+    fontSize: 'var(--fs-body)',
     color: 'var(--accent-amber)',
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
   dialogue: {
@@ -276,15 +276,15 @@ const styles: Record<string, CSSProperties> = {
   line: {
     padding: '4px 8px',
     borderRadius: 4,
-    fontSize: 12.5,
+    fontSize: 'var(--fs-body-sm)',
     lineHeight: 1.6,
   },
   speakerLabel: {
-    fontSize: 9.5,
+    fontSize: 'var(--fs-micro)',
     color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     marginRight: 6,
   },

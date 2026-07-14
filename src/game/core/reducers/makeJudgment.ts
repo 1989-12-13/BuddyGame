@@ -6,6 +6,7 @@
 import type { WorldState } from '../../types'
 import { createEventSink, sinkEvent, judgmentCorrectAnswer } from './helpers'
 import { JUDGMENT_CORRECT_BONUS, JUDGMENT_INCORRECT_PENALTY } from '../constants'
+import { stabilityToVitalSign } from '../worldState'
 
 export function handleMakeJudgment(
   state: WorldState,
@@ -41,10 +42,12 @@ export function handleMakeJudgment(
   if (state.patientStatus && !state.patientStatus.died) {
     const isCorrect = !!selectedOption?.isCorrect
     if (isCorrect) {
-      newPatientStatus = { ...state.patientStatus, stability: Math.min(100, state.patientStatus.stability + JUDGMENT_CORRECT_BONUS) }
+      const newStability = Math.min(100, state.patientStatus.stability + JUDGMENT_CORRECT_BONUS)
+      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'good', `✓ 判断准确：${judgment.question.slice(0, 18)}…`, state.shiftElapsed)
     } else {
-      newPatientStatus = { ...state.patientStatus, stability: Math.max(0, state.patientStatus.stability - JUDGMENT_INCORRECT_PENALTY) }
+      const newStability = Math.max(0, state.patientStatus.stability - JUDGMENT_INCORRECT_PENALTY)
+      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       const correctLabel = judgmentCorrectAnswer(judgment)
       sinkEvent(sink, 'bad', `✗ 误判 · 实际应为：${correctLabel}`, state.shiftElapsed)
     }

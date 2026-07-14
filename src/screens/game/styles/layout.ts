@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { Z_FLOAT_CARD, Z_SPLIT_BAR } from '../../../game/core/zIndex'
 
 /** 容器布局样式 */
 export const container: CSSProperties = {
@@ -31,12 +32,12 @@ export const floatCard: CSSProperties = {
   justifyContent: 'center',
   gap: 4,
   backgroundColor: 'rgba(17, 21, 28, 0.88)',
-  border: '1px solid #2a323e',
+  border: '1px solid var(--border)',
   borderRadius: 10,
   padding: '24px 32px',
   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
   backdropFilter: 'blur(6px)',
-  zIndex: 40,
+  zIndex: Z_FLOAT_CARD,
 }
 
 /** 可拖拽分隔条 */
@@ -51,7 +52,7 @@ export const splitBar: CSSProperties = {
   userSelect: 'none',
   transition: 'background-color 0.15s',
   position: 'relative',
-  zIndex: 5,
+  zIndex: Z_SPLIT_BAR,
   flexShrink: 0,
 }
 
@@ -82,8 +83,8 @@ export const centerMessage: CSSProperties = {
 
 export const answerBtn: CSSProperties = {
   padding: '14px 48px',
-  fontSize: 20,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-heading)',
+  fontWeight: 'var(--fw-bold)',
   backgroundColor: 'var(--danger-red)',
   color: '#fff',
   border: 'none',

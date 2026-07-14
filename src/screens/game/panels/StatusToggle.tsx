@@ -32,9 +32,9 @@ export function StatusToggle({
             border: `1px solid ${colorTrue}`,
             backgroundColor: value === true ? colorTrue : 'transparent',
             color: value === true ? '#fff' : colorTrue,
-            fontSize: 12,
+            fontSize: 'var(--fs-caption)',
             cursor: 'pointer',
-            fontWeight: value === true ? 'bold' : 'normal',
+            fontWeight: value === true ? 'var(--fw-bold)' : 'var(--fw-normal)',
           }}
           onClick={() => onToggle(field, true)}
         >
@@ -48,9 +48,9 @@ export function StatusToggle({
             border: `1px solid ${colorFalse}`,
             backgroundColor: value === false ? colorFalse : 'transparent',
             color: value === false ? '#fff' : colorFalse,
-            fontSize: 12,
+            fontSize: 'var(--fs-caption)',
             cursor: 'pointer',
-            fontWeight: value === false ? 'bold' : 'normal',
+            fontWeight: value === false ? 'var(--fw-bold)' : 'var(--fw-normal)',
           }}
           onClick={() => onToggle(field, false)}
         >

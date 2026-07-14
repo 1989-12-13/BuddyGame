@@ -18,7 +18,7 @@ export const overdoseCard: EmergencyScenario = {
     number: 23,
     title: '过量/中毒',
     chiefComplaint: '青年女性疑似服用过量安眠药，呼叫不应，有遗书',
-    determinantCode: '23-D-2',
+    determinantCode: '23-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '吃了什么药？吃了多少？',

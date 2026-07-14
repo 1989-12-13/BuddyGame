@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { Z_TERMINAL_MODAL } from '../../../game/core/zIndex'
 
 /** MPDS 调度卡 leftsider（从左滑入式） */
 export const modalOverlay: CSSProperties = {
@@ -7,7 +8,7 @@ export const modalOverlay: CSSProperties = {
   bottom: 0,
   left: 0,
   width: 420,
-  zIndex: 60,
+  zIndex: Z_TERMINAL_MODAL,
   backgroundColor: 'var(--bg-elevated)',
   borderRight: '1px solid var(--border)',
   display: 'flex',
@@ -54,9 +55,9 @@ export const mpdsModalBadge: CSSProperties = {
   borderRadius: 6,
   padding: '6px 12px',
   color: 'var(--accent-blue)',
-  fontSize: 16,
-  fontWeight: 900,
-  fontFamily: 'monospace',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-black)',
+  fontFamily: 'var(--font-mono)',
 }
 
 export const modalCloseBtn: CSSProperties = {
@@ -66,8 +67,8 @@ export const modalCloseBtn: CSSProperties = {
   border: '1px solid var(--border-bright)',
   borderRadius: 4,
   cursor: 'pointer',
-  fontSize: 14,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body)',
+  fontWeight: 'var(--fw-bold)',
 }
 
 export const modalBody: CSSProperties = {
@@ -92,8 +93,8 @@ export const modalDispatchBtn: CSSProperties = {
   color: '#fff',
   border: 'none',
   borderRadius: 6,
-  fontSize: 15,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body-lg)',
+  fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
   transition: 'all 0.15s',
 }
@@ -111,7 +112,7 @@ export const modalSaveBtn: CSSProperties = {
   color: 'var(--text-secondary)',
   border: '1px solid var(--border)',
   borderRadius: 6,
-  fontSize: 12,
+  fontSize: 'var(--fs-caption)',
   cursor: 'pointer',
 }
 
@@ -121,7 +122,7 @@ export const modalEndCallBtn: CSSProperties = {
   color: 'var(--text-muted)',
   border: '1px solid var(--border)',
   borderRadius: 6,
-  fontSize: 11,
+  fontSize: 'var(--fs-small)',
   cursor: 'pointer',
 }
 
@@ -130,8 +131,8 @@ export const modalWarning: CSSProperties = {
   backgroundColor: 'var(--danger-red-bg)',
   borderTop: '1px solid var(--danger-red)',
   color: 'var(--danger-red)',
-  fontSize: 12,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-caption)',
+  fontWeight: 'var(--fw-bold)',
   textAlign: 'center',
 }
 
@@ -157,8 +158,8 @@ export const formField: CSSProperties = {
 
 export const formLabel: CSSProperties = {
   display: 'block',
-  fontSize: 13,
-  fontWeight: 'bold',
+  fontSize: 'var(--fs-body-sm)',
+  fontWeight: 'var(--fw-bold)',
   color: 'var(--text-secondary)',
   marginBottom: 4,
 }
@@ -170,8 +171,8 @@ export const formInput: CSSProperties = {
   border: '1px solid var(--border)',
   backgroundColor: 'var(--bg-elevated)',
   color: 'var(--text-primary)',
-  fontSize: 13,
-  fontFamily: 'monospace',
+  fontSize: 'var(--fs-body-sm)',
+  fontFamily: 'var(--font-mono)',
   resize: 'vertical',
   boxSizing: 'border-box',
 }

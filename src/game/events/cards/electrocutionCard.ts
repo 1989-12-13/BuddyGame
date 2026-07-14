@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
+import { CPR_MINI_GAME_INSTRUCTION } from '../../../components/minigames/engines/cprUtils'
 
 export const electrocutionCard: EmergencyScenario = {
   id: 'electrocution',
@@ -18,7 +19,7 @@ export const electrocutionCard: EmergencyScenario = {
     number: 15,
     title: '触电/雷击',
     chiefComplaint: '中年男性在工地触碰裸露电线后倒地，无意识无呼吸',
-    determinantCode: '15-D-2',
+    determinantCode: '15-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '触电时间多久？',
@@ -167,15 +168,15 @@ export const electrocutionCard: EmergencyScenario = {
           correct: 'CPR操作到位。',
           incorrect: 'CPR操作需改进。',
           callerCorrect: '我按了30下又吹了2口气！他有呼吸了！',
-          callerIncorrect: '我节奏没把握好……',
+          callerIncorrect: '我手都麻了……节奏全乱了',
         },
         miniGame: {
           kind: 'cpr',
           title: 'CPR 30:2',
-          instruction: '30次胸外按压 → 人工呼吸2次，共2个循环。按空格按压，吹气时按住空格在理想区松手。',
+          instruction: CPR_MINI_GAME_INSTRUCTION,
           passThreshold: 0.5,
           cycles: 2,
-          feedback: { good: '我按了30下又吹了2口气！他有呼吸了！', bad: '我节奏没把握好……' },
+          feedback: { good: '我按了30下又吹了2口气！他有呼吸了！', bad: '我手都麻了……节奏全乱了' },
         },
       },
     ],

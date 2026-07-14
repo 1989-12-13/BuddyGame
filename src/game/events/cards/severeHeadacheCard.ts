@@ -18,7 +18,7 @@ export const severeHeadacheCard: EmergencyScenario = {
     number: 18,
     title: '头痛',
     chiefComplaint: '中年女性突发炸裂样头痛、伴有呕吐和畏光',
-    determinantCode: '18-C-2',
+    determinantCode: '18-C-1',
     hotCold: 'HOT',
     keyQuestions: [
       '头痛从什么时候开始的',

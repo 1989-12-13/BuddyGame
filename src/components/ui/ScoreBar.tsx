@@ -20,7 +20,7 @@ export function ScoreBar({ label, value, max, color = 'var(--accent-blue)', show
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...style }}>
-      <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 56, textAlign: 'right' }}>
+      <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', minWidth: 56, textAlign: 'right' }}>
         {label}
       </span>
       <div style={{
@@ -33,7 +33,7 @@ export function ScoreBar({ label, value, max, color = 'var(--accent-blue)', show
         }} />
       </div>
       {showValue && (
-        <span style={{ fontSize: 11, fontWeight: 'bold', fontFamily: 'monospace', minWidth: 40, color }}>
+        <span style={{ fontSize: 'var(--fs-small)', fontWeight: 'var(--fw-bold)', fontFamily: 'var(--font-mono)', minWidth: 40, color }}>
           {value}/{max}
         </span>
       )}

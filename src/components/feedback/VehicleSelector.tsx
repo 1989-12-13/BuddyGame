@@ -4,8 +4,11 @@
 // ============================================================
 
 import { Truck, Zap, Shield, X } from 'lucide-react'
+import { motion } from 'motion/react'
+import { useEffect } from 'react'
 import type { FleetState, Ambulance } from '../../game/core/fleet'
 import { tierLabel } from '../../game/core/fleet'
+import { Z_VEHICLE_SELECTOR } from '../../game/core/zIndex'
 
 interface Props {
   fleet: FleetState
@@ -31,16 +34,31 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
     suggestedCapability === 'red' ? 'MICU' :
     suggestedCapability === 'yellow' ? 'ALS' : 'BLS'
 
+  // Escape 关闭 + 自动聚焦
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onCancel])
+
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(15,23,42,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 300,
-    }}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.15 }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(15,23,42,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: Z_VEHICLE_SELECTOR,
+      }}
+    >
       <div style={{
         backgroundColor: 'var(--bg-surface)',
         borderRadius: 8,
@@ -60,9 +78,9 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
           justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--text-primary)' }}>选择救护车</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-              建议：<span style={{ color: TIER_COLOR[suggestedTier], fontWeight: 'bold' }}>{tierLabel(suggestedTier)}</span>
+            <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>选择救护车</div>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', marginTop: 2 }}>
+              建议：<span style={{ color: TIER_COLOR[suggestedTier], fontWeight: 'var(--fw-bold)' }}>{tierLabel(suggestedTier)}</span>
               {' '}以上 · 共 {available.length} 辆可用
             </div>
           </div>
@@ -74,7 +92,7 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
         {/* 车辆列表 */}
         <div style={{ padding: 12, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {available.length === 0 && (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--fs-body-sm)' }}>
               暂无可用救护车
             </div>
           )}
@@ -88,7 +106,7 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -123,19 +141,19 @@ function VehicleCard({ vehicle, onSelect, highlighted }: { vehicle: Ambulance; o
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 'bold', color: 'var(--text-primary)' }}>{vehicle.name}</span>
+          <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>{vehicle.name}</span>
           <span style={{
             padding: '1px 6px',
             backgroundColor: `${tierColor}15`,
             color: tierColor,
             borderRadius: 3,
-            fontSize: 10,
-            fontWeight: 'bold',
+            fontSize: 'var(--fs-micro)',
+            fontWeight: 'var(--fw-bold)',
           }}>
             {tierLabel(vehicle.tier)}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 'var(--fs-small)', color: 'var(--text-secondary)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
             <Zap size={10} color={SPEED_COLOR} /> 速度 {vehicle.speed}/3
           </span>
@@ -146,9 +164,9 @@ function VehicleCard({ vehicle, onSelect, highlighted }: { vehicle: Ambulance; o
       </div>
 
       <div style={{
-        fontSize: 11,
+        fontSize: 'var(--fs-small)',
         color: 'var(--danger-red)',
-        fontWeight: 'bold',
+        fontWeight: 'var(--fw-bold)',
         padding: '4px 10px',
         backgroundColor: 'var(--danger-red-dim)',
         borderRadius: 4,

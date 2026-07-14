@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
+import { CPR_MINI_GAME_INSTRUCTION } from '../../../components/minigames/engines/cprUtils'
 
 export const cardiacArrestCard: EmergencyScenario = {
   id: 'cardiac_arrest',
@@ -122,15 +123,15 @@ export const cardiacArrestCard: EmergencyScenario = {
           correct: 'CPR操作到位。',
           incorrect: 'CPR操作需改进。',
           callerCorrect: '我按了30下又吹了2口气，他好像有反应了！',
-          callerIncorrect: '我节奏没把握好……',
+          callerIncorrect: '我太紧张了，手一直在抖……按不准节奏',
         },
         miniGame: {
           kind: 'cpr',
           title: '心肺复苏 30:2',
-          instruction: '30次胸外按压 → 人工呼吸2次，共2个循环。按空格按压，吹气时按住空格在理想区松手。',
+          instruction: CPR_MINI_GAME_INSTRUCTION,
           passThreshold: 0.5,
           cycles: 2,
-          feedback: { good: '我按了30下又吹了2口气，他好像有反应了！', bad: '我节奏没把握好……' },
+          feedback: { good: '我按了30下又吹了2口气，他好像有反应了！', bad: '我太紧张了，手一直在抖……按不准节奏' },
         },
       },
     ],

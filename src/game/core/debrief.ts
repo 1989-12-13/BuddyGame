@@ -218,14 +218,10 @@ export function buildDebrief(
     } else if (chosenOpt === null) {
       reason = '未作答 — 错过此判断'
     } else if (j.options[chosenOpt]?.isCorrect !== true) {
-      // 根据问题内容推断原因
-      const q = j.question
-      if (q.includes('年龄')) reason = '来电者使用了不确定描述词（如"左右""约"），应选择"估计记录"而非"精确记录"'
-      else if (q.includes('出血')) reason = '根据"非喷射、持续渗"的描述，应判断为静脉渗血而非动脉出血'
-      else if (q.includes('意识') || q.includes('呼吸')) reason = '来电者描述显示患者有意识且呼吸正常'
-      else if (q.includes('恶作剧') || q.includes('非人体')) reason = '来电者声称患者是动物且伴有笑声，应识别为恶作剧'
-      else if (q.includes('协议') || q.includes('MPDS')) reason = '根据主诉描述应选择对应的 MPDS 协议编号'
-      else reason = '选择与病情描述不符'
+      // 通用兜底：使用选项标签描述差异，不依赖硬编码中文子串
+      const chosenLabel = j.options[chosenOpt]?.label ?? '未知选项'
+      const correctLabel = j.options[correctOpt]?.label ?? '未知'
+      reason = `选择了「${chosenLabel}」，正确答案应为「${correctLabel}」`
     }
 
     return {
@@ -240,7 +236,7 @@ export function buildDebrief(
   // 叙事结局
   const score = state.callScores[state.callScores.length - 1] ?? 0
   const rawGuidanceCorrect = state.guidanceResults.filter(r => r === 'correct').length
-  const guidanceTotal = state.guidanceResults.length
+  const guidanceTotal = state.guidanceResults.filter(r => r !== null).length
   const guidanceCorrect = hasPerk(state.perks, 'field_first_aid') && state.guidanceResults.some(r => r === 'incorrect')
     ? Math.min(guidanceTotal, rawGuidanceCorrect + 1)
     : rawGuidanceCorrect

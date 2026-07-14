@@ -7,9 +7,9 @@
 
 import { motion, AnimatePresence } from 'motion/react'
 import type { CSSProperties } from 'react'
-import { MapPin, Phone, Activity, HeartPulse, Clock, Brain } from 'lucide-react'
+import { MapPin, Phone, Activity, HeartPulse, Clock } from 'lucide-react'
 import type { WorldState } from '../../game/types'
-import { STRESS_INFO, TRIAGE_LABELS } from '../../game/types'
+import { TRIAGE_LABELS } from '../../game/types'
 import { C_DANGER, C_WARNING, C_SUCCESS } from '../../game/core/colors'
 
 interface Props {
@@ -119,7 +119,6 @@ export function CallInfoBar({ state, visible }: Props) {
   const addressRevealed = cs.revealedInfo.address !== 'none'
   const addressValue = addressRevealed ? (state.terminal.address || '…提取中') : null
 
-  const stress = STRESS_INFO[cs.stressLevel]
   const triageValue = state.terminal.triage ? TRIAGE_LABELS[state.terminal.triage] : null
 
   const callElapsed = state.shiftElapsed - state.callStartTime
@@ -215,15 +214,6 @@ export function CallInfoBar({ state, visible }: Props) {
                 revealed
               />
             )}
-
-            {/* 情绪 */}
-            <Field
-              icon={<Brain size={SIZE} strokeWidth={2.5} />}
-              label="情绪"
-              value={`${stress.emoji} ${cs.stressLevel}`}
-              color={stress.color}
-              revealed
-            />
 
             {/* 救护车 ETA */}
             {state.dispatchSent && state.ambulanceRemaining > 0 && (

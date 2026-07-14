@@ -67,10 +67,10 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
         >
           <defs>
             <linearGradient id="ecg-fade" x1="0%" x2="100%">
-              <stop offset="0%" stopColor="#16a34a" stopOpacity="0" />
-              <stop offset="15%" stopColor="#16a34a" stopOpacity="0.8" />
-              <stop offset="85%" stopColor="#16a34a" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#16a34a" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--success-green)" stopOpacity="0" />
+              <stop offset="15%" stopColor="var(--success-green)" stopOpacity="0.8" />
+              <stop offset="85%" stopColor="var(--success-green)" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="var(--success-green)" stopOpacity="0" />
             </linearGradient>
           </defs>
           <g style={styles.ecgGroup}>
@@ -98,9 +98,9 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
           width: 7,
           height: 7,
           borderRadius: '50%',
-          backgroundColor: blink ? '#16a34a' : 'var(--bg)',
-          border: '1px solid #16a34a',
-          boxShadow: blink ? '0 0 6px rgba(22, 163, 74, 0.4)' : 'none',
+          backgroundColor: blink ? 'var(--success-green)' : 'var(--bg)',
+          border: '1px solid var(--success-green)',
+          boxShadow: blink ? '0 0 6px color-mix(in srgb, var(--success-green) 40%, transparent)' : 'none',
           transition: 'all 0.1s',
         }} />
         <span style={styles.statusText}>SYSTEM ONLINE</span>
@@ -113,7 +113,7 @@ export function TitleScreen({ onStart, onLevelSelect, onKnowledge }: Props) {
       <div style={styles.content}>
         {/* Title */}
         <h1 style={styles.title}>
-          120 <Phone size={40} color="#dc2626" strokeWidth={2.5} style={{ verticalAlign: 'middle', marginTop: -4 }} /> 调度台
+          120 <Phone size={40} color="var(--danger-red)" strokeWidth={2.5} style={{ verticalAlign: 'middle', marginTop: -4 }} /> 调度台
         </h1>
         <p style={styles.subtitle}>EMERGENCY DISPATCH SIMULATOR</p>
 

@@ -3,32 +3,55 @@ import type { WorldState } from '../../../game/types'
 import type { AudioAPI } from '../../../audio/AudioContext'
 import { stressToTypewriterInterval, stressToEmotion } from '../../../audio/ttsEmotion'
 
+const LINE_GAP_MS = 300  // 行间停顿，模拟换气停顿
+
 /**
  * 流式逐字显示：多行排队依次输出。
- * 承载原 GameScreen 的 prevLogLen / pendingSet / pendingQueue / timerId /
- * isProcessing / streamIdx / streamPos / startQueue 及相关 effect（对话新增行入队 + TTS 入队）。
- * 行为逐字节等价于原实现。
+ *
+ * 改造要点：
+ * 1. isStreaming 用 useState 暴露给渲染层，按钮可据此禁用
+ * 2. 用时间戳锁 (lockUntilRef) 替代布尔标志，避免 300ms 间隙窗口被 useEffect 提前触发
+ * 3. 组件卸载时清理所有定时器
  */
 export function useStreamingQueue(state: WorldState, audio: AudioAPI) {
   const prevLogLen = useRef(0)                         // 上一次已处理的对话行数
   const pendingSet = useRef(new Set<number>())          // 已入队、尚未流式完毕的行索引
   const pendingQueue = useRef<{ idx: number; text: string }[]>([])  // 待流式的行队列
-  const timerId = useRef<number | null>(null)           // 定时器
-  const isProcessing = useRef(false)                    // 是否正在处理队列
+  const timerId = useRef<number | null>(null)           // setInterval 定时器
+  const gapTimerId = useRef<number | null>(null)        // setTimeout 行间隙定时器
+  const lockUntilRef = useRef(0)                        // 时间戳锁：此时间之前不可处理新行
+  const [isStreaming, setIsStreaming] = useState(false) // 渲染层可见的流式状态
   const [streamIdx, setStreamIdx] = useState(-1)        // 正在流式的行
   const [streamPos, setStreamPos] = useState(0)         // 已显示字符数
 
-  // 启动队列处理（幂等：已在处理中则跳过）
+  // 清理所有定时器
+  const clearAllTimers = useCallback(() => {
+    if (timerId.current !== null) {
+      clearInterval(timerId.current)
+      timerId.current = null
+    }
+    if (gapTimerId.current !== null) {
+      clearTimeout(gapTimerId.current)
+      gapTimerId.current = null
+    }
+  }, [])
+
+  // 启动队列处理
   const startQueue = useCallback(() => {
-    if (isProcessing.current) return
+    // 时间戳锁：仍在锁定期内则跳过
+    if (Date.now() < lockUntilRef.current) return
+    clearAllTimers()
+
     if (pendingQueue.current.length === 0) {
       setStreamIdx(-1)
+      setStreamPos(0)
+      setIsStreaming(false)
       return
     }
 
-    isProcessing.current = true
+    setIsStreaming(true)
     const item = pendingQueue.current.shift()!
-    pendingSet.current.delete(item.idx)   // 开始流式，移出待流式集合
+    pendingSet.current.delete(item.idx)
     const chars = [...item.text]
     setStreamIdx(item.idx)
     setStreamPos(0)
@@ -39,18 +62,22 @@ export function useStreamingQueue(state: WorldState, audio: AudioAPI) {
       pos += 1
       if (pos >= chars.length) {
         setStreamPos(chars.length)
-        if (timerId.current !== null) {
-          clearInterval(timerId.current)
-          timerId.current = null
-        }
-        isProcessing.current = false
-        // 行间短暂停顿后开始下一行
-        setTimeout(() => startQueue(), 300)  // 行间停顿300ms，模拟换气停顿
+        clearAllTimers()
+        // 行间锁定：锁住 LINE_GAP_MS 毫秒，防止 useEffect 提前触发下一行
+        lockUntilRef.current = Date.now() + LINE_GAP_MS
+        gapTimerId.current = window.setTimeout(() => startQueue(), LINE_GAP_MS)
       } else {
         setStreamPos(pos)
       }
-    }, interval)  // 按 stress 分档: 65-120ms/char
-  }, [state.callerState?.stress])
+    }, interval)
+  }, [state.callerState?.stress, clearAllTimers])
+
+  // 组件卸载清理
+  useEffect(() => {
+    return () => {
+      clearAllTimers()
+    }
+  }, [clearAllTimers])
 
   // 新对话行入队
   useEffect(() => {
@@ -81,5 +108,5 @@ export function useStreamingQueue(state: WorldState, audio: AudioAPI) {
     startQueue()
   }, [state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
 
-  return { streamIdx, streamPos, pendingSet }
+  return { streamIdx, streamPos, pendingSet, isStreaming }
 }

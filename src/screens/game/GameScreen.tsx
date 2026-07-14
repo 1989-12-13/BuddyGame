@@ -4,9 +4,10 @@
 // ============================================================
 
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
-import { AnimatePresence } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { createInitialState } from '../../game/core/initialState'
 import { VITAL_SIGN_COLORS, C_DARK_DANGER } from '../../game/core/colors'
+import { Z_CLOSING_OVERLAY, Z_PERK } from '../../game/core/zIndex'
 import { fmtDuration } from '../../utils/timeFormat'
 import type { EndingDef } from '../../game/types'
 import { getPerkChoices } from '../../game/core/perks'
@@ -94,41 +95,48 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     : null
 
   // --- 游戏循环 hooks ---
-  const { streamIdx, streamPos, pendingSet } = useStreamingQueue(state, audio)
+  const { streamIdx, streamPos, pendingSet, isStreaming } = useStreamingQueue(state, audio)
   const { interruptCallerVoice } = useCallAudio(state, audio)
-  useCallLifecycle(state, dispatch, dialogueRef, (ending, totalScore, callScores) => {
-    onNavigate('ending', ending, totalScore, callScores)
-  })
+  const handleEnding = useCallback(
+    (ending: EndingDef, totalScore: number, callScores: number[]) => {
+      onNavigate('ending', ending, totalScore, callScores)
+    },
+    [onNavigate],
+  )
+  useCallLifecycle(state, dispatch, dialogueRef, handleEnding)
   const { dialogueHeight, splitHovered, setSplitHovered, setDialogueHeight, handleSplitterDown } = useSplitter()
 
-  // --- 进入 closing 阶段自动折叠抽屉（让地图接管） ---
-  const prevPhaseRef = useRef(state.callPhase)
+  // --- callPhase 驱动的 UI 状态机（合并多个互操作的 useEffect）---
+  const uiPrevRef = useRef({ phase: state.callPhase })
   useEffect(() => {
-    if (prevPhaseRef.current === state.callPhase) return
-    // 进入 closing（指导完成或无指导直接派车后）→ 折叠
-    if (state.callPhase === 'closing' && prevPhaseRef.current !== 'closing') {
+    const prev = uiPrevRef.current.phase
+    const phase = state.callPhase
+    if (prev === phase) return
+
+    // 进入 closing → 折叠抽屉（让地图接管）
+    if (phase === 'closing' && prev !== 'closing') {
       setDrawerOpen(false)
     }
-    // 新通话开始 → 展开 + 重置指导折叠
-    if (state.callPhase === 'questioning' && prevPhaseRef.current === 'completed') {
+    // 新通话开始（completed → questioning）→ 展开抽屉 + 重置指导折叠
+    if (phase === 'questioning' && prev === 'completed') {
       setDrawerOpen(true)
       setGuidanceCollapsed(false)
     }
-    // 首次进入 guidance 阶段 → 默认展开指导浮层
-    if (state.callPhase === 'guidance' && prevPhaseRef.current !== 'guidance') {
+    // 首次进入 guidance → 默认展开指导浮层
+    if (phase === 'guidance' && prev !== 'guidance') {
       setGuidanceCollapsed(false)
     }
-    prevPhaseRef.current = state.callPhase
+    uiPrevRef.current = { phase }
   }, [state.callPhase])
 
-  // --- 用户展开抽屉查看对话时，自动折叠指导浮层（职责分离） ---
+  // --- 展开抽屉查看对话时，自动折叠指导浮层（互操作补充） ---
   useEffect(() => {
     if (drawerOpen && state.callPhase === 'guidance') {
       setGuidanceCollapsed(true)
     }
   }, [drawerOpen, state.callPhase])
 
-  // --- 无 currentCall 但还有下一通（pendingCallPhase='completed' 后），新 ANSWER_CALL 时展开 ---
+  // --- 新通话到达时确保 drawer 已展开 ---
   useEffect(() => {
     if (state.currentCall && state.callPhase === 'questioning') {
       setDrawerOpen(true)
@@ -180,83 +188,15 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     dispatch({ type: 'END_CALL', perkChoices })
   }, [state.perks])
 
-  if (state.lastDebrief) {
-    return (
-      <div style={styles.container}>
-        <Hud state={state} />
-        <CallDebrief
-          debrief={state.lastDebrief}
-          onNext={() => dispatch({ type: 'DISMISS_DEBRIEF' })}
-          nextLabel={state.shiftCompletePending ? '生成班次报告' : '查看班次收益'}
-        />
-      </div>
-    )
-  }
-
-  if (state.pendingPerkChoices.length > 0) {
-    return (
-      <div style={styles.container}>
-        <Hud state={state} />
-        <PerkSelection
-          choices={state.pendingPerkChoices}
-          owned={state.perks}
-          onChoose={(perkId) => dispatch({ type: 'CHOOSE_PERK', perkId })}
-        />
-      </div>
-    )
-  }
-
-  // 无活跃通话时 — 等待接听（地图作背景 + 浮动卡片）
-  if (!state.currentCall && state.callIndex < state.totalCalls) {
-    return (
-      <div style={styles.container}>
-        <Hud state={state} />
-        <div style={styles.mainArea}>
-          <CityMap state={state} />
-          <div style={styles.floatCard}>
-            <CallWaiting
-              callIndex={state.callIndex}
-              totalCalls={state.totalCalls}
-              onAnswer={() => dispatch({ type: 'ANSWER_CALL' })}
-              shiftElapsed={state.shiftElapsed}
-              totalScore={state.totalScore}
-              lastScore={state.callScores[state.callScores.length - 1]}
-            />
-          </div>
-          <EventToastStack events={state.patientEvents} onDismiss={handleDismissEvent} />
-        </div>
-      </div>
-    )
-  }
-
-  // 无更多通话
-  if (!state.currentCall && state.callIndex >= state.totalCalls) {
-    return (
-      <div style={styles.container}>
-        <Hud state={state} />
-        <div style={styles.mainArea}>
-          <CityMap state={state} />
-          <div style={styles.floatCard}>
-            <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>本班次所有通话已处理完毕</h2>
-            <p style={{ color: 'var(--text-muted)' }}>正在生成班次评估报告...</p>
-          </div>
-          <EventToastStack events={state.patientEvents} onDismiss={handleDismissEvent} />
-        </div>
-      </div>
-    )
-  }
-
-  // --- 通话中 ---
-  const call = state.currentCall!
-  const caller = getCaller(call.callerId)
-  const hasTriage = state.terminal.triage !== null
+  const call = state.currentCall
+  const caller = call ? getCaller(call.callerId) : null
 
   // 抽屉标题与迷你信息
-  const callElapsed = state.shiftElapsed - state.callStartTime
-  const drawerTitle = fmtDuration(callElapsed)
+  const callElapsed = call ? state.shiftElapsed - state.callStartTime : 0
+  const drawerTitle = call ? fmtDuration(callElapsed) : '--:--'
   const drawerMini = state.patientStatus ? (
     <div style={{
-      width: 8, height: 100, backgroundColor: '#2a323e', borderRadius: 4,
+      width: 8, height: 100, backgroundColor: 'var(--border)', borderRadius: 4,
       overflow: 'hidden', display: 'flex', flexDirection: 'column-reverse',
     }}>
       <div style={{
@@ -271,11 +211,56 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   return (
     <div style={styles.container}>
       <Hud state={state} />
-      <CallInfoBar state={state} visible={drawerOpen} />
 
       <div style={styles.mainArea}>
         <CityMap state={state} onAmbulanceClick={handleAmbulanceClick} />
 
+        {/* ====== 无通话 → 等待接听 ====== */}
+        <AnimatePresence>
+          {!call && state.callIndex < state.totalCalls && !state.lastDebrief && state.pendingPerkChoices.length === 0 && (
+            <motion.div
+              key="call-waiting"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.15 }}
+            >
+              <div style={styles.floatCard}>
+                <CallWaiting
+                  callIndex={state.callIndex}
+                  totalCalls={state.totalCalls}
+                  onAnswer={() => dispatch({ type: 'ANSWER_CALL' })}
+                  shiftElapsed={state.shiftElapsed}
+                  totalScore={state.totalScore}
+                  lastScore={state.callScores[state.callScores.length - 1]}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ====== 无通话 → 班次结束 ====== */}
+        <AnimatePresence>
+          {!call && state.callIndex >= state.totalCalls && !state.lastDebrief && state.pendingPerkChoices.length === 0 && (
+            <motion.div
+              key="shift-end"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.15 }}
+            >
+              <div style={styles.floatCard}>
+                <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>本班次所有通话已处理完毕</h2>
+                <p style={{ color: 'var(--text-muted)' }}>正在生成班次评估报告...</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ====== 有通话 → 通话 UI ====== */}
+        {call && (
+          <>
+        <CallInfoBar state={state} visible={true} />
         <CallDrawer
           open={drawerOpen}
           onToggle={handleToggleDrawer}
@@ -287,26 +272,30 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         {historyEntry ? (
           <HistoryPanel entry={historyEntry} onClose={closeHistoryView} />
         ) : (
-          <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="current"
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -12 }}
+              transition={{ duration: 0.18 }}
+              style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
+            >
             <PhoneHeader
               phoneNumber={call.phoneNumber}
               baseStation={call.baseStation}
-              callerName={caller.name}
-              relationship={caller.relationship}
+              callerName={caller?.name ?? '未知'}
+              relationship={caller?.relationship ?? '未知'}
               callPhase={state.callPhase}
               elapsed={state.shiftElapsed - state.callStartTime}
               stressLevel={state.callerState?.stressLevel ?? '紧张'}
               stress={state.callerState?.stress ?? 50}
             />
 
-        {/* 即时反馈：患者生命体征 */}
         {state.patientStatus && (
           <VitalSignsBar status={state.patientStatus} />
         )}
 
-        {/* 对话区 — 救护车进度由主地图承载，避免重复 */}
-
-        {/* 对话区 — 每条来电者发言旁可能弹出临床判断卡 */}
         <div ref={dialogueRef} style={{
           ...styles.dialogueArea,
           flex: dialogueHeight ? 'none' : 1,
@@ -322,12 +311,6 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
                 ? ''
                 : line.text
             const showCursor = isStreaming && streamPos < [...line.text].length
-            // 该行已流式完成（不在待流式集合，且不是当前正在流式的行）
-            const hasFinished = !isStreaming && !pendingSet.current.has(i) && displayText.length > 0
-            // 查找附着在该行上的判断卡
-            const judgment = state.pendingJudgments?.find(
-              j => j.dialogueIndex === i && line.speaker === 'caller'
-            )
             return (
               <div key={i}>
                 <TranscriptLine
@@ -336,19 +319,11 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
                   displayText={displayText}
                   showCursor={showCursor}
                 />
-                {/* 来电者行流式完成后，若有判断卡则显示 */}
-                {judgment && hasFinished && (
-                  <JudgmentCard
-                    judgment={judgment}
-                    onSelect={(optIdx) => handleJudgment(judgment.id, optIdx)}
-                  />
-                )}
               </div>
             )
           })}
         </div>
 
-        {/* ====== 可拖拽分隔条 ====== */}
         <div
           style={{
             ...styles.splitBar,
@@ -367,45 +342,63 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           </div>
         </div>
 
-        {/* 急救指导面板 — 已移至 mainArea 浮层（GuidanceOverlay） */}
-
-        {/* 问询按钮区 */}
         {(state.callPhase === 'questioning' || state.callPhase === 'connected') && (
           <QuestionPanel
             call={call}
             askedMPDS={state.callerState?.askedMPDS ?? []}
             stressLevel={state.callerState?.stressLevel ?? '紧张'}
             stress={state.callerState?.stress ?? 50}
+            disabled={isStreaming}
             onAsk={(id) => { interruptCallerVoice(); dispatch({ type: 'ASK_QUESTION', questionId: id }) }}
             onCalm={handleCalm}
             onOpenTerminal={handleOpenTerminal}
-            hasTriage={hasTriage}
+            hasTriage={state.terminal.triage !== null}
           />
         )}
-
-        {/* 收尾阶段 — 弹窗 */}
-        {state.callPhase === 'closing' && call && (
-          <div style={styles.guidanceOverlay}>
-            <div style={{ ...styles.guidanceWindow, width: 360 }}>
-              <div style={styles.guidanceWindowHeader}>
-                <span style={{ fontSize: 18 }}>✅</span>
-                <span style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--accent-green)' }}>通话完成</span>
-              </div>
-              <ClosingPanel
-                guidance={!!call.guidance}
-                ambulanceRemaining={state.ambulanceRemaining}
-                terminal={state.terminal}
-                onEndCall={() => { interruptCallerVoice(); handleEndCall() }}
-              />
-            </div>
-          </div>
-        )}
-          </>
+            </motion.div>
+          </AnimatePresence>
         )}
         </CallDrawer>
+          </>
+        )}
 
-        {/* ====== 急救指导浮层（居中模态 / 折叠为左下角悬浮球） ====== */}
-        {state.callPhase === 'guidance' && call.guidance && (
+        {/* ====== 即时反馈 Toast ====== */}
+        <EventToastStack
+          events={state.patientEvents}
+          onDismiss={handleDismissEvent}
+        />
+
+        {/* ====== MPDS 调度卡 leftsider ====== */}
+        <AnimatePresence>
+          {terminalModalOpen && (
+            <TerminalModal
+              terminal={state.terminal}
+              dispatchSent={state.dispatchSent}
+              ambulanceRemaining={state.ambulanceRemaining}
+              onChange={(field, value) =>
+                dispatch({ type: 'UPDATE_TERMINAL', field, value })
+              }
+              onSetStatus={(field, value) =>
+                dispatch({ type: 'SET_PATIENT_STATUS', field, value })
+              }
+              onSetDeterminant={(d) =>
+                dispatch({ type: 'SET_MPDS_DETERMINANT', determinant: d })
+              }
+              onSetDeterminantSubcode={(subcode) =>
+                dispatch({ type: 'SET_DETERMINANT_SUBCODE', subcode })
+              }
+              onSetProtocol={(protocol) =>
+                dispatch({ type: 'SET_PROTOCOL', protocolNumber: protocol })
+              }
+              onDispatch={handleDispatch}
+              onClose={() => setTerminalModalOpen(false)}
+              onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); handleEndCall() }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ====== 急救指导浮层 ====== */}
+        {state.callPhase === 'guidance' && call && call.guidance && (
           <GuidanceOverlay
             collapsed={guidanceCollapsed}
             onToggle={() => setGuidanceCollapsed(c => !c)}
@@ -417,6 +410,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
               stepIndex={state.guidanceStepIndex}
               results={state.guidanceResults}
               paused={guidanceCollapsed}
+              disabled={isStreaming}
               onAnswer={(stepIdx, selectedIdx) =>
                 dispatch({ type: 'ANSWER_GUIDANCE', stepIndex: stepIdx, selectedIndex: selectedIdx })
               }
@@ -427,51 +421,95 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
           </GuidanceOverlay>
         )}
 
-      {/* ====== MPDS调度卡 leftsider ====== */}
+        {/* ====== 临床判断浮层 ====== */}
+        {state.pendingJudgments && state.pendingJudgments.length > 0 && (
+          <JudgmentCard
+            judgments={state.pendingJudgments}
+            disabled={isStreaming}
+            dialogueLog={state.dialogueLog}
+            streamIdx={streamIdx}
+            streamPos={streamPos}
+            pendingSet={pendingSet.current}
+            onSelect={(judgmentId, optionIdx) => handleJudgment(judgmentId, optionIdx)}
+          />
+        )}
+
+        {/* ====== 派车车辆选择模态 ====== */}
+        <AnimatePresence>
+          {vehicleSelectorOpen && call && (
+            <VehicleSelector
+              fleet={state.fleet}
+              suggestedCapability={call.correctTriage}
+              onSelect={handleConfirmVehicle}
+              onCancel={() => setVehicleSelectorOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ====== 收尾阶段 — 全屏遮罩（移出 Drawer，在 container 层级）====== */}
       <AnimatePresence>
-        {terminalModalOpen && (
-          <TerminalModal
-            terminal={state.terminal}
-            dispatchSent={state.dispatchSent}
-            ambulanceRemaining={state.ambulanceRemaining}
-            onChange={(field, value) =>
-              dispatch({ type: 'UPDATE_TERMINAL', field, value })
-            }
-            onSetStatus={(field, value) =>
-              dispatch({ type: 'SET_PATIENT_STATUS', field, value })
-            }
-            onSetDeterminant={(d) =>
-              dispatch({ type: 'SET_MPDS_DETERMINANT', determinant: d })
-            }
-            onSetDeterminantSubcode={(subcode) =>
-              dispatch({ type: 'SET_DETERMINANT_SUBCODE', subcode })
-            }
-            onSetProtocol={(protocol) =>
-              dispatch({ type: 'SET_PROTOCOL', protocolNumber: protocol })
-            }
-            onDispatch={handleDispatch}
-            onClose={() => setTerminalModalOpen(false)}
-            onEndCall={() => { interruptCallerVoice(); setTerminalModalOpen(false); handleEndCall() }}
+        {state.callPhase === 'closing' && call && (
+          <motion.div
+            key="closing-overlay"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              ...styles.guidanceOverlay,
+              zIndex: Z_CLOSING_OVERLAY,
+            }}
+          >
+            <div style={{ ...styles.guidanceWindow, width: 360 }}>
+              <div style={styles.guidanceWindowHeader}>
+                <span style={{ fontSize: 'var(--fs-body-lg)' }}>✅</span>
+                <span style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--accent-green)' }}>通话完成</span>
+              </div>
+              <ClosingPanel
+                guidance={!!call.guidance}
+                ambulanceRemaining={state.ambulanceRemaining}
+                terminal={state.terminal}
+                onEndCall={() => { interruptCallerVoice(); handleEndCall() }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ====== 通话结算报告 — Overlay ====== */}
+      <AnimatePresence>
+        {state.lastDebrief && (
+          <CallDebrief
+            debrief={state.lastDebrief}
+            onNext={() => dispatch({ type: 'DISMISS_DEBRIEF' })}
+            nextLabel={state.shiftCompletePending ? '生成班次报告' : '查看班次收益'}
           />
         )}
       </AnimatePresence>
 
-      {/* 即时反馈：顶部事件 toast 堆叠 */}
-      <EventToastStack
-        events={state.patientEvents}
-        onDismiss={handleDismissEvent}
-      />
-
-      {/* 派车车辆选择模态 */}
-      {vehicleSelectorOpen && (
-        <VehicleSelector
-          fleet={state.fleet}
-          suggestedCapability={call.correctTriage}
-          onSelect={handleConfirmVehicle}
-          onCancel={() => setVehicleSelectorOpen(false)}
-        />
-      )}
-      </div>
+      {/* ====== Perk 收益选择 — 关闭总结卡后才展示 ====== */}
+      <AnimatePresence>
+        {!state.lastDebrief && state.pendingPerkChoices.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            style={{
+            position: 'fixed', inset: 0, zIndex: Z_PERK,
+            backgroundColor: 'var(--bg)',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <Hud state={state} />
+            <PerkSelection
+              choices={state.pendingPerkChoices}
+              owned={state.perks}
+              onChoose={(perkId) => dispatch({ type: 'CHOOSE_PERK', perkId })}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

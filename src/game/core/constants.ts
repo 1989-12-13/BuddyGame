@@ -32,13 +32,13 @@ export const CALM_TIME_COST_PERK = 1
 
 // -------------------- 判断/指导分值 --------------------
 /** 正确判断增加的患者稳定性 */
-export const JUDGMENT_CORRECT_BONUS = 4
+export const JUDGMENT_CORRECT_BONUS = 6
 /** 错误判断扣除的患者稳定性 */
-export const JUDGMENT_INCORRECT_PENALTY = 8
+export const JUDGMENT_INCORRECT_PENALTY = 5
 /** 正确指导增加的患者稳定性 */
-export const GUIDANCE_CORRECT_BONUS = 3
+export const GUIDANCE_CORRECT_BONUS = 5
 /** 错误指导扣除的患者稳定性 */
-export const GUIDANCE_INCORRECT_PENALTY = 6
+export const GUIDANCE_INCORRECT_PENALTY = 4
 /** 小游戏 delta 倍率（score-0.5）× 此值 */
 export const MINIGAME_STABILITY_MULT = 20
 

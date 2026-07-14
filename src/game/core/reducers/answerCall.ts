@@ -28,7 +28,7 @@ export function handleAnswerCall(state: WorldState): WorldState {
 
   const systemLine: DialogueLine = {
     speaker: 'system',
-    text: `【来电号码: ${scenario.phoneNumber} | 基站定位: ${scenario.baseStation} | 来电者情绪: ${callerState.stressLevel}】`,
+    text: `【来电号码: ${scenario.phoneNumber} · 基站定位: ${scenario.baseStation} · 来电者情绪: ${callerState.stressLevel}】`,
     timestamp: state.shiftElapsed,
   }
 

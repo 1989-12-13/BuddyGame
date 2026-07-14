@@ -4,6 +4,7 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
+import { CPR_MINI_GAME_INSTRUCTION } from '../../../components/minigames/engines/cprUtils'
 
 export const drowningCard: EmergencyScenario = {
   id: 'drowning',
@@ -18,7 +19,7 @@ export const drowningCard: EmergencyScenario = {
     number: 14,
     title: '溺水/水域事故',
     chiefComplaint: '青年男性游泳池溺水，救上岸后无意识无呼吸',
-    determinantCode: '14-D-2',
+    determinantCode: '14-D-1',
     hotCold: 'HOT',
     keyQuestions: [
       '溺水时间多久？',
@@ -159,15 +160,15 @@ export const drowningCard: EmergencyScenario = {
           correct: 'CPR操作到位。',
           incorrect: 'CPR操作需改进。',
           callerCorrect: '我按了30下又吹了2口气！他好像有反应了！',
-          callerIncorrect: '我节奏没把握好……',
+          callerIncorrect: '我光顾着吹气了，按压节奏没跟上……',
         },
         miniGame: {
           kind: 'cpr',
           title: 'CPR 30:2',
-          instruction: '30次胸外按压 → 人工呼吸2次，共2个循环。按空格按压，吹气时按住空格在理想区松手。',
+          instruction: CPR_MINI_GAME_INSTRUCTION,
           passThreshold: 0.5,
           cycles: 2,
-          feedback: { good: '我按了30下又吹了2口气！他好像有反应了！', bad: '我节奏没把握好……' },
+          feedback: { good: '我按了30下又吹了2口气！他好像有反应了！', bad: '我光顾着吹气了，按压节奏没跟上……' },
         },
       },
     ],

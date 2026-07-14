@@ -95,7 +95,7 @@ export function TerminalForm({
         trueLabel="有意识"
         falseLabel="无意识"
         colorTrue="var(--accent-green)"
-        colorFalse="#ff3b3b"
+        colorFalse="var(--danger-red)"
         onToggle={onSetStatus}
       />
 
@@ -107,7 +107,7 @@ export function TerminalForm({
         trueLabel="正常呼吸"
         falseLabel="无呼吸/异常"
         colorTrue="var(--accent-green)"
-        colorFalse="#ff3b3b"
+        colorFalse="var(--danger-red)"
         onToggle={onSetStatus}
       />
 
@@ -129,7 +129,7 @@ export function TerminalForm({
       </FieldRow>
 
       {/* 协议号对照参考（折叠） */}
-      <details style={{ margin: '-4px 0 8px 22px', fontSize: 11 }}>
+      <details style={{ margin: '-4px 0 8px 22px', fontSize: 'var(--fs-small)' }}>
         <summary style={{ color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
           ¶ 协议编号对照
         </summary>
@@ -144,11 +144,11 @@ export function TerminalForm({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '1px 12px',
-          fontSize: 10.5,
+          fontSize: 'var(--fs-small)',
         }}>
           {PROTOCOL_REF.map(([num, name]) => (
             <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
-              <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
+              <span style={{ color: 'var(--accent-blue)', fontWeight: 'var(--fw-bold)', minWidth: 20 }}>{num}</span>
               <span>{name}</span>
             </div>
           ))}
@@ -164,8 +164,8 @@ export function TerminalForm({
       {terminal.triage && (
         <FieldRow icon="▲" label="分诊等级">
           <span style={{
-            fontSize: 13,
-            fontWeight: 'bold',
+            fontSize: 'var(--fs-body-sm)',
+            fontWeight: 'var(--fw-bold)',
             color: TRIAGE_COLORS[terminal.triage],
           }}>
             {TRIAGE_LABELS[terminal.triage]}
@@ -176,7 +176,7 @@ export function TerminalForm({
         <div style={{ display: 'flex', gap: 4 }}>
           {[
             { n: 1, color: 'var(--danger-red)', label: '危重伤' },
-            { n: 2, color: '#ff8c00', label: '重伤' },
+            { n: 2, color: 'var(--accent-orange)', label: '重伤' },
             { n: 3, color: 'var(--accent-amber)', label: '轻伤' },
             { n: 4, color: 'var(--accent-green)', label: '非紧急' },
           ].map(({ n, color, label }) => {
@@ -191,15 +191,15 @@ export function TerminalForm({
                   border: `2px solid ${color}`,
                   backgroundColor: active ? color : 'var(--bg-elevated)',
                   color: active ? '#fff' : color,
-                  fontSize: 11,
-                  fontWeight: active ? 'bold' : 'normal',
+                  fontSize: 'var(--fs-small)',
+                  fontWeight: active ? 'var(--fw-bold)' : 'var(--fw-normal)',
                   cursor: 'pointer',
                   textAlign: 'center' as const,
                 }}
                 onClick={() => onSetDeterminantSubcode(n)}
               >
-                <div style={{ fontWeight: 'bold', fontSize: 13 }}>{n}</div>
-                <div style={{ fontSize: 9, opacity: active ? 1 : 0.6 }}>{label}</div>
+                <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body-sm)' }}>{n}</div>
+                <div style={{ fontSize: 'var(--fs-micro)', opacity: active ? 1 : 0.6 }}>{label}</div>
               </button>
             )
           })}

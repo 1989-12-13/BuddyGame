@@ -26,18 +26,18 @@ export function CallWaiting({
       }}>
         <Phone size={64} color="var(--danger-red)" strokeWidth={1.8} />
       </div>
-      <h2 style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontSize: 18 }}>
+      <h2 style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontSize: 'var(--fs-title)' }}>
         第 {callIndex + 1}/{totalCalls} 通来电
       </h2>
-      <p style={{ color: 'var(--danger-red)', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
+      <p style={{ color: 'var(--danger-red)', fontWeight: 'var(--fw-bold)', margin: '0 0 8px', fontSize: 'var(--fs-body-sm)' }}>
         线路接通中...
       </p>
       {lastScore !== undefined && (
-        <p style={{ color: 'var(--accent-green)', fontWeight: 'bold', margin: '0 0 12px' }}>
+        <p style={{ color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)', margin: '0 0 12px' }}>
           上一通得分：{lastScore}/100
         </p>
       )}
-      <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: 12 }}>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: 'var(--fs-caption)' }}>
         班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 累计 {totalScore}分
       </p>
       <button style={styles.answerBtn} onClick={onAnswer}>

@@ -45,7 +45,7 @@ export function DetailItem({
   const statusColor = ok ? 'var(--accent-green)' : partial ? 'var(--accent-amber)' : 'var(--danger-red)'
   return (
     <div style={styles.detailItem}>
-      <span style={{ fontSize: 13 }}>{statusIcon}</span>
+      <span style={{ fontSize: 'var(--fs-body-sm)' }}>{statusIcon}</span>
       <span style={styles.detailLabel}>{icon} {label}</span>
       {value && <span style={{ ...styles.detailValue, color: statusColor } as CSSProperties}>{value}</span>}
     </div>

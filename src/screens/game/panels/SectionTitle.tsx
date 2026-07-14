@@ -2,8 +2,8 @@
 export function SectionTitle({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div style={{
-      fontSize: 12,
-      fontWeight: 'bold',
+      fontSize: 'var(--fs-caption)',
+      fontWeight: 'var(--fw-bold)',
       color: 'var(--text-secondary)',
       borderBottom: '1px solid var(--border)',
       padding: '6px 0 3px',

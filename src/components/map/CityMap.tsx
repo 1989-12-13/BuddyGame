@@ -290,17 +290,17 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 4,
   },
   cornerLabel: {
-    fontSize: 10,
+    fontSize: 'var(--fs-micro)',
     color: 'var(--text-secondary)',
-    fontFamily: 'monospace',
+    fontFamily: 'var(--font-mono)',
     letterSpacing: 2,
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
   },
   cornerSub: {
-    fontSize: 12,
+    fontSize: 'var(--fs-caption)',
     color: 'var(--accent-amber)',
-    fontFamily: 'monospace',
-    fontWeight: 700,
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 'var(--fw-bold)',
   },
 }
 
@@ -311,26 +311,26 @@ const MARKER_CSS = `
   width: 28px; height: 28px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid #16a34a;
+  border: 2px solid var(--success-green);
   background: rgba(10, 14, 20, 0.7);
-  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success-green) 15%, transparent);
 }
 .cmap-station.busy {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
+  border-color: var(--danger-red);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-red) 15%, transparent);
   animation: cmap-pulse 1.4s ease-in-out infinite;
 }
 .cmap-station.returning {
-  border-color: #d97706;
-  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-amber) 15%, transparent);
 }
 .cmap-station-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--success-green);
 }
-.cmap-station.busy .cmap-station-dot { background: #dc2626; }
-.cmap-station.returning .cmap-station-dot { background: #d97706; }
+.cmap-station.busy .cmap-station-dot { background: var(--danger-red); }
+.cmap-station.returning .cmap-station-dot { background: var(--accent-amber); }
 
 .cmap-amb {
   font-size: 22px;
@@ -351,20 +351,20 @@ const MARKER_CSS = `
 .cmap-event-pulse {
   position: absolute; inset: 0;
   border-radius: 50%;
-  background: rgba(220, 38, 38, 0.3);
-  border: 2px solid #dc2626;
+  background: color-mix(in srgb, var(--danger-red) 30%, transparent);
+  border: 2px solid var(--danger-red);
   animation: cmap-event-pulse 1.6s ease-in-out infinite;
 }
 .cmap-event-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
-  background: #dc2626;
-  box-shadow: 0 0 8px rgba(220, 38, 38, 0.8);
+  background: var(--danger-red);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--danger-red) 80%, transparent);
   z-index: 1;
 }
 .cmap-event-dim .cmap-event-dot {
   width: 6px; height: 6px;
-  background: #6e7681;
+  background: var(--text-muted);
   box-shadow: none;
   opacity: 0.6;
 }
@@ -373,7 +373,7 @@ const MARKER_CSS = `
 }
 .cmap-event-history .cmap-event-dot {
   width: 5px; height: 5px;
-  background: #4b5563;
+  background: var(--text-dim);
   box-shadow: none;
 }
 .cmap-amb-dim {
@@ -382,8 +382,8 @@ const MARKER_CSS = `
 }
 
 @keyframes cmap-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15); }
-  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.05); }
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-red) 15%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger-red) 5%, transparent); }
 }
 @keyframes cmap-amb-flash {
   from { transform: scale(1); }

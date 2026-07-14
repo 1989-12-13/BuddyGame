@@ -27,8 +27,6 @@ export type {
   BaseMiniGame,
   RhythmPressSpec,
   QuickChoiceSpec,
-  HoldPressureSpec,
-  PositionDragSpec,
   StepOrderSpec,
   LocationSelectSpec,
   CprSpec,
@@ -37,6 +35,13 @@ export type {
   CallEvent,
   MpdsProtocolCard,
   EmergencyScenario,
+} from './scenario'
+export {
+  isRhythmPress,
+  isQuickChoice,
+  isStepOrder,
+  isLocationSelect,
+  isCpr,
 } from './scenario'
 
 // -------------------- 世界状态 --------------------

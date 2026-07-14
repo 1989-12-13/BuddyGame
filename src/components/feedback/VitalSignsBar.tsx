@@ -28,11 +28,11 @@ export function VitalSignsBar({ status }: Props) {
       padding: '6px 12px',
       backgroundColor: dead ? 'var(--danger-red-bg)' : 'var(--bg-elevated)',
       borderBottom: `2px solid ${color}`,
-      fontSize: 12,
-      fontFamily: 'monospace',
+      fontSize: 'var(--fs-caption)',
+      fontFamily: 'var(--font-mono)',
     }}>
       <Icon size={14} color={color} />
-      <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold', letterSpacing: 1 }}>患者体征</span>
+      <span style={{ color: 'var(--text-secondary)', fontWeight: 'var(--fw-bold)', letterSpacing: 1 }}>患者体征</span>
 
       {/* 生命条 */}
       <div style={{
@@ -62,12 +62,12 @@ export function VitalSignsBar({ status }: Props) {
         ))}
       </div>
 
-      <span style={{ color, fontWeight: 900, minWidth: 38, textAlign: 'right' }}>
+      <span style={{ color, fontWeight: 'var(--fw-black)', minWidth: 38, textAlign: 'right' }}>
         {Math.round(status.stability)}%
       </span>
       <span style={{
         color,
-        fontWeight: 'bold',
+        fontWeight: 'var(--fw-bold)',
         padding: '2px 8px',
         borderRadius: 3,
         backgroundColor: `${color}15`,

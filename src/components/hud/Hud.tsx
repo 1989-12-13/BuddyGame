@@ -3,9 +3,8 @@
 // ============================================================
 
 import type { CSSProperties } from 'react'
-import { Clock, Phone, List, Star, Truck } from 'lucide-react'
+import { Clock, List, Star, Truck } from 'lucide-react'
 import type { WorldState } from '../../game/types'
-import { C_DANGER, C_WARNING, C_SUCCESS } from '../../game/core/colors'
 import { ThemeToggle } from '../ThemeToggle'
 
 interface Props {
@@ -23,11 +22,6 @@ export function Hud({ state }: Props) {
   const seconds = state.shiftElapsed % 60
   const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 
-  const callTime = state.currentCall
-    ? state.shiftElapsed - state.callStartTime
-    : 0
-  const callTimeColor = callTime > 60 ? C_DANGER : callTime > 43 ? C_WARNING : C_SUCCESS
-
   const isOnCall = state.currentCall !== null
   const availableVehicles = state.fleet.vehicles.filter(v => v.status === 'available').length
 
@@ -39,18 +33,6 @@ export function Hud({ state }: Props) {
         <span style={styles.label}>班次</span>
         <span style={styles.value}>{timeStr}</span>
       </div>
-
-      {/* 通话计时 */}
-      {isOnCall && (
-        <div style={styles.group}>
-          <span style={iconEl(callTimeColor)}><Phone size={SIZE} strokeWidth={2.5} /></span>
-          <span style={styles.label}>通话</span>
-          <span style={{ ...styles.value, color: callTimeColor }}>
-            {String(Math.floor(callTime / 60)).padStart(2, '0')}:
-            {String(callTime % 60).padStart(2, '0')}
-          </span>
-        </div>
-      )}
 
       {/* 通话编号 */}
       <div style={styles.group}>
@@ -86,7 +68,7 @@ export function Hud({ state }: Props) {
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
           <span style={iconEl('var(--danger-red)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: 'var(--danger-red)', fontSize: 13 }}>
+          <span style={{ ...styles.value, color: 'var(--danger-red)', fontSize: 'var(--fs-body-sm)' }}>
             ETA {state.ambulanceRemaining}s
           </span>
         </div>
@@ -95,7 +77,7 @@ export function Hud({ state }: Props) {
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
           <span style={iconEl('var(--accent-green)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: 'var(--accent-green)', fontSize: 13 }}>
+          <span style={{ ...styles.value, color: 'var(--accent-green)', fontSize: 'var(--fs-body-sm)' }}>
             已到达
           </span>
         </div>
@@ -128,17 +110,14 @@ const styles: Record<string, CSSProperties> = {
     gap: 6,
   },
   label: {
-    fontSize: 11,
-    color: 'var(--text-muted)',
-    textTransform: 'uppercase' as const,
-    fontWeight: 700,
+    fontSize: 'var(--fs-small)',
     letterSpacing: 1,
     fontFamily: 'var(--font-mono)',
   },
   value: {
-    fontSize: 14,
+    fontSize: 'var(--fs-body)',
     color: 'var(--text-primary)',
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 0.5,
   },

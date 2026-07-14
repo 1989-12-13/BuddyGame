@@ -72,8 +72,13 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     const choiceStepTotal = guidanceSteps.filter(st => !st.miniGame).length
     const mgScores = state.guidanceMinigameScores.filter(s => s != null) as number[]
     const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
-    const rawGuidanceCorrect = state.guidanceResults.filter(r => r === 'correct').length
-    const hasGuidanceMiss = state.guidanceResults.some(r => r === 'incorrect')
+    // 仅统计非 minigame 步骤的选择题结果（minigame 分数通过 miniGameAvg 单独计入）
+    const rawGuidanceCorrect = state.guidanceResults.filter(
+      (r, i) => r === 'correct' && !guidanceSteps[i]?.miniGame,
+    ).length
+    const hasGuidanceMiss = state.guidanceResults.some(
+      (r, i) => r === 'incorrect' && !guidanceSteps[i]?.miniGame,
+    )
     const guidanceCorrect = hasPerk(state.perks, 'field_first_aid') && hasGuidanceMiss
       ? Math.min(choiceStepTotal, rawGuidanceCorrect + 1)
       : rawGuidanceCorrect
@@ -128,7 +133,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   const summaryLine: DialogueLine = {
     speaker: 'system',
     text: rescueFailed
-      ? `【通话结束 | 患者死亡 · 任务失败 · 本通 0 分】`
+      ? `【通话结束 | 患者死亡 · 任务失败 · 本轮得分 0 分】`
       : `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore} 判断扣分:${penaltyScore}】`,
     timestamp: state.shiftElapsed,
   }

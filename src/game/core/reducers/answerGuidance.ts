@@ -4,26 +4,22 @@
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
-import { createEventSink, sinkEvent } from './helpers'
+import { createEventSink, sinkEvent, isGuidanceActive, advanceGuidanceStep } from './helpers'
 import { GUIDANCE_CORRECT_BONUS, GUIDANCE_INCORRECT_PENALTY } from '../constants'
+import { stabilityToVitalSign } from '../worldState'
 
 export function handleAnswerGuidance(
   state: WorldState,
   stepIndex: number,
   selectedIndex: number,
 ): WorldState {
-  if (!state.currentCall?.guidance) return state
-  if (!state.guidanceActive) return state
-  if (state.callPhase !== 'guidance') return state
-
-  const guidanceDef = state.currentCall.guidance
+  if (!isGuidanceActive(state)) return state
+  const guidanceDef = state.currentCall!.guidance!
   const step = guidanceDef.steps[stepIndex]
   if (!step) return state
 
   const isCorrect = selectedIndex === step.correctIndex
   const now = state.shiftElapsed
-
-  const callerText = isCorrect ? step.feedback.callerCorrect : step.feedback.callerIncorrect
 
   const operatorLine: DialogueLine = {
     speaker: 'operator',
@@ -32,7 +28,7 @@ export function handleAnswerGuidance(
   }
   const feedbackLine: DialogueLine = {
     speaker: 'caller',
-    text: callerText,
+    text: isCorrect ? step.feedback.callerCorrect : step.feedback.callerIncorrect,
     timestamp: now,
   }
 
@@ -43,23 +39,24 @@ export function handleAnswerGuidance(
   let newPatientStatus = state.patientStatus
   if (state.patientStatus && !state.patientStatus.died) {
     if (isCorrect) {
-      newPatientStatus = { ...state.patientStatus, stability: Math.min(100, state.patientStatus.stability + GUIDANCE_CORRECT_BONUS) }
+      const newStability = Math.min(100, state.patientStatus.stability + GUIDANCE_CORRECT_BONUS)
+      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'good', `✓ ${step.prompt}：操作正确`, state.shiftElapsed)
     } else {
-      newPatientStatus = { ...state.patientStatus, stability: Math.max(0, state.patientStatus.stability - GUIDANCE_INCORRECT_PENALTY) }
+      const newStability = Math.max(0, state.patientStatus.stability - GUIDANCE_INCORRECT_PENALTY)
+      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'bad', `✗ ${step.prompt}：操作错误，患者情况恶化`, state.shiftElapsed)
     }
   }
 
   const nextIndex = stepIndex + 1
-  const isLastStep = nextIndex >= guidanceDef.steps.length
+  const stepInfo = advanceGuidanceStep(state, nextIndex)
 
   return {
     ...state,
     eventSeq: sink.seq,
-    guidanceStepIndex: nextIndex,
+    ...stepInfo,
     guidanceResults: newResults,
-    callPhase: isLastStep ? 'closing' : 'guidance',
     patientStatus: newPatientStatus,
     patientEvents: sink.events,
     dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],

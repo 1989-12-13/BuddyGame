@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useEffect, useRef } from 'react'
+import { motion } from 'motion/react'
 import { Phone } from 'lucide-react'
 import type { DebriefEntry } from '../../game/core/debrief'
 import { C_SUCCESS, C_AMBER, C_DANGER, C_INFO } from '../../game/core/colors'
@@ -50,13 +51,23 @@ export function CallDebrief({ debrief, onNext, nextLabel = '继续' }: Props) {
         e.preventDefault()
         onNext()
       }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onNext()
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onNext])
 
   return (
-    <div style={styles.overlay}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
+      style={styles.overlay}
+    >
       <div style={styles.card} role="dialog" aria-modal="true" aria-label="通话结算报告">
         <h2 style={styles.header}>
           {debrief.isPrank ? '◈ 恶作剧电话' : `◈ ${debrief.scenarioTitle}`}
@@ -79,7 +90,7 @@ export function CallDebrief({ debrief, onNext, nextLabel = '继续' }: Props) {
 
         {breakdown.penalty > 0 && (
           <div style={styles.penaltyRow}>
-            判断扣分：<span style={{ color: C_DANGER, fontWeight: 'bold' }}>-{breakdown.penalty}</span>
+            判断扣分：<span style={{ color: C_DANGER, fontWeight: 'var(--fw-bold)' }}>-{breakdown.penalty}</span>
           </div>
         )}
 
@@ -108,6 +119,6 @@ export function CallDebrief({ debrief, onNext, nextLabel = '继续' }: Props) {
           {nextLabel} (Enter)
         </button>
       </div>
-    </div>
+    </motion.div>
   )
 }

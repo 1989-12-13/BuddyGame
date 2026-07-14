@@ -4,8 +4,9 @@
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
-import { createEventSink, sinkEvent } from './helpers'
+import { createEventSink, sinkEvent, isGuidanceActive, advanceGuidanceStep } from './helpers'
 import { MINIGAME_STABILITY_MULT } from '../constants'
+import { stabilityToVitalSign } from '../worldState'
 
 export function handleCompleteMinigame(
   state: WorldState,
@@ -13,38 +14,39 @@ export function handleCompleteMinigame(
   score: number,
   passed: boolean,
 ): WorldState {
-  if (!state.currentCall?.guidance) return state
-  if (!state.guidanceActive) return state
-  if (state.callPhase !== 'guidance') return state
-
-  const guidanceDef = state.currentCall.guidance
+  if (!isGuidanceActive(state)) return state
+  const guidanceDef = state.currentCall!.guidance!
   const step = guidanceDef.steps[stepIndex]
   if (!step?.miniGame) return state
 
   const now = state.shiftElapsed
   const spec = step.miniGame
-  const callerText = passed ? spec.feedback.good : spec.feedback.bad
   const operatorLine: DialogueLine = {
     speaker: 'operator',
-    text: `【实操指导：${spec.title}】${passed ? '操作到位' : '操作需改进'}（评分 ${(score * 100).toFixed(0)}）`,
+    text: `【实操指导：${spec.title}】${passed ? '操作到位' : '操作需改进'}（评分 ${(score * 100).toFixed(0)}分）`,
     timestamp: now,
   }
   const feedbackLine: DialogueLine = {
     speaker: 'caller',
-    text: callerText,
+    text: passed ? spec.feedback.good : spec.feedback.bad,
     timestamp: now,
   }
 
   const newScores = [...state.guidanceMinigameScores]
   newScores[stepIndex] = score
 
+  const newResults = [...state.guidanceResults]
+  newResults[stepIndex] = passed ? 'correct' : 'incorrect'
+
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
   if (state.patientStatus && !state.patientStatus.died) {
     const delta = Math.round((score - 0.5) * MINIGAME_STABILITY_MULT)
+    const newStability = Math.max(0, Math.min(100, state.patientStatus.stability + delta))
     newPatientStatus = {
       ...state.patientStatus,
-      stability: Math.max(0, Math.min(100, state.patientStatus.stability + delta)),
+      stability: newStability,
+      vitalSign: stabilityToVitalSign(newStability),
     }
     sinkEvent(
       sink,
@@ -55,14 +57,14 @@ export function handleCompleteMinigame(
   }
 
   const nextIndex = stepIndex + 1
-  const isLastStep = nextIndex >= guidanceDef.steps.length
+  const stepInfo = advanceGuidanceStep(state, nextIndex)
 
   return {
     ...state,
     eventSeq: sink.seq,
-    guidanceStepIndex: nextIndex,
+    ...stepInfo,
+    guidanceResults: newResults,
     guidanceMinigameScores: newScores,
-    callPhase: isLastStep ? 'closing' : 'guidance',
     patientStatus: newPatientStatus,
     patientEvents: sink.events,
     dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],

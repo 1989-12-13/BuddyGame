@@ -18,7 +18,7 @@ export const backPainCard: EmergencyScenario = {
     number: 5,
     title: '背痛（非创伤/非近期）',
     chiefComplaint: '中年男性搬重物后突然腰痛无法直腰站立',
-    determinantCode: '5-C-1',
+    determinantCode: '5-C-2',
     hotCold: 'COLD',
     keyQuestions: [
       '背部疼痛从什么时候开始的',

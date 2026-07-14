@@ -34,6 +34,9 @@ export const CPR_GOOD_WINDOW_MS = 250
 /** 两次吹气之间的暂停时间（毫秒） */
 export const CPR_BREATH_PAUSE_MS = 1000
 
+/** CPR 小游戏指导文字（30:2 循环） */
+export const CPR_MINI_GAME_INSTRUCTION = '30次胸外按压 → 人工呼吸2次，共2个循环。按空格按压，吹气时按住空格在理想区松手。'
+
 /** 吹气理想区间下限（比例 0-1 对应 30%） */
 export const CPR_BLOW_IDEAL_MIN = 0.30
 
@@ -179,7 +182,7 @@ export function hitQualityLabel(q: HitQuality): string {
   switch (q) {
     case 'perfect': return '完美！'
     case 'good': return '不错'
-    case 'miss': return 'miss'
+    case 'miss': return '偏了'
   }
 }
 
@@ -200,4 +203,11 @@ export function countQualities(qualities: RhythmQuality[]): QualityStats {
     else stats.bad++
   }
   return stats
+}
+
+// -------------------- 通用计分 --------------------
+
+/** 达标判定：分数是否不低于通过阈值 */
+export function computePassed(score: number, passThreshold: number): boolean {
+  return score >= passThreshold
 }

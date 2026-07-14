@@ -9,6 +9,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, HeartPulse } from 'lucide-react'
+import { Z_GUIDANCE_FAB, Z_GUIDANCE_STAGE, Z_GUIDANCE_CARD } from '../../game/core/zIndex'
 
 interface Props {
   /** 是否折叠为悬浮球 */
@@ -95,7 +96,7 @@ const styles: Record<string, CSSProperties> = {
     position: 'absolute',
     left: 16,
     bottom: 16,
-    zIndex: 55,
+    zIndex: Z_GUIDANCE_FAB,
     display: 'flex',
     alignItems: 'center',
     gap: 10,
@@ -103,12 +104,12 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-    border: '1px solid #ff3b3b',
+    border: '1px solid var(--danger-red)',
     borderRadius: 30,
     boxShadow: '0 6px 24px rgba(255,59,59,0.3), 0 2px 8px rgba(0,0,0,0.5)',
     cursor: 'pointer',
     color: 'inherit',
-    fontFamily: 'monospace',
+    fontFamily: 'var(--font-mono)',
     maxWidth: 280,
   },
   fabRing: {
@@ -129,9 +130,9 @@ const styles: Record<string, CSSProperties> = {
     gap: 2,
   },
   fabTitle: {
-    fontSize: 12,
-    color: '#e6edf3',
-    fontWeight: 700,
+    fontSize: 'var(--fs-caption)',
+    color: 'var(--text-primary)',
+    fontWeight: 'var(--fw-bold)',
     letterSpacing: 0.5,
     maxWidth: 200,
     whiteSpace: 'nowrap',
@@ -139,9 +140,9 @@ const styles: Record<string, CSSProperties> = {
     textOverflow: 'ellipsis',
   },
   fabSub: {
-    fontSize: 10,
-    color: '#ffb000',
-    fontWeight: 700,
+    fontSize: 'var(--fs-micro)',
+    color: 'var(--accent-amber)',
+    fontWeight: 'var(--fw-bold)',
   },
   fabHint: {
     display: 'flex',
@@ -153,7 +154,7 @@ const styles: Record<string, CSSProperties> = {
     position: 'absolute',
     inset: 0,
     pointerEvents: 'none',
-    zIndex: 58,
+    zIndex: Z_GUIDANCE_STAGE,
   },
   backdrop: {
     position: 'absolute',
@@ -172,7 +173,7 @@ const styles: Record<string, CSSProperties> = {
   },
   card: {
     pointerEvents: 'auto',
-    zIndex: 60,
+    zIndex: Z_GUIDANCE_CARD,
     width: 640,
     maxWidth: 'calc(100vw - 80px)',
     maxHeight: 'calc(100vh - 160px)',
@@ -197,10 +198,10 @@ const styles: Record<string, CSSProperties> = {
     flexShrink: 0,
   },
   headerTitle: {
-    fontSize: 14,
-    color: '#ff5454',
-    fontFamily: 'monospace',
-    fontWeight: 700,
+    fontSize: 'var(--fs-body)',
+    color: 'var(--danger-red)',
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 'var(--fw-bold)',
     letterSpacing: 1,
   },
   collapseBtn: {

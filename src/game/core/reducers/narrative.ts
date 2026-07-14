@@ -62,13 +62,22 @@ export function generateLocationNarrative(
 function relationshipContext(relationship: string): string {
   switch (relationship) {
     case '路人':    return '我在路边看到的'
-    case '同事':    return '我们正在上班'
+    case '同事':
+    case '工友':   return '我们正在上班'
     case '家人':
-    case '家属':   return '刚才在家里还好好的'
+    case '家属':
+    case '母亲':
+    case '父亲':
+    case '儿子':   return '刚才在家里还好好的'
     case '朋友':    return '我们刚才还在聊天'
     case '邻居':    return '我听到声音过来看的'
     case '伴侣':
-    case '夫妻':   return '我们俩刚才还好好的'
+    case '夫妻':
+    case '妻子':
+    case '丈夫':   return '我们俩刚才还好好的'
+    case '本人':    return '我刚才'
+    case '小孩':    return '我刚才在'
+    case '室友':    return '我们一起住的'
     default:        return '刚才还好好的'
   }
 }
@@ -82,26 +91,31 @@ export function generateEventNarrative(
 ): { text: string; quality: InfoQuality; distorted: boolean } {
   const pronoun = getPronoun(gender)
   const ctx = relationshipContext(relationship)
+  const isSelf = relationship === '本人'
 
   if (stress >= 75) {
-    // 恐慌模式：只喊出最关键的第一句，去掉代词前缀避免与 complaint 主语冲突
+    // 恐慌模式：只喊出最关键的第一句
     const urgent = firstClause(chiefComplaint)
     return {
-      text: `不行了不行了！！${urgent}！！${pronoun}快不行了！！你们快来啊！！`,
+      text: `不行了不行了！！${urgent}！！${isSelf ? '我' : pronoun}快不行了！！你们快来啊！！`,
       quality: 'vague', distorted: true,
     }
   }
   if (stress >= 50) {
     // 惊恐模式：复述完整事件+关系场景，但语气凌乱
     return {
-      text: `${pronoun}...我...我不知道怎么说...${chiefComplaint}...就是突然之间的事！${ctx}，一下子就变成这样了...我该怎么办呐？！`,
+      text: isSelf
+        ? `我...我不知道怎么说...${chiefComplaint}...就是突然之间的事！${ctx}，一下子就变成这样了...我该怎么办呐？！`
+        : `${pronoun}...我...我不知道怎么说...${chiefComplaint}...就是突然之间的事！${ctx}，一下子就变成这样了...我该怎么办呐？！`,
       quality: 'partial', distorted: true,
     }
   }
   if (stress >= 25) {
     // 紧张模式：完整复述，但略带迟疑
     return {
-      text: `${pronoun}${chiefComplaint}...就是这样的情况，刚刚发生的，感觉挺严重的。嗯...大概就是这样。`,
+      text: isSelf
+        ? `我${chiefComplaint}...就是这样的情况，刚刚发生的，感觉挺严重的。嗯...大概就是这样。`
+        : `${pronoun}${chiefComplaint}...就是这样的情况，刚刚发生的，感觉挺严重的。嗯...大概就是这样。`,
       quality: 'partial', distorted: false,
     }
   }
@@ -113,7 +127,17 @@ export function generateEventNarrative(
 export function generateAgeNarrative(age: string, stress: number, gender: string): string {
   const pronoun = getPronoun(gender)
   const cleanAge = age.replace(/男性|女性|男|女|不详/g, '').trim()
-  if (stress >= 75) return `${cleanAge}！！反正就是这么大年纪！！你们快来啊！！`
+  const isNumericAge = /^\d+/.test(cleanAge)
+
+  // 非数字年龄（如恶作剧"小猫"），来电者说不清年龄
+  if (!isNumericAge) {
+    if (stress >= 75) return `我不知道！！反正就这样！！你们快来啊！！`
+    if (stress >= 50) return `好像是...我也搞不清...这很重要吗？`
+    if (stress >= 25) return `我说不上来...应该就这样...`
+    return `说不太清楚...`
+  }
+
+  if (stress >= 75) return `${cleanAge}！！就是！！你们快来啊！！`
   if (stress >= 50) return `好像是${cleanAge}...我也记不清了...应该是${cleanAge}吧，这很重要吗？`
   if (stress >= 25) return `${cleanAge}...应该差不多是这个岁数。`
   return `${cleanAge}。`

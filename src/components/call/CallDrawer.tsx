@@ -7,6 +7,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
+import { Z_DRAWER } from '../../game/core/zIndex'
 
 interface Props {
   open: boolean
@@ -75,14 +76,14 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
                     <span style={styles.headerTitle}>{title}</span>
                     {historyBadge && (
                       <span style={{
-                        fontSize: 10,
+                        fontSize: 'var(--fs-micro)',
                         padding: '1px 6px',
                         background: 'var(--accent-gold-bg)',
                         color: 'var(--accent-gold)',
                         border: '1px solid var(--accent-gold-border)',
                         borderRadius: 3,
                         fontFamily: 'var(--font-mono)',
-                        fontWeight: 700,
+                        fontWeight: 'var(--fw-bold)',
                         letterSpacing: 1,
                       }}>
                         {historyBadge}
@@ -115,7 +116,7 @@ const styles: Record<string, CSSProperties> = {
     borderLeft: '1px solid var(--glass-border)',
     boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
     overflow: 'hidden',
-    zIndex: 50,
+    zIndex: Z_DRAWER,
   },
   // 内部交叉淡入层：相对定位，子元素 absolute 重叠避免布局抖动
   swapLayer: {
@@ -157,11 +158,11 @@ const styles: Record<string, CSSProperties> = {
   verticalText: {
     writingMode: 'vertical-rl',
     textOrientation: 'mixed',
-    fontSize: 11,
+    fontSize: 'var(--fs-small)',
     color: 'var(--text-secondary)',
-    fontFamily: 'monospace',
+    fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
-    fontWeight: 700,
+    fontWeight: 'var(--fw-bold)',
     maxHeight: 200,
   },
   miniWrap: {
@@ -197,10 +198,10 @@ const styles: Record<string, CSSProperties> = {
     gap: 8,
   },
   headerTitle: {
-    fontSize: 12,
+    fontSize: 'var(--fs-caption)',
     color: 'var(--text-primary)',
-    fontFamily: 'monospace',
-    fontWeight: 700,
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 'var(--fw-bold)',
     letterSpacing: 1,
   },
   toggleBtn: {

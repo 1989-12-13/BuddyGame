@@ -6,6 +6,7 @@ import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, Pat
 import { stressToLevel } from '../types'
 import { SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
+import { rng, rngInt, shuffle as shuffleArray } from './random'
 
 /** 创建空白的来电者追踪状态 */
 export function createCallerState(callerId: CallerId, initialStress = 40): CallerState {
@@ -50,15 +51,7 @@ export function createTerminalState(): TerminalState {
   }
 }
 
-/** 打乱数组（Fisher-Yates） */
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
+
 
 /** 获取本班次的场景队列（随机打乱顺序） */
 export function buildScenarioQueue(): string[] {
@@ -66,15 +59,15 @@ export function buildScenarioQueue(): string[] {
   const prankId = 'prank_call'
   // 分离恶作剧场景和普通场景
   const normalScenarios = SCENARIO_IDS.filter(id => id !== prankId)
-  const shuffled = shuffle(normalScenarios)
+  const shuffled = shuffleArray(normalScenarios)
   // 选4个普通场景 + 20%概率加入恶作剧
   const selected = shuffled.slice(0, 5)
-  if (selected.length >= 5 && Math.random() < 0.2) {
-    selected[Math.floor(Math.random() * selected.length)] = prankId
+  if (selected.length >= 5 && rng() < 0.2) {
+    selected[rngInt(selected.length)] = prankId
   }
   // 确保恶作剧不出现为首通或末通
   if (selected[0] === prankId || selected[selected.length - 1] === prankId) {
-    const swapIdx = Math.random() < 0.5 ? 1 : selected.length - 2
+    const swapIdx = rng() < 0.5 ? 1 : selected.length - 2
     const temp = selected[0]
     selected[0] = selected[swapIdx]
     selected[swapIdx] = temp

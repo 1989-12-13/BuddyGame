@@ -63,11 +63,11 @@ export function hasPerk(perks: RoguePerkId[], id: RoguePerkId): boolean {
   return perks.includes(id)
 }
 
+import { shuffle } from './random'
+
 export function getPerkChoices(owned: RoguePerkId[], count = 3): RoguePerkId[] {
   const available = (Object.keys(ROGUE_PERKS) as RoguePerkId[])
     .filter(id => !owned.includes(id))
 
-  return available
-    .sort(() => Math.random() - 0.5)
-    .slice(0, count)
+  return shuffle(available).slice(0, count)
 }

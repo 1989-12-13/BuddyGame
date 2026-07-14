@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { MiniGameProps, StepOrderSpec } from '../../../game/types'
+import { shuffle } from '../../../game/core/random'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -21,7 +22,7 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
 
   // 打乱步骤
   const shuffled = useMemo(
-    () => [...s.steps].sort(() => Math.random() - 0.5),
+    () => shuffle([...s.steps]),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )

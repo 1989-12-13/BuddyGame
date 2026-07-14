@@ -69,6 +69,7 @@ export function handleDispatch(state: WorldState, vehicleId?: string, selectedRo
     ambulanceETA: eta,
     dispatchedAt: state.shiftElapsed,
     routeId: route.id,
+    routeStrategy: route.strategy,
     routeLabel: route.label,
     routeRisk: route.risk,
   }

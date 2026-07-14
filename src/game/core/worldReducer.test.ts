@@ -67,7 +67,8 @@ describe('worldReducer', () => {
     const vehicle = dispatched.fleet.vehicles.find(item => item.id === plan!.vehicle.id)
 
     expect(dispatched.rescue.vehicleId).toBe(plan!.vehicle.id)
-    expect(dispatched.dispatchRecord?.routeId).toBe('balanced')
+    expect(dispatched.dispatchRecord?.routeId).toBe(selectedRoute.id)
+    expect(dispatched.dispatchRecord?.routeStrategy).toBe(selectedRoute.strategy)
     expect(vehicle?.mission?.route).toEqual(selectedRoute)
     expect(vehicle?.mission?.route?.nodes[0].id).toBe('route-start')
     expect(vehicle?.mission?.route?.nodes[vehicle.mission.route.nodes.length - 1].id).toBe('route-scene')

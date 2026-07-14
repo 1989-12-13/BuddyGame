@@ -6,9 +6,9 @@ import {
   findCompletedRoute,
   getAvailableNextNodes,
   getMatchingRoutes,
-  roadConditionColor,
   routeRiskLabel,
   type RoadNode,
+  type RoadSegment,
   type RoutePlan,
 } from '../../game/core/routing'
 
@@ -39,6 +39,17 @@ function nodeMap(routes: RoutePlan[]): Map<string, RoadNode> {
   return nodes
 }
 
+function uniqueSegments(routes: RoutePlan[]): RoadSegment[] {
+  const segments = new Map<string, RoadSegment>()
+  for (const route of routes) {
+    for (const segment of route.segments) {
+      const edgeId = `${segment.fromId}>${segment.toId}`
+      if (!segments.has(edgeId)) segments.set(edgeId, segment)
+    }
+  }
+  return [...segments.values()]
+}
+
 function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
   const values = [...nodes.values()]
   const lats = values.map(node => node.pos.lat)
@@ -59,6 +70,7 @@ function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
 export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, onConfirm, onCancel }: Props) {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(['route-start'])
   const nodes = useMemo(() => nodeMap(routes), [routes])
+  const segments = useMemo(() => uniqueSegments(routes), [routes])
   const points = useMemo(() => projectNodes(nodes), [nodes])
   const matchingRoutes = getMatchingRoutes(routes, selectedNodeIds)
   const availableNextNodes = getAvailableNextNodes(routes, selectedNodeIds)
@@ -114,10 +126,10 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
         }}>
           <div>
             <div id="route-planner-title" style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>
-              节点式路线规划
+              城市路网 · 节点式路线规划
             </div>
             <div style={{ marginTop: 3, fontSize: 11, color: 'var(--text-muted)' }}>
-              从急救站开始，每次只能选择相邻道路节点，直至到达事件现场
+              读取道路文字状态，在共享路口逐段选择，直至到达事件现场
             </div>
           </div>
           <button aria-label="关闭路线规划" onClick={onCancel} style={iconButtonStyle}>
@@ -151,7 +163,7 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
             background: 'radial-gradient(circle at 50% 45%, var(--bg-elevated), var(--bg-deep))',
           }}>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-              {routes.flatMap(route => route.segments.map(segment => {
+              {segments.map(segment => {
                 const from = points.get(segment.fromId)
                 const to = points.get(segment.toId)
                 if (!from || !to) return null
@@ -166,15 +178,56 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={roadConditionColor(segment.condition)}
+                    stroke={isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--text-muted)'}
                     strokeWidth={isSelected ? 1.4 : isNext ? 1.1 : 0.65}
-                    strokeDasharray={segment.condition === 'construction' || segment.condition === 'accident' ? '2 1.5' : undefined}
                     opacity={visible ? (isSelected ? 1 : 0.72) : 0.14}
                     vectorEffect="non-scaling-stroke"
                   />
                 )
-              }))}
+              })}
             </svg>
+
+            {segments.map((segment, index) => {
+              const from = points.get(segment.fromId)
+              const to = points.get(segment.toId)
+              if (!from || !to) return null
+              const fromIndex = selectedNodeIds.indexOf(segment.fromId)
+              const isSelected = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
+              const isNext = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId && availableIds.has(segment.toId)
+              const visible = isSelected || isNext || selectedNodeIds.length === 1
+              const dx = to.x - from.x
+              const dy = to.y - from.y
+              const length = Math.max(1, Math.hypot(dx, dy))
+              const offset = index % 2 === 0 ? 2.1 : -2.1
+              const x = (from.x + to.x) / 2 + (dy / length) * offset
+              const y = (from.y + to.y) / 2 - (dx / length) * offset
+              return (
+                <span
+                  key={`${segment.fromId}-${segment.toId}-condition`}
+                  title={segment.description}
+                  style={{
+                    position: 'absolute',
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 2,
+                    padding: '2px 5px',
+                    borderRadius: 4,
+                    border: `1px solid ${isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--border)'}`,
+                    backgroundColor: 'color-mix(in srgb, var(--bg-deep) 88%, transparent)',
+                    color: isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                    opacity: visible ? 1 : 0.22,
+                    fontSize: 8,
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    whiteSpace: 'nowrap',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {segment.conditionLabel}
+                </span>
+              )
+            })}
 
             {[...nodes.values()].map(node => {
               const point = points.get(node.id)
@@ -235,11 +288,11 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
             })}
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, color: 'var(--text-muted)', fontSize: 10 }}>
-            {(['clear', 'busy', 'congested', 'construction', 'school_zone', 'accident'] as const).map(condition => {
-              const labels = { clear: '畅通', busy: '车流较大', congested: '拥堵', construction: '施工', school_zone: '学校路段', accident: '事故' }
-              return <span key={condition} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><i style={{ width: 12, height: 3, backgroundColor: roadConditionColor(condition), borderRadius: 2 }} />{labels[condition]}</span>
-            })}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 10 }}>
+            <span>路段文字：</span>
+            {['畅通', '车流较大', '拥堵', '维修施工', '学校特殊路段', '事故占道'].map(label => (
+              <span key={label} style={{ padding: '2px 5px', borderRadius: 4, border: '1px solid var(--border)', backgroundColor: 'var(--bg-elevated)' }}>{label}</span>
+            ))}
           </div>
         </div>
 
@@ -265,9 +318,9 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
 
           {!activeRoute ? (
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>请选择第一个相邻节点</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>根据道路文字继续选择</div>
               <div style={{ marginTop: 6, fontSize: 11, lineHeight: 1.7, color: 'var(--text-muted)' }}>
-                三个首节点分别通往抢时、均衡与稳妥路线。道路状态会在每局重新生成，途中还可能发生一次实时变化。
+                这张路网包含入口分叉、中段分叉和中心交汇点。相同道路由多条方案共享，途中需要多次权衡拥堵、维修施工和学校特殊路段。
               </div>
             </div>
           ) : (
@@ -286,11 +339,13 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
                   const fromIndex = selectedNodeIds.indexOf(segment.fromId)
                   const traversed = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
                   const current = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId
+                  const fromLabel = nodes.get(segment.fromId)?.label ?? `节点 ${index + 1}`
+                  const toLabel = nodes.get(segment.toId)?.label ?? `节点 ${index + 2}`
                   return (
                     <div key={segment.id} style={{ padding: '7px 8px', borderRadius: 6, border: '1px solid var(--border)', opacity: traversed || current ? 1 : 0.58 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 10 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>节点 {index + 1} → {index + 2}</span>
-                        <strong style={{ color: roadConditionColor(segment.condition) }}>{segment.conditionLabel}</strong>
+                        <span style={{ color: 'var(--text-secondary)' }}>{fromLabel} → {toLabel}</span>
+                        <strong style={{ padding: '1px 4px', borderRadius: 3, border: '1px solid var(--border)', color: 'var(--text-primary)' }}>{segment.conditionLabel}</strong>
                       </div>
                       <div style={{ marginTop: 3, fontSize: 9, color: 'var(--text-muted)' }}>{segment.description}</div>
                     </div>

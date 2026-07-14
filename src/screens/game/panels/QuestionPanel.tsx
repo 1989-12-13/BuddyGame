@@ -58,11 +58,6 @@ export function QuestionPanel({
     <div style={styles.questionArea}>
       {/* ====== 5步标准协议 ====== */}
       <div style={styles.qSection}>
-        <div style={styles.qSectionTitle}>
-          📡 标准协议
-          {allFourStepsDone && <span style={{ color: 'var(--accent-green)', marginLeft: 6 }}>✓ 全部完成</span>}
-        </div>
-
         <div style={styles.protocolStepsList}>
           {protocolSteps.map((ps) => {
             const done = isAsked(ps.id)

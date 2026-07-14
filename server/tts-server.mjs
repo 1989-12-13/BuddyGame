@@ -152,12 +152,15 @@ async function callVolcano(params) {
           upstreamCode = code
           upstreamMsg = data.message ?? `upstream error code ${code}`
           break
+        } else if (code === 0 && !data.data) {
+          // 成功但无音频数据 — 多半是音色名不存在或文本被过滤，记录诊断信息
+          console.warn(`[tts-server] upstream code=0 但 data 为空: speaker=${params.speaker} textLen=${params.text.length} payloadKeys=${Object.keys(data).join(',')}`)
         }
       }
     }
 
     if (audioChunks.length === 0) {
-      throw new Error(`upstream 返回为空: code=${upstreamCode} msg=${upstreamMsg}`)
+      throw new Error(`upstream 返回为空: code=${upstreamCode} msg=${upstreamMsg} speaker=${params.speaker}`)
     }
     return Buffer.concat(audioChunks)
   } finally {

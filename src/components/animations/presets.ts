@@ -46,6 +46,23 @@ export const slideInRight: Variants = {
   },
 }
 
+/** 顶部中央 Toast：从上方滑入（适合顶部居中堆叠，避开右上角与对话区重叠） */
+export const slideInDown: Variants = {
+  hidden: { opacity: 0, y: -16, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: DUR_NORMAL, ease: EASE_OUT },
+  },
+  exit: {
+    opacity: 0,
+    y: -12,
+    scale: 0.96,
+    transition: { duration: DUR_QUICK },
+  },
+}
+
 /** 上滑淡入（弹窗/评分卡） */
 export const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 16 },

@@ -36,10 +36,10 @@ const CUE_PATTERNS: Record<GameAudioCue, Array<[frequency: number, delay: number
  * 模拟「救护车从近处开走、声音渐渐消失」
  * ============================================================ */
 const SIREN_URL = '/sounds/siren.mp3'
-const SIREN_DURATION = 4.0
-const SIREN_FADE_IN = 2.5
+const SIREN_DURATION = 6.5
+const SIREN_FADE_IN = 1.0
 /** 相对音量的衰减系数 — 鸣笛尖锐刺耳, 比 UI 提示音更小 */
-const SIREN_VOLUME_RATIO = 0.4
+const SIREN_VOLUME_RATIO = 0.55
 
 class GameAudioEngine {
   private context: AudioContext | null = null

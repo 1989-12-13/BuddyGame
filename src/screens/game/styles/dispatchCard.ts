@@ -1,18 +1,25 @@
 import type { CSSProperties } from 'react'
 
-/** MPDS 调度卡 leftsider（从左滑入式） */
+/** MPDS 调度卡 leftsider（从左滑入式）
+ * - top: 80 既避开了 Hud（48px），又给 CallInfoBar / 顶部呼吸感留出空间，
+ *   让调度卡整体高度更紧凑，避免纵向占满屏幕压迫感
+ * - bottom 保持贴底，dispatch 按钮（确认派车）放在底部最自然
+ * - overflow: visible 让右侧 4px 拖拽手柄可见 */
 export const modalOverlay: CSSProperties = {
   position: 'fixed',
-  top: 0,
+  top: 80,
   bottom: 0,
   left: 0,
   width: 420,
   zIndex: 60,
   backgroundColor: 'var(--bg-elevated)',
   borderRight: '1px solid var(--border)',
+  borderTop: '1px solid var(--border)',
+  borderBottom: '1px solid var(--border)',
+  borderRadius: '0 0 8px 0',
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'hidden',
+  overflow: 'visible',
   boxShadow: '6px 0 30px rgba(0,0,0,0.6)',
 }
 

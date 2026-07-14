@@ -41,7 +41,7 @@ npx vitest run src/game/core/worldReducer.test.ts   # 单文件测试
 ```
 src/audio/
 ├── AudioContext.tsx    # 同时暴露 play() 音效 + tts TTS 队列
-├── useGameAudio.ts     # WebAudio oscillator 合成提示音 (无音频资源)
+├── useGameAudio.ts     # WebAudio oscillator 合成提示音 + 救护车鸣笛 (mp3)
 ├── ttsClient.ts        # fetch('/api/tts') 封装, 返回 Blob + objectURL
 ├── ttsEmotion.ts       # stress 0-100 → emotion 4 档映射
 └── ttsPlayer.ts        # 顺序播放队列 (最大并发 1, 通话结束 stop())
@@ -49,6 +49,9 @@ src/audio/
 server/
 ├── tts-server.mjs      # Node native http, 零依赖代理, 流式读取火山响应
 └── tts-cache.mjs       # 简易 LRU (200 条), 按 cacheKey 命中
+
+public/sounds/
+└── siren.mp3           # 救护车鸣笛素材（4 秒, 派车时播放 + 渐入渐出包络）
 
 scripts/dev.mjs         # 同时 spawn 后端 + vite, 跨平台, 零依赖
 ```
@@ -62,16 +65,20 @@ scripts/dev.mjs         # 同时 spawn 后端 + vite, 跨平台, 零依赖
 
 **新增/修改来电者音色**：默认所有来电者用同一 speaker (`zh_female_vv_uranus_bigtts`)，由后端 `.env` 的 `VOLCANO_TTS_DEFAULT_SPEAKER` 控制。如需按性别/年龄切换，可在前端 `ttsClient.ts` 的 `TtsRequest.speaker` 字段透传，扩展 `CallerProfile` 加 `gender`/`ageBucket` 字段。
 
+**救护车鸣笛**（`useGameAudio.playSiren`）：
+- 单次 4 秒，前 2.5s 渐入，后 1.5s 渐出至静音
+- 音量系数 0.4（base × 0.4）避免刺耳
+- 懒加载 mp3 + 缓存 AudioBuffer；自动 stop 上一次未结束避免重叠
+- iOS autoplay 友好：play 前 `await context.resume()`
+
 ## 顶层架构
 
 ```
 src/
-├── main.tsx               # createRoot + StrictMode
-├── app/App.tsx            # 屏幕路由（title / level_select / game / ending / knowledge）
-├── audio/
-│   ├── AudioContext.tsx   # AudioProvider 包裹主内容
-│   └── useGameAudio.ts    # WebAudio 频率提示音（无音频资源，合成 oscillator）
-├── screens/               # 五个屏幕组件
+├── main.tsx                # createRoot + StrictMode
+├── app/App.tsx             # 屏幕路由（title / level_select / game / ending / knowledge）
+├── audio/                  # 音效 + TTS（见上）
+├── screens/                # 屏幕组件（GameScreen 等）
 ├── game/
 │   ├── types/                # 共享类型（已拆分为 caller / mpds / scenario / world 子模块）
 │   │   ├── index.ts          # 桶导出
@@ -161,6 +168,39 @@ src/
 
 `App.tsx` 用单一 `useState<'title'|'level_select'|'game'|'ending'|'knowledge'>` 切换屏幕，并通过 `gameKey` 强制 `GameScreen` 重新挂载以重置内部状态。`AudioProvider` 包裹主内容，确保屏幕切换不打断音频引擎。
 
+## 屏幕布局（重构后）
+
+```
+┌──────────────────────────────────────────────────┐
+│  Hud (Hud.tsx)                                    │  36-40px
+├──────────────────────────────────────────────────┤
+│  CallInfoBar (CallInfoBar.tsx)                   │  可折叠
+│  ─ 通话计时 / 电话 / 地址(揭示渐入) / 体征 / ... ─  visible={drawerOpen}
+├─────┬──────────────────────────────┬─────────────┤
+│ L   │                              │   Drawer    │
+│ e   │                              │  (600px)    │
+│ f   │     CityMap (Leaflet)        │  current /  │
+│ t   │  - 救护车 en_route→on_scene  │   history   │
+│ s   │  - 跨通话车辆 dim 处理       │  + history  │
+│ i   │  - 点击救护车 → 历史对话     │    badge    │
+│ d   │                              │             │
+│ e   │                              │             │
+│ r   │                              │             │
+│420px│                              │             │
+│ 调度│                              │             │
+│ 终端│                              │             │
+│ (左)│                              │             │
+└─────┴──────────────────────────────┴─────────────┘
+```
+
+- **Top**: `Hud` + `CallInfoBar`（通话信息条 — 通话中显示，drawer 折叠时一并收起）
+- **左侧**: `TerminalModal` (现 leftsider 420px) — 调度终端，新通话自动展开，dispatch 后自动折叠
+- **中央**: `CityMap` Leaflet 地图，跨通话显示所有 mission 车辆
+- **右侧**: `CallDrawer` (现 600px 宽) — 三种模式：
+  - `current`（默认）：当前通话对话 + 行动按钮
+  - `history:{callId}`：玩家点击地图救护车后，drawer 整体替换为该任务历史对话
+  - 折叠态 72px 仍有 mini 信息（生命条 + 通话计时）
+
 ## 评分与结局
 
 - 单通：`scoreCall()` 产出 `CallScore = { speed(0-35) + info(0-30) + triage(0-20) + decision(0-5) + guidance(0-10) }`，满 100。
@@ -195,7 +235,8 @@ interface MiniGameProps {
 
 - Vite 6，alias `@` → `src/`。
 - 无 UI 框架、无 CSS-in-JS。颜色 / 间距集中在 `src/styles/tokens.css`，动画在 `animations.css`。
-- 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`），是项目惯例。
+- 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`、`CallInfoBar.tsx`），是项目惯例。
+- 动效统一用 `motion/react`（AnimatePresence + motion.aside / motion.div），spring 曲线 + 0.18-0.22s 时长。
 
 ## 关键约定
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   DUR_INSTANT, DUR_QUICK, DUR_NORMAL, DUR_EASE, DUR_EMPHASIS,
   EASE_OUT_FAST, EASE_OUT, EASE_SPRING,
-  slideInRight, fadeInUp, scalePop, pageTransition, staggerList,
+  slideInRight, slideInDown, fadeInUp, scalePop, pageTransition, staggerList,
   KEYFRAMES_SLIDE_IN_RIGHT, KEYFRAMES_FADE_IN_UP,
 } from './presets'
 
@@ -27,6 +27,14 @@ describe('动画变体结构', () => {
     expect(slideInRight).toHaveProperty('exit')
     expect(slideInRight.hidden).toHaveProperty('opacity')
     expect(slideInRight.visible).toHaveProperty('x')
+  })
+
+  it('slideInDown 从上方滑入（hidden.y < 0）', () => {
+    expect(slideInDown).toHaveProperty('hidden')
+    expect(slideInDown).toHaveProperty('visible')
+    expect(slideInDown).toHaveProperty('exit')
+    expect((slideInDown.hidden as Record<string, unknown>).y).toBeLessThan(0)
+    expect(slideInDown.visible).toHaveProperty('y', 0)
   })
 
   it('fadeInUp 包含 hidden/visible/exit', () => {

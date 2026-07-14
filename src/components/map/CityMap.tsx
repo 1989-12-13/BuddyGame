@@ -11,6 +11,7 @@ import type { WorldState } from '../../game/types'
 import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
 import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
 import { positionAlongRoute, roadConditionColor } from '../../game/core/routing'
+import { useTheme } from '../../contexts/ThemeContext'
 import {
   stationIconFor,
   ambulanceIconFor,
@@ -49,6 +50,7 @@ function FitBounds({ points }: { points: LatLng[] }) {
 
 // -------------------- 主组件 --------------------
 export function CityMap({ state, onAmbulanceClick }: Props) {
+  const { theme } = useTheme()
   const hasCall = state.currentCall !== null
   const isPrank = state.currentCall?.isPrank ?? false
 
@@ -113,18 +115,27 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
   // 当前通话的场景 id（用于判定哪些 mission 属于"历史"/"执行中背景"）
   const currentCallId = state.currentCall?.id ?? null
 
+  // 按主题切换瓦片 URL；不通过 key={theme} 重挂 MapContainer（会重置视口并触发全量重绘），
+  // 只让 TileLayer 改 URL 即可 — 浏览器会按 URL 缓存瓦片，首次切浅色后再次切换即为秒切。
+  const tileUrl = theme === 'light'
+    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+
   return (
-    <div style={styles.wrap}>
+    <div style={{
+      ...styles.wrap,
+      backgroundColor: theme === 'light' ? '#e6ecef' : '#0a0e14',
+    }}>
       <MapContainer
         center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
         zoom={DEFAULT_ZOOM}
-        style={styles.map}
+        style={{ ...styles.map, backgroundColor: theme === 'light' ? '#e6ecef' : '#0a0e14' }}
         scrollWheelZoom
         zoomControl
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={tileUrl}
           subdomains={['a', 'b', 'c', 'd']}
           maxZoom={19}
         />
@@ -211,7 +222,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                         dashArray: dim ? '2 8' : undefined,
                       }}
                     >
-                      <Tooltip direction="top" opacity={0.95} permanent={isMissionOfCurrentCall && !dim}>
+                      <Tooltip direction="top" opacity={0.95}>
                         <strong>{segment.conditionLabel}</strong> · {segment.description}
                       </Tooltip>
                     </Polyline>

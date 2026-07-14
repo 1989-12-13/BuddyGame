@@ -16,3 +16,4 @@ npm-debug.log*
 .codebuddy/
 pnpm-lock.yaml
 pnpm-workspace.yaml
+promo-demo

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import type { WorldState } from '../../../game/types'
 import type { AudioAPI } from '../../../audio/AudioContext'
 import { stressToTypewriterInterval, stressToEmotion } from '../../../audio/ttsEmotion'
+import { pickSpeaker } from '../../../audio/ttsSpeakers'
+import { getCaller } from '../../../game/npc/personas'
 
 /**
  * 流式逐字显示：多行排队依次输出。
@@ -70,10 +72,18 @@ export function useStreamingQueue(state: WorldState, audio: AudioAPI) {
       // TTS: 仅来电者发声 (接线员玩家自己, 系统提示不发声)
       if (line.speaker === 'caller') {
         const stress = state.callerState?.stress ?? 50
+        // 按当前通话的来电者人口学选音色（性别 × 年龄档）
+        const callerProfile = state.currentCall
+          ? getCaller(state.currentCall.callerId)
+          : null
+        const speaker = callerProfile
+          ? pickSpeaker(callerProfile.relationship, callerProfile.name)
+          : undefined
         audio.tts.enqueue(`caller-${i}`, {
           text: line.text,
           kind: 'caller',
           emotion: stressToEmotion(stress),
+          speaker,
         }).catch(() => undefined)
       }
     }

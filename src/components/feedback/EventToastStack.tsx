@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { AlertTriangle, CheckCircle2, XCircle, Info, X } from 'lucide-react'
 import type { PatientEvent } from '../../game/types'
 import { C_SUCCESS, C_WARNING, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
-import { slideInRight, DUR_NORMAL } from '../animations/presets'
+import { slideInDown, DUR_NORMAL } from '../animations/presets'
 
 interface Props {
   events: PatientEvent[]
@@ -39,14 +39,19 @@ export function EventToastStack({ events, onDismiss, maxVisible = 4 }: Props) {
   return (
     <div style={{
       position: 'fixed',
-      top: 50,
-      right: 16,
+      top: 56,                                // Hud 下方留 8px 呼吸空间
+      left: '50%',
+      transform: 'translateX(-50%)',          // 水平居中
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
       gap: 6,
       zIndex: 200,
       pointerEvents: 'none',
-      maxWidth: 340,
+      width: 360,
+      // 避免与左侧调度卡（420px）+ 右侧 drawer（600px+）重叠；
+      // 视口窄于 1080px 时 toast 自动缩窄
+      maxWidth: 'min(360px, calc(100vw - 1080px))',
     }}>
       <AnimatePresence mode="popLayout">
         {visible.map(e => (
@@ -69,13 +74,14 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
 
   return (
     <motion.div
-      variants={slideInRight}
+      variants={slideInDown}
       initial="hidden"
       animate="visible"
       exit="exit"
       transition={{ duration: DUR_NORMAL }}
       layout
       style={{
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         gap: 8,

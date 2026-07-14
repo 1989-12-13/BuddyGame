@@ -1,12 +1,13 @@
 // ============================================================
-// 零点接线台 — 右侧抽屉（折叠 72px / 展开 480px）
+// 零点接线台 — 右侧抽屉（折叠 72px / 展开 600px 可拖拽调宽度）
 // 地图始终可见，对话/操作浮在右侧
 // 宽度走 motion spring，内部折叠/展开态用 AnimatePresence 交叉淡入
+// 展开态左侧 4px 拖拽手柄可调宽度（380-820px）
 // ============================================================
 
-import type { CSSProperties, ReactNode } from 'react'
+import { useState, useRef, useCallback, useEffect, type CSSProperties, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Phone, GripVertical } from 'lucide-react'
 
 interface Props {
   open: boolean
@@ -25,14 +26,75 @@ interface Props {
 
 const DRAWER_W_OPEN = 600
 const DRAWER_W_CLOSED = 72
+const DRAWER_W_MIN = 380
+const DRAWER_W_MAX = 820
 
 export function CallDrawer({ open, onToggle, mini, children, title, active, historyBadge }: Props) {
+  // 用户可调宽度（持久于本地存储）
+  const [drawerWidth, setDrawerWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return DRAWER_W_OPEN
+    const saved = Number(window.localStorage.getItem('buddy-game-drawer-w'))
+    return Number.isFinite(saved) && saved >= DRAWER_W_MIN && saved <= DRAWER_W_MAX ? saved : DRAWER_W_OPEN
+  })
+  const [resizeHover, setResizeHover] = useState(false)
+  const dragRef = useRef<{ startX: number; startW: number } | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem('buddy-game-drawer-w', String(drawerWidth))
+  }, [drawerWidth])
+
+  const handleResizeDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dragRef.current = { startX: e.clientX, startW: drawerWidth }
+    const onMove = (ev: PointerEvent) => {
+      if (!dragRef.current) return
+      // drawer 在右边 → 拖左 = 拉宽 = 增加宽度 = -dx
+      const dx = ev.clientX - dragRef.current.startX
+      const newW = Math.max(DRAWER_W_MIN, Math.min(DRAWER_W_MAX, dragRef.current.startW - dx))
+      setDrawerWidth(newW)
+    }
+    const onUp = () => {
+      dragRef.current = null
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }, [drawerWidth])
+
   return (
     <motion.aside
-      animate={{ width: open ? DRAWER_W_OPEN : DRAWER_W_CLOSED }}
+      animate={{ width: open ? drawerWidth : DRAWER_W_CLOSED }}
       transition={{ type: 'spring', stiffness: 260, damping: 30 }}
       style={styles.drawer}
     >
+      {/* 左侧拖拽手柄（仅展开态可见） */}
+      {open && (
+        <div
+          onPointerDown={handleResizeDown}
+          onPointerEnter={() => setResizeHover(true)}
+          onPointerLeave={() => setResizeHover(false)}
+          onDoubleClick={() => setDrawerWidth(DRAWER_W_OPEN)}
+          title="拖拽调整宽度 · 双击重置"
+          style={{
+            ...styles.resizeHandle,
+            backgroundColor: resizeHover ? 'var(--accent-blue)' : 'transparent',
+          }}
+        >
+          <span style={{
+            ...styles.resizeGrip,
+            opacity: resizeHover ? 1 : 0.35,
+          }}>
+            <GripVertical size={10} color="currentColor" strokeWidth={2.5} />
+          </span>
+        </div>
+      )}
       <div style={styles.swapLayer}>
         <AnimatePresence initial={false}>
           {!open ? (
@@ -68,7 +130,7 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
               transition={{ duration: 0.18, ease: 'easeOut' }}
               style={styles.swapChild}
             >
-              <div style={styles.expanded}>
+              <div style={{ ...styles.expanded, width: drawerWidth }}>
                 <header style={styles.header}>
                   <div style={styles.headerLeft}>
                     <Phone size={14} color={historyBadge ? 'var(--accent-gold)' : (active ? '#ff3b3b' : 'var(--text-muted)')} strokeWidth={2.5} />
@@ -114,14 +176,43 @@ const styles: Record<string, CSSProperties> = {
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     borderLeft: '1px solid var(--glass-border)',
     boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
-    overflow: 'hidden',
+    overflow: 'visible',
     zIndex: 50,
+  },
+  resizeHandle: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: -2,
+    width: 4,
+    cursor: 'col-resize',
+    zIndex: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background-color 0.15s',
+  },
+  resizeGrip: {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: 16,
+    height: 36,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 3,
+    color: 'var(--text-secondary)',
+    pointerEvents: 'none',
+    transition: 'opacity 0.15s',
   },
   // 内部交叉淡入层：相对定位，子元素 absolute 重叠避免布局抖动
   swapLayer: {
     position: 'relative',
     width: '100%',
     height: '100%',
+    overflow: 'hidden',
+    borderRadius: 'inherit',
   },
   swapChild: {
     position: 'absolute',
@@ -179,7 +270,6 @@ const styles: Record<string, CSSProperties> = {
   expanded: {
     display: 'flex',
     flexDirection: 'column',
-    width: DRAWER_W_OPEN,
     height: '100%',
   },
   header: {

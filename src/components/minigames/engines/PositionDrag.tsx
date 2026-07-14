@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, PositionDragSpec } from '../../../game/types'
+import { Readout } from '../Readout'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -221,17 +222,6 @@ export function PositionDrag({ spec, onComplete, paused }: MiniGameProps) {
       </button>
       <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
         ← 拖拽或按方向键 → 旋转指针至目标角度
-      </div>
-    </div>
-  )
-}
-
-function Readout({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={{ textAlign: 'center', minWidth: 50 }}>
-      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 17, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums' }}>
-        {value}
       </div>
     </div>
   )

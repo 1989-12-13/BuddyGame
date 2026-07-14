@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { CSSProperties } from 'react'
 import { createInitialState } from '../game/core/initialState'
 import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel } from '../game/types'
-import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF, TRIAGE_LABELS } from '../game/types'
+import { MPDS_DETERMINANT_INFO, STRESS_INFO, PROTOCOL_REF, TRIAGE_LABELS, TRIAGE_COLORS } from '../game/types'
 import type { TerminalField } from '../game/core/actions'
 import { worldReducer } from '../game/core/worldReducer'
 import { getCaller } from '../game/npc/personas'
@@ -1429,15 +1429,9 @@ function ClosingPanel({
 }) {
   const arrived = ambulanceRemaining <= 0
   const protocolEntry = PROTOCOL_REF.find(([n]) => n === terminal.protocolNumber)
-  const triageLabel = terminal.triage
-    ? ({ red: '红色 — 濒危', yellow: '黄色 — 危重', green: '绿色 — 轻伤', black: '死亡/无需抢救' } as Record<string, string>)[terminal.triage]
-    : '—'
+  const triageLabel = terminal.triage ? TRIAGE_LABELS[terminal.triage] : '—'
 
-  const triageColor = terminal.triage === 'red' ? '#dc2626'
-    : terminal.triage === 'yellow' ? '#eab308'
-    : terminal.triage === 'green' ? '#16a34a'
-    : terminal.triage === 'black' ? '#6b7280'
-    : 'var(--text-muted)'
+  const triageColor = terminal.triage ? TRIAGE_COLORS[terminal.triage] : 'var(--text-muted)'
 
   return (
     <div style={styles.closingPanel}>
@@ -1789,10 +1783,7 @@ function TerminalForm({
           <span style={{
             fontSize: 13,
             fontWeight: 'bold',
-            color: terminal.triage === 'red' ? '#dc2626'
-              : terminal.triage === 'yellow' ? '#ff8c00'
-              : terminal.triage === 'green' ? '#16a34a'
-              : '#6b7280',
+            color: TRIAGE_COLORS[terminal.triage],
           }}>
             {TRIAGE_LABELS[terminal.triage]}
           </span>

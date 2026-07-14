@@ -5,6 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CprSpec, MiniGameProps } from '../../../game/types'
+import { Readout } from '../Readout'
 
 type Phase = 'compressing' | 'blowing_1' | 'pause_1to2' | 'blowing_2' | 'done'
 
@@ -338,14 +339,5 @@ function BlowPhase({ fill, barColor, goodBreath }: { fill: number; barColor: str
         {fill < 0.01 ? '按住空格吹气' : fill >= 0.72 ? '⚠ 过量！' : fill >= 0.30 ? '✓ 理想区 — 松手' : '继续吹气…'}
       </div>
     </>
-  )
-}
-
-function Readout({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={{ textAlign: 'center', minWidth: 48 }}>
-      <div style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 900, color }}>{value}</div>
-    </div>
   )
 }

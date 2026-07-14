@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { MiniGameProps, RhythmPressSpec } from '../../../game/types'
+import { Readout } from '../Readout'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -153,15 +154,6 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
       <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
         保持每 {targetInterval.toFixed(0)} 毫秒一次的稳定节奏
       </div>
-    </div>
-  )
-}
-
-function Readout({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={{ textAlign: 'center', minWidth: 52 }}>
-      <div style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 900, color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
     </div>
   )
 }

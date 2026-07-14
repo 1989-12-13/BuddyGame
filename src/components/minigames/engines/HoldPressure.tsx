@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { HoldPressureSpec, MiniGameProps } from '../../../game/types'
+import { Readout } from '../Readout'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -105,15 +106,6 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
         <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>保持按压直到血量降至安全区并维持</div>
-    </div>
-  )
-}
-
-function Readout({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={{ textAlign: 'center', minWidth: 50 }}>
-      <div style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 900, color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
     </div>
   )
 }

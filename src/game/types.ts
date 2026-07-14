@@ -51,6 +51,13 @@ export const TRIAGE_LABELS: Record<TriageLevel, string> = {
   black:  '黑色 — 死亡/无需抢救',
 }
 
+export const TRIAGE_COLORS: Record<TriageLevel, string> = {
+  red:    '#dc2626',
+  yellow: '#eab308',
+  green:  '#16a34a',
+  black:  '#6b7280',
+}
+
 /** MPDS判定等级 ↔ 四色分诊的推荐映射 */
 export function determinantToTriage(d: MpdsDeterminant): TriageLevel {
   const map: Record<MpdsDeterminant, TriageLevel> = {

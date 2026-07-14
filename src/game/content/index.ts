@@ -1,0 +1,5 @@
+export { getPronoun, getPossessive, getObjective, getTitle, getCallerRef, getPatientDescriptor } from './pronouns'
+export type { PatientGender } from './pronouns'
+export { PROTOCOLS, getProtocolByNumber, getProtocolTitle, getExpectedHotCold, getExpectedTriage } from './protocols'
+export type { ProtocolEntry } from './protocols'
+export { COMMON_PHRASES } from './phrases'

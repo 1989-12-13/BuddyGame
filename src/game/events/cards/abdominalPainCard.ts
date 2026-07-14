@@ -12,14 +12,14 @@ export const abdominalPainCard: EmergencyScenario = {
   phoneNumber: '138****1111',
   baseStation: '海淀区苏州街附近',
   isPrank: false,
-  correctTriage: 'yellow',
+  correctTriage: 'green',
 
   mpdsCard: {
     number: 1,
-    title: '腹痛/相关问题',
+    title: '腹痛/背痛',
     chiefComplaint: '中年男性右下腹剧烈疼痛、恶心呕吐、疼痛逐渐加重',
     determinantCode: '1-D-1',
-    hotCold: 'HOT',
+    hotCold: 'COLD',
     keyQuestions: [
       '疼痛从什么时候开始的',
       '疼痛在哪个位置',

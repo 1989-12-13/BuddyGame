@@ -12,7 +12,7 @@ export const heartProblemsCard: EmergencyScenario = {
   phoneNumber: '158****6666',
   baseStation: '朝阳区望京soho附近',
   isPrank: false,
-  correctTriage: 'yellow',
+  correctTriage: 'red',
 
   mpdsCard: {
     number: 19,

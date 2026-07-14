@@ -12,7 +12,7 @@ export const traumaCarCard: EmergencyScenario = {
   phoneNumber: '139****5678',
   baseStation: '海淀区中关村大街附近',
   isPrank: false,
-  correctTriage: 'yellow',
+  correctTriage: 'red',
 
   mpdsCard: {
     number: 29,

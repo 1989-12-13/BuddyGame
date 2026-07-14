@@ -5,6 +5,38 @@
 
 import type { InfoQuality, JudgmentPrompt } from '../../types'
 import { rng } from '../random'
+import { getPronoun } from '../../content/pronouns'
+
+// ==================== 辅助函数 ====================
+
+/**
+ * 在句子边界处安全截断，避免截到词语中间
+ * 优先在句号/感叹号/问号/省略号/逗号/空格处断开
+ * 若找不到合适断点，则在 maxLen-1 处截断
+ */
+function truncateAtSentenceBoundary(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text
+  const slice = text.slice(0, maxLen)
+  // 优先在句子结束标点处断开
+  const sentenceEnd = /[。！？…；\n][^。！？…；\n]*$/.exec(slice)
+  if (sentenceEnd && sentenceEnd.index > 0) {
+    return slice.slice(0, sentenceEnd.index + 1)
+  }
+  // 其次在逗号/顿号处断开
+  const comma = /[,，、][^,，、]*$/.exec(slice)
+  if (comma && comma.index > 0) {
+    return slice.slice(0, comma.index + 1) + '……'
+  }
+  // 最后在空格/空白处断开
+  const space = /\s+\S*$/.exec(slice)
+  if (space && space.index > 0) {
+    return slice.slice(0, space.index)
+  }
+  // 实在找不到合适断点，就截到 maxLen-1 加省略号
+  return slice.slice(0, Math.max(1, maxLen - 1)) + '…'
+}
+
+// ==================== 主函数 ====================
 
 /** 根据情绪选择叙述式回答 */
 export function pickNarrativeAnswer(
@@ -34,16 +66,18 @@ export function generateLocationNarrative(
 ): { text: string; quality: InfoQuality; distorted: boolean } {
   if (stress >= 75) return { text: vague, quality: 'vague', distorted: true }
   if (stress >= 50) {
-    const shortVague = vague.length > 6 ? vague.slice(0, 6) : vague
+    // 取 vague 第一段（以逗号/空格分隔），避免截出半截词
+    const hint = vague.split(/[，,、\s]/)[0]
     return {
-      text: `${partial.split('，')[0]}！！你们快来！！就在${shortVague}这边！！`,
+      text: `${partial.split('，')[0]}！！你们快来！！就在${hint}这边！！`,
       quality: 'partial', distorted: true,
     }
   }
   if (stress >= 25) {
-    const areaHint = vague.length > 4 ? vague.slice(0, 4) : vague
+    // 用 vague 的第一个完整短语
+    const hint = truncateAtSentenceBoundary(vague, 6)
     return {
-      text: `在...在${areaHint}...不对，是在${partial}...对，就是这个地址。`,
+      text: `在...在${hint}...不对，是在${partial}...对，就是这个地址。`,
       quality: 'partial', distorted: false,
     }
   }
@@ -57,28 +91,32 @@ export function generateEventNarrative(
   stress: number,
   relationship: string,
 ): { text: string; quality: InfoQuality; distorted: boolean } {
-  const pronoun = gender === '女性' ? '她' : gender === '男性' ? '他' : 'TA'
-  // 根据来电者与患者的关系推导自然的情景描述
+  const pronoun = getPronoun(gender)
+  // 根据来电者与患者的关系推导自然的情景描述，补全更多关系类型
   const context =
     relationship === '路人' ? '就在路边' :
     relationship === '同事' ? '我们正在做事' :
+    relationship === '家人' || relationship === '家属' ? '刚才在家里还好好的' :
+    relationship === '朋友' ? '我们刚才还在聊天' :
+    relationship === '邻居' ? '我听到声音过来看的' :
+    relationship === '伴侣' || relationship === '夫妻' ? '我们俩刚才好好的在' :
     '刚才还好好的在'
 
   if (stress >= 75) {
     return {
-      text: `不行了不行了！！${pronoun}${chiefComplaint.slice(0, 8)}...你们快来啊！！出大事了！！`,
+      text: `不行了不行了！！${pronoun}${truncateAtSentenceBoundary(chiefComplaint, 10)}...你们快来啊！！出大事了！！`,
       quality: 'vague', distorted: true,
     }
   }
   if (stress >= 50) {
     return {
-      text: `${pronoun}...我...我不知道怎么形容...${chiefComplaint.slice(0, 10)}...就是突然之间就不对劲了！${context}...一下子就...我该怎么办？！`,
+      text: `${pronoun}...我...我不知道怎么形容...${truncateAtSentenceBoundary(chiefComplaint, 14)}...就是突然之间就不对劲了！${context}...一下子就...我该怎么办？！`,
       quality: 'partial', distorted: true,
     }
   }
   if (stress >= 25) {
     return {
-      text: `${pronoun}${chiefComplaint.slice(0, 15)}...就是这样的情况，刚刚发生的，感觉挺严重的。嗯...大概就是这样。`,
+      text: `${pronoun}${truncateAtSentenceBoundary(chiefComplaint, 20)}...就是这样的情况，刚刚发生的，感觉挺严重的。嗯...大概就是这样。`,
       quality: 'partial', distorted: false,
     }
   }
@@ -87,7 +125,7 @@ export function generateEventNarrative(
 
 /** 生成步骤3（患者年龄）的叙述式回答 */
 export function generateAgeNarrative(age: string, stress: number, gender: string): string {
-  const pronoun = gender === '女性' ? '她' : gender === '男性' ? '他' : 'TA'
+  const pronoun = getPronoun(gender)
   // 防御性剥离：确保 age 字段不混入性别/称谓
   const cleanAge = age.replace(/男性|女性|男|女|不详/g, '').trim()
   if (stress >= 75) return `${pronoun}${cleanAge}！！具体多少有关系吗？！快派人来啊！！`
@@ -99,8 +137,8 @@ export function generateAgeNarrative(age: string, stress: number, gender: string
 /** 生成步骤5（意识与呼吸）的叙述式回答 */
 export function generateVitalsNarrative(consciousness: string, breathing: string, stress: number): string {
   if (stress >= 75) {
-    const c = consciousness.length > 10 ? consciousness.slice(0, 10) + '...' : consciousness
-    const b = breathing.length > 10 ? breathing.slice(0, 10) + '...' : breathing
+    const c = truncateAtSentenceBoundary(consciousness, 12)
+    const b = truncateAtSentenceBoundary(breathing, 12)
     return `${c}！！！${b}！！！你们快来啊！！！`
   }
   if (stress >= 50) return `${consciousness}...${breathing}...天哪我不知道怎么形容...反正看起来不太好...`

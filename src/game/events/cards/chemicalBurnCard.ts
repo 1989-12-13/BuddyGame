@@ -12,7 +12,7 @@ export const chemicalBurnCard: EmergencyScenario = {
   phoneNumber: '135****7890',
   baseStation: '大兴区亦庄开发区附近',
   isPrank: false,
-  correctTriage: 'green',
+  correctTriage: 'red',
 
   mpdsCard: {
     number: 7,

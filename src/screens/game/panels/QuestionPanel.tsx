@@ -1,7 +1,8 @@
 import { Phone } from 'lucide-react'
-import type { EmergencyScenario, CallPhase, CalleeStressLevel } from '../../../game/types'
+import type { EmergencyScenario, CalleeStressLevel } from '../../../game/types'
 import { STRESS_INFO } from '../../../game/types'
 import { getQuestionTimeCost } from '../../../game/core/reducers/narrative'
+import { PROTOCOL_STEPS, getVitalsStepQText } from '../../../game/content/phrases'
 import { styles, CATEGORY_ICON } from '../styles'
 import { AskBtnEx } from './AskBtnEx'
 
@@ -46,11 +47,11 @@ export function QuestionPanel({
   const supplementaryQ = call.mpdsQuestions  // 所有MPDS问题现在都是补充性质
 
   // 4步协议定义（耗时统一取自 getQuestionTimeCost，与实际扣时保持一致）
+  // 步骤1-3 来自共享常量，步骤4（含动态人称）按当前性别生成
+  const gender = call.fourElements.condition.gender
   const protocolSteps = [
-    { step: 1, id: 'step1_location', icon: '◉', label: '位置确认', qText: '请问事发的确切地址是哪里？', desc: '派车根本依据' },
-    { step: 2, id: 'step2_event', icon: '≡', label: '事件简述', qText: '好的，请告诉我具体发生了什么事？', desc: '获取主诉入口' },
-    { step: 3, id: 'step3_age', icon: '○', label: '患者年龄', qText: '患者多大年龄了？', desc: '关键救治因素' },
-    { step: 4, id: 'step4_vitals', icon: '♥', label: '意识与呼吸', qText: '患者清醒吗？他/她还有呼吸吗？', desc: '最关键的病情评估' },
+    ...PROTOCOL_STEPS,
+    { step: 4, id: 'step4_vitals', icon: '♥', label: '意识与呼吸', qText: getVitalsStepQText(gender), desc: '最关键的病情评估' },
   ]
 
   return (
@@ -59,7 +60,7 @@ export function QuestionPanel({
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
           📡 标准协议
-          {allFourStepsDone && <span style={{ color: '#16a34a', marginLeft: 6 }}>✓ 全部完成</span>}
+          {allFourStepsDone && <span style={{ color: 'var(--accent-green)', marginLeft: 6 }}>✓ 全部完成</span>}
         </div>
 
         <div style={styles.protocolStepsList}>
@@ -73,13 +74,13 @@ export function QuestionPanel({
               <div key={ps.id} style={{
                 ...styles.protocolStepRow,
                 opacity: locked ? 0.45 : 1,
-                borderColor: done ? '#16a34a' : isCurrent ? '#d97706' : 'var(--border)',
-                backgroundColor: done ? 'rgba(22, 163, 74, 0.08)' : isCurrent ? 'rgba(217, 119, 6, 0.08)' : 'transparent',
+                borderColor: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--border)',
+                backgroundColor: done ? 'var(--success-green-bg)' : isCurrent ? 'var(--warning-amber-bg)' : 'transparent',
               }}>
                 {/* 步骤编号 */}
                 <div style={{
                   ...styles.protocolStepNum,
-                  backgroundColor: done ? '#16a34a' : isCurrent ? '#d97706' : 'var(--border)',
+                  backgroundColor: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--border)',
                   color: done ? '#fff' : isCurrent ? '#fff' : 'var(--text-secondary)',
                 }}>
                   {done ? '✓' : ps.step}
@@ -90,7 +91,7 @@ export function QuestionPanel({
                   <div style={{
                     fontSize: 12,
                     fontWeight: done ? 'normal' : 'bold',
-                    color: done ? '#16a34a' : isCurrent ? '#d97706' : 'var(--text-secondary)',
+                    color: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--text-secondary)',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
@@ -102,7 +103,7 @@ export function QuestionPanel({
 
                 {/* 操作按钮 */}
                 {done ? (
-                  <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     ✓ 完成
                   </span>
                 ) : isCurrent ? (
@@ -141,7 +142,7 @@ export function QuestionPanel({
               />
             )}
             {landmarkDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#16a34a', color: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.08)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--accent-green)', color: 'var(--accent-green)', backgroundColor: 'var(--success-green-bg)' }}>
                 ✓ 地址已精确
               </div>
             )}
@@ -159,7 +160,7 @@ export function QuestionPanel({
               />
             )}
             {contactDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: '#16a34a', color: '#16a34a', backgroundColor: 'rgba(22, 163, 74, 0.08)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--accent-green)', color: 'var(--accent-green)', backgroundColor: 'var(--success-green-bg)' }}>
                 ✓ 已记录
               </div>
             )}
@@ -188,7 +189,7 @@ export function QuestionPanel({
           <div style={{ fontSize: 11, color: si.color, display: 'flex', alignItems: 'center', gap: 4 }}>
             {si.emoji} {si.label} ({stress}%)
             {(stressLevel === '恐慌' || stressLevel === '失控') && (
-              <span style={{ color: '#d97706', fontSize: 10 }}>答案不可靠</span>
+              <span style={{ color: 'var(--accent-amber)', fontSize: 10 }}>答案不可靠</span>
             )}
           </div>
           <button
@@ -201,7 +202,7 @@ export function QuestionPanel({
             disabled={stress < 15}
             title="消耗2秒安抚来电者"
           >
-            🫂 安抚 (+2s耗时)
+            🫂 安抚
           </button>
         </div>
 
@@ -210,8 +211,8 @@ export function QuestionPanel({
             style={{
               ...styles.terminalBtn,
               animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
-              borderColor: hasTriage ? '#16a34a' : '#dc2626',
-              backgroundColor: hasTriage ? 'rgba(22, 163, 74, 0.08)' : 'rgba(220, 38, 38, 0.08)',
+              borderColor: hasTriage ? 'var(--accent-green)' : '#dc2626',
+              backgroundColor: hasTriage ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
             }}
             onClick={onOpenTerminal}
           >

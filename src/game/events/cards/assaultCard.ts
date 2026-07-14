@@ -12,7 +12,7 @@ export const assaultCard: EmergencyScenario = {
   phoneNumber: '136****3333',
   baseStation: '东城区南锣鼓巷附近',
   isPrank: false,
-  correctTriage: 'yellow',
+  correctTriage: 'red',
 
   mpdsCard: {
     number: 4,

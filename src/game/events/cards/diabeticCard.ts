@@ -19,7 +19,7 @@ export const diabeticCard: EmergencyScenario = {
     title: '糖尿病问题',
     chiefComplaint: '中年女性突发意识模糊、大汗淋漓、四肢无力，有糖尿病史',
     determinantCode: '13-D-2',
-    hotCold: 'HOT',
+    hotCold: 'COLD',
     keyQuestions: [
       '患者有无糖尿病史？',
       '最近一次吃饭是什么时候？',

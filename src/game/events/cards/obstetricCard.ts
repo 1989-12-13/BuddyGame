@@ -12,7 +12,7 @@ export const obstetricCard: EmergencyScenario = {
   phoneNumber: '137****3456',
   baseStation: '丰台区方庄附近',
   isPrank: false,
-  correctTriage: 'yellow',
+  correctTriage: 'red',
 
   mpdsCard: {
     number: 24,

@@ -14,7 +14,6 @@ import { getPerkChoices, hasPerk } from '../../game/core/perks'
 import { worldReducer } from '../../game/core/worldReducer'
 import { getCaller } from '../../game/npc/personas'
 import { Hud } from '../../components/hud/Hud'
-import { CallInfoBar } from '../../components/hud/CallInfoBar'
 import { CallDebrief } from '../../components/call/CallDebrief'
 import { VitalSignsBar } from '../../components/feedback/VitalSignsBar'
 import { EventToastStack } from '../../components/feedback/EventToastStack'
@@ -276,7 +275,6 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   return (
     <div style={styles.container}>
       <Hud state={state} />
-      <CallInfoBar state={state} visible={drawerOpen} />
 
       <div style={styles.mainArea}>
         <CityMap state={state} onAmbulanceClick={handleAmbulanceClick} />

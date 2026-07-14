@@ -173,9 +173,7 @@ src/
 ```
 ┌──────────────────────────────────────────────────┐
 │  Hud (Hud.tsx)                                    │  36-40px
-├──────────────────────────────────────────────────┤
-│  CallInfoBar (CallInfoBar.tsx)                   │  可折叠
-│  ─ 通话计时 / 电话 / 地址(揭示渐入) / 体征 / ... ─  visible={drawerOpen}
+│  通话计时 / 通话编号 / 体征 / 情绪 / 得分 / 车辆 / ETA
 ├─────┬──────────────────────────────┬─────────────┤
 │ L   │                              │   Drawer    │
 │ e   │                              │  (600px)    │
@@ -193,13 +191,15 @@ src/
 └─────┴──────────────────────────────┴─────────────┘
 ```
 
-- **Top**: `Hud` + `CallInfoBar`（通话信息条 — 通话中显示，drawer 折叠时一并收起）
+- **Top**: `Hud` — 唯一顶栏；通话计时 + 通话编号 + 通话中显示的体征/情绪 + 得分 + 车辆 + 派车 ETA
 - **左侧**: `TerminalModal` (现 leftsider 420px) — 调度终端，新通话自动展开，dispatch 后自动折叠
 - **中央**: `CityMap` Leaflet 地图，跨通话显示所有 mission 车辆
 - **右侧**: `CallDrawer` (现 600px 宽) — 三种模式：
   - `current`（默认）：当前通话对话 + 行动按钮
   - `history:{callId}`：玩家点击地图救护车后，drawer 整体替换为该任务历史对话
   - 折叠态 72px 仍有 mini 信息（生命条 + 通话计时）
+
+> v3 起删除 `CallInfoBar`：原"电话 / 地址 / 状态 / 分诊"已由右侧 CallDrawer 的 PhoneHeader/对话流承载；"体征 / 情绪"挪入 Hud；"派车 ETA"原也存在于 Hud，保持在 Hud。"班次"计时器因与"通话"语义近似且玩家易混淆，移除；班次进度改由通话编号 1/5 体现。
 
 ## 评分与结局
 
@@ -235,7 +235,7 @@ interface MiniGameProps {
 
 - Vite 6，alias `@` → `src/`。
 - 无 UI 框架、无 CSS-in-JS。颜色 / 间距集中在 `src/styles/tokens.css`，动画在 `animations.css`。
-- 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`、`CallInfoBar.tsx`），是项目惯例。
+- 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`、`Hud.tsx`），是项目惯例。
 - 动效统一用 `motion/react`（AnimatePresence + motion.aside / motion.div），spring 曲线 + 0.18-0.22s 时长。
 
 ## 关键约定

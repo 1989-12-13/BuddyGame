@@ -1,11 +1,16 @@
 // ============================================================
 // 零点接线台 — HUD 状态栏（暗色调度台主题 + Lucide Icons）
+// v3 重构：去掉"班次"计时器（与"通话"语义冗余，玩家易混淆；
+//         班次进度改由"通话编号"1/5 体现）；
+//         将原 CallInfoBar 的"体征""情绪"并入本栏（同一图标风格）；
+//         体征/情绪仅在通话中显示，无 currentCall 时自动隐藏。
 // ============================================================
 
 import type { CSSProperties } from 'react'
-import { Clock, Phone, List, Star, Truck } from 'lucide-react'
+import { Phone, List, Star, Truck, HeartPulse, Brain } from 'lucide-react'
 import type { WorldState } from '../../game/types'
-import { C_DANGER, C_WARNING, C_SUCCESS } from '../../game/core/colors'
+import { STRESS_INFO } from '../../game/types'
+import { C_DANGER, C_WARNING, C_SUCCESS, VITAL_SIGN_COLORS } from '../../game/core/colors'
 import { ThemeToggle } from '../ThemeToggle'
 
 interface Props {
@@ -19,28 +24,29 @@ function iconEl(color: string) {
 }
 
 export function Hud({ state }: Props) {
-  const minutes = Math.floor(state.shiftElapsed / 60)
-  const seconds = state.shiftElapsed % 60
-  const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-
+  // 通话计时：唯一计时器（与派车目标 45/60 秒比较）
+  // 阈值与 dispatchTiming.getDispatchTimingState 对齐
   const callTime = state.currentCall
     ? state.shiftElapsed - state.callStartTime
     : 0
-  const callTimeColor = callTime > 60 ? C_DANGER : callTime > 43 ? C_WARNING : C_SUCCESS
+  const callTimeColor = callTime > 60 ? C_DANGER : callTime >= 45 ? C_WARNING : C_SUCCESS
 
   const isOnCall = state.currentCall !== null
   const availableVehicles = state.fleet.vehicles.filter(v => v.status === 'available').length
 
+  // 体征（仅通话中）
+  const ps = state.patientStatus
+  const vitalsColor = ps
+    ? (VITAL_SIGN_COLORS[ps.vitalSign] ?? (ps.stability < 30 ? C_DANGER : ps.stability < 60 ? C_WARNING : C_SUCCESS))
+    : 'var(--text-secondary)'
+
+  // 情绪（仅通话中）
+  const cs = state.callerState
+  const stressInfo = cs ? STRESS_INFO[cs.stressLevel] : null
+
   return (
     <div style={styles.container}>
-      {/* 左侧：班次计时器 */}
-      <div style={styles.group}>
-        <span style={iconEl('var(--text-secondary)')}><Clock size={SIZE} strokeWidth={2.5} /></span>
-        <span style={styles.label}>班次</span>
-        <span style={styles.value}>{timeStr}</span>
-      </div>
-
-      {/* 通话计时 */}
+      {/* 通话计时 — 唯一计时器 */}
       {isOnCall && (
         <div style={styles.group}>
           <span style={iconEl(callTimeColor)}><Phone size={SIZE} strokeWidth={2.5} /></span>
@@ -52,14 +58,36 @@ export function Hud({ state }: Props) {
         </div>
       )}
 
-      {/* 通话编号 */}
+      {/* 通话编号 — 体现班次进度（替代原"班次"计时器） */}
       <div style={styles.group}>
         <span style={iconEl('var(--text-secondary)')}><List size={SIZE} strokeWidth={2.5} /></span>
         <span style={styles.label}>通话</span>
         <span style={styles.value}>
-          {state.callIndex}/{state.totalCalls}
+          {state.callIndex + 1}/{state.totalCalls}
         </span>
       </div>
+
+      {/* 体征 — 从 CallInfoBar 迁移；仅在通话中显示 */}
+      {ps && (
+        <div style={styles.group} title={`生命体征 ${Math.round(ps.stability)}%`}>
+          <span style={iconEl(vitalsColor)}><HeartPulse size={SIZE} strokeWidth={2.5} /></span>
+          <span style={styles.label}>体征</span>
+          <span style={{ ...styles.value, color: vitalsColor }}>
+            {Math.round(ps.stability)}%
+          </span>
+        </div>
+      )}
+
+      {/* 情绪 — 从 CallInfoBar 迁移；仅在通话中显示 */}
+      {stressInfo && (
+        <div style={styles.group} title={`来电者情绪：${cs?.stressLevel}`}>
+          <span style={iconEl(stressInfo.color)}><Brain size={SIZE} strokeWidth={2.5} /></span>
+          <span style={styles.label}>情绪</span>
+          <span style={{ ...styles.value, color: stressInfo.color }}>
+            {stressInfo.label}
+          </span>
+        </div>
+      )}
 
       {/* 右侧：累计得分 */}
       <div style={{ ...styles.group, marginLeft: 'auto' }}>

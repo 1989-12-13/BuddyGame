@@ -15,7 +15,8 @@ const PHASE_LABEL: Record<CallPhase, string> = {
 }
 
 /** 电话面板顶部 — 紧急调度台风格 + 来电者压力指示器
- * v2 重构：移除通话计时（已在 Hud / CallInfoBar 显示，避免三处重复）；
+ * v2 重构：移除通话计时（已在 Hud 显示，避免三处重复）；
+ * v3 备注：体征/情绪已并入 Hud，PhoneHeader 保留 LIVE + 阶段 + 压力条 + 来电信息。
  * 用 lucide 图标代替 · 和 | 等简陋分隔符；阶段 + LIVE + 目标秒数合并为顶部一条。 */
 export function PhoneHeader({
   phoneNumber,
@@ -42,7 +43,7 @@ export function PhoneHeader({
   return (
     <div style={styles.phoneHeader}>
       {/* 第一行：LIVE 指示器 + 阶段 + 派车目标秒数
-          通话计时已在 Hud + CallInfoBar 显示，此处省略以消除冗余。 */}
+          通话计时已在 Hud 显示，此处省略以消除冗余。 */}
       <div style={styles.callLiveBar}>
         <span style={styles.liveDot}>●</span>
         <span style={styles.liveLabel}>LIVE</span>

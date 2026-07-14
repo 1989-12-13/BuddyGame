@@ -218,7 +218,7 @@ describe('findFastestAvailable', () => {
     const fleet = createDefaultFleet()
     const v = findFastestAvailable(fleet)
     expect(v).not.toBeNull()
-    expect(v!.speed).toBe(3) // 方庄丙车 speed=3
+    expect(v!.speed).toBe(3) // 方庄站救护车 speed=3
   })
 
   it('没有可用车辆时返回 null', () => {
@@ -242,7 +242,7 @@ describe('findMostCapableAvailable', () => {
     const fleet = createDefaultFleet()
     const v = findMostCapableAvailable(fleet)
     expect(v).not.toBeNull()
-    expect(v!.capability).toBe(5) // 方庄丙车 capability=5
+    expect(v!.capability).toBe(5) // 方庄站救护车 capability=5
   })
 
   it('没有可用车辆时返回 null', () => {

@@ -26,19 +26,19 @@ export function VitalSignsBar({ status }: Props) {
       alignItems: 'center',
       gap: 10,
       padding: '6px 12px',
-      backgroundColor: dead ? 'rgba(220,38,38,0.08)' : '#f8fafc',
+      backgroundColor: dead ? 'var(--danger-red-bg)' : 'var(--bg-elevated)',
       borderBottom: `2px solid ${color}`,
       fontSize: 12,
       fontFamily: 'monospace',
     }}>
       <Icon size={14} color={color} />
-      <span style={{ color: '#64748b', fontWeight: 'bold', letterSpacing: 1 }}>患者体征</span>
+      <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold', letterSpacing: 1 }}>患者体征</span>
 
       {/* 生命条 */}
       <div style={{
         flex: 1,
         height: 8,
-        backgroundColor: '#e2e8f0',
+        backgroundColor: 'var(--border)',
         borderRadius: 4,
         overflow: 'hidden',
         position: 'relative',

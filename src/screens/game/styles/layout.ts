@@ -84,7 +84,7 @@ export const answerBtn: CSSProperties = {
   padding: '14px 48px',
   fontSize: 20,
   fontWeight: 'bold',
-  backgroundColor: '#dc2626',
+  backgroundColor: 'var(--danger-red)',
   color: '#fff',
   border: 'none',
   borderRadius: 8,

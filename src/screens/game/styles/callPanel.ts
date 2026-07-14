@@ -14,7 +14,7 @@ export const phonePanel: CSSProperties = {
 export const phoneHeader: CSSProperties = {
   padding: '8px 12px',
   backgroundColor: 'var(--bg-surface)',
-  borderBottom: '2px solid #dc2626',
+  borderBottom: '2px solid var(--danger-red)',
   display: 'flex',
   flexDirection: 'column',
   gap: 4,
@@ -28,7 +28,7 @@ export const callLiveBar: CSSProperties = {
 
 export const liveDot: CSSProperties = {
   fontSize: 12,
-  color: '#dc2626',
+  color: 'var(--danger-red)',
   animation: 'pulse-live 1s ease-in-out infinite',
   display: 'inline-block',
 }
@@ -36,7 +36,7 @@ export const liveDot: CSSProperties = {
 export const liveLabel: CSSProperties = {
   fontSize: 13,
   fontWeight: 900,
-  color: '#dc2626',
+  color: 'var(--danger-red)',
   fontFamily: 'monospace',
   letterSpacing: 2,
   textTransform: 'uppercase',

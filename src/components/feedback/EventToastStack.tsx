@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { AlertTriangle, CheckCircle2, XCircle, Info, X } from 'lucide-react'
 import type { PatientEvent } from '../../game/types'
 import { C_SUCCESS, C_WARNING, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
-import { slideInRight, DUR_NORMAL, DUR_QUICK } from '../animations/presets'
+import { slideInRight, DUR_NORMAL } from '../animations/presets'
 
 interface Props {
   events: PatientEvent[]
@@ -18,10 +18,10 @@ interface Props {
 }
 
 const KIND_STYLE: Record<PatientEvent['kind'], { color: string; bg: string; Icon: typeof Info }> = {
-  good: { color: C_SUCCESS, bg: '#f0fdf4', Icon: CheckCircle2 },
-  warn: { color: C_WARNING, bg: '#fffbeb', Icon: AlertTriangle },
-  bad:  { color: C_DARK_DANGER, bg: '#fef2f2', Icon: XCircle },
-  info: { color: C_DEEP_BLUE, bg: '#eff6ff', Icon: Info },
+  good: { color: C_SUCCESS, bg: 'var(--success-green-bg)', Icon: CheckCircle2 },
+  warn: { color: C_WARNING, bg: 'var(--warning-amber-bg)', Icon: AlertTriangle },
+  bad:  { color: C_DARK_DANGER, bg: 'var(--danger-red-bg)', Icon: XCircle },
+  info: { color: C_DEEP_BLUE, bg: 'var(--info-cyan-bg)', Icon: Info },
 }
 
 /** Toast 自动消失时长（毫秒） */
@@ -86,7 +86,7 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
         borderRadius: 4,
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         fontSize: 12,
-        color: '#1e293b',
+        color: 'var(--text-primary)',
         pointerEvents: 'auto',
       }}
     >
@@ -99,7 +99,7 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
           border: 'none',
           padding: 2,
           cursor: 'pointer',
-          color: '#94a3b8',
+          color: 'var(--text-muted)',
           display: 'flex',
           alignItems: 'center',
         }}

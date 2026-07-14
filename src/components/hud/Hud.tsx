@@ -5,6 +5,7 @@
 import type { CSSProperties } from 'react'
 import { Clock, Phone, List, Star, Truck } from 'lucide-react'
 import type { WorldState } from '../../game/types'
+import { C_DANGER, C_WARNING, C_SUCCESS } from '../../game/core/colors'
 import { ThemeToggle } from '../ThemeToggle'
 
 interface Props {
@@ -25,7 +26,7 @@ export function Hud({ state }: Props) {
   const callTime = state.currentCall
     ? state.shiftElapsed - state.callStartTime
     : 0
-  const callTimeColor = callTime > 60 ? '#dc2626' : callTime > 43 ? '#d97706' : '#16a34a'
+  const callTimeColor = callTime > 60 ? C_DANGER : callTime > 43 ? C_WARNING : C_SUCCESS
 
   const isOnCall = state.currentCall !== null
   const availableVehicles = state.fleet.vehicles.filter(v => v.status === 'available').length
@@ -62,20 +63,20 @@ export function Hud({ state }: Props) {
 
       {/* 右侧：累计得分 */}
       <div style={{ ...styles.group, marginLeft: 'auto' }}>
-        <span style={iconEl('#d97706')}><Star size={SIZE} strokeWidth={2.5} /></span>
+        <span style={iconEl('var(--accent-amber)')}><Star size={SIZE} strokeWidth={2.5} /></span>
         <span style={styles.label}>得分</span>
-        <span style={{ ...styles.value, color: '#d97706' }}>{state.totalScore}</span>
+        <span style={{ ...styles.value, color: 'var(--accent-amber)' }}>{state.totalScore}</span>
       </div>
 
       {/* 可用救护车 */}
       <div style={styles.group}>
-        <span style={iconEl(availableVehicles > 0 ? '#16a34a' : '#dc2626')}>
+        <span style={iconEl(availableVehicles > 0 ? 'var(--accent-green)' : 'var(--danger-red)')}>
           <Truck size={SIZE} strokeWidth={2.5} />
         </span>
         <span style={styles.label}>车辆</span>
         <span style={{
           ...styles.value,
-          color: availableVehicles > 0 ? '#16a34a' : '#dc2626',
+          color: availableVehicles > 0 ? 'var(--accent-green)' : 'var(--danger-red)',
         }}>
           {availableVehicles}/{state.fleet.vehicles.length}
         </span>
@@ -84,8 +85,8 @@ export function Hud({ state }: Props) {
       {/* 救护车 ETA */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
-          <span style={iconEl('#dc2626')}><Truck size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: '#dc2626', fontSize: 13 }}>
+          <span style={iconEl('var(--danger-red)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
+          <span style={{ ...styles.value, color: 'var(--danger-red)', fontSize: 13 }}>
             ETA {state.ambulanceRemaining}s
           </span>
         </div>
@@ -93,8 +94,8 @@ export function Hud({ state }: Props) {
 
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
-          <span style={iconEl('#16a34a')}><Truck size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: '#16a34a', fontSize: 13 }}>
+          <span style={iconEl('var(--accent-green)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
+          <span style={{ ...styles.value, color: 'var(--accent-green)', fontSize: 13 }}>
             已到达
           </span>
         </div>

@@ -35,15 +35,15 @@ export function PhoneHeader({
         <span style={styles.liveLabel}>LIVE</span>
         <span style={{
           ...styles.callTimer,
-          color: urgent ? '#ef4444' : '#d97706',
+          color: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
           fontWeight: urgent ? 900 : 700,
         }}>
           通话 {String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
         </span>
         <span style={{
           ...styles.targetBadge,
-          color: urgent ? '#ef4444' : '#d97706',
-          borderColor: urgent ? '#ef4444' : '#d97706',
+          color: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
+          borderColor: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
         }}>
           {urgent ? '⚠ 超时' : '目标 60秒派车'}
         </span>
@@ -81,7 +81,7 @@ export function PhoneHeader({
         {callPhase === 'guidance' && '急救指导'}
         {callPhase === 'closing' && '收尾'}
         {callPhase === 'connected' && '已接通'}
-        {stressLevel === '失控' && <span style={{ color: '#dc2626', marginLeft: 8 }}>来电者情绪失控</span>}
+        {stressLevel === '失控' && <span style={{ color: 'var(--danger-red)', marginLeft: 8 }}>来电者情绪失控</span>}
       </div>
     </div>
   )

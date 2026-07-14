@@ -6,6 +6,7 @@
 import { Truck, CheckCircle2, XCircle, MapPin, Building2 } from 'lucide-react'
 import type { RescueState } from '../../game/types'
 import { tierLabel } from '../../game/core/fleet'
+import { C_SUCCESS, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
 
 interface Props {
   rescue: RescueState
@@ -22,14 +23,16 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
   const success = rescue.phase === 'success'
   const failed = rescue.phase === 'failed'
 
-  const accentColor = success ? '#16a34a' : failed ? '#dc2626' : '#2563eb'
+  // 语义强调色随状态变化：边框/进度用 CSS 变量（双主题），图标用 colors.ts 语义常量（SVG stroke 兼容性）
+  const accentColor = success ? 'var(--accent-green)' : failed ? 'var(--danger-red)' : 'var(--accent-cyan)'
+  const accentSolid = success ? C_SUCCESS : failed ? C_DARK_DANGER : C_DEEP_BLUE
 
   return (
     <div style={{
       marginTop: 6,
       padding: '8px 12px',
-      backgroundColor: '#ffffff',
-      border: `1px solid ${accentColor}40`,
+      backgroundColor: 'var(--bg-surface)',
+      border: `1px solid ${accentColor}`,
       borderLeft: `4px solid ${accentColor}`,
       borderRadius: 6,
       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
@@ -37,19 +40,19 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
     }}>
       {/* 顶部行：标题 + 状态徽章 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <Truck size={14} color={accentColor} />
-        <strong style={{ color: '#1e293b' }}>
+        <Truck size={14} color={accentSolid} />
+        <strong style={{ color: 'var(--text-primary)' }}>
           {rescue.vehicleName ?? '救护车'}
         </strong>
         {vehicleTier && (
           <span style={{
             padding: '1px 6px',
-            backgroundColor: '#eff6ff',
-            color: '#2563eb',
+            backgroundColor: 'var(--accent-blue)',
+            color: '#ffffff',
             borderRadius: 3,
             fontSize: 10,
             fontWeight: 'bold',
-            border: '1px solid #bfdbfe',
+            border: '1px solid var(--accent-blue)',
           }}>
             {tierLabel(vehicleTier)}
           </span>
@@ -64,11 +67,11 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
 
       {/* 路径进度条 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 2px' }}>
-        <Building2 size={12} color="#64748b" />
+        <Building2 size={12} color="var(--text-secondary)" />
         <div style={{
           flex: 1,
           height: 6,
-          backgroundColor: '#f1f5f9',
+          backgroundColor: 'var(--bg-hover)',
           borderRadius: 3,
           position: 'relative',
           overflow: 'hidden',
@@ -91,17 +94,17 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
             🚐
           </div>
         </div>
-        <MapPin size={12} color="#dc2626" />
+        <MapPin size={12} color="var(--danger-red)" />
       </div>
 
       {/* 底部：成功率 / 失败原因 */}
       <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-        {success && <><CheckCircle2 size={11} color="#16a34a" /><span style={{ color: '#16a34a' }}>患者获救</span></>}
-        {failed && <><XCircle size={11} color="#dc2626" /><span style={{ color: '#dc2626' }}>{rescue.failureReason ?? '现场救治未成功'}</span></>}
-        {rescue.phase === 'enroute' && <span style={{ color: '#64748b' }}>正在赶往现场 · 患者仍在等待</span>}
-        {rescue.phase === 'arrived' && <span style={{ color: '#64748b' }}>院前急救进行中…</span>}
+        {success && <><CheckCircle2 size={11} color={accentSolid} /><span style={{ color: 'var(--accent-green)' }}>患者获救</span></>}
+        {failed && <><XCircle size={11} color={accentSolid} /><span style={{ color: 'var(--danger-red)' }}>{rescue.failureReason ?? '现场救治未成功'}</span></>}
+        {rescue.phase === 'enroute' && <span style={{ color: 'var(--text-secondary)' }}>正在赶往现场 · 患者仍在等待</span>}
+        {rescue.phase === 'arrived' && <span style={{ color: 'var(--text-secondary)' }}>院前急救进行中…</span>}
         {rescue.successScore !== null && (
-          <span style={{ marginLeft: 'auto', color: '#94a3b8', fontFamily: 'monospace' }}>
+          <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
             概率 {Math.round((rescue.successScore ?? 0) * 100)}%
           </span>
         )}

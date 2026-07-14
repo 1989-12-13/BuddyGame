@@ -30,7 +30,6 @@ import {
   COMPLAINT_SCORE,
   PURPOSE_SCORE,
   GUIDANCE_MAX_SCORE,
-  INFO_QUALITY_MAX_BONUS,
 } from './constants'
 
 /** 创建空白的来电者追踪状态 */

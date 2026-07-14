@@ -3,268 +3,28 @@
 // ============================================================
 
 import { useEffect } from 'react'
-import type { CSSProperties } from 'react'
 import type { EndingDef } from '../game/types'
 import { RotateCcw, Trophy, ShieldCheck, ShieldAlert, Skull } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
+import {
+  styles,
+  badgeStyle,
+  scoreBoxStyle,
+  scoreValueStyle,
+  savedSummaryStyle,
+  callCardStyle,
+  callCardScoreStyle,
+  callCardStatusStyle,
+  callCardBarFillStyle,
+  ecgLineStyle,
+  SAVE_THRESHOLD,
+} from './EndingScreen.styles'
 
 interface Props {
   ending: EndingDef
   totalScore: number
   callScores?: number[]
   onRestart: () => void
-}
-
-const SAVE_THRESHOLD = 60 // 每通 ≥60 分视为"救回"
-
-function ratingColor(rating: string): string {
-  switch (rating) {
-    case 'gold': return '#d97706'
-    case 'silver': return 'var(--text-secondary)'
-    case 'bronze': return '#d97706'
-    default: return '#dc2626'
-  }
-}
-
-function badgeStyle(rating: string): CSSProperties {
-  return {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 4,
-    padding: '4px 16px',
-    borderRadius: 4,
-    border: `1px solid ${ratingColor(rating)}`,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    color: ratingColor(rating),
-    fontSize: 12,
-    fontWeight: 700,
-    fontFamily: 'var(--font-mono)',
-    letterSpacing: 1,
-  }
-}
-
-function scoreBoxStyle(rating: string): CSSProperties {
-  return {
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: 8,
-    padding: '12px 28px',
-    borderRadius: 6,
-    border: `1px solid ${ratingColor(rating)}40`,
-    backgroundColor: `${ratingColor(rating)}10`,
-  }
-}
-
-function scoreValueStyle(rating: string): CSSProperties {
-  return {
-    fontSize: 48,
-    fontWeight: 800,
-    color: ratingColor(rating),
-    lineHeight: 1,
-    fontFamily: 'var(--font-mono)',
-    textShadow: `0 0 20px ${ratingColor(rating)}40`,
-  }
-}
-
-function savedSummaryStyle(saved: number, total: number): CSSProperties {
-  return {
-    fontSize: 14,
-    fontWeight: 800,
-    fontFamily: 'var(--font-mono)',
-    color: saved === total ? '#16a34a' : saved > total / 2 ? '#d97706' : '#dc2626',
-    letterSpacing: 1,
-  }
-}
-
-function callCardStyle(saved: boolean): CSSProperties {
-  return {
-    width: 78,
-    padding: '8px 6px',
-    borderRadius: 6,
-    border: `1px solid ${saved ? 'rgba(22, 163, 74, 0.2)' : 'rgba(220, 38, 38, 0.25)'}`,
-    backgroundColor: saved ? 'rgba(22, 163, 74, 0.05)' : 'rgba(220, 38, 38, 0.05)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 4,
-  }
-}
-
-function callCardScoreStyle(saved: boolean): CSSProperties {
-  return {
-    fontSize: 20,
-    fontWeight: 800,
-    color: saved ? '#16a34a' : '#dc2626',
-    fontFamily: 'var(--font-mono)',
-    lineHeight: 1,
-  }
-}
-
-function callCardStatusStyle(saved: boolean): CSSProperties {
-  return {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 1,
-    fontSize: 10,
-    color: saved ? '#16a34a' : '#dc2626',
-    fontFamily: 'var(--font-mono)',
-    fontWeight: 600,
-  }
-}
-
-function callCardBarFillStyle(saved: boolean, score: number): CSSProperties {
-  return {
-    width: `${Math.min(100, score)}%`,
-    height: '100%',
-    backgroundColor: saved ? '#16a34a' : '#dc2626',
-    transition: 'width 0.6s ease-out',
-  }
-}
-
-function ecgLineStyle(rating: string): CSSProperties {
-  return {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    background: `linear-gradient(90deg, transparent, ${ratingColor(rating)}, transparent)`,
-    opacity: 0.4,
-    zIndex: 0,
-  }
-}
-
-const styles: Record<string, CSSProperties> = {
-  container: {
-    width: '100vw',
-    height: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'var(--bg)',
-    position: 'relative',
-    overflow: 'hidden',
-    animation: 'fade-in 0.6s ease-out',
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 8,
-    zIndex: 1,
-    maxWidth: 520,
-    padding: '20px',
-    maxHeight: '100vh',
-    overflowY: 'auto',
-    textAlign: 'center' as const,
-  },
-  badgeWrap: {
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 800,
-    color: 'var(--text-primary)',
-    margin: 0,
-    fontFamily: 'var(--font-mono)',
-    letterSpacing: 3,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: 'var(--text-muted)',
-    margin: 0,
-    fontStyle: 'italic',
-    fontFamily: 'var(--font-body)',
-  },
-  divider: {
-    width: 220,
-    height: 1,
-    background: 'linear-gradient(90deg, transparent, var(--border-bright), transparent)',
-    margin: '8px 0',
-  },
-  scoreLabel: {
-    fontSize: 13,
-    color: 'var(--text-secondary)',
-    fontFamily: 'var(--font-mono)',
-    fontWeight: 600,
-  },
-  scoreMax: {
-    fontSize: 14,
-    color: 'var(--text-muted)',
-    fontFamily: 'var(--font-mono)',
-  },
-  callsHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 420,
-  },
-  callsHeaderText: {
-    fontSize: 12,
-    color: 'var(--text-muted)',
-    fontWeight: 700,
-    fontFamily: 'var(--font-mono)',
-    letterSpacing: 1,
-    textTransform: 'uppercase' as const,
-  },
-  cardsGrid: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: 6,
-    justifyContent: 'center',
-    maxWidth: 420,
-  },
-  callCardNum: {
-    fontSize: 10,
-    color: 'var(--text-muted)',
-    fontWeight: 700,
-    fontFamily: 'var(--font-mono)',
-  },
-  callCardInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 1,
-  },
-  callCardMax: {
-    fontSize: 9,
-    color: 'var(--text-dim)',
-    fontWeight: 500,
-  },
-  callCardBar: {
-    width: '100%',
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    overflow: 'hidden',
-    marginTop: 2,
-  },
-  description: {
-    fontSize: 13,
-    color: 'var(--text-secondary)',
-    lineHeight: 1.8,
-    padding: '0 10px',
-    fontFamily: 'var(--font-body)',
-  },
-  restartBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-    padding: '12px 48px',
-    fontSize: 16,
-    fontWeight: 700,
-    color: '#fff',
-    backgroundColor: '#dc2626',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    letterSpacing: 2,
-    fontFamily: 'var(--font-mono)',
-    boxShadow: '0 0 16px rgba(220, 38, 38, 0.25)',
-    transition: 'all 0.3s',
-  },
 }
 
 export function EndingScreen({ ending, totalScore, callScores, onRestart }: Props) {

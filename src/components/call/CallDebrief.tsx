@@ -8,6 +8,7 @@
 import { useEffect, useRef } from 'react'
 import { Phone } from 'lucide-react'
 import type { DebriefEntry } from '../../game/core/debrief'
+import { C_SUCCESS, C_AMBER, C_DANGER, C_INFO } from '../../game/core/colors'
 import { styles } from './CallDebrief.styles'
 import { ScoreBreakdown, DetailItem } from './CallDebrief.shared'
 import { JudgmentSection, NarrativeBox, ReviewPoints } from './CallDebrief.sections'
@@ -26,10 +27,10 @@ const LEVEL_LABEL: Record<string, string> = {
 }
 
 const OUTCOME_STYLE: Record<DebriefEntry['outcomeTier'], { label: string; color: string; bg: string }> = {
-  good: { label: 'GOOD END', color: '#4ade80', bg: 'rgba(34, 197, 94, 0.12)' },
-  normal: { label: 'NORMAL END', color: '#facc15', bg: 'rgba(250, 204, 21, 0.12)' },
-  bad: { label: 'BAD END', color: '#f87171', bg: 'rgba(248, 113, 113, 0.12)' },
-  special: { label: 'SPECIAL END', color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)' },
+  good: { label: 'GOOD END', color: C_SUCCESS, bg: 'var(--success-green-bg)' },
+  normal: { label: 'NORMAL END', color: C_AMBER, bg: 'var(--warning-amber-bg)' },
+  bad: { label: 'BAD END', color: C_DANGER, bg: 'var(--danger-red-bg)' },
+  special: { label: 'SPECIAL END', color: C_INFO, bg: 'var(--info-cyan-bg)' },
 }
 
 function triageLabel(t: string | null) {
@@ -78,7 +79,7 @@ export function CallDebrief({ debrief, onNext, nextLabel = '继续' }: Props) {
 
         {breakdown.penalty > 0 && (
           <div style={styles.penaltyRow}>
-            判断扣分：<span style={{ color: '#ef4444', fontWeight: 'bold' }}>-{breakdown.penalty}</span>
+            判断扣分：<span style={{ color: C_DANGER, fontWeight: 'bold' }}>-{breakdown.penalty}</span>
           </div>
         )}
 

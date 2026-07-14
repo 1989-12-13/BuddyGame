@@ -6,6 +6,7 @@
 // ============================================================
 
 import { synthesizeSpeech, type TtsRequest } from './ttsClient'
+import { logger } from '../utils/logger'
 
 interface QueueItem {
   id: string
@@ -90,7 +91,7 @@ export class TtsPlayer {
     this.playOne(item).catch((err) => {
       // 静默吞错: 避免 reject 让上层一堆 unhandledrejection
       if (err?.name !== 'AbortError') {
-        console.warn('[tts] playback failed:', err?.message ?? err)
+        logger.warn('[tts] playback failed:', err?.message ?? err)
       }
       item.reject(err instanceof Error ? err : new Error(String(err)))
     }).finally(() => {

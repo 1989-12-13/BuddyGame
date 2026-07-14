@@ -24,9 +24,9 @@ export function AskBtnEx({
     <button
       style={{
         ...styles.qBtn,
-        backgroundColor: done ? 'rgba(22, 163, 74, 0.08)' : disabled ? 'var(--bg-surface)' : (ts?.bg ?? 'var(--bg-elevated)'),
-        borderColor: done ? '#16a34a' : disabled ? 'var(--border)' : (ts?.border ?? '#3b82f6'),
-        color: done ? '#16a34a' : disabled ? 'var(--border-bright)' : '#b1bac4',
+        backgroundColor: done ? 'var(--success-green-bg)' : disabled ? 'var(--bg-surface)' : (ts?.bg ?? 'var(--bg-elevated)'),
+        borderColor: done ? 'var(--accent-green)' : disabled ? 'var(--border)' : (ts?.border ?? 'var(--accent-blue)'),
+        color: done ? 'var(--accent-green)' : disabled ? 'var(--border-bright)' : '#b1bac4',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled && !done ? 0.45 : 1,
         position: 'relative',
@@ -43,7 +43,7 @@ export function AskBtnEx({
           position: 'absolute',
           top: -5,
           right: -5,
-          backgroundColor: ts?.badge ?? '#3b82f6',
+          backgroundColor: ts?.badge ?? 'var(--accent-blue)',
           color: 'var(--bg)',
           fontSize: 9,
           fontWeight: 900,

@@ -10,6 +10,7 @@ import type { CSSProperties } from 'react'
 import { MapPin, Phone, Activity, HeartPulse, Clock, Brain } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 import { STRESS_INFO, TRIAGE_LABELS } from '../../game/types'
+import { C_DANGER, C_WARNING, C_SUCCESS } from '../../game/core/colors'
 
 interface Props {
   state: WorldState
@@ -36,7 +37,7 @@ function pillStyle(detail: { color?: string; muted?: boolean } = {}): CSSPropert
   }
 }
 
-function PillIcon({ children, color = '#8b949e' }: { children: React.ReactNode; color?: string }) {
+function PillIcon({ children, color = 'var(--text-secondary)' }: { children: React.ReactNode; color?: string }) {
   return <span style={{ display: 'flex', color }}>{children}</span>
 }
 
@@ -124,7 +125,7 @@ export function CallInfoBar({ state, visible }: Props) {
   const callElapsed = state.shiftElapsed - state.callStartTime
   const mm = String(Math.floor(callElapsed / 60)).padStart(2, '0')
   const ss = String(callElapsed % 60).padStart(2, '0')
-  const callTimeColor = callElapsed > 60 ? '#dc2626' : callElapsed > 43 ? '#d97706' : '#16a34a'
+  const callTimeColor = callElapsed > 60 ? C_DANGER : callElapsed > 43 ? C_WARNING : C_SUCCESS
 
   return (
     <AnimatePresence initial={false}>
@@ -168,7 +169,7 @@ export function CallInfoBar({ state, visible }: Props) {
               label="电话"
               value={call.phoneNumber}
               revealed
-              color="#60a5fa"
+              color="var(--accent-blue)"
               hint={call.phoneNumber}
             />
 
@@ -178,7 +179,7 @@ export function CallInfoBar({ state, visible }: Props) {
               label="地址"
               value={addressValue}
               revealed={addressRevealed}
-              color="#fbbf24"
+              color="var(--accent-gold)"
               hint={addressValue ?? '尚未确认地址'}
             />
 
@@ -188,7 +189,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
                 label="体征"
                 value={`${Math.round(ps.stability)}% ${ps.died ? '· 死亡' : ''}`}
-                color={ps.died ? '#6e7681' : ps.stability < 30 ? '#dc2626' : ps.stability < 60 ? '#d97706' : '#16a34a'}
+                color={ps.died ? 'var(--text-muted)' : ps.stability < 30 ? 'var(--danger-red)' : ps.stability < 60 ? 'var(--accent-amber)' : 'var(--accent-green)'}
                 revealed
               />
             )}
@@ -199,7 +200,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<Activity size={SIZE} strokeWidth={2.5} />}
                 label="状态"
                 value={`${state.terminal.conscious ? '有意识' : '无意识'}${state.terminal.breathing !== null ? (state.terminal.breathing ? '·呼吸正常' : '·呼吸异常') : ''}`}
-                color={state.terminal.conscious && state.terminal.breathing ? '#16a34a' : '#dc2626'}
+                color={state.terminal.conscious && state.terminal.breathing ? 'var(--accent-green)' : 'var(--danger-red)'}
                 revealed
               />
             )}
@@ -210,7 +211,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
                 label="分诊"
                 value={triageValue.split(' — ')[0]}
-                color={state.terminal.triage === 'red' ? '#dc2626' : state.terminal.triage === 'yellow' ? '#d97706' : state.terminal.triage === 'green' ? '#16a34a' : '#6e7681'}
+                color={state.terminal.triage === 'red' ? 'var(--danger-red)' : state.terminal.triage === 'yellow' ? 'var(--accent-amber)' : state.terminal.triage === 'green' ? 'var(--accent-green)' : 'var(--text-muted)'}
                 revealed
               />
             )}
@@ -228,10 +229,10 @@ export function CallInfoBar({ state, visible }: Props) {
             {state.dispatchSent && state.ambulanceRemaining > 0 && (
               <Field
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
-                label="ETA"
-                value={`${state.ambulanceRemaining}s`}
-                color="#dc2626"
-                revealed
+              label="ETA"
+              value={`${state.ambulanceRemaining}s`}
+              color="var(--danger-red)"
+              revealed
               />
             )}
           </div>

@@ -16,7 +16,7 @@ interface Props {
   style?: CSSProperties
 }
 
-export function ScoreBar({ label, value, max, color = '#0ea5e9', showValue = true, style }: Props) {
+export function ScoreBar({ label, value, max, color = 'var(--accent-blue)', showValue = true, style }: Props) {
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...style }}>

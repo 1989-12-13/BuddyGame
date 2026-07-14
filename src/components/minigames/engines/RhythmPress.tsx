@@ -3,10 +3,10 @@
 // 按空格/点击模拟按压，检测频率与稳定度
 // ============================================================
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { MiniGameProps, RhythmPressSpec } from '../../../game/types'
 import { Readout } from '../Readout'
-import { usePauseRef } from './hooks'
+import { useKeyboard, usePauseRef } from './hooks'
 import { useGameClock } from './useGameClock'
 import { useMiniGameFinish } from './useMiniGameFinish'
 import { computePassed } from './scoring'
@@ -75,27 +75,20 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
     onFinish: finish,
   })
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault()
-        registerPress()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  useKeyboard('Space', {
+    onDown: () => registerPress(),
+  })
 
   const pulseAnim = flash
-    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px #ef4444' }
+    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px var(--danger-red)' }
     : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
 
   return (
     <div style={engineWrap}>
       <div style={readoutRow}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? '#16a34a' : '#d97706'} />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? 'var(--accent-green)' : 'var(--accent-amber)'} />
         <Readout label="目标" value={String(s.targetBpm)} color="var(--text-muted)" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="#3b82f6" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="var(--accent-blue)" />
         <Readout label="按压" value={String(presses)} color="var(--border)" />
       </div>
 
@@ -106,7 +99,7 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
           height: 160,
           borderRadius: '50%',
           backgroundColor: 'var(--border-light)',
-          border: '3px solid #dc2626',
+          border: '3px solid var(--danger-red)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

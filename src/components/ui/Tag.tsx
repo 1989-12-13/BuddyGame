@@ -16,10 +16,10 @@ interface Props {
 }
 
 const COLOR_MAP: Record<TagColor, { bg: string; text: string; border: string }> = {
-  success: { bg: 'rgba(22, 163, 74, 0.12)', text: '#16a34a', border: '#16a34a' },
-  warning: { bg: 'rgba(217, 119, 6, 0.12)', text: '#d97706', border: '#d97706' },
-  danger:  { bg: 'rgba(239, 68, 68, 0.12)', text: '#ef4444', border: '#ef4444' },
-  info:    { bg: 'rgba(59, 130, 246, 0.12)', text: '#3b82f6', border: '#3b82f6' },
+  success: { bg: 'var(--success-green-bg)', text: 'var(--accent-green)', border: 'var(--accent-green)' },
+  warning: { bg: 'var(--warning-amber-bg)', text: 'var(--accent-amber)', border: 'var(--accent-amber)' },
+  danger:  { bg: 'var(--danger-red-bg)', text: 'var(--danger-red)', border: 'var(--danger-red)' },
+  info:    { bg: 'var(--info-cyan-bg)', text: 'var(--accent-blue)', border: 'var(--accent-blue)' },
   default: { bg: 'var(--border-light)', text: 'var(--text-secondary)', border: 'var(--border)' },
 }
 

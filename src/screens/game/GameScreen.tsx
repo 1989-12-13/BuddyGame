@@ -6,16 +6,15 @@
 import { useReducer, useEffect, useRef, useCallback, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { createInitialState } from '../../game/core/initialState'
-import type { MpdsDeterminant, CallPhase, TerminalState, CalleeStressLevel, EndingDef } from '../../game/types'
-import type { TerminalField } from '../../game/core/actions'
+import { VITAL_SIGN_COLORS, C_DARK_DANGER } from '../../game/core/colors'
+import { fmtDuration } from '../../utils/timeFormat'
+import type { EndingDef } from '../../game/types'
+import { getPerkChoices } from '../../game/core/perks'
 import { worldReducer } from '../../game/core/worldReducer'
 import { getCaller } from '../../game/npc/personas'
 import { Hud } from '../../components/hud/Hud'
 import { CallInfoBar } from '../../components/hud/CallInfoBar'
-import { MiniGameHost } from '../../components/minigames/MiniGameHost'
 import { CallDebrief } from '../../components/call/CallDebrief'
-import { ROGUE_PERKS, getPerkChoices } from '../../game/core/perks'
-import type { RoguePerkId } from '../../game/core/perks'
 import { VitalSignsBar } from '../../components/feedback/VitalSignsBar'
 import { EventToastStack } from '../../components/feedback/EventToastStack'
 import { VehicleSelector } from '../../components/feedback/VehicleSelector'
@@ -71,6 +70,11 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       setTerminalModalOpen(false)
     }
   }, [state.currentCall])
+
+  // --- 切换抽屉展开/折叠 ---
+  const handleToggleDrawer = useCallback(() => {
+    setDrawerOpen(o => !o)
+  }, [])
 
   // --- 点击地图救护车 → 拉出该任务历史对话 drawer ---
   const handleAmbulanceClick = useCallback((_vehicleId: string, callId: string) => {
@@ -249,9 +253,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
 
   // 抽屉标题与迷你信息
   const callElapsed = state.shiftElapsed - state.callStartTime
-  const callMm = String(Math.floor(callElapsed / 60)).padStart(2, '0')
-  const callSs = String(callElapsed % 60).padStart(2, '0')
-  const drawerTitle = `${callMm}:${callSs}`
+  const drawerTitle = fmtDuration(callElapsed)
   const drawerMini = state.patientStatus ? (
     <div style={{
       width: 8, height: 100, backgroundColor: '#2a323e', borderRadius: 4,
@@ -260,10 +262,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       <div style={{
         width: '100%',
         height: `${state.patientStatus.stability}%`,
-        backgroundColor:
-          state.patientStatus.vitalSign === 'stable' ? '#16a34a' :
-          state.patientStatus.vitalSign === 'warning' ? '#f59e0b' :
-          state.patientStatus.vitalSign === 'critical' ? '#ef4444' : '#7f1d1d',
+        backgroundColor: VITAL_SIGN_COLORS[state.patientStatus.vitalSign] ?? C_DARK_DANGER,
         transition: 'height 0.5s ease, background-color 0.3s ease',
       }} />
     </div>
@@ -279,7 +278,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
 
         <CallDrawer
           open={drawerOpen}
-          onToggle={() => setDrawerOpen(o => !o)}
+          onToggle={handleToggleDrawer}
           active={state.callPhase !== 'completed' && !historyEntry}
           title={drawerTitle}
           mini={drawerMini}
@@ -390,7 +389,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             <div style={{ ...styles.guidanceWindow, width: 360 }}>
               <div style={styles.guidanceWindowHeader}>
                 <span style={{ fontSize: 18 }}>✅</span>
-                <span style={{ fontSize: 15, fontWeight: 'bold', color: '#4ade80' }}>通话完成</span>
+                <span style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--accent-green)' }}>通话完成</span>
               </div>
               <ClosingPanel
                 guidance={!!call.guidance}

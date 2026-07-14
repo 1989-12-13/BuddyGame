@@ -6,9 +6,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { HoldPressureSpec, MiniGameProps } from '../../../game/types'
 import { Readout } from '../Readout'
-import { usePauseRef } from './hooks'
+import { useKeyboard, usePauseRef } from './hooks'
 import { useMiniGameFinish } from './useMiniGameFinish'
 import { computePassed } from './scoring'
+import { C_SUCCESS, C_AMBER, C_DANGER } from '../../../game/core/colors'
 
 const wrap: React.CSSProperties = {
   display: 'flex',
@@ -58,17 +59,16 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
     }
     rafRef.current = requestAnimationFrame(loop)
 
-    const onDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); if (pausedRef.current) return; press(true) } }
-    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); if (pausedRef.current) return; press(false) } }
-    window.addEventListener('keydown', onDown)
-    window.addEventListener('keyup', onUp)
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      window.removeEventListener('keydown', onDown)
-      window.removeEventListener('keyup', onUp)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useKeyboard('Space', {
+    onDown: () => { if (!pausedRef.current) press(true) },
+    onUp: () => { if (!pausedRef.current) press(false) },
+  })
 
   const press = (v: boolean) => {
     if (finished.current || pausedRef.current) return
@@ -86,13 +86,13 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
     complete(score, computePassed(score, s.passThreshold))
   }
 
-  const bloodColor = blood < 30 ? '#16a34a' : blood < 70 ? '#d97706' : '#ef4444'
+  const bloodColor = blood < 30 ? C_SUCCESS : blood < 70 ? C_AMBER : C_DANGER
 
   return (
     <div style={wrap}>
       <div style={{ display: 'flex', gap: 18, fontFamily: 'monospace' }}>
         <Readout label="血量" value={blood.toFixed(0)} color={bloodColor} />
-        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="#3b82f6" />
+        <Readout label="维持" value={safeTime.toFixed(1) + 's'} color="var(--accent-blue)" />
         <Readout label="目标" value={s.holdSec + 's'} color="var(--text-muted)" />
       </div>
 
@@ -104,9 +104,9 @@ export function HoldPressure({ spec, onComplete, paused }: MiniGameProps) {
         onPointerDown={() => press(true)}
         onPointerUp={() => press(false)}
         onPointerLeave={() => press(false)}
-        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: 'var(--border-light)', border: `3px solid ${holding ? '#16a34a' : '#dc2626'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
+        style={{ width: 140, height: 140, borderRadius: '50%', backgroundColor: 'var(--border-light)', border: `3px solid ${holding ? 'var(--accent-green)' : 'var(--danger-red)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none', transition: 'border-color 0.1s, transform 0.09s', transform: holding ? 'scale(0.94)' : 'scale(1)' }}
       >
-        <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
+        <span style={{ fontSize: 13, color: 'var(--danger-red)', fontWeight: 'bold', textAlign: 'center' }}>按住施压\n空格/点击</span>
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>保持按压直到血量降至安全区并维持</div>
     </div>

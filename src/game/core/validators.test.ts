@@ -5,7 +5,6 @@
 import { describe, it, expect } from 'vitest'
 import { validateState, isStateConsistent } from './validators'
 import { createInitialState } from './worldState'
-import type { WorldState } from '../types'
 
 // ============================================================
 // validateState

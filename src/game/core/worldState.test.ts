@@ -29,20 +29,20 @@ beforeEach(() => __resetRng())
 // ============================================================
 describe('createCallerState', () => {
   it('用默认压力值创建来电者（initialStress=40）', () => {
-    const cs = createCallerState('elderly_fall')
-    expect(cs.id).toBe('elderly_fall')
+    const cs = createCallerState('li_jianguo')
+    expect(cs.id).toBe('li_jianguo')
     expect(cs.stress).toBe(40)
     expect(cs.cooperation).toBe(80)
     expect(cs.questionCount).toBe(0)
   })
 
   it('允许自定义初始压力', () => {
-    const cs = createCallerState('child_fever', 70)
+    const cs = createCallerState('zhang_xiulan', 70)
     expect(cs.stress).toBe(70)
   })
 
   it('revealedInfo 全部为初始状态', () => {
-    const cs = createCallerState('elderly_fall')
+    const cs = createCallerState('li_jianguo')
     expect(cs.revealedInfo.address).toBe('none')
     expect(cs.revealedInfo.contact).toBe(false)
     expect(cs.revealedInfo.chiefComplaint).toBe(false)
@@ -51,7 +51,7 @@ describe('createCallerState', () => {
   })
 
   it('askedMPDS 和 infoQuality 为空', () => {
-    const cs = createCallerState('elderly_fall')
+    const cs = createCallerState('li_jianguo')
     expect(cs.askedMPDS).toEqual([])
     expect(cs.infoQuality).toEqual({})
   })

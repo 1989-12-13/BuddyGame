@@ -1,6 +1,5 @@
 import type { MpdsDeterminant } from '../../../game/types'
 import { MPDS_DETERMINANT_INFO } from '../../../game/types'
-import { styles } from '../styles'
 
 /** MPDS 判定码选择器 — Echo/Delta/Charlie/Bravo/Alpha */
 export function DeterminantSelector({

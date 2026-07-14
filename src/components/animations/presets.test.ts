@@ -37,7 +37,7 @@ describe('动画变体结构', () => {
 
   it('scalePop 包含 spring transition', () => {
     expect(scalePop.visible).toHaveProperty('transition')
-    const transition = scalePop.visible.transition as Record<string, unknown>
+    const transition = (scalePop.visible as Record<string, unknown>)['transition'] as Record<string, unknown>
     expect(transition.type).toBe('spring')
   })
 

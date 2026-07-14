@@ -47,7 +47,7 @@ export function GuidanceOverlay({ collapsed, onToggle, title, subtitle, children
             {subtitle && <span style={styles.fabSub}>{subtitle}</span>}
           </span>
           <span style={styles.fabHint}>
-            <ChevronDown size={14} color="#8b949e" />
+            <ChevronDown size={14} color="var(--text-muted)" />
           </span>
         </motion.button>
       ) : (
@@ -77,7 +77,7 @@ export function GuidanceOverlay({ collapsed, onToggle, title, subtitle, children
                   title="折叠为悬浮球（小游戏暂停）"
                   aria-label="折叠为悬浮球"
                 >
-                  <ChevronDown size={16} color="#8b949e" />
+                  <ChevronDown size={16} color="var(--text-muted)" />
                 </button>
               </header>
               <div style={styles.body}>{children}</div>

@@ -16,6 +16,7 @@ import {
   generateVitalsNarrative,
   getQuestionTimeCost,
 } from './narrative'
+import { getPronoun } from '../../content/pronouns'
 import { createEventSink } from './helpers'
 
 export function handleAskQuestion(state: WorldState, questionId: string): WorldState {
@@ -61,7 +62,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   // --- 步骤1b：标志建筑（补充精确地址）---
   else if (questionId === 'ask_landmark') {
     stressEffect = -3
-    newDialogue.push({ speaker: 'operator', text: '旁边有什么标志性建筑或者明显的店铺吗？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '旁边有什么明显的标志物或者店铺吗？', timestamp: now })
     const nq = pickNarrativeAnswer(
       newStress,
       call.fourElements.address.full,
@@ -125,7 +126,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     })
   }
 
-  // --- 步骤3：患者年龄 ---
+  // --- 步骤3：患者年龄（自动填入调度卡，不再弹出选择题）---
   else if (questionId === 'step3_age') {
     stressEffect = -4
     newDialogue.push({ speaker: 'operator', text: '患者多大年龄了？', timestamp: now })
@@ -135,28 +136,16 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newRevealed.age = newStress < 75
     newInfoQuality['age'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
 
-    // 生成年龄判断卡：提取干净年龄，避免"精确45岁左右"矛盾
+    // 自动填写调度卡：患者年龄
     const ageStripped = age.replace(/左右|约|多岁|大概|男性|女性|男|女|不详/gi, '').trim()
-    const isAgePrecise = ageStripped === age
-    const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
-    newJudgments.push({
-      id: `judge_step3_${sink.seq++}`,
-      questionId: 'step3_age',
-      dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
-      question: '来电者描述的年龄信息，你应该如何记录？',
-      options: [
-        { label: `精确记录：${ageStripped}`, fills: [{ field: 'patientAge', value: ageStripped }], isCorrect: isAgePrecise },
-        { label: `估计记录：约${ageStripped}（来电者不确定）`, fills: [{ field: 'patientAge', value: ageStripped }, { field: 'conditionNote', value: '年龄为估计值' }], isCorrect: !isAgePrecise },
-        { label: '无法确认，留空待核实', fills: [], isCorrect: false },
-      ],
-      chosenOptionIndex: null,
-    })
+    newTerminal = { ...newTerminal, patientAge: ageStripped }
   }
 
   // --- 步骤4：意识与呼吸（最关键评估）---
   else if (questionId === 'step4_vitals') {
     stressEffect = -10
-    newDialogue.push({ speaker: 'operator', text: '患者清醒吗？他/她还有呼吸吗？', timestamp: now })
+    const pronoun = getPronoun(call.fourElements.condition.gender)
+    newDialogue.push({ speaker: 'operator', text: `患者清醒吗？${pronoun}还有呼吸吗？`, timestamp: now })
     const consciousness = call.fourElements.condition.consciousness
     const breathing = call.fourElements.condition.breathing
     const vitalsText = generateVitalsNarrative(consciousness, breathing, newStress)

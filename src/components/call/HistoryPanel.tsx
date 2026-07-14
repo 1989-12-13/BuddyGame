@@ -71,10 +71,10 @@ export function HistoryPanel({ entry, onClose }: Props) {
 
   const outcomeInfo = (() => {
     switch (entry.outcome) {
-      case 'success': return { label: '✓ 救治成功', color: '#16a34a' }
-      case 'failed': return { label: '✗ 救治失败', color: '#dc2626' }
-      case 'pending': return { label: '⋯ 救护车仍在途中', color: '#d97706' }
-      case 'no_dispatch': return { label: '未派车', color: '#6e7681' }
+      case 'success': return { label: '✓ 救治成功', color: 'var(--accent-green)' }
+      case 'failed': return { label: '✗ 救治失败', color: 'var(--danger-red)' }
+      case 'pending': return { label: '⋯ 救护车仍在途中', color: 'var(--accent-amber)' }
+      case 'no_dispatch': return { label: '未派车', color: 'var(--text-muted)' }
     }
   })()
 
@@ -83,23 +83,23 @@ export function HistoryPanel({ entry, onClose }: Props) {
       {/* 标题条 */}
       <div style={styles.header}>
         <div style={styles.titleRow}>
-          <History size={14} color="#fbbf24" strokeWidth={2.5} />
+          <History size={14} color="var(--accent-gold)" strokeWidth={2.5} />
           <span style={styles.titleText}>历史任务</span>
           <button
             style={styles.closeBtn}
             onClick={onClose}
             title="回到当前通话"
           >
-            <X size={14} color="#8b949e" />
+            <X size={14} color="var(--text-secondary)" />
           </button>
         </div>
         <div style={styles.summary}>{entry.shortSummary}</div>
         <div style={styles.metaRow}>
           <span style={styles.metaItem}>
-            <Truck size={SIZE} color="#8b949e" /> {entry.vehicleName ?? '—'}
+            <Truck size={SIZE} color="var(--text-muted)" /> {entry.vehicleName ?? '—'}
           </span>
           {entry.triage && (
-            <span style={{ ...styles.metaItem, color: '#fbbf24' }}>
+            <span style={{ ...styles.metaItem, color: 'var(--accent-gold)' }}>
               分诊: {TRIAGE_LABELS[entry.triage].split(' — ')[0]}
             </span>
           )}
@@ -109,7 +109,7 @@ export function HistoryPanel({ entry, onClose }: Props) {
         </div>
         {entry.score != null && (
           <div style={styles.scoreRow}>
-            <Star size={SIZE} color="#d97706" strokeWidth={2.5} />
+            <Star size={SIZE} color="var(--accent-amber)" strokeWidth={2.5} />
             <span style={styles.scoreLabel}>得分</span>
             <span style={styles.scoreValue}>{entry.score}/100</span>
           </div>
@@ -117,10 +117,10 @@ export function HistoryPanel({ entry, onClose }: Props) {
         {entry.addressResolved && (
           <div style={styles.metaRow}>
             <span style={styles.metaItem}>
-              <MapPin size={SIZE} color="#8b949e" /> {entry.addressResolved}
+              <MapPin size={SIZE} color="var(--text-secondary)" /> {entry.addressResolved}
             </span>
             <span style={styles.metaItem}>
-              <Clock size={SIZE} color="#8b949e" />
+              <Clock size={SIZE} color="var(--text-secondary)" />
               {fmtDuration(entry.endShiftTime - entry.startShiftTime)}
               {entry.dispatchTime != null && ` · 派车 ${entry.dispatchTime}s`}
             </span>
@@ -153,9 +153,9 @@ function DialogueRow({
   streamedChars: number
 }) {
   const styleBySpeaker: Record<DialogueLine['speaker'], CSSProperties> = {
-    operator: { color: '#60a5fa', borderLeft: '2px solid #60a5fa' },
-    caller: { color: '#e6edf3', borderLeft: '2px solid #d97706' },
-    system: { color: '#8b949e', fontStyle: 'italic', opacity: 0.85 },
+    operator: { color: 'var(--accent-blue)', borderLeft: '2px solid var(--accent-blue)' },
+    caller: { color: 'var(--text-primary)', borderLeft: '2px solid var(--accent-amber)' },
+    system: { color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.85 },
   }
   const speakerLabel: Record<DialogueLine['speaker'], string> = {
     operator: '接线员',
@@ -179,11 +179,7 @@ function DialogueRow({
   )
 }
 
-function fmtDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
+import { fmtDuration } from '../../utils/timeFormat'
 
 const styles: Record<string, CSSProperties> = {
   container: {
@@ -206,7 +202,7 @@ const styles: Record<string, CSSProperties> = {
   },
   titleText: {
     fontSize: 11,
-    color: '#fbbf24',
+    color: 'var(--accent-gold)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 700,
     letterSpacing: 1,
@@ -215,7 +211,7 @@ const styles: Record<string, CSSProperties> = {
   },
   closeBtn: {
     background: 'transparent',
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
     borderRadius: 4,
     cursor: 'pointer',
     padding: '2px 4px',
@@ -225,7 +221,7 @@ const styles: Record<string, CSSProperties> = {
   },
   summary: {
     fontSize: 13,
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     marginBottom: 6,
     fontFamily: 'var(--font-mono)',
   },
@@ -240,7 +236,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 4,
     fontSize: 11,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     fontFamily: 'var(--font-mono)',
   },
   scoreRow: {
@@ -248,15 +244,15 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 6,
     padding: '4px 8px',
-    background: 'rgba(217, 119, 6, 0.08)',
-    border: '1px solid rgba(217, 119, 6, 0.3)',
+    background: 'var(--warning-amber-bg)',
+    border: '1px solid var(--warning-amber-border)',
     borderRadius: 4,
     width: 'fit-content',
     marginTop: 6,
   },
   scoreLabel: {
     fontSize: 10,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: 700,
@@ -264,7 +260,7 @@ const styles: Record<string, CSSProperties> = {
   },
   scoreValue: {
     fontSize: 14,
-    color: '#d97706',
+    color: 'var(--accent-amber)',
     fontWeight: 700,
     fontFamily: 'var(--font-mono)',
   },
@@ -285,7 +281,7 @@ const styles: Record<string, CSSProperties> = {
   },
   speakerLabel: {
     fontSize: 9.5,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: 700,

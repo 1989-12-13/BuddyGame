@@ -25,7 +25,7 @@ export function TranscriptLine({
     }}>
       <span style={{
         ...styles.transcriptSpeaker,
-        color: isCaller ? '#dc2626' : isOperator ? '#0ea5e9' : 'var(--text-muted)',
+        color: isCaller ? 'var(--danger-red)' : isOperator ? 'var(--accent-blue)' : 'var(--text-muted)',
       }}>
         [{speakerLabel}]
       </span>

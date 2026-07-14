@@ -16,19 +16,6 @@ export interface HitRecord {
   timestamp: number
 }
 
-/** CPR 节拍游戏状态 */
-export interface CprRhythmState {
-  phase: 'idle' | 'counting' | 'pressing' | 'breath' | 'done'
-  compressionsDone: number
-  compressionsTarget: number
-  currentCycle: number
-  totalCycles: number
-  hits: HitRecord[]
-  bpm: number
-  lastBeatTime: number
-  startedAt: number
-}
-
 /** 小游戏完成后的结果摘要 */
 export interface MiniGameResult {
   miniGameId: MiniGameId

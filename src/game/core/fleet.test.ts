@@ -2,7 +2,7 @@
 // fleet 车队管理纯函数测试
 // ============================================================
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   createDefaultFleet,
   advanceFleet,
@@ -13,7 +13,7 @@ import {
   countAvailable,
   tierLabel,
 } from './fleet'
-import type { FleetState, Ambulance } from './fleet'
+import type { FleetState } from './fleet'
 
 // ============================================================
 // createDefaultFleet

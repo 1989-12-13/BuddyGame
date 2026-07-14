@@ -100,8 +100,8 @@ export function ClosingPanel({
       <button
         style={styles.endCallBtn}
         onClick={onEndCall}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#ef4444'; e.currentTarget.style.transform = 'scale(1.02)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; e.currentTarget.style.transform = 'scale(1)' }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger-red)'; e.currentTarget.style.transform = 'scale(1.02)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger-red)'; e.currentTarget.style.transform = 'scale(1)' }}
       >
         <span>📞</span>
         <span>结束通话</span>

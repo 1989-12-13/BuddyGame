@@ -1,6 +1,6 @@
 // ============================================================
 // 零点接线台 — 小游戏引擎共享 hooks
-// 消除各引擎间的重复逻辑：暂停引用、尝试-计分、完成守卫
+// 消除各引擎间的重复逻辑：暂停引用、键盘绑定、尝试-计分、完成守卫
 // 计时时钟见 useGameClock.ts，完成守卫见 useMiniGameFinish.ts
 // ============================================================
 
@@ -15,6 +15,38 @@ export function usePauseRef(paused?: boolean) {
   const pausedRef = useRef(false)
   useEffect(() => { pausedRef.current = !!paused }, [paused])
   return pausedRef
+}
+
+// -------------------- 键盘事件绑定 --------------------
+/** 标准化 Space 键绑定，消除各引擎中重复的 window.addEventListener('keydown') */
+export function useKeyboard(
+  key: string,
+  callbacks: {
+    onDown?: (e: KeyboardEvent) => void
+    onUp?: (e: KeyboardEvent) => void
+  },
+) {
+  const downRef = useRef(callbacks.onDown)
+  const upRef = useRef(callbacks.onUp)
+  downRef.current = callbacks.onDown
+  upRef.current = callbacks.onUp
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent, type: 'down' | 'up') => {
+      if (e.code !== key) return
+      e.preventDefault()
+      if (type === 'down') downRef.current?.(e)
+      else upRef.current?.(e)
+    }
+    const onDown = (e: KeyboardEvent) => handler(e, 'down')
+    const onUp = (e: KeyboardEvent) => handler(e, 'up')
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    return () => {
+      window.removeEventListener('keydown', onDown)
+      window.removeEventListener('keyup', onUp)
+    }
+  }, [key])
 }
 
 // -------------------- 尝试-计分（QuickChoice / LocationSelect 共用） --------------------

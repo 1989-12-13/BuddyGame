@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
+import { logger } from '../utils/logger'
 
 export type GameAudioCue =
   | 'connect'
@@ -96,7 +97,7 @@ class GameAudioEngine {
         const arr = await res.arrayBuffer()
         this.sirenBuffer = await context.decodeAudioData(arr)
       } catch (err) {
-        console.warn('[audio] failed to load siren:', err)
+        logger.warn('[audio] failed to load siren:', err)
         return
       }
     }

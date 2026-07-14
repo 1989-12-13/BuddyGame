@@ -42,7 +42,7 @@ export function DetailItem({
   icon: ReactNode; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
   const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
-  const statusColor = ok ? '#16a34a' : partial ? '#d97706' : '#ef4444'
+  const statusColor = ok ? 'var(--accent-green)' : partial ? 'var(--accent-amber)' : 'var(--danger-red)'
   return (
     <div style={styles.detailItem}>
       <span style={{ fontSize: 13 }}>{statusIcon}</span>

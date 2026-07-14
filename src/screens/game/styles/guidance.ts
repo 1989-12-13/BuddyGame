@@ -143,7 +143,7 @@ export const endCallBtn: CSSProperties = {
   width: '100%',
   maxWidth: 280,
   padding: '10px 24px',
-  backgroundColor: '#dc2626',
+  backgroundColor: 'var(--danger-red)',
   color: '#fff',
   border: 'none',
   borderRadius: 8,

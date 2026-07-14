@@ -37,11 +37,12 @@ export function getTitle(gender: PatientGender | string): string {
 /** 根据 gender 和 relationship 生成来电者描述患者时的自然短语 */
 export function getPatientDescriptor(gender: PatientGender | string, relationship?: string): string {
   const p = getPronoun(gender)
-  if (relationship === '家人' || relationship === '家属') {
-    return gender === '女性' ? '我家人（女）' : gender === '男性' ? '我家人（男）' : '我家人'
-  }
-  if (relationship === '路人') return `这位${p === 'TA' ? '路人' : (gender === '女性' ? '女士' : '先生')}`
-  if (relationship === '同事') return `我这位${p === 'TA' ? '同事' : (gender === '女性' ? '女同事' : '男同事')}`
-  // 默认场景（熟人/其他）
-  return p
+  const formal = getTitle(gender)
+  if (relationship === '家人' || relationship === '家属') return `家属（${gender === '女性' ? '女' : gender === '男性' ? '男' : ''}）`
+  if (relationship === '路人') return `这位${formal}`
+  if (relationship === '同事') return `这位${p === 'TA' ? '同事' : (gender === '女性' ? '女同事' : '男同事')}`
+  if (relationship === '朋友') return `这位朋友`
+  if (relationship === '邻居') return `邻居`
+  if (relationship === '伴侣' || relationship === '夫妻') return p === 'TA' ? '伴侣' : (gender === '女性' ? '妻子' : '丈夫')
+  return `这位${formal}`
 }

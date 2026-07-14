@@ -4,9 +4,8 @@
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { CprSpec, MiniGameProps } from '../../../game/types'
 import { Readout } from '../Readout'
-import { usePauseRef } from './hooks'
+import { useKeyboard, usePauseRef } from './hooks'
 import { useMiniGameFinish } from './useMiniGameFinish'
 import { computePassed } from './scoring'
 import {
@@ -24,6 +23,8 @@ import {
   rhythmQualityColor,
   type RhythmQuality,
 } from './cprUtils'
+import type { CprSpec, MiniGameProps } from '../../../game/types'
+import { C_DANGER, C_SUCCESS, C_INFO } from '../../../game/core/colors'
 import {
   engineWrap,
   readoutRow,
@@ -167,34 +168,20 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     }
   }, [phase, cycle, cycles])
 
-  useEffect(() => {
-    const onDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault()
-        if (pausedRef.current || doneRef.current) return
-        const p = phase
-        if (p === 'compressing') {
-          doCompress()
-        } else if (p === 'blowing_1' || p === 'blowing_2') {
-          holdingRef.current = true
-        }
+  useKeyboard('Space', {
+    onDown: () => {
+      if (pausedRef.current || doneRef.current) return
+      if (phase === 'compressing') {
+        doCompress()
+      } else if (phase === 'blowing_1' || phase === 'blowing_2') {
+        holdingRef.current = true
       }
-    }
-    const onUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault()
-        if (pausedRef.current) return
-        const p = phase
-        if (p === 'blowing_1' || p === 'blowing_2') releaseBreath()
-      }
-    }
-    window.addEventListener('keydown', onDown)
-    window.addEventListener('keyup', onUp)
-    return () => {
-      window.removeEventListener('keydown', onDown)
-      window.removeEventListener('keyup', onUp)
-    }
-  }, [doCompress, releaseBreath, phase])
+    },
+    onUp: () => {
+      if (pausedRef.current) return
+      if (phase === 'blowing_1' || phase === 'blowing_2') releaseBreath()
+    },
+  })
 
   // 1秒间隔自动过渡（blowing_1 → pause_1to2 →自动→ blowing_2）
   useEffect(() => {
@@ -217,7 +204,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     complete(score, computePassed(score, s.passThreshold))
   }
 
-  const barColor = fill >= CPR_BLOW_OVER_THRESHOLD ? '#ef4444' : fill >= CPR_BLOW_IDEAL_MIN ? '#16a34a' : fill > 0 ? '#3b82f6' : 'var(--border)'
+  const barColor = fill >= CPR_BLOW_OVER_THRESHOLD ? C_DANGER : fill >= CPR_BLOW_IDEAL_MIN ? C_SUCCESS : fill > 0 ? C_INFO : 'var(--border)'
 
   // 节奏指标统计
   const goodCount = rhythmQualities.filter(q => q === 'good').length
@@ -225,13 +212,13 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   return (
     <div style={engineWrap}>
       <div style={readoutRow}>
-        <Readout label="循环" value={`${cycle}/${cycles}`} color="#3b82f6" />
-        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${CPR_COMPRESSIONS_PER_CYCLE}`} color="#dc2626" />}
+        <Readout label="循环" value={`${cycle}/${cycles}`} color="var(--accent-blue)" />
+        {(phase === 'compressing') && <Readout label="按压" value={`${compCount}/${CPR_COMPRESSIONS_PER_CYCLE}`} color="var(--danger-red)" />}
         {(phase === 'blowing_1' || phase === 'blowing_2') && (
-          <Readout label="吹气" value={`${breathCount}/${CPR_BREATHS_PER_CYCLE}`} color="#16a34a" />
+          <Readout label="吹气" value={`${breathCount}/${CPR_BREATHS_PER_CYCLE}`} color="var(--accent-green)" />
         )}
         {compCount > 0 && phase === 'compressing' && (
-          <Readout label="✓" value={String(goodCount)} color="#16a34a" />
+          <Readout label="✓" value={String(goodCount)} color="var(--accent-green)" />
         )}
       </div>
 
@@ -241,7 +228,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           {/* 频率指示器 */}
           <div style={{ fontSize: 11, marginBottom: -2, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: 'var(--text-secondary)' }}>目标:</span>
-            <span style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
+            <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', fontFamily: 'monospace', fontSize: 15 }}>
               {CPR_TARGET_BPM}
             </span>
             <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>BPM</span>
@@ -287,7 +274,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
 
       {/* === 1秒间隔 === */}
       {phase === 'pause_1to2' && (
-        <div style={{ fontSize: 14, color: '#d97706', fontWeight: 'bold', padding: '20px 0' }}>
+        <div style={{ fontSize: 14, color: 'var(--accent-amber)', fontWeight: 'bold', padding: '20px 0' }}>
           ⏸ 等待 {CPR_BREATH_PAUSE_MS / 1000} 秒后再次吹气…
         </div>
       )}
@@ -311,17 +298,17 @@ function BlowPhase({ fill, barColor, goodBreath }: { fill: number; barColor: str
         <div style={{ width: '100%', height: 24, backgroundColor: 'var(--border-light)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden', position: 'relative' }}>
           <div style={{ position: 'absolute', left: '30%', width: '42%', top: 0, bottom: 0, backgroundColor: 'rgba(5,150,105,0.12)' }} />
           <div style={{ position: 'absolute', left: '72%', width: '28%', top: 0, bottom: 0, backgroundColor: 'rgba(239,68,68,0.12)' }} />
-          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: 2, backgroundColor: '#16a34a' }} />
-          <div style={{ position: 'absolute', left: '72%', top: 0, bottom: 0, width: 2, backgroundColor: '#ef4444' }} />
+          <div style={{ position: 'absolute', left: '30%', top: 0, bottom: 0, width: 2, backgroundColor: 'var(--accent-green)' }} />
+          <div style={{ position: 'absolute', left: '72%', top: 0, bottom: 0, width: 2, backgroundColor: 'var(--danger-red)' }} />
           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `calc(${fill * 100}%)`, backgroundColor: barColor, boxShadow: fill > 0.01 ? `0 0 6px ${barColor}` : 'none' }} />
         </div>
         <div style={{ position: 'relative', width: '100%', height: 14, fontSize: 9 }}>
           <span style={{ position: 'absolute', left: 0, width: '30%', textAlign: 'center', color: 'var(--text-muted)' }}>不足</span>
-          <span style={{ position: 'absolute', left: '30%', width: '42%', textAlign: 'center', color: '#16a34a', fontWeight: 'bold' }}>理想区</span>
-          <span style={{ position: 'absolute', left: '72%', width: '28%', textAlign: 'center', color: '#ef4444' }}>过量</span>
+          <span style={{ position: 'absolute', left: '30%', width: '42%', textAlign: 'center', color: 'var(--accent-green)', fontWeight: 'bold' }}>理想区</span>
+          <span style={{ position: 'absolute', left: '72%', width: '28%', textAlign: 'center', color: 'var(--danger-red)' }}>过量</span>
         </div>
       </div>
-      {goodBreath && <div style={{ fontSize: 14, color: '#16a34a', fontWeight: 'bold' }}>✓ 吹气成功</div>}
+      {goodBreath && <div style={{ fontSize: 14, color: 'var(--accent-green)', fontWeight: 'bold' }}>✓ 吹气成功</div>}
       <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
         {fill < 0.01 ? '按住空格吹气' : fill >= 0.72 ? '⚠ 过量！' : fill >= 0.30 ? '✓ 理想区 — 松手' : '继续吹气…'}
       </div>

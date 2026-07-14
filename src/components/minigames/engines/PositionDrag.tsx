@@ -201,7 +201,7 @@ export function PositionDrag({ spec, onComplete, paused }: MiniGameProps) {
         borderRadius: 8, border: '1px solid var(--border)',
       }}>
         <Readout label="当前" value={`${angle.toFixed(0)}°`} color="var(--text-primary)" />
-        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? '#16a34a' : '#d97706'} />
+        <Readout label="偏差" value={`${dev.toFixed(0)}°`} color={aligned ? 'var(--accent-green)' : 'var(--accent-amber)'} />
         <Readout label="目标" value={`${s.targetAngle}°`} color="var(--text-muted)" />
       </div>
 

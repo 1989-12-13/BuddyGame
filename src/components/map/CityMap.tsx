@@ -10,6 +10,13 @@ import 'leaflet/dist/leaflet.css'
 import type { WorldState } from '../../game/types'
 import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
 import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
+import {
+  stationIconFor,
+  ambulanceIconFor,
+  EVENT_ICON,
+  EVENT_ICON_DIM,
+  EVENT_ICON_HISTORY,
+} from './mapMarkers'
 
 interface Props {
   state: WorldState
@@ -22,46 +29,6 @@ function lerpCoord(a: LatLng, b: LatLng, t: number): LatLng {
   const c = Math.max(0, Math.min(1, t))
   return { lat: a.lat + (b.lat - a.lat) * c, lng: a.lng + (b.lng - a.lng) * c }
 }
-
-// -------------------- 自定义 div 图标（避免 leaflet 默认图标 404） --------------------
-function makeDivIcon(html: string, className = ''): L.DivIcon {
-  return L.divIcon({
-    html,
-    className: `cmap-marker ${className}`.trim(),
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-  })
-}
-
-const STATION_ICON_AVAILABLE = makeDivIcon(
-  `<div class="cmap-station available"><div class="cmap-station-dot"></div></div>`,
-)
-function stationIconFor(status: AmbulanceStatus): L.DivIcon {
-  if (status === 'available') return STATION_ICON_AVAILABLE
-  const cls = status === 'returning' ? 'returning' : 'busy'
-  return makeDivIcon(`<div class="cmap-station ${cls}"><div class="cmap-station-dot"></div></div>`)
-}
-
-const AMB_ENROUTE = makeDivIcon(`<div class="cmap-amb cmap-amb-enroute">🚑</div>`)
-const AMB_ONSCENE = makeDivIcon(`<div class="cmap-amb cmap-amb-onscene">🚑</div>`)
-const AMB_RETURNING = makeDivIcon(`<div class="cmap-amb cmap-amb-returning">🚑</div>`)
-const AMB_ENROUTE_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-dim">🚑</div>`)
-const AMB_ONSCENE_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-onscene cmap-amb-dim">🚑</div>`)
-const AMB_RETURNING_DIM = makeDivIcon(`<div class="cmap-amb cmap-amb-returning cmap-amb-dim">🚑</div>`)
-function ambulanceIconFor(status: AmbulanceStatus, dim: boolean): L.DivIcon {
-  if (dim) {
-    if (status === 'on_scene') return AMB_ONSCENE_DIM
-    if (status === 'returning') return AMB_RETURNING_DIM
-    return AMB_ENROUTE_DIM
-  }
-  if (status === 'on_scene') return AMB_ONSCENE
-  if (status === 'returning') return AMB_RETURNING
-  return AMB_ENROUTE
-}
-
-const EVENT_ICON = makeDivIcon(`<div class="cmap-event"><div class="cmap-event-pulse"></div><div class="cmap-event-dot"></div></div>`, 'cmap-event-wrap')
-const EVENT_ICON_DIM = makeDivIcon(`<div class="cmap-event cmap-event-dim"><div class="cmap-event-dot"></div></div>`)
-const EVENT_ICON_HISTORY = makeDivIcon(`<div class="cmap-event cmap-event-history"><div class="cmap-event-dot"></div></div>`)
 
 // -------------------- 视口自适应：站点 + 事件点（不含救护车当前位置，避免每秒重 fit） --------------------
 function FitBounds({ points }: { points: LatLng[] }) {
@@ -107,12 +74,16 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
 
   // 静态点（站点 + 事件点）— 传给 FitBounds 用于视口自适应
   // 不含救护车当前位置，否则每秒 TICK 救护车移动会触发 fitBounds 重 fit + 瓦片重载
-  const staticPoints: LatLng[] = []
-  Object.values(STATION_COORDS).forEach(s => staticPoints.push(s.pos))
-  state.fleet.vehicles.forEach(v => {
-    if (v.mission) staticPoints.push(v.mission.eventLatLng)
-  })
-  if (currentEventPos) staticPoints.push(currentEventPos)
+  // 用 useMemo 保证引用稳定（避免 FitBounds 的 key 每帧重算）
+  const staticPoints = useMemo<LatLng[]>(() => {
+    const pts: LatLng[] = []
+    Object.values(STATION_COORDS).forEach(s => pts.push(s.pos))
+    state.fleet.vehicles.forEach(v => {
+      if (v.mission) pts.push(v.mission.eventLatLng)
+    })
+    if (currentEventPos) pts.push(currentEventPos)
+    return pts
+  }, [state.fleet.vehicles, currentEventPos])
 
   // 渲染所有 mission 的事件点（用 Set 去重 + 标 dim）
   const renderedEventKeys = new Set<string>()
@@ -185,10 +156,10 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
 
         {/* 事件点（mission 中所有 + 当前通话） */}
         {state.fleet.vehicles
-          .filter(v => v.mission)
+          .filter((v): v is Ambulance & { mission: NonNullable<Ambulance['mission']> } => v.mission != null)
           .map(v => {
-            const isCurrentMission = v.mission?.callId === currentCallId
-            return { pos: v.mission!.eventLatLng, state: isCurrentMission ? 'current' as const : 'active' as const, key: `ev-mission-${v.id}` }
+            const isCurrentMission = v.mission.callId === currentCallId
+            return { pos: v.mission.eventLatLng, state: isCurrentMission ? 'current' as const : 'active' as const, key: `ev-mission-${v.id}` }
           })
           .map(({ pos, state: s, key }) => renderEvent(pos, s, key))}
         {currentEventPos && currentCallId && state.fleet.vehicles.every(v => v.mission?.callId !== currentCallId)
@@ -199,11 +170,11 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
 
         {/* 救护车 + 路径 */}
         {state.fleet.vehicles
-          .filter(v => v.status !== 'available' && v.mission)
+          .filter((v): v is Ambulance & { mission: NonNullable<Ambulance['mission']> } => v.status !== 'available' && v.mission != null)
           .map(v => {
             const station = STATION_COORDS[v.id]?.pos
             if (!station) return null
-            const m = v.mission!
+            const m = v.mission
             let cur: LatLng
             let path: LatLng[]
             if (v.status === 'en_route') {
@@ -231,7 +202,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                 <Polyline
                   positions={path.map(p => [p.lat, p.lng])}
                   pathOptions={{
-                    color: v.status === 'returning' ? '#16a34a' : '#d97706',
+                    color: v.status === 'returning' ? 'var(--accent-green)' : 'var(--accent-amber)',
                     weight: dim ? 1 : 2,
                     opacity: dim ? 0.3 : (v.status === 'returning' ? 0.5 : 0.7),
                     dashArray: dim ? '2 8' : '6 6',
@@ -320,14 +291,14 @@ const styles: Record<string, React.CSSProperties> = {
   },
   cornerLabel: {
     fontSize: 10,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     fontFamily: 'monospace',
     letterSpacing: 2,
     fontWeight: 700,
   },
   cornerSub: {
     fontSize: 12,
-    color: '#d97706',
+    color: 'var(--accent-amber)',
     fontFamily: 'monospace',
     fontWeight: 700,
   },

@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { WorldState } from '../../../game/types'
-import type { WorldAction } from '../../../game/core/actions'
+import type { WorldState, EndingDef } from '../../../game/types'
+import type { GameAction } from '../../../game/core/actions'
 import { detectEnding } from '../../../game/endings/endings'
-import type { EndingDef } from '../../../game/types'
 
 interface LifecycleCallbacks {
   onEnding: (ending: EndingDef, totalScore: number, callScores: number[]) => void
@@ -18,7 +17,7 @@ interface LifecycleCallbacks {
  */
 export function useCallLifecycle(
   state: WorldState,
-  dispatch: React.Dispatch<WorldAction>,
+  dispatch: React.Dispatch<GameAction>,
   dialogueRef: React.RefObject<HTMLDivElement | null>,
   onEnding: LifecycleCallbacks['onEnding'],
 ) {

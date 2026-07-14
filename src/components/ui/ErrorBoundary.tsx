@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
           color: 'var(--text-primary)',
         }}>
           <span style={{ fontSize: 40 }}>⚠️</span>
-          <h2 style={{ margin: 0, fontSize: 18, color: '#ef4444' }}>
+          <h2 style={{ margin: 0, fontSize: 18, color: 'var(--danger-red)' }}>
             {this.props.title ?? '页面发生异常'}
           </h2>
           <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', maxWidth: 400, textAlign: 'center' }}>
@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
           {process.env.NODE_ENV === 'development' && this.state.error && (
             <pre style={{
               fontSize: 11, color: '#ff6b6b', maxWidth: '100%', overflow: 'auto',
-              padding: 8, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderRadius: 6,
+              padding: 8, backgroundColor: 'var(--danger-red-bg)', borderRadius: 6,
             }}>
               {this.state.error.message}
             </pre>
@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <button
             onClick={this.handleRetry}
             style={{
-              padding: '8px 24px', backgroundColor: '#dc2626', color: '#fff',
+              padding: '8px 24px', backgroundColor: 'var(--danger-red)', color: '#fff',
               border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 'bold',
               cursor: 'pointer', marginTop: 4,
             }}

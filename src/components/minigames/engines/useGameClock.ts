@@ -39,13 +39,15 @@ export function useGameClock(
     pausedAccumRef.current = 0
     prevElapsedRef.current = 0
 
+    let rafId = 0
+
     const loop = () => {
       const now = performance.now()
 
       if (pausedRef.current) {
         // 进入暂停：记录暂停起点（不推进计时）
         if (!pausedAtRef.current) pausedAtRef.current = now
-        requestAnimationFrame(loop)
+        rafId = requestAnimationFrame(loop)
         return
       }
       // 离开暂停：把暂停时长累加到偏移量
@@ -68,14 +70,15 @@ export function useGameClock(
         return
       }
 
-      requestAnimationFrame(loop)
+      rafId = requestAnimationFrame(loop)
     }
 
-    requestAnimationFrame(loop)
+    rafId = requestAnimationFrame(loop)
     return () => {
-      // 卸载时不触发 onFinish
+      // 卸载时取消动画帧循环，避免内存泄漏
+      cancelAnimationFrame(rafId)
     }
-  }, [durationSec]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [durationSec])
 
   return { finishedRef: finished }
 }

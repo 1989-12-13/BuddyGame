@@ -49,13 +49,13 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
                   <span
                     style={{
                       ...styles.liveDot,
-                      backgroundColor: active ? '#ff3b3b' : '#3a4452',
+                      backgroundColor: active ? '#ff3b3b' : 'var(--border-bright)',
                       animation: active ? 'pulse-live 1s ease-in-out infinite' : 'none',
                     }}
                   />
                   <span style={styles.verticalText}>{title}</span>
                   <div style={styles.miniWrap}>{mini}</div>
-                  <span style={styles.expandIcon}><ChevronLeft size={20} color="#8b949e" /></span>
+                  <span style={styles.expandIcon}><ChevronLeft size={20} color="var(--text-secondary)" /></span>
                 </div>
               </button>
             </motion.div>
@@ -71,15 +71,15 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
               <div style={styles.expanded}>
                 <header style={styles.header}>
                   <div style={styles.headerLeft}>
-                    <Phone size={14} color={historyBadge ? '#fbbf24' : (active ? '#ff3b3b' : '#6e7681')} strokeWidth={2.5} />
+                    <Phone size={14} color={historyBadge ? 'var(--accent-gold)' : (active ? '#ff3b3b' : 'var(--text-muted)')} strokeWidth={2.5} />
                     <span style={styles.headerTitle}>{title}</span>
                     {historyBadge && (
                       <span style={{
                         fontSize: 10,
                         padding: '1px 6px',
-                        background: 'rgba(251, 191, 36, 0.15)',
-                        color: '#fbbf24',
-                        border: '1px solid rgba(251, 191, 36, 0.4)',
+                        background: 'var(--accent-gold-bg)',
+                        color: 'var(--accent-gold)',
+                        border: '1px solid var(--accent-gold-border)',
                         borderRadius: 3,
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 700,
@@ -90,7 +90,7 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
                     )}
                   </div>
                   <button style={styles.toggleBtn} onClick={onToggle} title="折叠（保留通话）">
-                    <ChevronRight size={18} color="#8b949e" />
+                    <ChevronRight size={18} color="var(--text-secondary)" />
                   </button>
                 </header>
                 <div style={styles.body}>{children}</div>
@@ -158,7 +158,7 @@ const styles: Record<string, CSSProperties> = {
     writingMode: 'vertical-rl',
     textOrientation: 'mixed',
     fontSize: 11,
-    color: '#8b949e',
+    color: 'var(--text-secondary)',
     fontFamily: 'monospace',
     letterSpacing: 1,
     fontWeight: 700,
@@ -198,14 +198,14 @@ const styles: Record<string, CSSProperties> = {
   },
   headerTitle: {
     fontSize: 12,
-    color: '#e6edf3',
+    color: 'var(--text-primary)',
     fontFamily: 'monospace',
     fontWeight: 700,
     letterSpacing: 1,
   },
   toggleBtn: {
     background: 'transparent',
-    border: '1px solid #2a323e',
+    border: '1px solid var(--border)',
     borderRadius: 4,
     cursor: 'pointer',
     padding: '2px 4px',

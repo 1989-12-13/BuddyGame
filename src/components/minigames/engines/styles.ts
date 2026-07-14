@@ -59,7 +59,7 @@ export const progressTrack: React.CSSProperties = {
 }
 
 /** 进度条填充块 */
-export function progressFill(percent: number, color = '#dc2626'): React.CSSProperties {
+export function progressFill(percent: number, color = 'var(--danger-red)'): React.CSSProperties {
   return {
     width: `${Math.min(100, Math.max(0, percent))}%`,
     height: '100%',
@@ -130,5 +130,5 @@ export const pressHint: React.CSSProperties = {
 /** 按压提示-高亮版 */
 export const pressHintActive: React.CSSProperties = {
   ...pressHint,
-  color: '#ef4444',
+  color: 'var(--danger-red)',
 }

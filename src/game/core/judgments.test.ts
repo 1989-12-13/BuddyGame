@@ -10,8 +10,8 @@ import type { JudgmentPrompt } from '../types'
 // isPrankVerified
 // ============================================================
 describe('isPrankVerified', () => {
-  const correctOption = { index: 0, label: '恶作剧/虚假报警', isCorrect: true }
-  const wrongOption = { index: 1, label: '真实报警', isCorrect: false }
+  const correctOption = { index: 0, label: '恶作剧/虚假报警', isCorrect: true, fills: [] }
+  const wrongOption = { index: 1, label: '真实报警', isCorrect: false, fills: [] }
 
   it('正确识别恶作剧（chosenOptionIndex 指向 isCorrect=true）', () => {
     const judgments: JudgmentPrompt[] = [
@@ -19,6 +19,7 @@ describe('isPrankVerified', () => {
         id: 'j1',
         questionId: 'mpds_prank_patient',
         dialogueIndex: 0,
+        question: '',
         options: [correctOption, wrongOption],
         chosenOptionIndex: 0,
       },
@@ -32,6 +33,7 @@ describe('isPrankVerified', () => {
         id: 'j1',
         questionId: 'mpds_prank_patient',
         dialogueIndex: 0,
+        question: '',
         options: [correctOption, wrongOption],
         chosenOptionIndex: 1,
       },
@@ -45,6 +47,7 @@ describe('isPrankVerified', () => {
         id: 'j1',
         questionId: 'mpds_prank_patient',
         dialogueIndex: 0,
+        question: '',
         options: [correctOption, wrongOption],
         chosenOptionIndex: null,
       },
@@ -62,6 +65,7 @@ describe('isPrankVerified', () => {
         id: 'j1',
         questionId: 'other_question',
         dialogueIndex: 0,
+        question: '',
         options: [correctOption],
         chosenOptionIndex: 0,
       },
@@ -75,6 +79,7 @@ describe('isPrankVerified', () => {
         id: 'j1',
         questionId: 'other_question',
         dialogueIndex: 0,
+        question: '',
         options: [wrongOption],
         chosenOptionIndex: 0,
       },
@@ -82,6 +87,7 @@ describe('isPrankVerified', () => {
         id: 'j2',
         questionId: 'mpds_prank_patient',
         dialogueIndex: 1,
+        question: '',
         options: [correctOption, wrongOption],
         chosenOptionIndex: 0,
       },

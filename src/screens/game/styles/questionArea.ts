@@ -60,7 +60,7 @@ export const protocolStepBtn: CSSProperties = {
   padding: '4px 12px',
   borderRadius: 4,
   border: 'none',
-  backgroundColor: '#d97706',
+  backgroundColor: 'var(--warning-amber)',
   color: '#fff',
   fontSize: 11,
   fontWeight: 'bold',
@@ -143,7 +143,7 @@ export const terminalBtn: CSSProperties = {
 export const calmBtn: CSSProperties = {
   padding: '5px 12px',
   borderRadius: 4,
-  border: '1px solid #3b82f6',
+  border: '1px solid var(--accent-blue)',
   backgroundColor: 'rgba(14, 165, 233, 0.08)',
   color: '#b1bac4',
   fontSize: 13,

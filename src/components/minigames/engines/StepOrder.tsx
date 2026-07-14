@@ -74,7 +74,7 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
       }}>
         <div style={{
           width: `${progress}%`, height: '100%',
-          backgroundColor: allDone ? '#16a34a' : '#3b82f6',
+          backgroundColor: allDone ? 'var(--accent-green)' : 'var(--accent-blue)',
           borderRadius: 2,
           transition: 'width 0.3s, background-color 0.3s',
         }} />
@@ -96,15 +96,15 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
                 padding: '10px 14px',
                 borderRadius: 8,
                 border: isWrong
-                  ? '2px solid #ef4444'
+                  ? '2px solid var(--danger-red)'
                   : isDone
-                    ? '2px solid #16a34a'
-                    : '1px solid #d1d9e8',
+                    ? '2px solid var(--accent-green)'
+                    : '1px solid var(--border)',
                 backgroundColor: isDone
-                  ? 'rgba(5,150,105,0.06)'
+                  ? 'var(--success-green-bg)'
                   : isWrong
-                    ? 'rgba(239,68,68,0.06)'
-                    : '#fff',
+                    ? 'var(--danger-red-bg)'
+                    : 'var(--bg-surface)',
                 cursor: isDone ? 'default' : 'pointer',
                 opacity: isDone ? 0.6 : 1,
                 fontSize: 13,
@@ -123,7 +123,7 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
                 width: 22, height: 22, borderRadius: 11,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 'bold',
-                backgroundColor: isDone ? '#16a34a' : 'var(--border)',
+                backgroundColor: isDone ? 'var(--accent-green)' : 'var(--border)',
                 color: isDone ? '#fff' : 'var(--text-muted)',
                 marginTop: 1,
               }}>
@@ -136,7 +136,7 @@ export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
       </div>
 
       {allDone && (
-        <div style={{ fontSize: 13, color: '#16a34a', fontWeight: 'bold', marginTop: 4 }}>
+        <div style={{ fontSize: 13, color: 'var(--accent-green)', fontWeight: 'bold', marginTop: 4 }}>
           ✓ 操作步骤全部正确！
         </div>
       )}

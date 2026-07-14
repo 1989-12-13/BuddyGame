@@ -3,7 +3,7 @@
 // ============================================================
 
 import type { CallerId } from './caller'
-import type { MpdsDeterminant, TriageLevel } from './mpds'
+import type { TriageLevel } from './mpds'
 
 // -------------------- 通话阶段 --------------------
 export type CallPhase =

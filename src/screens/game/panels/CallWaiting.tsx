@@ -24,16 +24,16 @@ export function CallWaiting({
         marginBottom: 8,
         animation: 'call-incoming 1.2s ease-in-out infinite',
       }}>
-        <Phone size={64} color="#dc2626" strokeWidth={1.8} />
+        <Phone size={64} color="var(--danger-red)" strokeWidth={1.8} />
       </div>
       <h2 style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontSize: 18 }}>
         第 {callIndex + 1}/{totalCalls} 通来电
       </h2>
-      <p style={{ color: '#ef4444', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
+      <p style={{ color: 'var(--danger-red)', fontWeight: 'bold', margin: '0 0 8px', fontSize: 13 }}>
         线路接通中...
       </p>
       {lastScore !== undefined && (
-        <p style={{ color: '#16a34a', fontWeight: 'bold', margin: '0 0 12px' }}>
+        <p style={{ color: 'var(--accent-green)', fontWeight: 'bold', margin: '0 0 12px' }}>
           上一通得分：{lastScore}/100
         </p>
       )}

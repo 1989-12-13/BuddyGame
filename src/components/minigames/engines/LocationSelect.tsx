@@ -116,19 +116,19 @@ export function LocationSelect({ spec, onComplete, paused }: MiniGameProps) {
           {s.options.map((opt, i) => {
           const isSelected = selected === i
           const isThisCorrect = i === s.correctIndex
-          let bg = '#fff'
+          let bg = 'var(--bg-surface)'
           let border = 'var(--border)'
           let color = 'var(--text-primary)'
 
           if (showResult && isSelected) {
             if (isThisCorrect) {
-              bg = '#16a34a'; border = '#16a34a'; color = '#fff'
+              bg = 'var(--accent-green)'; border = 'var(--accent-green)'; color = '#fff'
             } else {
-              bg = '#ef4444'; border = '#ef4444'; color = '#fff'
+              bg = 'var(--danger-red)'; border = 'var(--danger-red)'; color = '#fff'
             }
           } else if (showResult && isThisCorrect && !isCorrect) {
             // 答错时高亮正确答案
-            bg = 'rgba(5,150,105,0.1)'; border = '#16a34a'; color = '#16a34a'
+            bg = 'var(--success-green-bg)'; border = 'var(--accent-green)'; color = 'var(--accent-green)'
           }
 
           return (
@@ -164,7 +164,7 @@ export function LocationSelect({ spec, onComplete, paused }: MiniGameProps) {
         <div style={{
           fontSize: 13,
           fontWeight: 'bold',
-          color: isCorrect ? '#16a34a' : '#ef4444',
+          color: isCorrect ? 'var(--accent-green)' : 'var(--danger-red)',
           padding: '4px 0',
         }}>
           {isCorrect ? '✓ 正确！找到了近心端止血点' : '✗ 不对，正确答案已标出。请重试…'}

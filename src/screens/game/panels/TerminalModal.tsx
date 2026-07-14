@@ -107,11 +107,11 @@ export function TerminalModal({
               <div>
                 <div style={{ fontWeight: 'bold', color: '#15803d' }}>救护车已派出</div>
                 {ambulanceRemaining > 0 ? (
-                  <div style={{ color: '#dc2626', fontSize: 12 }}>
+                  <div style={{ color: 'var(--danger-red)', fontSize: 12 }}>
                     预计 {ambulanceRemaining} 秒后到达现场
                   </div>
                 ) : (
-                  <div style={{ color: '#16a34a', fontSize: 12, fontWeight: 'bold' }}>
+                  <div style={{ color: 'var(--accent-green)', fontSize: 12, fontWeight: 'bold' }}>
                     救护车已到达现场！
                   </div>
                 )}

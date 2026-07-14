@@ -94,7 +94,7 @@ export function TerminalForm({
         value={terminal.conscious}
         trueLabel="有意识"
         falseLabel="无意识"
-        colorTrue="#22c55e"
+        colorTrue="var(--accent-green)"
         colorFalse="#ff3b3b"
         onToggle={onSetStatus}
       />
@@ -106,7 +106,7 @@ export function TerminalForm({
         value={terminal.breathing}
         trueLabel="正常呼吸"
         falseLabel="无呼吸/异常"
-        colorTrue="#22c55e"
+        colorTrue="var(--accent-green)"
         colorFalse="#ff3b3b"
         onToggle={onSetStatus}
       />
@@ -148,7 +148,7 @@ export function TerminalForm({
         }}>
           {PROTOCOL_REF.map(([num, name]) => (
             <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
-              <span style={{ color: '#0ea5e9', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
+              <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold', minWidth: 20 }}>{num}</span>
               <span>{name}</span>
             </div>
           ))}
@@ -175,10 +175,10 @@ export function TerminalForm({
       <FieldRow icon="#" label="子编码">
         <div style={{ display: 'flex', gap: 4 }}>
           {[
-            { n: 1, color: '#dc2626', label: '危重伤' },
+            { n: 1, color: 'var(--danger-red)', label: '危重伤' },
             { n: 2, color: '#ff8c00', label: '重伤' },
-            { n: 3, color: '#d97706', label: '轻伤' },
-            { n: 4, color: '#16a34a', label: '非紧急' },
+            { n: 3, color: 'var(--accent-amber)', label: '轻伤' },
+            { n: 4, color: 'var(--accent-green)', label: '非紧急' },
           ].map(({ n, color, label }) => {
             const active = terminal.determinantSubcode === n
             return (

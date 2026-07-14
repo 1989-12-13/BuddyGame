@@ -23,7 +23,7 @@ export const modalCard: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  borderLeft: '2px solid #dc2626',
+  borderLeft: '2px solid var(--danger-red)',
   boxShadow: 'none',
 }
 
@@ -33,7 +33,7 @@ export const modalHeader: CSSProperties = {
   justifyContent: 'space-between',
   padding: '12px 16px',
   backgroundColor: 'var(--bg-surface)',
-  borderBottom: '2px solid #dc2626',
+  borderBottom: '2px solid var(--danger-red)',
 }
 
 export const modalHeaderLeft: CSSProperties = {
@@ -50,10 +50,10 @@ export const modalHeaderRight: CSSProperties = {
 
 export const mpdsModalBadge: CSSProperties = {
   backgroundColor: 'var(--border-light)',
-  border: '2px solid #3b82f6',
+  border: '2px solid var(--accent-blue)',
   borderRadius: 6,
   padding: '6px 12px',
-  color: '#3b82f6',
+  color: 'var(--accent-blue)',
   fontSize: 16,
   fontWeight: 900,
   fontFamily: 'monospace',
@@ -88,7 +88,7 @@ export const modalFooter: CSSProperties = {
 
 export const modalDispatchBtn: CSSProperties = {
   padding: '10px 24px',
-  backgroundColor: '#dc2626',
+  backgroundColor: 'var(--danger-red)',
   color: '#fff',
   border: 'none',
   borderRadius: 6,
@@ -127,9 +127,9 @@ export const modalEndCallBtn: CSSProperties = {
 
 export const modalWarning: CSSProperties = {
   padding: '6px 16px',
-  backgroundColor: 'rgba(220, 38, 38, 0.08)',
-  borderTop: '1px solid #dc2626',
-  color: '#dc2626',
+  backgroundColor: 'var(--danger-red-bg)',
+  borderTop: '1px solid var(--danger-red)',
+  color: 'var(--danger-red)',
   fontSize: 12,
   fontWeight: 'bold',
   textAlign: 'center',
@@ -147,7 +147,7 @@ export const dispatchSent: CSSProperties = {
   padding: '8px 12px',
   backgroundColor: 'var(--bg-elevated)',
   borderRadius: 6,
-  border: '1px solid #15803d',
+  border: '1px solid var(--success-green-dim)',
   flex: 1,
 }
 

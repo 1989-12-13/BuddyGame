@@ -14,14 +14,14 @@ export function JudgmentCard({
   return (
     <div style={{
       ...styles.judgmentCard,
-      borderColor: isResolved ? 'var(--border-bright)' : '#d97706',
+      borderColor: isResolved ? 'var(--border-bright)' : 'var(--accent-amber)',
     }}>
       <div style={styles.judgmentHeader}>
         <span style={styles.judgmentIcon}>◆</span>
         <span style={styles.judgmentQuestion}>{judgment.question}</span>
         {isResolved && (
           <span style={{
-            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? '#16a34a' : '#dc2626',
+            color: judgment.options[judgment.chosenOptionIndex!].isCorrect ? 'var(--accent-green)' : 'var(--danger-red)',
             fontSize: 10,
             fontWeight: 'bold',
             marginLeft: 'auto',
@@ -38,11 +38,11 @@ export function JudgmentCard({
           let borderColor = 'var(--border)'
           if (isResolved) {
             if (isChosen) {
-              bgColor = opt.isCorrect ? 'rgba(22, 163, 74, 0.12)' : 'rgba(220, 38, 38, 0.12)'
-              borderColor = opt.isCorrect ? '#16a34a' : '#dc2626'
+              bgColor = opt.isCorrect ? 'var(--success-green-bg)' : 'var(--danger-red-bg)'
+              borderColor = opt.isCorrect ? 'var(--accent-green)' : 'var(--danger-red)'
             } else if (isCorrectReveal) {
-              bgColor = 'rgba(22, 163, 74, 0.12)'
-              borderColor = '#16a34a'
+              bgColor = 'var(--success-green-bg)'
+              borderColor = 'var(--accent-green)'
             }
           }
 
@@ -66,8 +66,8 @@ export function JudgmentCard({
                 <div style={{
                   fontWeight: isChosen ? 'bold' : 'normal',
                   color: isChosen
-                    ? (opt.isCorrect && isResolved ? '#16a34a' : isResolved ? '#dc2626' : '#d97706')
-                    : '#b1bac4',
+                    ? (opt.isCorrect && isResolved ? 'var(--accent-green)' : isResolved ? 'var(--danger-red)' : 'var(--accent-amber)')
+                    : 'var(--text-muted)',
                 }}>
                   {opt.label}
                 </div>

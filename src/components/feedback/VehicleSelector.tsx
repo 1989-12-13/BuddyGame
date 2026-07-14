@@ -16,10 +16,14 @@ interface Props {
 }
 
 const TIER_COLOR: Record<Ambulance['tier'], string> = {
-  MICU: '#7c3aed',
-  ALS: '#dc2626',
-  BLS: '#64748b',
+  MICU: '#7c3aed', // 装饰性 tier 色，两主题一致，无对应 token
+  ALS: 'var(--danger-red)',
+  BLS: 'var(--text-secondary)',
 }
+
+/** 图标/强调色不随主题变化，保留原语义色 */
+const SPEED_COLOR = 'var(--accent-gold)'
+const CAPABILITY_COLOR = 'var(--accent-cyan)'
 
 export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability }: Props) {
   const available = fleet.vehicles.filter(v => v.status === 'available')
@@ -38,7 +42,7 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
       zIndex: 300,
     }}>
       <div style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: 'var(--bg-surface)',
         borderRadius: 8,
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         width: 'min(520px, 92vw)',
@@ -50,19 +54,19 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
         {/* 头部 */}
         <div style={{
           padding: '12px 16px',
-          borderBottom: '1px solid #e2e8f0',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 'bold', color: '#1e293b' }}>选择救护车</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+            <div style={{ fontSize: 15, fontWeight: 'bold', color: 'var(--text-primary)' }}>选择救护车</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
               建议：<span style={{ color: TIER_COLOR[suggestedTier], fontWeight: 'bold' }}>{tierLabel(suggestedTier)}</span>
               {' '}以上 · 共 {available.length} 辆可用
             </div>
           </div>
-          <button onClick={onCancel} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 4 }}>
+          <button onClick={onCancel} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>
             <X size={16} />
           </button>
         </div>
@@ -70,7 +74,7 @@ export function VehicleSelector({ fleet, onSelect, onCancel, suggestedCapability
         {/* 车辆列表 */}
         <div style={{ padding: 12, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {available.length === 0 && (
-            <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
               暂无可用救护车
             </div>
           )}
@@ -99,8 +103,8 @@ function VehicleCard({ vehicle, onSelect, highlighted }: { vehicle: Ambulance; o
         gap: 12,
         padding: '10px 12px',
         borderRadius: 6,
-        border: `2px solid ${highlighted ? tierColor : '#e2e8f0'}`,
-        backgroundColor: highlighted ? `${tierColor}08` : '#ffffff',
+        border: `2px solid ${highlighted ? tierColor : 'var(--border)'}`,
+        backgroundColor: highlighted ? `${tierColor}08` : 'var(--bg-surface)',
         cursor: 'pointer',
         textAlign: 'left',
         width: '100%',
@@ -119,7 +123,7 @@ function VehicleCard({ vehicle, onSelect, highlighted }: { vehicle: Ambulance; o
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 'bold', color: '#1e293b' }}>{vehicle.name}</span>
+          <span style={{ fontSize: 13, fontWeight: 'bold', color: 'var(--text-primary)' }}>{vehicle.name}</span>
           <span style={{
             padding: '1px 6px',
             backgroundColor: `${tierColor}15`,
@@ -131,24 +135,24 @@ function VehicleCard({ vehicle, onSelect, highlighted }: { vehicle: Ambulance; o
             {tierLabel(vehicle.tier)}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11, color: '#64748b' }}>
+        <div style={{ display: 'flex', gap: 10, marginTop: 4, fontSize: 11, color: 'var(--text-secondary)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-            <Zap size={10} color="#f59e0b" /> 速度 {vehicle.speed}/3
+            <Zap size={10} color={SPEED_COLOR} /> 速度 {vehicle.speed}/3
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-            <Shield size={10} color="#2563eb" /> 能力 {vehicle.capability}/5
+            <Shield size={10} color={CAPABILITY_COLOR} /> 能力 {vehicle.capability}/5
           </span>
         </div>
       </div>
 
       <div style={{
         fontSize: 11,
-        color: '#dc2626',
+        color: 'var(--danger-red)',
         fontWeight: 'bold',
         padding: '4px 10px',
-        backgroundColor: '#fef2f2',
+        backgroundColor: 'var(--danger-red-dim)',
         borderRadius: 4,
-        border: '1px solid #fecaca',
+        border: '1px solid var(--danger-red)',
       }}>
         派出 →
       </div>

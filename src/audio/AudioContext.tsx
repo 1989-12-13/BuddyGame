@@ -5,6 +5,7 @@
 import { createContext, useContext, useRef, useState, useCallback, type ReactNode } from 'react'
 import { useGameAudio, type GameAudioCue } from './useGameAudio'
 import { TtsPlayer } from './ttsPlayer'
+import { logger } from '../utils/logger'
 
 const VOLUME_KEY = 'buddy-game-volume'
 
@@ -30,7 +31,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     try {
       ttsRef.current = new TtsPlayer()
     } catch (e) {
-      console.error('[audio] TtsPlayer init failed:', e)
+      logger.error('[audio] TtsPlayer init failed:', e)
       ttsRef.current = new TtsPlayer({ enabled: false })
     }
   }
@@ -48,11 +49,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const play = useCallback((cue: GameAudioCue) => {
-    try { rawPlay(cue, volume) } catch (e) { console.warn('[audio] play failed:', e) }
+    try { rawPlay(cue, volume) } catch (e) { logger.warn('[audio] play failed:', e) }
   }, [rawPlay, volume])
 
   const playSiren = useCallback(() => {
-    try { rawPlaySiren(volume) } catch (e) { console.warn('[audio] siren failed:', e) }
+    try { rawPlaySiren(volume) } catch (e) { logger.warn('[audio] siren failed:', e) }
   }, [rawPlaySiren, volume])
 
   return (

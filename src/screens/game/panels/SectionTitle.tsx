@@ -1,5 +1,3 @@
-import { styles } from '../styles'
-
 /** 小标题 */
 export function SectionTitle({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (

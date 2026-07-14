@@ -4,7 +4,7 @@ interface Props {
   judgments: Array<{
     question: string
     isCorrect: boolean
-    playerChoice: string
+    playerChoice: string | null
     correctAnswer: string
     reason?: string
   }>
@@ -19,12 +19,12 @@ export function JudgmentSection({ judgments }: Props) {
         {judgments.map((j, i) => (
           <div key={i} style={{
             ...styles.judgmentRow,
-            borderColor: j.isCorrect ? '#16a34a' : '#ef4444',
+            borderColor: j.isCorrect ? 'var(--success-green)' : 'var(--danger-red)',
           }}>
             <div style={styles.judgmentQuestion}>{j.question}</div>
             <div style={styles.judgmentChoices}>
-              <span style={{ color: j.isCorrect ? '#16a34a' : '#ff6b6b', fontSize: 12 }}>
-                你的选择：{j.playerChoice}
+              <span style={{ color: j.isCorrect ? 'var(--success-green)' : 'var(--danger-red)', fontSize: 12 }}>
+                你的选择：{j.playerChoice ?? '未作答'}
               </span>
               {!j.isCorrect && (
                 <>
@@ -32,7 +32,7 @@ export function JudgmentSection({ judgments }: Props) {
                     ✓ 正确：{j.correctAnswer}
                   </span>
                   {j.reason && (
-                    <div style={{ color: '#d97706', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
+                    <div style={{ color: 'var(--warning-amber)', fontSize: 10, marginTop: 2, fontStyle: 'italic' }}>
                       ℹ {j.reason}
                     </div>
                   )}

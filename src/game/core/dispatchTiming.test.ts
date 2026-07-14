@@ -79,8 +79,8 @@ describe('crossedDispatchWarning', () => {
 // ============================================================
 describe('formatPlayerDeterminantCode', () => {
   it('有 determinant 时格式为 "协议号-字母-?"', () => {
-    expect(formatPlayerDeterminantCode(6, 'A-1')).toBe('6-A-?')
-    expect(formatPlayerDeterminantCode(21, 'D-4')).toBe('21-D-?')
+    expect(formatPlayerDeterminantCode(6, 'ALPHA')).toBe('6-A-?')
+    expect(formatPlayerDeterminantCode(21, 'DELTA')).toBe('21-D-?')
   })
 
   it('无 determinant 时格式为 "协议号-?-?"', () => {
@@ -88,7 +88,7 @@ describe('formatPlayerDeterminantCode', () => {
   })
 
   it('determinant 取首字母', () => {
-    expect(formatPlayerDeterminantCode(1, 'E-2')).toBe('1-E-?')
-    expect(formatPlayerDeterminantCode(33, 'O-1')).toBe('33-O-?')
+    expect(formatPlayerDeterminantCode(1, 'ECHO')).toBe('1-E-?')
+    expect(formatPlayerDeterminantCode(33, 'ECHO')).toBe('33-E-?')
   })
 })

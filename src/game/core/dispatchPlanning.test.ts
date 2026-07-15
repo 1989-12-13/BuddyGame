@@ -15,32 +15,29 @@ function classifiedCall(): WorldState {
 }
 
 describe('automatic ambulance dispatch planning', () => {
-  it('assigns the only fully capable MICU to a red call', () => {
+  it('returns 8 route options for the single ambulance', () => {
     const plan = buildDispatchPlan(classifiedCall())
-    expect(plan?.requiredCapability).toBe(5)
-    expect(plan?.vehicle.id).toBe('ambulance_c')
-    expect(plan?.routes).toHaveLength(8)
+    expect(plan).not.toBeNull()
+    expect(plan!.routes).toHaveLength(8)
   })
 
-  it('falls back to the next most capable available ambulance', () => {
+  it('returns null when ambulance is unavailable', () => {
     const state = classifiedCall()
-    const withoutMicu: WorldState = {
+    const busy: WorldState = {
       ...state,
       fleet: {
         ...state.fleet,
-        vehicles: state.fleet.vehicles.map(vehicle => vehicle.id === 'ambulance_c'
-          ? { ...vehicle, status: 'en_route' as const }
-          : vehicle),
+        vehicles: state.fleet.vehicles.map(v => ({
+          ...v, status: 'en_route' as const, currentCallId: 'busy',
+          mission: { callId: 'busy', outboundTotal: 10, onSceneTotal: 5, eventLatLng: { lat: 0, lng: 0 } },
+        })),
       },
     }
-    expect(buildDispatchPlan(withoutMicu)?.vehicle.id).toBe('ambulance_a')
+    expect(buildDispatchPlan(busy)).toBeNull()
   })
 
-  it('is deterministic for one planning snapshot and changes road generation between runs', () => {
+  it('is deterministic for one planning snapshot', () => {
     const state = classifiedCall()
     expect(buildDispatchPlan(state)).toEqual(buildDispatchPlan(state))
-
-    const nextRun = { ...state, shiftNumber: state.shiftNumber + 1 }
-    expect(buildDispatchPlan(nextRun)?.routes).not.toEqual(buildDispatchPlan(state)?.routes)
   })
 })

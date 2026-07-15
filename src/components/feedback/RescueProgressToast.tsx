@@ -5,17 +5,14 @@
 
 import { Truck, CheckCircle2, XCircle, MapPin, Building2 } from 'lucide-react'
 import type { RescueState } from '../../game/types'
-import { tierLabel } from '../../game/core/fleet'
 import { C_SUCCESS, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
 
 interface Props {
   rescue: RescueState
   ambulanceRemaining: number
-  /** 派车时记录的车辆 tier 字符串（用于显示 ALS/BLS/MICU） */
-  vehicleTier?: 'BLS' | 'ALS' | 'MICU'
 }
 
-export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }: Props) {
+export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
   if (rescue.phase === 'idle') return null
 
   const arrived = rescue.phase === 'arrived' || rescue.phase === 'success' || rescue.phase === 'failed'
@@ -44,19 +41,6 @@ export function RescueProgressToast({ rescue, ambulanceRemaining, vehicleTier }:
         <strong style={{ color: 'var(--text-primary)' }}>
           {rescue.vehicleName ?? '救护车'}
         </strong>
-        {vehicleTier && (
-          <span style={{
-            padding: '1px 6px',
-            backgroundColor: 'var(--accent-blue)',
-            color: '#ffffff',
-            borderRadius: 3,
-            fontSize: 'var(--fs-micro)',
-            fontWeight: 'var(--fw-bold)',
-            border: '1px solid var(--accent-blue)',
-          }}>
-            {tierLabel(vehicleTier)}
-          </span>
-        )}
         <span style={{ marginLeft: 'auto', color: accentColor, fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-small)' }}>
           {success && '✓ 救治成功'}
           {failed && '✗ 救治失败'}

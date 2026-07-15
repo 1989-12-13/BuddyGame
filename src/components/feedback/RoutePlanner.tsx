@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react'
 import { Clock3, MapPin, Navigation, RotateCcw, ShieldAlert, Truck, Undo2, X } from 'lucide-react'
-import type { Ambulance } from '../../game/core/fleet'
-import { tierLabel } from '../../game/core/fleet'
 import {
   findCompletedRoute,
   getAvailableNextNodes,
@@ -13,7 +11,6 @@ import {
 } from '../../game/core/routing'
 
 interface Props {
-  vehicle: Ambulance
   routes: RoutePlan[]
   priorityChannelActive?: boolean
   onConfirm: (route: RoutePlan) => void
@@ -58,16 +55,22 @@ function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
   const maxLat = Math.max(...lats)
   const minLng = Math.min(...lngs)
   const maxLng = Math.max(...lngs)
-  const latSpan = Math.max(0.001, maxLat - minLat)
-  const lngSpan = Math.max(0.001, maxLng - minLng)
+  const latDelta = maxLat - minLat
+  const lngDelta = maxLng - minLng
+  // 确保最小跨度足够分离同 progress 不同 lane 的节点，避免重叠
+  const latSpan = Math.max(0.02, latDelta)
+  const lngSpan = Math.max(0.02, lngDelta)
+  // 在跨度内居中，防止节点贴边
+  const pad = 5
+  const scale = 100 - pad * 2
 
   return new Map(values.map(node => [node.id, {
-    x: 8 + ((node.pos.lng - minLng) / lngSpan) * 84,
-    y: 8 + ((maxLat - node.pos.lat) / latSpan) * 84,
+    x: pad + ((node.pos.lng - minLng) / lngSpan) * scale,
+    y: pad + ((maxLat - node.pos.lat) / latSpan) * scale,
   }]))
 }
 
-export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, onConfirm, onCancel }: Props) {
+export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm, onCancel }: Props) {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(['route-start'])
   const nodes = useMemo(() => nodeMap(routes), [routes])
   const segments = useMemo(() => uniqueSegments(routes), [routes])
@@ -304,19 +307,6 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
         </div>
 
         <aside style={{ minHeight: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
-          <div style={{ padding: 12, borderRadius: 8, border: '1px solid var(--border)', backgroundColor: 'var(--bg-elevated)' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1 }}>系统自动配车</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8 }}>
-              <Truck size={19} color="var(--accent-cyan)" />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>{vehicle.name}</div>
-                <div style={{ marginTop: 2, fontSize: 10, color: 'var(--text-muted)' }}>
-                  {tierLabel(vehicle.tier)} · 能力 {vehicle.capability}/5 · 速度 {vehicle.speed}/3
-                </div>
-              </div>
-            </div>
-          </div>
-
           {priorityChannelActive && (
             <div style={{ padding: '8px 10px', borderRadius: 7, color: 'var(--accent-gold)', backgroundColor: 'var(--accent-gold-dim)', fontSize: 11 }}>
               优先通道已生效：所有路线 ETA -5 秒

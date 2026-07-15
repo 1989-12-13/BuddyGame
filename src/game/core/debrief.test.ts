@@ -11,7 +11,7 @@ function dispatchWithPlannedRoute(state: WorldState): WorldState {
   if (!plan) throw new Error('Expected an automatic dispatch plan')
   return worldReducer(state, {
     type: 'DISPATCH',
-    vehicleId: plan.vehicle.id,
+    vehicleId: 'ambulance',
     route: plan.routes[0],
   })
 }

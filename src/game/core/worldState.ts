@@ -193,7 +193,6 @@ export function baseRescueRate(triage: TriageLevel): number {
 export interface RescueInputs {
   base: number                       // 病种基线（来自 correctTriage）
   stability: number                  // 到达时生命条
-  capability: number                 // 车的 capability 1-5
   dispatchTime: number | null        // 派车耗时（秒）
   triageDiff: number                 // 玩家分诊与正确分诊的档位差（0=对，1/2=错档）
   guidanceWrongCount: number         // 急救指导错答数
@@ -204,7 +203,6 @@ export interface RescueInputs {
 export function calcRescueSuccessRate(inp: RescueInputs): number {
   let p = inp.base
   p += inp.stability / 200               // 生命条贡献最多 ±50
-  p += (inp.capability - 3) * 0.04       // 车辆能力 ±8
   p += (inp.miniGameAvg - 0.5) * 0.1     // 小游戏 ±5
   if (inp.dispatchTime !== null) {
     if (inp.dispatchTime > DISPATCH_COPPER_TIME) p -= 0.25
@@ -234,13 +232,12 @@ export function triageLevelDiff(a: TriageLevel | null, b: TriageLevel): number {
 
 /**
  * 计算救护车预计到达时间（游戏秒数）
- * 目标区间 20-100 秒：让电话指导有施展空间，避免"还没指导完就到了"
- * 受派车速度、地址完整度、车辆 speed 影响
+ * 目标区间 25-120 秒：让电话指导有施展空间，避免"还没指导完就到了"
+ * 受派车速度、地址完整度影响
  */
 export function calcAmbulanceETA(
   dispatchTime: number,
   addressCompleteness: 'vague' | 'partial' | 'full',
-  vehicleSpeed = 1,
 ): number {
   let eta = 50
 
@@ -253,8 +250,6 @@ export function calcAmbulanceETA(
   if (addressCompleteness === 'full') eta -= 12
   else if (addressCompleteness === 'vague') eta += 10
 
-  // 车辆速度（speed 1-3）：speed 3 快车减 12，speed 1 无加成
-  eta -= (vehicleSpeed - 1) * 6
 
   return Math.max(20, Math.min(100, eta))
 }

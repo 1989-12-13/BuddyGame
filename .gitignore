@@ -16,3 +16,9 @@ npm-debug.log*
 .codebuddy/
 pnpm-lock.yaml
 pnpm-workspace.yaml
+
+# Tencent Cloud EdgeOne
+.env
+.edgeone/*
+.tef_dist/*
+  

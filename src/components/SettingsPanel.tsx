@@ -1,11 +1,11 @@
 // ============================================================
-// 设置面板 — 左上角齿轮按钮 + 调度卡快捷入口（常驻显示，位于齿轮下方）
+// 设置面板 — 左上角齿轮按钮 + 调度卡垂直快捷入口（参照右侧 CollapsedDrawer 风格）
 // 内含回到主菜单/音量/主题
 // ============================================================
 
 import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { Settings, Home, Volume2, Moon, Sun, AlertTriangle } from 'lucide-react'
+import { Settings, Home, Volume2, Moon, Sun, AlertTriangle, ChevronRight } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAudio } from '../audio/AudioContext'
 import { useDispatchCard } from '../contexts/DispatchCardContext'
@@ -15,6 +15,9 @@ interface Props {
   /** 回到主菜单回调 */
   onNavigate?: (target: 'title') => void
 }
+
+const PILL_W = 64
+const PILL_H = 320
 
 export function SettingsPanel({ onNavigate }: Props) {
   const [open, setOpen] = useState(false)
@@ -62,14 +65,27 @@ export function SettingsPanel({ onNavigate }: Props) {
     setOpen(false)
   }
 
-  // 是否处于未分诊警告态（绿色 = 已分诊；红色 = 未分诊）
+  // 状态语义
   const hasTriage = !!dispatchCard?.hasTriage
   const isAvailable = !!dispatchCard?.isAvailable
+
+  // 状态条填充比例：未分诊=35%（红色警示），已分诊=100%（绿色）
+  const statusFillRatio = !isAvailable ? 0 : hasTriage ? 1 : 0.35
+  const statusColor = !isAvailable
+    ? 'var(--text-muted)'
+    : hasTriage
+      ? 'var(--accent-green)'
+      : 'var(--danger-red)'
+  const dotColor = !isAvailable
+    ? 'var(--border-bright)'
+    : hasTriage
+      ? 'var(--accent-green)'
+      : '#ff3b3b'
 
   return (
     <div
       ref={panelRef}
-      style={{ position: 'fixed', top: 85, left: 16, zIndex: Z_SETTINGS, display: 'flex', flexDirection: 'column', gap: 8 }}
+      style={{ position: 'fixed', top: 85, left: 16, zIndex: Z_SETTINGS, display: 'flex', flexDirection: 'column', gap: 10 }}
     >
       {/* 齿轮按钮 */}
       <button
@@ -79,21 +95,24 @@ export function SettingsPanel({ onNavigate }: Props) {
           width: 36,
           height: 36,
           fontSize: 'var(--fs-title)',
-          border: '1px solid var(--border)',
+          border: '1px solid var(--glass-border)',
           borderRadius: 8,
-          backgroundColor: 'var(--bg-surface)',
+          backgroundColor: 'var(--glass-bg)',
+          backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+          WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
           color: 'var(--text-secondary)',
           cursor: 'pointer',
           transition: 'all 0.2s',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
         }}
       >
         <Settings size={18} />
       </button>
 
-      {/* 调度卡快捷入口（常驻显示，颜色/动画反映分诊状态） */}
+      {/* 调度卡垂直快捷入口（仿右侧 CollapsedDrawer 风格） */}
       <button
         onClick={handleOpenDispatch}
         title={
@@ -103,50 +122,53 @@ export function SettingsPanel({ onNavigate }: Props) {
               ? '打开调度卡'
               : '调度卡未分诊，点击打开'
         }
+        disabled={!isAvailable}
         style={{
-          width: 36,
-          height: 36,
-          fontSize: 'var(--fs-title)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          backgroundColor: 'var(--bg-surface)',
-          color: 'var(--text-secondary)',
+          width: PILL_W,
+          height: PILL_H,
+          padding: 0,
+          border: '1px solid var(--glass-border)',
+          borderRadius: 10,
+          backgroundColor: 'var(--glass-bg)',
+          backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+          WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+          color: 'var(--text-primary)',
           cursor: isAvailable ? 'pointer' : 'not-allowed',
           transition: 'all 0.2s',
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'center',
-          position: 'relative',
-          opacity: isAvailable ? 1 : 0.55,
+          alignItems: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+          opacity: isAvailable ? 1 : 0.6,
+          animation: isAvailable && !hasTriage ? 'pulse-alert 1.8s ease-in-out infinite' : 'none',
         }}
       >
-        <AlertTriangle
-          size={18}
-          color={hasTriage ? 'var(--accent-green)' : 'var(--danger-red)'}
-        />
-        {!hasTriage && isAvailable && (
+        <div style={styles.verticalStack}>
+          {/* 顶部状态点 */}
           <span
             style={{
-              position: 'absolute',
-              top: -3,
-              right: -3,
-              minWidth: 14,
-              height: 14,
-              padding: '0 3px',
-              borderRadius: 7,
-              backgroundColor: 'var(--danger-red)',
-              color: '#fff',
-              fontSize: 9,
-              fontWeight: 'var(--fw-bold)',
-              lineHeight: '14px',
-              textAlign: 'center',
-              fontFamily: 'var(--font-mono)',
-              animation: 'pulse-alert 1.5s ease-in-out infinite',
+              ...styles.liveDot,
+              backgroundColor: dotColor,
+              animation: isAvailable && !hasTriage ? 'pulse-live 1s ease-in-out infinite' : 'none',
             }}
-          >
-            !
+          />
+          {/* 竖排"调度卡" */}
+          <span style={styles.verticalText}>调度卡</span>
+          {/* 状态条 */}
+          <div style={styles.statusBar}>
+            <div
+              style={{
+                ...styles.statusBarFill,
+                height: `${statusFillRatio * 100}%`,
+                backgroundColor: statusColor,
+              }}
+            />
+          </div>
+          {/* 提示箭头 */}
+          <span style={styles.expandIcon}>
+            <ChevronRight size={20} color="var(--text-secondary)" />
           </span>
-        )}
+        </div>
       </button>
 
       {/* 下拉面板 */}
@@ -270,4 +292,50 @@ export function SettingsPanel({ onNavigate }: Props) {
       </AnimatePresence>
     </div>
   )
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  verticalStack: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+    height: '100%',
+    padding: '12px 4px',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    display: 'inline-block',
+  },
+  verticalText: {
+    writingMode: 'vertical-rl',
+    textOrientation: 'mixed',
+    fontSize: 'var(--fs-small)',
+    color: 'var(--text-secondary)',
+    fontFamily: 'var(--font-mono)',
+    letterSpacing: 2,
+    fontWeight: 'var(--fw-bold)',
+  },
+  statusBar: {
+    width: 8,
+    height: 140,
+    backgroundColor: 'var(--border)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
+  statusBarFill: {
+    width: '100%',
+    borderRadius: 4,
+    transition: 'height 0.4s ease, background-color 0.3s ease',
+  },
+  expandIcon: {
+    marginTop: 'auto',
+    display: 'flex',
+  },
 }

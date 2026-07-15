@@ -112,64 +112,73 @@ export function SettingsPanel({ onNavigate }: Props) {
         <Settings size={18} />
       </button>
 
-      {/* 调度卡垂直快捷入口（仿右侧 CollapsedDrawer 风格） */}
-      <button
-        onClick={handleOpenDispatch}
-        title={
-          !isAvailable
-            ? '调度卡（等待通话）'
-            : hasTriage
-              ? '打开调度卡'
-              : '调度卡未分诊，点击打开'
-        }
-        disabled={!isAvailable}
-        style={{
-          width: PILL_W,
-          height: PILL_H,
-          padding: 0,
-          border: '1px solid var(--glass-border)',
-          borderRadius: 10,
-          backgroundColor: 'var(--glass-bg)',
-          backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-          WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-          color: 'var(--text-primary)',
-          cursor: isAvailable ? 'pointer' : 'not-allowed',
-          transition: 'all 0.2s',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
-          opacity: isAvailable ? 1 : 0.6,
-          animation: isAvailable && !hasTriage ? 'pulse-alert 1.8s ease-in-out infinite' : 'none',
-        }}
-      >
-        <div style={styles.verticalStack}>
-          {/* 顶部状态点 */}
-          <span
-            style={{
-              ...styles.liveDot,
-              backgroundColor: dotColor,
-              animation: isAvailable && !hasTriage ? 'pulse-live 1s ease-in-out infinite' : 'none',
-            }}
-          />
-          {/* 竖排"调度卡" */}
-          <span style={styles.verticalText}>调度卡</span>
-          {/* 状态条 */}
-          <div style={styles.statusBar}>
-            <div
+      {/* 调度卡垂直快捷入口 — 弹窗已打开时隐藏 */}
+      <AnimatePresence>
+        {!dispatchCard?.isOpen && (
+        <motion.button
+          key="dispatch-pill"
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -40 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          onClick={handleOpenDispatch}
+          title={
+            !isAvailable
+              ? '调度卡（等待通话）'
+              : hasTriage
+                ? '打开调度卡'
+                : '调度卡未分诊，点击打开'
+          }
+          disabled={!isAvailable}
+          style={{
+            width: PILL_W,
+            height: PILL_H,
+            padding: 0,
+            border: '1px solid var(--glass-border)',
+            borderRadius: 10,
+            backgroundColor: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+            WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+            color: 'var(--text-primary)',
+            cursor: isAvailable ? 'pointer' : 'not-allowed',
+            transition: 'all 0.2s',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+            opacity: isAvailable ? 1 : 0.6,
+            animation: isAvailable && !hasTriage ? 'pulse-alert 1.8s ease-in-out infinite' : 'none',
+          }}
+        >
+          <div style={styles.verticalStack}>
+            {/* 顶部状态点 */}
+            <span
               style={{
-                ...styles.statusBarFill,
-                height: `${statusFillRatio * 100}%`,
-                backgroundColor: statusColor,
+                ...styles.liveDot,
+                backgroundColor: dotColor,
+                animation: isAvailable && !hasTriage ? 'pulse-live 1s ease-in-out infinite' : 'none',
               }}
             />
+            {/* 竖排"调度卡" */}
+            <span style={styles.verticalText}>调度卡</span>
+            {/* 状态条 */}
+            <div style={styles.statusBar}>
+              <div
+                style={{
+                  ...styles.statusBarFill,
+                  height: `${statusFillRatio * 100}%`,
+                  backgroundColor: statusColor,
+                }}
+              />
+            </div>
+            {/* 提示箭头 */}
+            <span style={styles.expandIcon}>
+              <ChevronRight size={20} color="var(--text-secondary)" />
+            </span>
           </div>
-          {/* 提示箭头 */}
-          <span style={styles.expandIcon}>
-            <ChevronRight size={20} color="var(--text-secondary)" />
-          </span>
-        </div>
-      </button>
+        </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* 下拉面板 */}
       <AnimatePresence>

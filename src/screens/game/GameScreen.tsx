@@ -222,8 +222,8 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
   const openDispatch = handleOpenTerminal
 
   useEffect(() => {
-    onDispatchCardChange?.({ isAvailable: isDispatchAvailable, hasTriage: hasTriageNow, open: openDispatch })
-  }, [isDispatchAvailable, hasTriageNow, openDispatch, onDispatchCardChange])
+    onDispatchCardChange?.({ isAvailable: isDispatchAvailable, hasTriage: hasTriageNow, isOpen: terminalModalOpen, open: openDispatch })
+  }, [isDispatchAvailable, hasTriageNow, terminalModalOpen, openDispatch, onDispatchCardChange])
 
   return (
     <div style={styles.container}>

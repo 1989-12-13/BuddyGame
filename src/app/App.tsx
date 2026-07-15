@@ -21,6 +21,7 @@ type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 const NOOP_DISPATCH: DispatchCardControl = {
   hasTriage: true,
   isAvailable: false,
+  isOpen: false,
   open: () => {},
 }
 

@@ -11,6 +11,8 @@ export interface DispatchCardControl {
   hasTriage: boolean
   /** 是否可点击（通话阶段） */
   isAvailable: boolean
+  /** 调度卡弹窗当前是否已打开（打开时左侧 pill 应隐藏） */
+  isOpen: boolean
   /** 触发打开调度卡弹窗（无通话时点击无效） */
   open: () => void
 }

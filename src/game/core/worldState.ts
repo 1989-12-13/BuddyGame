@@ -234,7 +234,7 @@ export function triageLevelDiff(a: TriageLevel | null, b: TriageLevel): number {
 
 /**
  * 计算救护车预计到达时间（游戏秒数）
- * 目标区间 25-120 秒：让电话指导有施展空间，避免"还没指导完就到了"
+ * 目标区间 20-100 秒：让电话指导有施展空间，避免"还没指导完就到了"
  * 受派车速度、地址完整度、车辆 speed 影响
  */
 export function calcAmbulanceETA(

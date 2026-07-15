@@ -1,5 +1,5 @@
 // ============================================================
-// 120调度台 — Leaflet 真实地图 + CartoDB Dark Matter 瓦片
+// 120调度台 — Leaflet 真实地图 + CartoDB 瓦片（深/浅色跟随主题）
 // 跨通话显示所有占用车辆（en_route/on_scene/returning）
 // ============================================================
 
@@ -11,6 +11,7 @@ import type { WorldState } from '../../game/types'
 import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
 import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
 import { positionAlongRoute, roadConditionColor } from '../../game/core/routing'
+import { useTheme } from '../../contexts/ThemeContext'
 import {
   stationIconFor,
   ambulanceIconFor,
@@ -62,6 +63,7 @@ function FitBounds({ points }: { points: LatLng[] }) {
 
 // -------------------- 主组件 --------------------
 export function CityMap({ state, onAmbulanceClick }: Props) {
+  const { theme, colors } = useTheme()
   const hasCall = state.currentCall !== null
   const isPrank = state.currentCall?.isPrank ?? false
 
@@ -126,6 +128,11 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
   // 当前通话的场景 id（用于判定哪些 mission 属于"历史"/"执行中背景"）
   const currentCallId = state.currentCall?.id ?? null
 
+  // 根据主题切换瓦片底图
+  const tileUrl = theme === 'dark'
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+
   return (
     <div style={styles.wrap}>
       <MapContainer
@@ -137,7 +144,8 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
         attributionControl={false}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          key={theme}
+          url={tileUrl}
           subdomains={['a', 'b', 'c', 'd']}
           maxZoom={19}
         />
@@ -206,7 +214,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                   <Polyline
                     positions={routePoints.map(point => [point.lat, point.lng])}
                     pathOptions={{
-                      color: v.status === 'returning' ? '#16a34a' : '#d97706',
+                      color: v.status === 'returning' ? colors.success : colors.amber,
                       weight: dim ? 1 : 2,
                       opacity: dim ? 0.3 : 0.65,
                       dashArray: dim ? '2 8' : '6 6',
@@ -238,7 +246,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                     key={node.id}
                     center={[node.pos.lat, node.pos.lng]}
                     radius={4}
-                    pathOptions={{ color: '#e2e8f0', weight: 1, fillColor: '#0f172a', fillOpacity: 0.9 }}
+                    pathOptions={{ color: colors.border, weight: 1, fillColor: colors.bgSurface, fillOpacity: 0.9 }}
                   >
                     <Tooltip direction="top" opacity={0.95}>{node.label}</Tooltip>
                   </CircleMarker>
@@ -298,7 +306,7 @@ const styles: Record<string, React.CSSProperties> = {
   wrap: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: '#0a0e14',
+    backgroundColor: 'var(--bg)',
     overflow: 'hidden',
     // 显式 z-index + isolation 锁住 leaflet 内部 z-index（marker/tooltip/popup 默认 100-700），
     // 避免泄漏到外部 stacking context 把 CallDrawer/GuidanceOverlay 盖住
@@ -308,7 +316,7 @@ const styles: Record<string, React.CSSProperties> = {
   map: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#0a0e14',
+    backgroundColor: 'var(--bg)',
   },
   corner: {
     position: 'absolute',
@@ -320,8 +328,8 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
     zIndex: 400,
     padding: '4px 10px',
-    background: 'rgba(10, 14, 20, 0.7)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'color-mix(in srgb, var(--bg) 70%, transparent)',
+    border: '1px solid var(--glass-border)',
     borderRadius: 4,
   },
   cornerLabel: {
@@ -347,7 +355,7 @@ const MARKER_CSS = `
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--success-green);
-  background: rgba(10, 14, 20, 0.7);
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--success-green) 15%, transparent);
 }
 .cmap-station.busy {

@@ -44,7 +44,7 @@ export function handleMakeJudgment(
     if (isCorrect) {
       const newStability = Math.min(100, state.patientStatus.stability + JUDGMENT_CORRECT_BONUS)
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
-      sinkEvent(sink, 'good', `✓ 判断准确：${judgment.question.slice(0, 18)}…`, state.shiftElapsed)
+      sinkEvent(sink, 'good', `✓ 判断准确：${selectedOption.label}`, state.shiftElapsed)
     } else {
       const newStability = Math.max(0, state.patientStatus.stability - JUDGMENT_INCORRECT_PENALTY)
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }

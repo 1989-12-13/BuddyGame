@@ -43,6 +43,7 @@ const COORDS: Record<string, LatLng> = {
 
 /** 站点（救护车库）固定坐标 */
 export const STATION_COORDS: Record<string, { name: string; pos: LatLng }> = {
+  ambulance: { name: '望京站', pos: { lat: 39.9967, lng: 116.4708 } },
   ambulance_a: { name: '望京站', pos: { lat: 39.9967, lng: 116.4708 } },
   ambulance_b: { name: '中关村站', pos: { lat: 39.9836, lng: 116.3162 } },
   ambulance_c: { name: '方庄站', pos: { lat: 39.8636, lng: 116.4328 } },

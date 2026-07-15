@@ -1,12 +1,11 @@
 // ============================================================
 // 120调度台 — MAKE_JUDGMENT reducer 处理器
 // 玩家从临床判断选择题中选择答案
+// 判断结果仅影响终端信息填充和指导事件，不改变患者体征
 // ============================================================
 
 import type { WorldState } from '../../types'
 import { createEventSink, sinkEvent, judgmentCorrectAnswer } from './helpers'
-import { JUDGMENT_CORRECT_BONUS, JUDGMENT_INCORRECT_PENALTY } from '../constants'
-import { stabilityToVitalSign } from '../worldState'
 
 export function handleMakeJudgment(
   state: WorldState,
@@ -38,19 +37,12 @@ export function handleMakeJudgment(
   }
 
   const sink = createEventSink(state)
-  let newPatientStatus = state.patientStatus
-  if (state.patientStatus && !state.patientStatus.died) {
-    const isCorrect = !!selectedOption?.isCorrect
-    if (isCorrect) {
-      const newStability = Math.min(100, state.patientStatus.stability + JUDGMENT_CORRECT_BONUS)
-      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
-      sinkEvent(sink, 'good', `✓ 判断准确：${judgment.question.slice(0, 18)}…`, state.shiftElapsed)
-    } else {
-      const newStability = Math.max(0, state.patientStatus.stability - JUDGMENT_INCORRECT_PENALTY)
-      newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
-      const correctLabel = judgmentCorrectAnswer(judgment)
-      sinkEvent(sink, 'bad', `✗ 误判 · 实际应为：${correctLabel}`, state.shiftElapsed)
-    }
+  const isCorrect = !!selectedOption?.isCorrect
+  if (isCorrect) {
+    sinkEvent(sink, 'good', `✓ 判断准确：${judgment.question.slice(0, 18)}…`, state.shiftElapsed)
+  } else {
+    const correctLabel = judgmentCorrectAnswer(judgment)
+    sinkEvent(sink, 'bad', `✗ 误判 · 实际应为：${correctLabel}`, state.shiftElapsed)
   }
 
   return {
@@ -58,7 +50,6 @@ export function handleMakeJudgment(
     eventSeq: sink.seq,
     pendingJudgments: newJudgments,
     terminal: newTerminal,
-    patientStatus: newPatientStatus,
     patientEvents: sink.events,
   }
 }

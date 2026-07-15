@@ -115,7 +115,6 @@ export function handleTick(state: WorldState): WorldState {
     const rate = calcRescueSuccessRate({
       base: baseRescueRate(state.dispatchRecord.correctTriage),
       stability,
-      capability: vehicle?.capability ?? 3,
       dispatchTime: state.dispatchRecord.dispatchTime,
       triageDiff,
       guidanceWrongCount: guidanceWrong,

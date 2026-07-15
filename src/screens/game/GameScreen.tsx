@@ -171,13 +171,13 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
     setDispatchPlan(plan)
   }, [state])
 
-  // --- 完成节点路线后，按已冻结的车辆与路线真正派出 ---
+  // --- 完成节点路线后，按已冻结的路线真正派出 ---
   const handleConfirmRoute = useCallback((route: DispatchPlan['routes'][number]) => {
     if (!dispatchPlan) return
     interruptCallerVoice()
     setDispatchPlan(null)
     setTerminalModalOpen(false)
-    dispatch({ type: 'DISPATCH', vehicleId: dispatchPlan.vehicle.id, route })
+    dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route })
   }, [dispatchPlan, interruptCallerVoice])
 
   // --- 关闭一个事件 toast ---
@@ -454,7 +454,6 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
         {/* ====== 节点式路线规划：车辆由系统自动分配 ====== */}
         {dispatchPlan && (
           <RoutePlanner
-            vehicle={dispatchPlan.vehicle}
             routes={dispatchPlan.routes}
             priorityChannelActive={hasPerk(state.perks, 'priority_channel')}
             onConfirm={handleConfirmRoute}

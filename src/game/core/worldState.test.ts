@@ -106,9 +106,10 @@ describe('createInitialState', () => {
     expect(state.pendingPerkChoices).toEqual([])
   })
 
-  it('fleet 有 3 辆车', () => {
+  it('fleet 有 1 辆标准救护车', () => {
     const state = createInitialState()
-    expect(state.fleet.vehicles).toHaveLength(3)
+    expect(state.fleet.vehicles).toHaveLength(1)
+    expect(state.fleet.vehicles[0].id).toBe('ambulance')
     expect(state.fleet.selectedVehicleId).toBeNull()
   })
 })
@@ -242,7 +243,6 @@ describe('calcRescueSuccessRate', () => {
   const defaultInput = {
     base: 0.2,
     stability: 75,
-    capability: 3,
     dispatchTime: 50 as number | null,
     triageDiff: 0,
     guidanceWrongCount: 0,
@@ -266,7 +266,6 @@ describe('calcRescueSuccessRate', () => {
     const rate = calcRescueSuccessRate({
       base: 0.1,
       stability: 5,
-      capability: 1,
       dispatchTime: 120,
       triageDiff: 3,
       guidanceWrongCount: 10,
@@ -306,16 +305,10 @@ describe('calcRescueSuccessRate', () => {
   })
 
   it('结果裁剪到 [0, 1]', () => {
-    const high = calcRescueSuccessRate({ ...defaultInput, base: 1.0, stability: 100, capability: 5, miniGameAvg: 1 })
+    const high = calcRescueSuccessRate({ ...defaultInput, base: 1.0, stability: 100, miniGameAvg: 1 })
     expect(high).toBeLessThanOrEqual(1)
     const low = calcRescueSuccessRate({ ...defaultInput, base: -1, stability: 0, dispatchTime: 200, guidanceWrongCount: 50 })
     expect(low).toBeGreaterThanOrEqual(0)
-  })
-
-  it('车辆能力每高/低于 3 一级 ±4%', () => {
-    const a = calcRescueSuccessRate({ ...defaultInput, capability: 3 })
-    const b = calcRescueSuccessRate({ ...defaultInput, capability: 5 })
-    expect(b - a).toBeCloseTo(0.08) // (5-3)*0.04
   })
 
   it('小游戏每高/低于 0.5 一步 ±5%', () => {
@@ -381,36 +374,30 @@ describe('calcAmbulanceETA', () => {
   })
 
   it('最快派车（<=35s）减 15 秒', () => {
-    const fast = calcAmbulanceETA(25, 'partial', 1)
-    const normal = calcAmbulanceETA(60, 'partial', 1)
+    const fast = calcAmbulanceETA(25, 'partial')
+    const normal = calcAmbulanceETA(60, 'partial')
     expect(fast).toBeLessThan(normal)
   })
 
   it('地址完整度 full 减 12 秒', () => {
-    const partial = calcAmbulanceETA(40, 'partial', 2)
-    const full = calcAmbulanceETA(40, 'full', 2)
+    const partial = calcAmbulanceETA(40, 'partial')
+    const full = calcAmbulanceETA(40, 'full')
     expect(partial - full).toBe(12)
   })
 
   it('地址模糊 vague 加 10 秒', () => {
-    const partial = calcAmbulanceETA(40, 'partial', 1)
-    const vague = calcAmbulanceETA(40, 'vague', 1)
+    const partial = calcAmbulanceETA(40, 'partial')
+    const vague = calcAmbulanceETA(40, 'vague')
     expect(vague - partial).toBe(10)
   })
 
-  it('车速 3 比车速 1 快 12 秒', () => {
-    const slow = calcAmbulanceETA(55, 'partial', 1)
-    const fast = calcAmbulanceETA(55, 'partial', 3)
-    expect(slow - fast).toBe(12)
-  })
-
   it('极端慢条件不低过 20', () => {
-    const eta = calcAmbulanceETA(25, 'full', 3)
+    const eta = calcAmbulanceETA(25, 'full')
     expect(eta).toBeGreaterThanOrEqual(20)
   })
 
   it('极端快条件不高过 100', () => {
-    const eta = calcAmbulanceETA(90, 'vague', 1)
+    const eta = calcAmbulanceETA(90, 'vague')
     expect(eta).toBeLessThanOrEqual(100)
   })
 })

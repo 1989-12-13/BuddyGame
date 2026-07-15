@@ -3,7 +3,7 @@
 // ============================================================
 
 import type { CSSProperties } from 'react'
-import { Clock, List, Star, Truck } from 'lucide-react'
+import { Clock, List, Star } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 
 
@@ -22,8 +22,6 @@ export function Hud({ state }: Props) {
   const minutes = Math.floor(state.shiftElapsed / 60)
   const seconds = state.shiftElapsed % 60
   const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-
-  const availableVehicles = state.fleet.vehicles.filter(v => v.status === 'available').length
 
   return (
     <div style={styles.container}>
@@ -50,24 +48,10 @@ export function Hud({ state }: Props) {
         <span style={{ ...styles.value, color: 'var(--accent-amber)' }}>{state.totalScore}</span>
       </div>
 
-      {/* 可用救护车 */}
-      <div style={styles.group}>
-        <span style={iconEl(availableVehicles > 0 ? 'var(--accent-green)' : 'var(--danger-red)')}>
-          <Truck size={SIZE} strokeWidth={2.5} />
-        </span>
-        <span style={styles.label}>车辆</span>
-        <span style={{
-          ...styles.value,
-          color: availableVehicles > 0 ? 'var(--accent-green)' : 'var(--danger-red)',
-        }}>
-          {availableVehicles}/{state.fleet.vehicles.length}
-        </span>
-      </div>
-
       {/* 救护车 ETA */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--danger-red)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
+          <span style={iconEl('var(--danger-red)')}><Star size={SIZE} strokeWidth={2.5} /></span>
           <span style={{ ...styles.value, color: 'var(--danger-red)', fontSize: 'var(--fs-body-sm)' }}>
             ETA {state.ambulanceRemaining}s
           </span>
@@ -76,7 +60,7 @@ export function Hud({ state }: Props) {
 
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--accent-green)')}><Truck size={SIZE} strokeWidth={2.5} /></span>
+          <span style={iconEl('var(--accent-green)')}><Star size={SIZE} strokeWidth={2.5} /></span>
           <span style={{ ...styles.value, color: 'var(--accent-green)', fontSize: 'var(--fs-body-sm)' }}>
             已到达
           </span>

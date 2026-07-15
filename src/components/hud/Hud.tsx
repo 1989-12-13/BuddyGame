@@ -5,7 +5,8 @@
 import type { CSSProperties } from 'react'
 import { Clock, List, Star, Truck } from 'lucide-react'
 import type { WorldState } from '../../game/types'
-import { ThemeToggle } from '../ThemeToggle'
+
+
 
 interface Props {
   state: WorldState
@@ -83,7 +84,7 @@ export function Hud({ state }: Props) {
         </div>
       )}
 
-      <ThemeToggle />
+
     </div>
   )
 }

@@ -6,7 +6,7 @@
 
 import type { CSSProperties, ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Z_DRAWER } from '../../game/core/zIndex'
 
 interface Props {
@@ -72,8 +72,6 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
               <div style={styles.expanded}>
                 <header style={styles.header}>
                   <div style={styles.headerLeft}>
-                    <Phone size={14} color={historyBadge ? 'var(--accent-gold)' : (active ? '#ff3b3b' : 'var(--text-muted)')} strokeWidth={2.5} />
-                    <span style={styles.headerTitle}>{title}</span>
                     {historyBadge && (
                       <span style={{
                         fontSize: 'var(--fs-micro)',
@@ -196,13 +194,6 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-  },
-  headerTitle: {
-    fontSize: 'var(--fs-caption)',
-    color: 'var(--text-primary)',
-    fontFamily: 'var(--font-mono)',
-    fontWeight: 'var(--fw-bold)',
-    letterSpacing: 1,
   },
   toggleBtn: {
     background: 'transparent',

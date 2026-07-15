@@ -68,6 +68,7 @@ export const protocolStepBtn: CSSProperties = {
   whiteSpace: 'nowrap',
   transition: 'all 0.15s',
   fontFamily: 'var(--font-mono)',
+  minWidth: 56,
 }
 
 export const qBtnSmall: CSSProperties = {
@@ -152,4 +153,5 @@ export const calmBtn: CSSProperties = {
   whiteSpace: 'nowrap',
   transition: 'all 0.15s',
   fontFamily: 'var(--font-mono)',
+  minWidth: 56,
 }

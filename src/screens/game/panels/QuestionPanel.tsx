@@ -215,7 +215,7 @@ export function QuestionPanel({
           disabled={disabled || stress < 15}
           title="消耗2秒安抚来电者"
         >
-          🫂 安抚
+          安抚
         </button>
       </div>
 

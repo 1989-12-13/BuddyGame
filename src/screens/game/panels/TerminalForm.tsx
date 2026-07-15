@@ -8,7 +8,9 @@ import { FieldRow } from './FieldRow'
 import { StatusToggle } from './StatusToggle'
 import { DeterminantSelector } from './DeterminantSelector'
 
-/** MPDS 标准调度登记卡 — 结构化病例录入（无自动提示，玩家自主判断） */
+/** MPDS 标准调度登记卡 — 结构化病例录入（无自动提示，玩家自主判断）
+ * 必填项：意识状态 / 呼吸状态 / MPDS 判定码（标 *）；其它字段（地址/电话/主诉/年龄/性别/备注/协议号/子编码）可选
+ */
 export function TerminalForm({
   terminal,
   onChange,
@@ -24,43 +26,46 @@ export function TerminalForm({
   onSetDeterminantSubcode: (subcode: number) => void
   onSetProtocol: (protocol: number) => void
 }) {
+  const RequiredMark = () => (
+    <span style={{ color: 'var(--danger-red)', marginLeft: 2, fontWeight: 'var(--fw-bold)' }}>*</span>
+  )
   return (
     <div style={styles.terminalForm}>
       {/* ====== 协议号 ====== */}
       {/* ====== Case Entry（病例录入） ====== */}
 
-      {/* 地址 */}
+      {/* 地址（可选） */}
       <FieldRow icon="◉" label="事件地址">
         <textarea
           style={styles.formInput}
           value={terminal.address}
           onChange={(e) => onChange('address', e.target.value)}
-          placeholder="记录详细地址…"
+          placeholder="记录详细地址…（可选）"
           rows={2}
         />
       </FieldRow>
 
-      {/* 联系电话 */}
+      {/* 联系电话（可选） */}
       <FieldRow icon={<Phone size={13} />} label="联系电话">
         <input
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.contact}
           onChange={(e) => onChange('contact', e.target.value)}
-          placeholder="记录联系方式…"
+          placeholder="记录联系方式…（可选）"
         />
       </FieldRow>
 
-      {/* 主诉 */}
+      {/* 主诉（可选） */}
       <FieldRow icon="♥" label="主诉">
         <input
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.chiefComplaint}
           onChange={(e) => onChange('chiefComplaint', e.target.value)}
-          placeholder="标准化主诉…"
+          placeholder="标准化主诉…（可选）"
         />
       </FieldRow>
 
-      {/* 患者基本信息 */}
+      {/* 患者基本信息（可选） */}
       <div style={{ display: 'flex', gap: 6 }}>
         <div style={{ flex: 1 }}>
           <FieldRow icon="○" label="年龄">
@@ -84,12 +89,15 @@ export function TerminalForm({
         </div>
       </div>
 
-      {/* ====== 患者生命体征 — 关键问题 ====== */}
-      <SectionTitle icon="♥" text="关键问题" />
+      {/* ====== 患者生命体征 — 关键问题（必填） ====== */}
+      <SectionTitle icon="♥" text="关键问题" required />
 
-      {/* 意识状态 */}
+      {/* 意识状态（必填） */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ ...styles.formLabel, marginBottom: 0 }}>意识状态</span>
+        <RequiredMark />
+      </div>
       <StatusToggle
-        label="意识状态"
         field="conscious"
         value={terminal.conscious}
         trueLabel="有意识"
@@ -99,9 +107,12 @@ export function TerminalForm({
         onToggle={onSetStatus}
       />
 
-      {/* 呼吸状态 */}
+      {/* 呼吸状态（必填） */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ ...styles.formLabel, marginBottom: 0 }}>呼吸状态</span>
+        <RequiredMark />
+      </div>
       <StatusToggle
-        label="呼吸状态"
         field="breathing"
         value={terminal.breathing}
         trueLabel="正常呼吸"
@@ -111,7 +122,7 @@ export function TerminalForm({
         onToggle={onSetStatus}
       />
 
-      {/* ====== 协议号 ====== */}
+      {/* ====== 协议号（可选） ====== */}
       <SectionTitle icon="≡" text="MPDS 协议" />
       <FieldRow icon="#" label="协议编号">
         <input
@@ -155,8 +166,11 @@ export function TerminalForm({
         </div>
       </details>
 
-      {/* ====== 判定码 (Determinant) ====== */}
-      <SectionTitle icon="◎" text="MPDS 判定码" />
+      {/* ====== 判定码（必填） ====== */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <SectionTitle icon="◎" text="MPDS 判定码" inline />
+        <RequiredMark />
+      </div>
       <DeterminantSelector
         current={terminal.determinant}
         onSelect={onSetDeterminant}
@@ -206,13 +220,13 @@ export function TerminalForm({
         </div>
       </FieldRow>
 
-      {/* ====== 备注 ====== */}
+      {/* ====== 备注（可选） ====== */}
       <SectionTitle icon="📝" text="事件备注" />
       <textarea
         style={styles.formInput}
         value={terminal.conditionNote}
         onChange={(e) => onChange('conditionNote', e.target.value)}
-        placeholder="记录其他重要信息…"
+        placeholder="记录其他重要信息…（可选）"
         rows={2}
       />
     </div>

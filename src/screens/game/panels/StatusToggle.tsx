@@ -11,7 +11,8 @@ export function StatusToggle({
   colorFalse,
   onToggle,
 }: {
-  label: string
+  /** 可选标签 — 不传则由外部包装层渲染 */
+  label?: string
   field: 'conscious' | 'breathing'
   value: boolean | null
   trueLabel: string
@@ -22,7 +23,7 @@ export function StatusToggle({
 }) {
   return (
     <div style={{ marginBottom: 6 }}>
-      <div style={styles.formLabel}>{label}</div>
+      {label && <div style={styles.formLabel}>{label}</div>}
       <div style={{ display: 'flex', gap: 6 }}>
         <button
           style={{

@@ -30,6 +30,18 @@ export function TerminalModal({
   onClose: () => void
   onEndCall: () => void
 }) {
+  // 派车启用条件：意识 + 呼吸 + 判定码 全部设置
+  const canDispatch =
+    terminal.conscious !== null &&
+    terminal.breathing !== null &&
+    !!terminal.determinant
+
+  // 各必填项状态（用于显示提示）
+  const missing: string[] = []
+  if (terminal.conscious === null) missing.push('意识状态')
+  if (terminal.breathing === null) missing.push('呼吸状态')
+  if (!terminal.determinant) missing.push('MPDS 判定码')
+
   return (
     <motion.aside
       initial={{ x: '-100%' }}
@@ -109,11 +121,15 @@ export function TerminalModal({
               <button
                 style={{
                   ...styles.modalDispatchBtn,
-                  ...(!terminal.determinant ? styles.modalDispatchBtnDisabled : {}),
+                  ...(!canDispatch ? styles.modalDispatchBtnDisabled : {}),
                 }}
                 onClick={onDispatch}
-                disabled={!terminal.determinant}
-                title={terminal.determinant ? '进入节点式路线规划' : '请先在调度卡中选择 MPDS 判定码'}
+                disabled={!canDispatch}
+                title={
+                  canDispatch
+                    ? '进入节点式路线规划'
+                    : `请先设置 ${missing.join(' / ')}`
+                }
               >
                 ▸ 进入路线规划
               </button>

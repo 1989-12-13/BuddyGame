@@ -8,6 +8,8 @@ describe('TerminalModal route-planning entry', () => {
     const onDispatch = vi.fn()
     const terminal = {
       ...createInitialState().terminal,
+      conscious: true,
+      breathing: true,
       determinant: 'ECHO' as const,
       triage: 'red' as const,
     }
@@ -34,5 +36,67 @@ describe('TerminalModal route-planning entry', () => {
     expect(routeButton).toBeEnabled()
     fireEvent.click(routeButton)
     expect(onDispatch).toHaveBeenCalledOnce()
+  })
+
+  it('disables dispatch until 意识 + 呼吸 + 判定码 are all set', () => {
+    const onDispatch = vi.fn()
+    const initial = createInitialState().terminal
+
+    const { rerender } = render(
+      <TerminalModal
+        terminal={initial}
+        dispatchSent={false}
+        ambulanceRemaining={0}
+        onChange={vi.fn()}
+        onSetStatus={vi.fn()}
+        onSetDeterminant={vi.fn()}
+        onSetDeterminantSubcode={vi.fn()}
+        onSetProtocol={vi.fn()}
+        onDispatch={onDispatch}
+        onClose={vi.fn()}
+        onEndCall={vi.fn()}
+      />,
+    )
+
+    const routeButton = screen.getByRole('button', { name: /进入路线规划/ })
+    expect(routeButton).toBeDisabled()
+    expect(routeButton).toHaveAttribute('title', '请先设置 意识状态 / 呼吸状态 / MPDS 判定码')
+
+    // 只设意识 + 呼吸,缺判定码
+    rerender(
+      <TerminalModal
+        terminal={{ ...initial, conscious: true, breathing: true }}
+        dispatchSent={false}
+        ambulanceRemaining={0}
+        onChange={vi.fn()}
+        onSetStatus={vi.fn()}
+        onSetDeterminant={vi.fn()}
+        onSetDeterminantSubcode={vi.fn()}
+        onSetProtocol={vi.fn()}
+        onDispatch={onDispatch}
+        onClose={vi.fn()}
+        onEndCall={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /进入路线规划/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /进入路线规划/ })).toHaveAttribute('title', '请先设置 MPDS 判定码')
+
+    // 三个都齐,启用
+    rerender(
+      <TerminalModal
+        terminal={{ ...initial, conscious: true, breathing: true, determinant: 'ECHO', triage: 'red' }}
+        dispatchSent={false}
+        ambulanceRemaining={0}
+        onChange={vi.fn()}
+        onSetStatus={vi.fn()}
+        onSetDeterminant={vi.fn()}
+        onSetDeterminantSubcode={vi.fn()}
+        onSetProtocol={vi.fn()}
+        onDispatch={onDispatch}
+        onClose={vi.fn()}
+        onEndCall={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /进入路线规划/ })).toBeEnabled()
   })
 })

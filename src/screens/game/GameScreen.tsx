@@ -160,9 +160,11 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
   }, [])
 
   // --- 处理派车：系统自动配车，玩家只负责逐节点规划路线 ---
+  // 启用条件：意识状态 + 呼吸状态 + MPDS 判定码 三项必填；其它字段（地址/电话/主诉/年龄/性别/备注）可选
   const handleDispatch = useCallback(() => {
     if (!state.currentCall) return
-    if (!state.terminal.determinant) return // 必须选择判定码才能派车
+    const t = state.terminal
+    if (t.conscious === null || t.breathing === null || !t.determinant) return
     const plan = buildDispatchPlan(state)
     if (!plan) return
     setTerminalModalOpen(false)

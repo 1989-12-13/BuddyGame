@@ -5,18 +5,7 @@ import { PROTOCOL_STEPS, getVitalsStepQText } from '../../../game/content/phrase
 import { styles, CATEGORY_ICON } from '../styles'
 import { AskBtnEx } from './AskBtnEx'
 
-/** 问询按钮面板 — 5步标准协议 + 补充MPDS问询 */
-export function QuestionPanel({
-  call,
-  askedMPDS,
-  stressLevel,
-  stress,
-  disabled = false,
-  onAsk,
-  onCalm,
-  onOpenTerminal,
-  hasTriage,
-}: {
+interface QuestionPanelProps {
   call: EmergencyScenario
   askedMPDS: string[]
   stressLevel: CalleeStressLevel
@@ -25,9 +14,17 @@ export function QuestionPanel({
   disabled?: boolean
   onAsk: (id: string) => void
   onCalm: () => void
-  onOpenTerminal: () => void
-  hasTriage: boolean
-}) {
+}
+
+export function QuestionPanel({
+  call,
+  askedMPDS,
+  stressLevel,
+  stress,
+  disabled = false,
+  onAsk,
+  onCalm,
+}: QuestionPanelProps) {
   const isAsked = (id: string) => askedMPDS.includes(id)
   const si = STRESS_INFO[stressLevel]
 
@@ -188,8 +185,8 @@ export function QuestionPanel({
         </div>
       )}
 
-      {/* ====== 第一行：压力指示器 + 安抚按钮 ====== */}
-      <div style={{ ...styles.bottomToolbar, justifyContent: 'flex-start', gap: 8 }}>
+      {/* ====== 底部工具栏：压力指示器 + 安抚按钮（调度卡入口已迁移到左侧设置面板下方） ====== */}
+      <div style={styles.bottomToolbar}>
         <div style={{ ...styles.stressBar, flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
             {si.emoji} {si.label}
@@ -216,26 +213,6 @@ export function QuestionPanel({
           title="消耗2秒安抚来电者"
         >
           安抚
-        </button>
-      </div>
-
-      {/* ====== 第二行：调度卡入口 ====== */}
-      <div style={{ ...styles.bottomToolbar, justifyContent: 'flex-end' }}>
-        <button
-          style={{
-            ...styles.terminalBtn,
-            animation: !hasTriage ? 'pulse-alert 1.5s ease-in-out infinite' : 'none',
-            borderColor: hasTriage ? 'var(--accent-green)' : 'var(--danger-red)',
-            backgroundColor: hasTriage ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
-          }}
-          onClick={onOpenTerminal}
-        >
-          {hasTriage ? '✓' : '⚠'} 调度卡
-          {!hasTriage && (
-            <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--danger-soft)', display: 'block' }}>
-              未分诊
-            </span>
-          )}
         </button>
       </div>
     </div>

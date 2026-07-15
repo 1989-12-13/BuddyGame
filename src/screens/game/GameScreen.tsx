@@ -26,6 +26,7 @@ import { HistoryPanel } from '../../components/call/HistoryPanel'
 import { GuidanceOverlay } from '../../components/guidance/GuidanceOverlay'
 import { useAudio } from '../../audio/AudioContext'
 import { styles } from './styles'
+import { DispatchCardProvider } from '../../contexts/DispatchCardContext'
 import { useStreamingQueue } from './hooks/useStreamingQueue'
 import { useCallAudio } from './hooks/useCallAudio'
 import { useCallLifecycle } from './hooks/useCallLifecycle'
@@ -213,7 +214,15 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     </div>
   ) : null
 
+  // 调度卡入口的控制权下沉到左侧设置面板；通过 Context 暴露给设置面板
+  const dispatchCardControl = {
+    isVisible: state.callPhase === 'questioning' || state.callPhase === 'connected',
+    hasTriage: state.terminal.triage !== null,
+    open: handleOpenTerminal,
+  }
+
   return (
+    <DispatchCardProvider value={dispatchCardControl}>
     <div style={styles.container}>
       <Hud state={state} />
 
@@ -356,8 +365,6 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
             disabled={isStreaming}
             onAsk={(id) => { interruptCallerVoice(); dispatch({ type: 'ASK_QUESTION', questionId: id }) }}
             onCalm={handleCalm}
-            onOpenTerminal={handleOpenTerminal}
-            hasTriage={state.terminal.triage !== null}
           />
         )}
             </motion.div>
@@ -515,5 +522,6 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         )}
       </AnimatePresence>
     </div>
+    </DispatchCardProvider>
   )
 }

@@ -20,7 +20,7 @@ export type GameAction =
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
-  | { type: 'DISPATCH'; vehicleId?: string; route?: RoutePlan }   // 系统车辆 + 玩家逐节点确认的路线
+  | { type: 'DISPATCH'; vehicleId: string; route: RoutePlan }   // 系统车辆 + 玩家逐节点确认的完整路线
   | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
   | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL'; perkChoices?: RoguePerkId[] }

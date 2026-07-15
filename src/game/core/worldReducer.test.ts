@@ -14,6 +14,16 @@ function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
   return worldReducer(withScenario, { type: 'ANSWER_CALL' })
 }
 
+function dispatchWithPlannedRoute(state: WorldState): WorldState {
+  const plan = buildDispatchPlan(state)
+  if (!plan) throw new Error('Expected an automatic dispatch plan')
+  return worldReducer(state, {
+    type: 'DISPATCH',
+    vehicleId: plan.vehicle.id,
+    route: plan.routes[0],
+  })
+}
+
 describe('worldReducer', () => {
   it('advances game time for questions and records the caller purpose', () => {
     const answered = beginCall()
@@ -39,7 +49,7 @@ describe('worldReducer', () => {
       determinant: 'ECHO',
     })
     // triage 从判定码自动推导，无需手动 SET_TRIAGE 即可派车
-    const dispatched = worldReducer(classified, { type: 'DISPATCH' })
+    const dispatched = dispatchWithPlannedRoute(classified)
     // SET_TRIAGE 仍可作为手动覆盖使用
     const overridden = worldReducer(classified, { type: 'SET_TRIAGE', level: 'yellow' })
 
@@ -74,6 +84,30 @@ describe('worldReducer', () => {
     expect(vehicle?.mission?.route?.nodes[vehicle.mission.route.nodes.length - 1].id).toBe('route-scene')
   })
 
+  it('rejects dispatch when the selected node path has not reached the incident scene', () => {
+    const classified = worldReducer(beginCall(), {
+      type: 'SET_MPDS_DETERMINANT',
+      determinant: 'ECHO',
+    })
+    const plan = buildDispatchPlan(classified)!
+    const completeRoute = plan.routes[0]
+    const incompleteRoute = {
+      ...completeRoute,
+      nodes: completeRoute.nodes.slice(0, -1),
+      segments: completeRoute.segments.slice(0, -1),
+    }
+
+    const rejected = worldReducer(classified, {
+      type: 'DISPATCH',
+      vehicleId: plan.vehicle.id,
+      route: incompleteRoute,
+    })
+
+    expect(rejected).toBe(classified)
+    expect(rejected.dispatchSent).toBe(false)
+    expect(rejected.dispatchRecord).toBeNull()
+  })
+
   it('derives HOT or COLD response mode from the player determinant', () => {
     const answered = beginCall()
     const alpha = worldReducer(answered, {
@@ -96,7 +130,7 @@ describe('worldReducer', () => {
       level: 'red',
     })
     const correctEnded = worldReducer(
-      worldReducer(correctTriaged, { type: 'DISPATCH' }),
+      dispatchWithPlannedRoute(correctTriaged),
       { type: 'END_CALL' },
     )
 
@@ -109,7 +143,7 @@ describe('worldReducer', () => {
       level: 'red',
     })
     const wrongEnded = worldReducer(
-      worldReducer(correctedTriage, { type: 'DISPATCH' }),
+      dispatchWithPlannedRoute(correctedTriage),
       { type: 'END_CALL' },
     )
 
@@ -135,14 +169,14 @@ describe('worldReducer', () => {
     }
 
     const correctEnded = worldReducer(
-      worldReducer({ ...triaged, pendingJudgments: [judgment] }, { type: 'DISPATCH' }),
+      dispatchWithPlannedRoute({ ...triaged, pendingJudgments: [judgment] }),
       { type: 'END_CALL' },
     )
     const wrongEnded = worldReducer(
-      worldReducer({
+      dispatchWithPlannedRoute({
         ...triaged,
         pendingJudgments: [{ ...judgment, chosenOptionIndex: 1 }],
-      }, { type: 'DISPATCH' }),
+      }),
       { type: 'END_CALL' },
     )
 
@@ -206,11 +240,11 @@ describe('worldReducer', () => {
     )
 
     const correctEnded = worldReducer(
-      worldReducer(correctVitals, { type: 'DISPATCH' }),
+      dispatchWithPlannedRoute(correctVitals),
       { type: 'END_CALL' },
     )
     const wrongEnded = worldReducer(
-      worldReducer(wrongVitals, { type: 'DISPATCH' }),
+      dispatchWithPlannedRoute(wrongVitals),
       { type: 'END_CALL' },
     )
 

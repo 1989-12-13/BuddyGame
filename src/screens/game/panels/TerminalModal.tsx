@@ -152,17 +152,25 @@ export function TerminalModal({
               <button style={styles.modalSaveBtn} onClick={onClose}>
                 ≡ 暂存
               </button>
-              <button
-                style={{
-                  ...styles.modalDispatchBtn,
-                  ...(!terminal.determinant ? styles.modalDispatchBtnDisabled : {}),
-                }}
-                onClick={onDispatch}
-                disabled={!terminal.determinant}
-                title={terminal.determinant ? '确认派车' : '请先在调度卡中选择 MPDS 判定码'}
-              >
-                ▸ 确认派车
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  下一步 · 路线规划
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>
+                  沿相邻节点选择完整路线，确认抵达事件点
+                </span>
+                <button
+                  style={{
+                    ...styles.modalDispatchBtn,
+                    ...(!terminal.determinant ? styles.modalDispatchBtnDisabled : {}),
+                  }}
+                  onClick={onDispatch}
+                  disabled={!terminal.determinant}
+                  title={terminal.determinant ? '进入路线规划：沿相邻节点选择完整路线后确认派车' : '请先在调度卡中选择 MPDS 判定码'}
+                >
+                  ▸ 进入路线规划
+                </button>
+              </div>
             </>
           ) : (
             <div style={styles.dispatchSent}>

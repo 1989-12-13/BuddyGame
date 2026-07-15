@@ -88,7 +88,7 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
   const reset = () => setSelectedNodeIds(['route-start'])
 
   return (
-    <div style={{
+    <div data-testid="route-planner" style={{
       position: 'fixed',
       inset: 0,
       zIndex: 310,
@@ -130,6 +130,13 @@ export function RoutePlanner({ vehicle, routes, priorityChannelActive = false, o
             </div>
             <div style={{ marginTop: 3, fontSize: 11, color: 'var(--text-muted)' }}>
               读取道路文字状态，在共享路口逐段选择，直至到达事件现场
+            </div>
+            <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 10 }}>
+              <span style={{ color: 'var(--success-green)' }}>✓ 系统自动配车</span>
+              <span style={{ color: 'var(--text-muted)' }}>→</span>
+              <strong style={{ color: 'var(--accent-gold)' }}>2 逐节点选择</strong>
+              <span style={{ color: 'var(--text-muted)' }}>→</span>
+              <span style={{ color: completedRoute ? 'var(--success-green)' : 'var(--text-muted)' }}>3 确认派车</span>
             </div>
           </div>
           <button aria-label="关闭路线规划" onClick={onCancel} style={iconButtonStyle}>

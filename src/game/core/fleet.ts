@@ -1,5 +1,5 @@
 // ============================================================
-// 120调度台 — 救护车队管理
+// 120调度台 — 救护车管理（单辆）
 // ============================================================
 
 import { applyScheduledTrafficUpdate, type AppliedTrafficUpdate, type RoutePlan } from './routing'
@@ -51,19 +51,17 @@ export interface FleetState {
   selectedVehicleId: string | null
 }
 
-/** 创建默认车队（3 辆，差异化速度+能力，让选车有取舍） */
+/** 创建单辆标准救护车（取消多车队配车，专注路线规划） */
 export function createDefaultFleet(): FleetState {
   return {
     vehicles: [
-      { id: 'ambulance_a', name: '望京站 · 甲车', status: 'available', eta: 0, speed: 2, capability: 4, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null, mission: null },
-      { id: 'ambulance_b', name: '中关村站 · 乙车', status: 'available', eta: 0, speed: 1, capability: 2, tier: 'BLS', equipment: ['BLS'], currentCallId: null, mission: null },
-      { id: 'ambulance_c', name: '方庄站 · 救护车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null, mission: null },
+      { id: 'ambulance', name: '急救车', status: 'available', eta: 0, speed: 2, capability: 3, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null, mission: null },
     ],
     selectedVehicleId: null,
   }
 }
 
-/** TICK 每秒推进所有占用车辆的状态机（en_route→on_scene→returning→available） */
+/** TICK 每秒推进车辆状态机（en_route→on_scene→returning→available） */
 export function advanceFleet(fleet: FleetState): FleetState {
   return {
     ...fleet,
@@ -104,38 +102,10 @@ export function advanceFleet(fleet: FleetState): FleetState {
   }
 }
 
-/** 根据地址完整度和车辆速度计算 ETA（游戏秒数） */
-export function calcVehicleETA(addressCompleteness: 'vague' | 'partial' | 'full', vehicleSpeed: number): number {
-  let eta = 10
-  if (addressCompleteness === 'full') eta -= 2
-  else if (addressCompleteness === 'vague') eta += 3
-  eta = Math.round(eta / vehicleSpeed)
-  return Math.max(4, eta)
-}
-
 /** 按 id 查车 */
 export function findVehicleById(fleet: FleetState, id: string | null): Ambulance | null {
   if (!id) return null
   return fleet.vehicles.find(v => v.id === id) ?? null
-}
-
-/** 查找最快可用的车辆 */
-export function findFastestAvailable(fleet: FleetState): Ambulance | null {
-  const available = fleet.vehicles.filter(v => v.status === 'available')
-  if (available.length === 0) return null
-  return available.reduce((a, b) => a.speed >= b.speed ? a : b)
-}
-
-/** 查找能力最强的可用车辆 */
-export function findMostCapableAvailable(fleet: FleetState): Ambulance | null {
-  const available = fleet.vehicles.filter(v => v.status === 'available')
-  if (available.length === 0) return null
-  return available.reduce((a, b) => a.capability >= b.capability ? a : b)
-}
-
-/** 可用车辆数 */
-export function countAvailable(fleet: FleetState): number {
-  return fleet.vehicles.filter(v => v.status === 'available').length
 }
 
 /** tier → 中文描述 */

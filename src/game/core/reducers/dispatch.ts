@@ -1,11 +1,10 @@
 // ============================================================
 // 120调度台 — DISPATCH reducer 处理器
-// 派出救护车
+// 派出救护车（单辆，专注路线）
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
 import { calcOnSceneDuration } from '../worldState'
-import { findVehicleById } from '../fleet'
 import { lookupCoords, DEFAULT_CENTER } from '../../locations'
 import { createEventSink, sinkEvent } from './helpers'
 import { DISPATCH_WARN_TIME, DISPATCH_CRITICAL_TIME } from '../constants'
@@ -24,8 +23,8 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
   if (state.dispatchSent) return state
   if (!state.terminal.determinant || !state.terminal.triage) return state
 
-  // 派车必须来自“系统配车 → 玩家逐节点完成路线”的冻结方案，禁止绕过路线规划。
-  const vehicle = findVehicleById(state.fleet, vehicleId)
+  // 派车 — 唯一车辆
+  const vehicle = state.fleet.vehicles[0]
   if (!vehicle || vehicle.status !== 'available') return state
   if (!isValidRouteSelection(selectedRoute)) return state
 
@@ -34,18 +33,17 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
   const addressCompleteness: 'vague' | 'partial' | 'full' =
     rawAddress === 'none' ? 'vague' : rawAddress
 
-  // 从MPDS判定码自动推导分诊等级（现场分诊由急救人员执行，调度员无需手动选择）
+  // 从MPDS判定码自动推导分诊等级
   const triage = state.terminal.triage
 
   const onSceneTotal = calcOnSceneDuration(state.currentCall.correctTriage)
-  // 事件点真实坐标（用于地图跨通话显示）
   const eventLatLng = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
   const route = selectedRoute
   const eta = route.totalEta
 
   const systemLine: DialogueLine = {
     speaker: 'system',
-    text: `【▸ ${vehicle.name}（${vehicle.tier}）已派出 — 路线: ${route.label} | 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+    text: `【▸ 救护车已派出 — 路线: ${route.label} | 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
     timestamp: state.shiftElapsed,
   }
 

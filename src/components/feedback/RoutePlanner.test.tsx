@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { createDefaultFleet } from '../../game/core/fleet'
 import { buildRouteOptions } from '../../game/core/routing'
 import { RoutePlanner } from './RoutePlanner'
 
@@ -15,7 +14,6 @@ describe('RoutePlanner node workflow', () => {
 
     render(
       <RoutePlanner
-        vehicle={createDefaultFleet().vehicles[0]}
         routes={routes}
         onConfirm={onConfirm}
         onCancel={vi.fn()}

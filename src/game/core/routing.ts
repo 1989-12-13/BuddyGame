@@ -178,12 +178,12 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
 ]
 
 const CONDITION_META: Record<RoadCondition, { label: string; factor: number; description: string; color: string }> = {
-  clear: { label: '畅通', factor: 0.88, description: '道路畅通，可保持急救优先速度', color: '#22c55e' },
-  busy: { label: '车流较大', factor: 1.08, description: '车流较大，需要鸣笛谨慎穿行', color: '#eab308' },
-  congested: { label: '拥堵', factor: 1.34, description: '车辆排队，通行效率明显下降', color: '#f97316' },
-  construction: { label: '维修施工', factor: 1.26, description: '市政维修占道，仅保留部分车道', color: '#fb923c' },
-  school_zone: { label: '学校特殊路段', factor: 1.16, description: '学生与行人密集，即使急救车辆也需观察通行', color: '#a78bfa' },
-  accident: { label: '事故占道', factor: 1.48, description: '前方事故占道，需要现场绕行', color: '#ef4444' },
+  clear: { label: '畅通', factor: 0.65, description: '道路畅通，可保持急救优先速度', color: '#22c55e' },
+  busy: { label: '车流较大', factor: 0.90, description: '车流较大，需要鸣笛谨慎穿行', color: '#eab308' },
+  congested: { label: '拥堵', factor: 1.35, description: '车辆排队，通行效率明显下降', color: '#f97316' },
+  construction: { label: '维修施工', factor: 1.10, description: '市政维修占道，仅保留部分车道', color: '#fb923c' },
+  school_zone: { label: '学校特殊路段', factor: 1.05, description: '学生与行人密集，即使急救车辆也需观察通行', color: '#a78bfa' },
+  accident: { label: '事故占道', factor: 1.40, description: '前方事故占道，需要现场绕行', color: '#ef4444' },
 }
 
 /** 同一条共享道路在所有候选路线中保持相同路况。 */
@@ -306,7 +306,7 @@ function routeEta(
   )
   // 12 km 作为城区基准路程，让不同急救站的位置真正影响 ETA。
   const distanceFactor = Math.max(0.65, Math.min(1.35, totalDistance / 12))
-  const normalEta = Math.max(20, Math.min(150, Math.round(baseEta * bias * conditionFactor * distanceFactor)))
+  const normalEta = Math.max(20, Math.min(180, Math.round(baseEta * bias * conditionFactor * distanceFactor)))
   return Math.max(20, normalEta - (priorityChannel ? 5 : 0))
 }
 
@@ -382,22 +382,28 @@ export function applyScheduledTrafficUpdate(route: RoutePlan): { route: RoutePla
   }
 }
 
-/** 按整条折线路程插值车辆位置，不会因各段长短不同而跳跃。 */
-export function positionAlongRoute(points: LatLng[], progress: number): LatLng {
+/** 按整条折线路程插值车辆位置，不会因各段长短不同而跳跃。
+ *  当传入 segmentFactors（各段路况 etaFactor）时，用加权距离代替地理距离，
+ *  使车辆在畅通段（低因子）视觉上移动更快，在拥堵段（高因子）移动更慢。 */
+export function positionAlongRoute(points: LatLng[], progress: number, segmentFactors?: number[]): LatLng {
   if (points.length === 0) return { lat: 0, lng: 0 }
   if (points.length === 1) return points[0]
 
   const clamped = Math.max(0, Math.min(1, progress))
   const distances = points.slice(0, -1).map((point, index) => segmentDistance(point, points[index + 1]))
-  const total = distances.reduce((sum, value) => sum + value, 0)
+  // 有 segmentFactors 时按 factor × 距离加权，使拥堵段占据更多"时间进度"
+  const effective = segmentFactors
+    ? distances.map((d, i) => d * (segmentFactors[i] ?? 1))
+    : distances
+  const total = effective.reduce((sum, value) => sum + value, 0)
   let target = total * clamped
 
   for (let index = 0; index < distances.length; index += 1) {
-    const distance = distances[index]
-    if (target <= distance || index === distances.length - 1) {
-      return interpolate(points[index], points[index + 1], distance === 0 ? 0 : target / distance)
+    const effLen = effective[index]
+    if (target <= effLen || index === distances.length - 1) {
+      return interpolate(points[index], points[index + 1], effLen === 0 ? 0 : target / effLen)
     }
-    target -= distance
+    target -= effLen
   }
   return points[points.length - 1]
 }

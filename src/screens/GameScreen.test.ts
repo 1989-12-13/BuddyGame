@@ -6,11 +6,11 @@ import {
 } from '../game/core/dispatchTiming'
 
 describe('dispatch timing status', () => {
-  it('warns at 45 seconds and only marks overtime after 60 seconds', () => {
-    expect(getDispatchTimingState(44)).toBe('normal')
-    expect(getDispatchTimingState(45)).toBe('warning')
-    expect(getDispatchTimingState(60)).toBe('warning')
-    expect(getDispatchTimingState(61)).toBe('overtime')
+  it('warns at 50 seconds and only marks overtime after 80 seconds', () => {
+    expect(getDispatchTimingState(49)).toBe('normal')
+    expect(getDispatchTimingState(50)).toBe('warning')
+    expect(getDispatchTimingState(80)).toBe('warning')
+    expect(getDispatchTimingState(81)).toBe('overtime')
   })
 
   it('does not reveal the expected determinant before the player selects one', () => {
@@ -19,8 +19,8 @@ describe('dispatch timing status', () => {
   })
 
   it('detects warning thresholds even when an action skips over the exact second', () => {
-    expect(crossedDispatchWarning(44, 47)).toBe(true)
-    expect(crossedDispatchWarning(60, 63)).toBe(true)
-    expect(crossedDispatchWarning(47, 60)).toBe(false)
+    expect(crossedDispatchWarning(49, 52)).toBe(true)
+    expect(crossedDispatchWarning(80, 83)).toBe(true)
+    expect(crossedDispatchWarning(52, 80)).toBe(false)
   })
 })

@@ -197,12 +197,14 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
             let cur: LatLng
             if (v.status === 'en_route') {
               const elapsed = m.routeElapsed ?? Math.max(0, m.outboundTotal - v.eta)
-              cur = positionAlongRoute(routePoints, elapsed / Math.max(1, elapsed + v.eta))
+              const factors = m.route?.segments.map(s => s.etaFactor)
+              cur = positionAlongRoute(routePoints, elapsed / Math.max(1, elapsed + v.eta), factors)
             } else if (v.status === 'on_scene') {
               cur = m.eventLatLng
             } else {
               const progress = 1 - v.eta / Math.max(1, m.outboundTotal)
-              cur = positionAlongRoute([...routePoints].reverse(), progress)
+              const revFactors = m.route?.segments.map(s => s.etaFactor).reverse()
+              cur = positionAlongRoute([...routePoints].reverse(), progress, revFactors)
             }
             // 跨通话车辆：mission.callId !== 当前通话 → 历史/背景任务，dim 化
             const isMissionOfCurrentCall = m.callId === currentCallId

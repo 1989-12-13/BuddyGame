@@ -19,7 +19,7 @@ function dispatchWithPlannedRoute(state: WorldState): WorldState {
   if (!plan) throw new Error('Expected an automatic dispatch plan')
   return worldReducer(state, {
     type: 'DISPATCH',
-    vehicleId: plan.vehicle.id,
+    vehicleId: 'ambulance',
     route: plan.routes[0],
   })
 }
@@ -61,7 +61,7 @@ describe('worldReducer', () => {
     expect(dispatched.dialogueLog).toHaveLength(classified.dialogueLog.length + 2)
   })
 
-  it('persists the system-assigned vehicle and completed node route in the mission', () => {
+  it('persists the completed node route in the mission', () => {
     const classified = worldReducer(beginCall(), {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ECHO',
@@ -71,12 +71,12 @@ describe('worldReducer', () => {
     const selectedRoute = plan!.routes[1]
     const dispatched = worldReducer(classified, {
       type: 'DISPATCH',
-      vehicleId: plan!.vehicle.id,
+      vehicleId: 'ambulance',
       route: selectedRoute,
     })
-    const vehicle = dispatched.fleet.vehicles.find(item => item.id === plan!.vehicle.id)
+    const vehicle = dispatched.fleet.vehicles.find(item => item.id === 'ambulance')
 
-    expect(dispatched.rescue.vehicleId).toBe(plan!.vehicle.id)
+    expect(dispatched.rescue.vehicleId).toBe('ambulance')
     expect(dispatched.dispatchRecord?.routeId).toBe(selectedRoute.id)
     expect(dispatched.dispatchRecord?.routeStrategy).toBe(selectedRoute.strategy)
     expect(vehicle?.mission?.route).toEqual(selectedRoute)
@@ -99,7 +99,7 @@ describe('worldReducer', () => {
 
     const rejected = worldReducer(classified, {
       type: 'DISPATCH',
-      vehicleId: plan.vehicle.id,
+      vehicleId: 'ambulance',
       route: incompleteRoute,
     })
 

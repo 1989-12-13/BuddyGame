@@ -106,9 +106,10 @@ describe('createInitialState', () => {
     expect(state.pendingPerkChoices).toEqual([])
   })
 
-  it('fleet 有 3 辆车', () => {
+  it('fleet 有 1 辆标准救护车', () => {
     const state = createInitialState()
-    expect(state.fleet.vehicles).toHaveLength(3)
+    expect(state.fleet.vehicles).toHaveLength(1)
+    expect(state.fleet.vehicles[0].id).toBe('ambulance')
     expect(state.fleet.selectedVehicleId).toBeNull()
   })
 })
@@ -146,30 +147,30 @@ describe('buildScenarioQueue', () => {
 // createPatientStatus
 // ============================================================
 describe('createPatientStatus', () => {
-  it('red triage 起始 stability 60，decayRate 0.8', () => {
+  it('red triage 起始 stability 80，decayRate 0.35', () => {
     const ps = createPatientStatus('red')
-    expect(ps.stability).toBe(60)
-    expect(ps.initialStability).toBe(60)
-    expect(ps.decayRate).toBe(0.8)
+    expect(ps.stability).toBe(80)
+    expect(ps.initialStability).toBe(80)
+    expect(ps.decayRate).toBe(0.35)
     expect(ps.died).toBe(false)
   })
 
-  it('yellow triage 起始 stability 75，decayRate 0.4', () => {
+  it('yellow triage 起始 stability 85，decayRate 0.2', () => {
     const ps = createPatientStatus('yellow')
-    expect(ps.stability).toBe(75)
-    expect(ps.decayRate).toBe(0.4)
+    expect(ps.stability).toBe(85)
+    expect(ps.decayRate).toBe(0.2)
   })
 
-  it('green triage 起始 stability 90，decayRate 0.1', () => {
+  it('green triage 起始 stability 92，decayRate 0.08', () => {
     const ps = createPatientStatus('green')
-    expect(ps.stability).toBe(90)
-    expect(ps.decayRate).toBe(0.1)
+    expect(ps.stability).toBe(92)
+    expect(ps.decayRate).toBe(0.08)
   })
 
-  it('black triage 起始 stability 30，decayRate 1.5', () => {
+  it('black triage 起始 stability 35，decayRate 1.2', () => {
     const ps = createPatientStatus('black')
-    expect(ps.stability).toBe(30)
-    expect(ps.decayRate).toBe(1.5)
+    expect(ps.stability).toBe(35)
+    expect(ps.decayRate).toBe(1.2)
   })
 })
 
@@ -227,11 +228,11 @@ describe('vitalSignColor', () => {
 // baseRescueRate
 // ============================================================
 describe('baseRescueRate', () => {
-  it('red 0.45, yellow 0.70, green 0.95, black 0.10', () => {
-    expect(baseRescueRate('red')).toBe(0.45)
-    expect(baseRescueRate('yellow')).toBe(0.70)
+  it('red 0.50, yellow 0.75, green 0.95, black 0.15', () => {
+    expect(baseRescueRate('red')).toBe(0.50)
+    expect(baseRescueRate('yellow')).toBe(0.75)
     expect(baseRescueRate('green')).toBe(0.95)
-    expect(baseRescueRate('black')).toBe(0.10)
+    expect(baseRescueRate('black')).toBe(0.15)
   })
 })
 
@@ -242,7 +243,6 @@ describe('calcRescueSuccessRate', () => {
   const defaultInput = {
     base: 0.2,
     stability: 75,
-    capability: 3,
     dispatchTime: 50 as number | null,
     triageDiff: 0,
     guidanceWrongCount: 0,
@@ -266,7 +266,6 @@ describe('calcRescueSuccessRate', () => {
     const rate = calcRescueSuccessRate({
       base: 0.1,
       stability: 5,
-      capability: 1,
       dispatchTime: 120,
       triageDiff: 3,
       guidanceWrongCount: 10,
@@ -287,15 +286,15 @@ describe('calcRescueSuccessRate', () => {
     expect(a - b).toBeCloseTo(0.2)
   })
 
-  it('派车超过 90 秒额外扣除 25%', () => {
+  it('派车超过 110 秒额外扣除 25%', () => {
     const fast = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 30 })
-    const slow = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 95 })
+    const slow = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 120 })
     expect(fast - slow).toBeCloseTo(0.25)
   })
 
-  it('派车 61-90 秒扣除 15%', () => {
+  it('派车 76-110 秒扣除 15%', () => {
     const fast = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 30 })
-    const mid = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 75 })
+    const mid = calcRescueSuccessRate({ ...defaultInput, dispatchTime: 80 })
     expect(fast - mid).toBeCloseTo(0.15)
   })
 
@@ -306,16 +305,10 @@ describe('calcRescueSuccessRate', () => {
   })
 
   it('结果裁剪到 [0, 1]', () => {
-    const high = calcRescueSuccessRate({ ...defaultInput, base: 1.0, stability: 100, capability: 5, miniGameAvg: 1 })
+    const high = calcRescueSuccessRate({ ...defaultInput, base: 1.0, stability: 100, miniGameAvg: 1 })
     expect(high).toBeLessThanOrEqual(1)
     const low = calcRescueSuccessRate({ ...defaultInput, base: -1, stability: 0, dispatchTime: 200, guidanceWrongCount: 50 })
     expect(low).toBeGreaterThanOrEqual(0)
-  })
-
-  it('车辆能力每高/低于 3 一级 ±4%', () => {
-    const a = calcRescueSuccessRate({ ...defaultInput, capability: 3 })
-    const b = calcRescueSuccessRate({ ...defaultInput, capability: 5 })
-    expect(b - a).toBeCloseTo(0.08) // (5-3)*0.04
   })
 
   it('小游戏每高/低于 0.5 一步 ±5%', () => {
@@ -374,44 +367,38 @@ describe('triageLevelDiff', () => {
 // calcAmbulanceETA
 // ============================================================
 describe('calcAmbulanceETA', () => {
-  it('ETA 裁剪在 25-120 区间', () => {
+  it('ETA 裁剪在 20-100 区间', () => {
     const eta = calcAmbulanceETA(30, 'partial', 2)
-    expect(eta).toBeGreaterThanOrEqual(25)
-    expect(eta).toBeLessThanOrEqual(120)
+    expect(eta).toBeGreaterThanOrEqual(20)
+    expect(eta).toBeLessThanOrEqual(100)
   })
 
-  it('最快派车（<=27s）减 15 秒', () => {
-    const fast = calcAmbulanceETA(25, 'partial', 1)
-    const normal = calcAmbulanceETA(50, 'partial', 1)
+  it('最快派车（<=35s）减 15 秒', () => {
+    const fast = calcAmbulanceETA(25, 'partial')
+    const normal = calcAmbulanceETA(60, 'partial')
     expect(fast).toBeLessThan(normal)
   })
 
-  it('地址完整度 full 减 10 秒', () => {
-    const partial = calcAmbulanceETA(40, 'partial', 2)
-    const full = calcAmbulanceETA(40, 'full', 2)
-    expect(partial - full).toBe(10)
+  it('地址完整度 full 减 12 秒', () => {
+    const partial = calcAmbulanceETA(40, 'partial')
+    const full = calcAmbulanceETA(40, 'full')
+    expect(partial - full).toBe(12)
   })
 
-  it('地址模糊 vague 加 15 秒', () => {
-    const partial = calcAmbulanceETA(40, 'partial', 1)
-    const vague = calcAmbulanceETA(40, 'vague', 1)
-    expect(vague - partial).toBe(15)
+  it('地址模糊 vague 加 10 秒', () => {
+    const partial = calcAmbulanceETA(40, 'partial')
+    const vague = calcAmbulanceETA(40, 'vague')
+    expect(vague - partial).toBe(10)
   })
 
-  it('车速 3 比车速 1 快 14 秒', () => {
-    const slow = calcAmbulanceETA(40, 'full', 1)
-    const fast = calcAmbulanceETA(40, 'full', 3)
-    expect(slow - fast).toBe(14)
+  it('极端慢条件不低过 20', () => {
+    const eta = calcAmbulanceETA(25, 'full')
+    expect(eta).toBeGreaterThanOrEqual(20)
   })
 
-  it('极端慢条件不低过 25', () => {
-    const eta = calcAmbulanceETA(25, 'full', 3)
-    expect(eta).toBeGreaterThanOrEqual(25)
-  })
-
-  it('极端快条件不高过 120', () => {
-    const eta = calcAmbulanceETA(90, 'vague', 1)
-    expect(eta).toBeLessThanOrEqual(120)
+  it('极端快条件不高过 100', () => {
+    const eta = calcAmbulanceETA(90, 'vague')
+    expect(eta).toBeLessThanOrEqual(100)
   })
 })
 
@@ -419,20 +406,20 @@ describe('calcAmbulanceETA', () => {
 // calcOnSceneDuration
 // ============================================================
 describe('calcOnSceneDuration', () => {
-  it('red ~20s', () => {
-    expect(calcOnSceneDuration('red')).toBe(20)
+  it('red ~15s', () => {
+    expect(calcOnSceneDuration('red')).toBe(15) // decayRate 0.35 < 0.6 → -5
   })
 
-  it('yellow ~15s', () => {
-    expect(calcOnSceneDuration('yellow')).toBe(15)
+  it('yellow ~8s', () => {
+    expect(calcOnSceneDuration('yellow')).toBe(8) // decayRate 0.2 < 0.3 → -12
   })
 
   it('green ~8s', () => {
-    expect(calcOnSceneDuration('green')).toBe(8)
+    expect(calcOnSceneDuration('green')).toBe(8) // decayRate 0.08 < 0.3 → -12
   })
 
-  it('black ~10s', () => {
-    expect(calcOnSceneDuration('black')).toBe(20) // decayRate 1.5 >= 0.6 → 0 offset
+  it('black ~20s', () => {
+    expect(calcOnSceneDuration('black')).toBe(20) // decayRate 1.2 >= 0.6 → 0 offset
   })
 })
 
@@ -451,12 +438,12 @@ describe('scoreCall', () => {
     expect(s.total).toBeLessThanOrEqual(20)
   })
 
-  it('速度分：<=27→35, <=43→30, <=60→20, <=90→10, >90→5', () => {
+  it('速度分：<=35→35, <=50→30, <=75→20, <=110→10, >110→5', () => {
     expect(scoreCall(25, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(35)
-    expect(scoreCall(40, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(30)
-    expect(scoreCall(55, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(20)
-    expect(scoreCall(80, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(10)
-    expect(scoreCall(100, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(5)
+    expect(scoreCall(45, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(30)
+    expect(scoreCall(65, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(20)
+    expect(scoreCall(100, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(10)
+    expect(scoreCall(130, 'partial', false, false, false, null, 'red', 0, 0).speed).toBe(5)
   })
 
   it('null dispatchTime → speed = 0', () => {

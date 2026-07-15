@@ -95,4 +95,29 @@ describe('node route planning', () => {
     expect(halfway.lng).toBeCloseTo(1, 1)
     expect(halfway.lat).toBeCloseTo(0, 1)
   })
+
+  it('moves faster on low-factor segments when segmentFactors are provided', () => {
+    // 两段等长（0→1, 1→1），第一段 factor=0.5（快），第二段 factor=1.5（慢）
+    // 加权后第一段占 0.5/(0.5+1.5)=25% 的时间，第二段占 75%
+    const points = [{ lat: 0, lng: 0 }, { lat: 0, lng: 1 }, { lat: 1, lng: 1 }]
+
+    // progress=0.25 → 走完加权距离的 25% → 刚好在第一段末尾
+    const p25 = positionAlongRoute(points, 0.25, [0.5, 1.5])
+    expect(p25.lat).toBeCloseTo(0, 1)
+    expect(p25.lng).toBeCloseTo(1, 1)
+
+    // progress=0.5 → 走完加权距离的 50% → 已进入第二段（因子慢）
+    const p50 = positionAlongRoute(points, 0.5, [0.5, 1.5])
+    expect(p50.lat).toBeGreaterThan(0)
+    expect(p50.lng).toBeCloseTo(1, 1)
+
+    // 不加 factor 时，相同 progress=0.3 还在第一段中间（lng≈0.6）
+    // 加 factor=0.5 后，已快速通过第一段进入第二段（lat>0）
+    const p30factor = positionAlongRoute(points, 0.3, [0.5, 1.5])
+    const p30normal = positionAlongRoute(points, 0.3)
+    expect(p30normal.lat).toBeCloseTo(0, 1)       // 仍在第一段
+    expect(p30normal.lng).toBeLessThan(1)          // 没到连接点
+    expect(p30factor.lat).toBeGreaterThan(0)       // 已进入第二段
+    expect(p30factor.lng).toBeCloseTo(1, 1)
+  })
 })

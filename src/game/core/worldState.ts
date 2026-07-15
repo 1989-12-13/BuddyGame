@@ -145,12 +145,12 @@ export function createInitialState(): WorldState {
 
 interface SeverityConfig { decayRate: number; initialStability: number; baseRescue: number }
 
-/** 宽松难度曲线：red 患者每秒 -0.5（约 2.5 分钟缓冲），提供充足容错空间 */
+/** 宽松难度曲线：red 患者每秒 -0.35（约 3.5 分钟缓冲），提供更充裕的容错空间 */
 const SEVERITY_CONFIG: Record<TriageLevel, SeverityConfig> = {
-  red:    { decayRate: 0.5, initialStability: 75, baseRescue: 0.45 },
-  yellow: { decayRate: 0.3, initialStability: 80, baseRescue: 0.70 },
-  green:  { decayRate: 0.1, initialStability: 90, baseRescue: 0.95 },
-  black:  { decayRate: 1.5, initialStability: 30, baseRescue: 0.10 },
+  red:    { decayRate: 0.35, initialStability: 80, baseRescue: 0.50 },
+  yellow: { decayRate: 0.20, initialStability: 85, baseRescue: 0.75 },
+  green:  { decayRate: 0.08, initialStability: 92, baseRescue: 0.95 },
+  black:  { decayRate: 1.2, initialStability: 35, baseRescue: 0.15 },
 }
 
 /** 根据 correctTriage 创建 patientStatus */
@@ -207,8 +207,8 @@ export function calcRescueSuccessRate(inp: RescueInputs): number {
   p += (inp.capability - 3) * 0.04       // 车辆能力 ±8
   p += (inp.miniGameAvg - 0.5) * 0.1     // 小游戏 ±5
   if (inp.dispatchTime !== null) {
-    if (inp.dispatchTime > 90) p -= 0.25
-    else if (inp.dispatchTime > 60) p -= 0.15
+    if (inp.dispatchTime > DISPATCH_COPPER_TIME) p -= 0.25
+    else if (inp.dispatchTime > DISPATCH_BRONZE_TIME) p -= 0.15
   }
   if (inp.triageDiff === 1) p -= 0.1
   else if (inp.triageDiff >= 2) p -= 0.2
@@ -242,7 +242,7 @@ export function calcAmbulanceETA(
   addressCompleteness: 'vague' | 'partial' | 'full',
   vehicleSpeed = 1,
 ): number {
-  let eta = 55
+  let eta = 50
 
   // 派车越快，ETA 越短
   if (dispatchTime <= DISPATCH_GOLD_TIME) eta -= 15
@@ -250,13 +250,13 @@ export function calcAmbulanceETA(
   else if (dispatchTime > DISPATCH_BRONZE_TIME) eta += 12
 
   // 地址越完整，ETA 越短
-  if (addressCompleteness === 'full') eta -= 10
-  else if (addressCompleteness === 'vague') eta += 15
+  if (addressCompleteness === 'full') eta -= 12
+  else if (addressCompleteness === 'vague') eta += 10
 
-  // 车辆速度（speed 1-3）：speed 3 快车减 14，speed 1 无加成
-  eta -= (vehicleSpeed - 1) * 7
+  // 车辆速度（speed 1-3）：speed 3 快车减 12，speed 1 无加成
+  eta -= (vehicleSpeed - 1) * 6
 
-  return Math.max(25, Math.min(120, eta))
+  return Math.max(20, Math.min(100, eta))
 }
 
 /** 现场救治时长（秒）— 按分诊严重度，red 最久 */

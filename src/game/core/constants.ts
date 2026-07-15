@@ -45,18 +45,18 @@ export const MINIGAME_STABILITY_MULT = 20
 // -------------------- 派车计时阈值 --------------------
 
 /** 派车黄金时间上限（秒）— 满分 35 */
-export const DISPATCH_GOLD_TIME = 27
+export const DISPATCH_GOLD_TIME = 35
 /** 派车良好时间上限（秒）— 30 分 */
-export const DISPATCH_SILVER_TIME = 43
+export const DISPATCH_SILVER_TIME = 50
 /** 派车及格时间上限（秒）— 20 分 */
-export const DISPATCH_BRONZE_TIME = 60
+export const DISPATCH_BRONZE_TIME = 75
 /** 派车差评时间上限（秒）— 10 分 */
-export const DISPATCH_COPPER_TIME = 90
+export const DISPATCH_COPPER_TIME = 110
 
 /** 派车警告阈值（秒）— 超过显示黄色警告 */
-export const DISPATCH_WARN_TIME = 45
+export const DISPATCH_WARN_TIME = 50
 /** 派车严重阈值（秒）— 超过显示红色警告 */
-export const DISPATCH_CRITICAL_TIME = 60
+export const DISPATCH_CRITICAL_TIME = 80
 
 // -------------------- 评分系数 --------------------
 

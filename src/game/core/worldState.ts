@@ -1,5 +1,5 @@
 // ============================================================
-// 零点接线台 — WorldState 工厂函数
+// 120调度台 — WorldState 工厂函数
 // ============================================================
 
 import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, PatientStatus, VitalSign } from '../types'

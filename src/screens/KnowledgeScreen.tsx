@@ -5,7 +5,8 @@
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAudio } from '../audio/AudioContext'
-import { ThemeToggle } from '../components/ThemeToggle'
+
+
 import { SCENARIOS, SCENARIO_IDS } from '../game/events/templates'
 import type { EmergencyScenario, MpdsDeterminant } from '../game/types'
 import { MPDS_DETERMINANT_INFO } from '../game/types'
@@ -95,7 +96,6 @@ export function KnowledgeScreen({ onBack }: Props) {
       <div style={styles.header}>
         <button onClick={handleBack} style={styles.backBtn}>← 返回</button>
         <h1 style={styles.title}>MPDS 知识库</h1>
-        <ThemeToggle />
       </div>
 
       {/* 搜索 */}

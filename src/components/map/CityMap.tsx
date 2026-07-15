@@ -1,5 +1,5 @@
 // ============================================================
-// 零点接线台 — Leaflet 真实地图 + CartoDB Dark Matter 瓦片
+// 120调度台 — Leaflet 真实地图 + CartoDB Dark Matter 瓦片
 // 跨通话显示所有占用车辆（en_route/on_scene/returning）
 // ============================================================
 
@@ -28,6 +28,18 @@ interface Props {
 function lerpCoord(a: LatLng, b: LatLng, t: number): LatLng {
   const c = Math.max(0, Math.min(1, t))
   return { lat: a.lat + (b.lat - a.lat) * c, lng: a.lng + (b.lng - a.lng) * c }
+}
+
+// -------------------- 缩放控件（放在左下角） --------------------
+function ZoomControl() {
+  const map = useMap()
+  useEffect(() => {
+    const zoomControl = L.control.zoom({ position: 'bottomleft' })
+    zoomControl.addTo(map)
+    return () => { zoomControl.remove() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return null
 }
 
 // -------------------- 视口自适应：站点 + 事件点（不含救护车当前位置，避免每秒重 fit） --------------------
@@ -125,7 +137,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
         zoom={DEFAULT_ZOOM}
         style={styles.map}
         scrollWheelZoom
-        zoomControl
+        zoomControl={false}
         attributionControl={false}
       >
         <TileLayer
@@ -135,6 +147,8 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
         />
 
         <FitBounds points={staticPoints} />
+
+        <ZoomControl />
 
         {/* 站点（固定） */}
         {Object.entries(STATION_COORDS).map(([id, info]) => {

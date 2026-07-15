@@ -1,5 +1,5 @@
 // ============================================================
-// 零点接线台 — 通话结算报告
+// 120调度台 — 通话结算报告
 // ============================================================
 
 import type { WorldState, TriageLevel, JudgmentPrompt, MpdsDeterminant, EmergencyScenario } from '../types'

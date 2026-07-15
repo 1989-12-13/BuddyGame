@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目一句话
 
-`120 调度台`（零点接线台）— 120 急救调度模拟游戏。玩家扮演调度中心接线员，按 MPDS 标准流程对来电者问询、分诊、派车、必要时进行电话急救指导（CPR 等）。React 19 + TypeScript 5.8 + Vite 6 + Vitest 3，纯 CSS 无 UI 框架。
+`120 调度台`（120调度台）— 120 急救调度模拟游戏。玩家扮演调度中心接线员，按 MPDS 标准流程对来电者问询、分诊、派车、必要时进行电话急救指导（CPR 等）。React 19 + TypeScript 5.8 + Vite 6 + Vitest 3，纯 CSS 无 UI 框架。
 
 ## 常用命令
 

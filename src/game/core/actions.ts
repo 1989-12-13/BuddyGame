@@ -1,5 +1,5 @@
 // ============================================================
-// 零点接线台 — Game Actions
+// 120调度台 — Game Actions
 // ============================================================
 
 import type { TriageLevel, MpdsDeterminant, FragmentTargetField } from '../types'

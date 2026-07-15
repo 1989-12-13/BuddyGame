@@ -127,19 +127,52 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
       setDrawerOpen(true)
       setGuidanceCollapsed(false)
     }
-    // 首次进入 guidance → 默认展开指导浮层
+    // 首次进入 guidance → 收起左右侧栏 + 默认展开指导浮层
     if (phase === 'guidance' && prev !== 'guidance') {
-      setGuidanceCollapsed(false)
+      setDrawerOpen(false)
+      setTerminalModalOpen(false)
     }
     uiPrevRef.current = { phase }
   }, [state.callPhase])
 
-  // --- 展开抽屉查看对话时，自动折叠指导浮层（互操作补充） ---
+  // --- 急救指导阶段：对话流式时展开抽屉显示对话，流式完毕收起展示指导浮层 ---
   useEffect(() => {
-    if (drawerOpen && state.callPhase === 'guidance') {
+    if (state.callPhase !== 'guidance') return
+
+    if (isStreaming) {
+      setDrawerOpen(true)
       setGuidanceCollapsed(true)
+    } else {
+      setDrawerOpen(false)
+      setGuidanceCollapsed(false)
     }
-  }, [drawerOpen, state.callPhase])
+  }, [state.callPhase, isStreaming])
+
+  // --- 选择题弹出前自动收起左右侧栏（仅在首次弹出时） ---
+  const collapsedJudgmentRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    if (!state.pendingJudgments || state.pendingJudgments.length === 0) {
+      collapsedJudgmentRef.current.clear()
+      return
+    }
+
+    const hasReady = state.pendingJudgments.some(j => {
+      if (j.chosenOptionIndex !== null) return false
+      if (collapsedJudgmentRef.current.has(j.id)) return false
+      if (pendingSet.current.has(j.dialogueIndex)) return false
+      if (streamIdx === j.dialogueIndex) {
+        return streamPos >= [...state.dialogueLog[j.dialogueIndex].text].length
+      }
+      return streamIdx === -1 || streamIdx > j.dialogueIndex
+    })
+
+    if (hasReady) {
+      // 标记所有已准备好的 judgment 为已收起，防止后续反复触发
+      state.pendingJudgments.forEach(j => collapsedJudgmentRef.current.add(j.id))
+      setDrawerOpen(false)
+      setTerminalModalOpen(false)
+    }
+  }, [state.pendingJudgments, streamIdx, streamPos, pendingSet, state.dialogueLog])
 
   // --- 新通话到达时确保 drawer 已展开 ---
   useEffect(() => {
@@ -309,6 +342,7 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
               elapsed={state.shiftElapsed - state.callStartTime}
               stressLevel={state.callerState?.stressLevel ?? '紧张'}
               stress={state.callerState?.stress ?? 50}
+              onToggle={handleToggleDrawer}
             />
 
         {state.patientStatus && (
@@ -434,6 +468,7 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
               onCompleteMiniGame={(stepIdx, score, passed) =>
                 dispatch({ type: 'COMPLETE_MINIGAME', stepIndex: stepIdx, score, passed })
               }
+              onEndGuidance={() => { interruptCallerVoice(); handleEndCall() }}
             />
           </GuidanceOverlay>
         )}

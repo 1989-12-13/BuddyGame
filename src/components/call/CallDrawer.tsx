@@ -6,7 +6,7 @@
 
 import type { CSSProperties, ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { Z_DRAWER } from '../../game/core/zIndex'
 
 interface Props {
@@ -70,28 +70,6 @@ export function CallDrawer({ open, onToggle, mini, children, title, active, hist
               style={styles.swapChild}
             >
               <div style={styles.expanded}>
-                <header style={styles.header}>
-                  <div style={styles.headerLeft}>
-                    {historyBadge && (
-                      <span style={{
-                        fontSize: 'var(--fs-micro)',
-                        padding: '1px 6px',
-                        background: 'var(--accent-gold-bg)',
-                        color: 'var(--accent-gold)',
-                        border: '1px solid var(--accent-gold-border)',
-                        borderRadius: 3,
-                        fontFamily: 'var(--font-mono)',
-                        fontWeight: 'var(--fw-bold)',
-                        letterSpacing: 1,
-                      }}>
-                        {historyBadge}
-                      </span>
-                    )}
-                  </div>
-                  <button style={styles.toggleBtn} onClick={onToggle} title="折叠（保留通话）">
-                    <ChevronRight size={18} color="var(--text-secondary)" />
-                  </button>
-                </header>
                 <div style={styles.body}>{children}</div>
               </div>
             </motion.div>
@@ -180,30 +158,6 @@ const styles: Record<string, CSSProperties> = {
     flexDirection: 'column',
     width: DRAWER_W_OPEN,
     height: '100%',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '8px 12px',
-    borderBottom: '1px solid var(--glass-border)',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    flexShrink: 0,
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  toggleBtn: {
-    background: 'transparent',
-    border: '1px solid var(--border)',
-    borderRadius: 4,
-    cursor: 'pointer',
-    padding: '2px 4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   body: {
     flex: 1,

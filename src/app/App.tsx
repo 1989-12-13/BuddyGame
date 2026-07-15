@@ -117,11 +117,11 @@ export default function App() {
     <ThemeProvider>
       <AudioProvider>
         <ErrorBoundary title="应用异常" description="游戏核心组件遇到了意外错误。请尝试刷新页面。">
-          {mainContent}
+          <DispatchCardProvider value={dispatchCard}>
+            {mainContent}
+            <SettingsPanel onNavigate={handleNavigate} />
+          </DispatchCardProvider>
         </ErrorBoundary>
-        <DispatchCardProvider value={dispatchCard}>
-          <SettingsPanel onNavigate={handleNavigate} />
-        </DispatchCardProvider>
       </AudioProvider>
     </ThemeProvider>
   )

@@ -122,6 +122,7 @@ export const bottomToolbar: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  gap: 10,
   padding: '6px 10px',
   borderTop: '1px solid var(--border)',
   backgroundColor: 'var(--bg-surface)',

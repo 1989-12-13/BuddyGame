@@ -90,23 +90,6 @@ export function TerminalModal({
           </div>
         </div>
 
-        {!dispatchSent && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '9px 16px',
-            borderTop: '1px solid var(--border)',
-            backgroundColor: 'var(--accent-blue-dim)',
-            color: 'var(--text-secondary)',
-            fontSize: 11,
-            lineHeight: 1.5,
-          }}>
-            <strong style={{ color: 'var(--accent-blue)', whiteSpace: 'nowrap' }}>下一步 · 路线规划</strong>
-            <span>系统自动匹配救护车后，你需要沿相邻节点选择完整路线。</span>
-          </div>
-        )}
-
         {/* sider 底部 — 操作按钮 */}
         <div style={styles.modalFooter}>
           {!dispatchSent ? (

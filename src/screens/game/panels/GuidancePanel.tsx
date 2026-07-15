@@ -11,6 +11,7 @@ export function GuidancePanel({
   results,
   onAnswer,
   onCompleteMiniGame,
+  onEndGuidance,
   paused,
   disabled = false,
 }: {
@@ -19,12 +20,54 @@ export function GuidancePanel({
   results: ('correct' | 'incorrect' | null)[]
   onAnswer: (stepIdx: number, selectedIdx: number) => void
   onCompleteMiniGame: (stepIdx: number, score: number, passed: boolean) => void
+  onEndGuidance?: () => void
   /** 折叠/遮罩时暂停 minigame */
   paused?: boolean
   /** 流式输出进行中，禁止操作 */
   disabled?: boolean
 }) {
-  if (stepIndex >= guidance.steps.length) return null
+  if (stepIndex >= guidance.steps.length) {
+    return (
+      <div style={styles.guidancePanel}>
+        <div style={styles.guidanceTitle}>🚑 {guidance.title}</div>
+        {results.map((r, i) => (
+          <div
+            key={i}
+            style={{
+              padding: '6px 10px',
+              margin: '3px 0',
+              backgroundColor: r === 'correct' ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
+              borderRadius: 6,
+              fontSize: 'var(--fs-body-sm)',
+              color: r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)',
+              borderLeft: `2px solid ${r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)'}`,
+            }}
+          >
+            {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}
+          </div>
+        ))}
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <button
+            onClick={onEndGuidance}
+            style={{
+              padding: '10px 32px',
+              borderRadius: 6,
+              border: 'none',
+              backgroundColor: 'var(--danger-red)',
+              color: '#fff',
+              fontSize: 'var(--fs-body)',
+              fontWeight: 'var(--fw-bold)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: 2,
+            }}
+          >
+            ▸ 结束通话
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const currentStep = guidance.steps[stepIndex]
   const previousResults = results.slice(0, stepIndex)

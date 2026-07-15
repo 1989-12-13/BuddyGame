@@ -46,10 +46,8 @@ export function isGuidanceActive(state: WorldState): boolean {
 
 /** 返回推进下一步后的 { guidanceStepIndex, callPhase } */
 export function advanceGuidanceStep(state: WorldState, nextIndex: number) {
-  const guidanceDef = state.currentCall!.guidance!
-  const isLastStep = nextIndex >= guidanceDef.steps.length
   return {
     guidanceStepIndex: nextIndex,
-    callPhase: isLastStep ? ('closing' as const) : ('guidance' as const),
+    callPhase: 'guidance' as const,
   }
 }

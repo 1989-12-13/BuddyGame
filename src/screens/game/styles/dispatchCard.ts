@@ -3,7 +3,7 @@ import { Z_TERMINAL_MODAL } from '../../../game/core/zIndex'
 
 /** MPDS 调度卡 leftsider（从左滑入式） */
 export const modalOverlay: CSSProperties = {
-  position: 'fixed',
+  position: 'absolute',
   top: 0,
   bottom: 0,
   left: 0,

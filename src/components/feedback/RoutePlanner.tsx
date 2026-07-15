@@ -55,12 +55,18 @@ function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
   const maxLat = Math.max(...lats)
   const minLng = Math.min(...lngs)
   const maxLng = Math.max(...lngs)
-  const latSpan = Math.max(0.001, maxLat - minLat)
-  const lngSpan = Math.max(0.001, maxLng - minLng)
+  const latDelta = maxLat - minLat
+  const lngDelta = maxLng - minLng
+  // 确保最小跨度足够分离同 progress 不同 lane 的节点，避免重叠
+  const latSpan = Math.max(0.02, latDelta)
+  const lngSpan = Math.max(0.02, lngDelta)
+  // 在跨度内居中，防止节点贴边
+  const pad = 5
+  const scale = 100 - pad * 2
 
   return new Map(values.map(node => [node.id, {
-    x: 8 + ((node.pos.lng - minLng) / lngSpan) * 84,
-    y: 8 + ((maxLat - node.pos.lat) / latSpan) * 84,
+    x: pad + ((node.pos.lng - minLng) / lngSpan) * scale,
+    y: pad + ((maxLat - node.pos.lat) / latSpan) * scale,
   }]))
 }
 

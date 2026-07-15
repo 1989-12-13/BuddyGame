@@ -112,27 +112,31 @@ export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Pro
   const { dialogueHeight, splitHovered, setSplitHovered, setDialogueHeight, handleSplitterDown } = useSplitter()
 
   // --- callPhase 驱动的 UI 状态机（合并多个互操作的 useEffect）---
-  const uiPrevRef = useRef({ phase: state.callPhase })
+  const uiPrevRef = useRef({ phase: state.callPhase, step: state.guidanceStepIndex })
   useEffect(() => {
-    const prev = uiPrevRef.current.phase
+    const prev = uiPrevRef.current
     const phase = state.callPhase
-    if (prev === phase) return
+    const step = state.guidanceStepIndex
 
     // 进入 closing → 折叠抽屉（让地图接管）
-    if (phase === 'closing' && prev !== 'closing') {
+    if (phase === 'closing' && prev.phase !== 'closing') {
       setDrawerOpen(false)
     }
     // 新通话开始（completed → questioning）→ 展开抽屉 + 重置指导折叠
-    if (phase === 'questioning' && prev === 'completed') {
+    if (phase === 'questioning' && prev.phase === 'completed') {
       setDrawerOpen(true)
       setGuidanceCollapsed(false)
     }
     // 首次进入 guidance → 默认展开指导浮层
-    if (phase === 'guidance' && prev !== 'guidance') {
+    if (phase === 'guidance' && prev.phase !== 'guidance') {
       setGuidanceCollapsed(false)
     }
-    uiPrevRef.current = { phase }
-  }, [state.callPhase])
+    // 完成一道指导题（guidanceStepIndex 推进）→ 自动弹出右侧对话抽屉，展示新写入的指导语和来电者反馈
+    if (phase === 'guidance' && step !== prev.step) {
+      setDrawerOpen(true)
+    }
+    uiPrevRef.current = { phase, step }
+  }, [state.callPhase, state.guidanceStepIndex])
 
   // --- 展开抽屉查看对话时，自动折叠指导浮层（互操作补充） ---
   useEffect(() => {

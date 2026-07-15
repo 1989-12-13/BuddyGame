@@ -5,11 +5,10 @@
 
 import type { WorldState, DialogueLine } from '../../types'
 import { calcOnSceneDuration } from '../worldState'
-import { findVehicleById, type Ambulance } from '../fleet'
+import { findVehicleById } from '../fleet'
 import { lookupCoords, DEFAULT_CENTER } from '../../locations'
 import { createEventSink, sinkEvent } from './helpers'
 import { DISPATCH_WARN_TIME, DISPATCH_CRITICAL_TIME } from '../constants'
-import { buildDispatchPlan, buildVehicleRouteOptions } from '../dispatchPlanning'
 import type { RoutePlan } from '../routing'
 
 function isValidRouteSelection(route: RoutePlan): boolean {
@@ -20,19 +19,15 @@ function isValidRouteSelection(route: RoutePlan): boolean {
       segment.fromId === route.nodes[index]?.id && segment.toId === route.nodes[index + 1]?.id)
 }
 
-export function handleDispatch(state: WorldState, vehicleId?: string, selectedRoute?: RoutePlan): WorldState {
+export function handleDispatch(state: WorldState, vehicleId: string, selectedRoute: RoutePlan): WorldState {
   if (!state.currentCall || !state.callerState) return state
   if (state.dispatchSent) return state
   if (!state.terminal.determinant || !state.terminal.triage) return state
 
-  // 正常流程由系统配车；保留 vehicleId 仅用于锁定路线规划界面已经展示的车辆。
-  const automaticPlan = buildDispatchPlan(state)
-  let vehicle: Ambulance | null =
-    findVehicleById(state.fleet, vehicleId ?? state.fleet.selectedVehicleId)
-  if (!vehicle || vehicle.status !== 'available') {
-    vehicle = automaticPlan?.vehicle ?? null
-  }
-  if (!vehicle) return state   // 无可用车
+  // 派车必须来自“系统配车 → 玩家逐节点完成路线”的冻结方案，禁止绕过路线规划。
+  const vehicle = findVehicleById(state.fleet, vehicleId)
+  if (!vehicle || vehicle.status !== 'available') return state
+  if (!isValidRouteSelection(selectedRoute)) return state
 
   const dispatchTime = state.shiftElapsed - state.callStartTime
   const rawAddress = state.callerState.revealedInfo.address
@@ -45,12 +40,7 @@ export function handleDispatch(state: WorldState, vehicleId?: string, selectedRo
   const onSceneTotal = calcOnSceneDuration(state.currentCall.correctTriage)
   // 事件点真实坐标（用于地图跨通话显示）
   const eventLatLng = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
-  const routes = automaticPlan?.vehicle.id === vehicle.id
-    ? automaticPlan.routes
-    : buildVehicleRouteOptions(state, vehicle)
-  const route = selectedRoute && isValidRouteSelection(selectedRoute)
-    ? selectedRoute
-    : routes.reduce((best, candidate) => candidate.totalEta < best.totalEta ? candidate : best)
+  const route = selectedRoute
   const eta = route.totalEta
 
   const systemLine: DialogueLine = {

@@ -2,8 +2,19 @@ import { describe, expect, it } from 'vitest'
 import { getScenario } from '../events/templates'
 import type { DispatchRecord, JudgmentPrompt, WorldState } from '../types'
 import { buildDebrief } from './debrief'
+import { buildDispatchPlan } from './dispatchPlanning'
 import { worldReducer } from './worldReducer'
 import { createCallerState, createInitialState, createTerminalState } from './worldState'
+
+function dispatchWithPlannedRoute(state: WorldState): WorldState {
+  const plan = buildDispatchPlan(state)
+  if (!plan) throw new Error('Expected an automatic dispatch plan')
+  return worldReducer(state, {
+    type: 'DISPATCH',
+    vehicleId: plan.vehicle.id,
+    route: plan.routes[0],
+  })
+}
 
 function makeDebriefState(
   scenarioId: string,
@@ -129,7 +140,7 @@ describe('buildDebrief', () => {
     const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
     const classified = worldReducer(answered, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
     const triaged = worldReducer(classified, { type: 'SET_TRIAGE', level: 'red' })
-    const dispatched = worldReducer(triaged, { type: 'DISPATCH' })
+    const dispatched = dispatchWithPlannedRoute(triaged)
     const ended = worldReducer(dispatched, { type: 'END_CALL' })
 
     expect(ended.currentCall).toBeNull()
@@ -153,7 +164,7 @@ describe('buildDebrief', () => {
     const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
     const classified = worldReducer(answered, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
     const triaged = worldReducer(classified, { type: 'SET_TRIAGE', level: 'red' })
-    const ended = worldReducer(worldReducer(triaged, { type: 'DISPATCH' }), { type: 'END_CALL' })
+    const ended = worldReducer(dispatchWithPlannedRoute(triaged), { type: 'END_CALL' })
 
     expect(ended.pendingPerkChoices).toHaveLength(3)
 

@@ -143,6 +143,7 @@ export const animalBiteCard: EmergencyScenario = {
       },
       {
         id: 'bite_position_game',
+        instruction: '伤者小腿被狗咬伤出血，请选择正确的按压止血位置。',
         prompt: '实操环节：选择止血位置',
         options: ['完成'],
         correctIndex: 0,

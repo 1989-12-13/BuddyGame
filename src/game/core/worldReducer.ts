@@ -92,7 +92,7 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleShowEnding(state)
 
     case 'BACK_TO_TITLE':
-      return handleBackToTitle()
+      return handleBackToTitle(state)
 
     default:
       return state

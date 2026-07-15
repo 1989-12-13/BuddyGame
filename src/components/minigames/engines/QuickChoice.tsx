@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useMemo } from 'react'
-import type { MiniGameProps, QuickChoiceSpec } from '../../../game/types'
+import type { MiniGameProps } from '../../../game/types'
 import { isQuickChoice } from '../../../game/types'
 import { usePauseRef, useAttemptScoring } from './hooks'
 import { engineWrap, progressTrack } from './styles'

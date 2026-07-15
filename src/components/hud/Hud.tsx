@@ -23,7 +23,6 @@ export function Hud({ state }: Props) {
   const seconds = state.shiftElapsed % 60
   const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 
-  const isOnCall = state.currentCall !== null
   const availableVehicles = state.fleet.vehicles.filter(v => v.status === 'available').length
 
   return (

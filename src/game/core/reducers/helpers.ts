@@ -50,6 +50,6 @@ export function advanceGuidanceStep(state: WorldState, nextIndex: number) {
   const isLastStep = nextIndex >= guidanceDef.steps.length
   return {
     guidanceStepIndex: nextIndex,
-    callPhase: isLastStep ? 'closing' : 'guidance' as const,
+    callPhase: isLastStep ? ('closing' as const) : ('guidance' as const),
   }
 }

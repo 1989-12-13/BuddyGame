@@ -159,6 +159,7 @@ export const hemorrhageCard: EmergencyScenario = {
       },
       {
         id: 'hem_position_game',
+        instruction: '伤者前臂动脉喷射状出血，请选择正确的按压止血位置。',
         prompt: '实操环节：选择止血位置',
         options: ['完成'],
         correctIndex: 0,

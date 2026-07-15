@@ -166,7 +166,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     setDispatchPlan(plan)
   }, [state])
 
-  // --- 抵达现场节点后，按已冻结的车辆与路线真正派出 ---
+  // --- 完成节点路线后，按已冻结的车辆与路线真正派出 ---
   const handleConfirmRoute = useCallback((route: DispatchPlan['routes'][number]) => {
     if (!dispatchPlan) return
     interruptCallerVoice()

@@ -113,6 +113,6 @@ export function handleShowEnding(state: WorldState): WorldState {
   return { ...state, screen: 'ending' }
 }
 
-export function handleBackToTitle(): WorldState {
+export function handleBackToTitle(_state: WorldState): WorldState {
   return createInitialState()
 }

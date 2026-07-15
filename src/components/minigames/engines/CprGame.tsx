@@ -56,10 +56,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const pausedRef = usePauseRef(paused)
   const { complete } = useMiniGameFinish(onComplete, 700)
 
-  const blowTargetMs = 1000
-
   // 用 ref 暴露 finishGame，使超时和呼吸回调总能拿到最新版本
-  const finishGameRef = useRef<() => void>()
+  const finishGameRef = useRef<(() => void) | null>(null)
 
   // ---- 修复 #3: 超时机制 ----
   // 每轮最多给 90 秒（远大于正常操作时长），超时自动低分结束

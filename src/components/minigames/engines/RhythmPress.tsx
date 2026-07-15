@@ -11,7 +11,7 @@ import { useKeyboard, usePauseRef } from './hooks'
 import { useGameClock } from './useGameClock'
 import { useMiniGameFinish } from './useMiniGameFinish'
 import { computePassed } from './cprUtils'
-import { calcLiveBpm, assessBpmQuality, calcRhythmScore, bpmToIntervalMs, bpmDeviationColor } from './cprUtils'
+import { calcLiveBpm, assessBpmQuality, calcRhythmScore } from './cprUtils'
 import type { RhythmQuality } from './cprUtils'
 import { engineWrap, readoutRow } from './styles'
 

@@ -57,7 +57,7 @@ export function createDefaultFleet(): FleetState {
     vehicles: [
       { id: 'ambulance_a', name: '望京站 · 甲车', status: 'available', eta: 0, speed: 2, capability: 4, tier: 'ALS', equipment: ['ALS', 'BLS'], currentCallId: null, mission: null },
       { id: 'ambulance_b', name: '中关村站 · 乙车', status: 'available', eta: 0, speed: 1, capability: 2, tier: 'BLS', equipment: ['BLS'], currentCallId: null, mission: null },
-      { id: 'ambulance_c', name: '方庄站 · 丙车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null, mission: null },
+      { id: 'ambulance_c', name: '方庄站 · 救护车', status: 'available', eta: 0, speed: 3, capability: 5, tier: 'MICU', equipment: ['MICU', 'ALS', 'BLS'], currentCallId: null, mission: null },
     ],
     selectedVehicleId: null,
   }

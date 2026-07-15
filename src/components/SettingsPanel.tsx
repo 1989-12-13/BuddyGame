@@ -1,5 +1,5 @@
 // ============================================================
-// 设置面板 — 左上角齿轮按钮 + 调度卡快捷入口（位于齿轮下方）
+// 设置面板 — 左上角齿轮按钮 + 调度卡快捷入口（常驻显示，位于齿轮下方）
 // 内含回到主菜单/音量/主题
 // ============================================================
 
@@ -57,14 +57,14 @@ export function SettingsPanel({ onNavigate }: Props) {
   }
 
   const handleOpenDispatch = () => {
-    if (!dispatchCard) return
+    if (!dispatchCard?.isAvailable) return
     dispatchCard.open()
     setOpen(false)
   }
 
-  // 调度卡按钮可见性：必须由 GameScreen 提供控制且当前在可调度阶段
-  const showDispatchButton = !!dispatchCard?.isVisible
+  // 是否处于未分诊警告态（绿色 = 已分诊；红色 = 未分诊）
   const hasTriage = !!dispatchCard?.hasTriage
+  const isAvailable = !!dispatchCard?.isAvailable
 
   return (
     <div
@@ -93,56 +93,61 @@ export function SettingsPanel({ onNavigate }: Props) {
         <Settings size={18} />
       </button>
 
-      {/* 调度卡快捷入口（仅在有通话时显示） */}
-      {showDispatchButton && (
-        <button
-          onClick={handleOpenDispatch}
-          title={hasTriage ? '打开调度卡' : '调度卡未分诊，点击打开'}
-          style={{
-            width: 36,
-            height: 36,
-            fontSize: 'var(--fs-title)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            backgroundColor: 'var(--bg-surface)',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-          }}
-        >
-          <AlertTriangle
-            size={18}
-            color={hasTriage ? 'var(--accent-green)' : 'var(--danger-red)'}
-          />
-          {!hasTriage && (
-            <span
-              style={{
-                position: 'absolute',
-                top: -3,
-                right: -3,
-                minWidth: 14,
-                height: 14,
-                padding: '0 3px',
-                borderRadius: 7,
-                backgroundColor: 'var(--danger-red)',
-                color: '#fff',
-                fontSize: 9,
-                fontWeight: 'var(--fw-bold)',
-                lineHeight: '14px',
-                textAlign: 'center',
-                fontFamily: 'var(--font-mono)',
-                animation: 'pulse-alert 1.5s ease-in-out infinite',
-              }}
-            >
-              !
-            </span>
-          )}
-        </button>
-      )}
+      {/* 调度卡快捷入口（常驻显示，颜色/动画反映分诊状态） */}
+      <button
+        onClick={handleOpenDispatch}
+        title={
+          !isAvailable
+            ? '调度卡（等待通话）'
+            : hasTriage
+              ? '打开调度卡'
+              : '调度卡未分诊，点击打开'
+        }
+        style={{
+          width: 36,
+          height: 36,
+          fontSize: 'var(--fs-title)',
+          border: '1px solid var(--border)',
+          borderRadius: 8,
+          backgroundColor: 'var(--bg-surface)',
+          color: 'var(--text-secondary)',
+          cursor: isAvailable ? 'pointer' : 'not-allowed',
+          transition: 'all 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          opacity: isAvailable ? 1 : 0.55,
+        }}
+      >
+        <AlertTriangle
+          size={18}
+          color={hasTriage ? 'var(--accent-green)' : 'var(--danger-red)'}
+        />
+        {!hasTriage && isAvailable && (
+          <span
+            style={{
+              position: 'absolute',
+              top: -3,
+              right: -3,
+              minWidth: 14,
+              height: 14,
+              padding: '0 3px',
+              borderRadius: 7,
+              backgroundColor: 'var(--danger-red)',
+              color: '#fff',
+              fontSize: 9,
+              fontWeight: 'var(--fw-bold)',
+              lineHeight: '14px',
+              textAlign: 'center',
+              fontFamily: 'var(--font-mono)',
+              animation: 'pulse-alert 1.5s ease-in-out infinite',
+            }}
+          >
+            !
+          </span>
+        )}
+      </button>
 
       {/* 下拉面板 */}
       <AnimatePresence>
@@ -168,33 +173,36 @@ export function SettingsPanel({ onNavigate }: Props) {
           }}
         >
           {/* 调度卡入口（同时放在下拉菜单里，方便文字说明） */}
-          {showDispatchButton && (
-            <>
-              <button
-                onClick={handleOpenDispatch}
-                style={{
-                  ...menuItemBase,
-                  color: hasTriage ? 'var(--accent-green)' : 'var(--danger-red)',
-                  fontWeight: 'var(--fw-bold)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--bg-hover)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'none'
-                }}
-              >
-                <AlertTriangle size={16} />
-                <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                  <span>调度卡</span>
-                  <span style={{ fontSize: 'var(--fs-micro)', color: hasTriage ? 'var(--accent-green)' : 'var(--danger-soft)' }}>
-                    {hasTriage ? '已分诊' : '未分诊'}
-                  </span>
-                </span>
-              </button>
-              <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--border)' }} />
-            </>
-          )}
+          <button
+            onClick={handleOpenDispatch}
+            disabled={!isAvailable}
+            style={{
+              ...menuItemBase,
+              color: !isAvailable
+                ? 'var(--text-muted)'
+                : hasTriage
+                  ? 'var(--accent-green)'
+                  : 'var(--danger-red)',
+              fontWeight: 'var(--fw-bold)',
+              cursor: isAvailable ? 'pointer' : 'not-allowed',
+              opacity: isAvailable ? 1 : 0.6,
+            }}
+            onMouseEnter={(e) => {
+              if (isAvailable) e.currentTarget.style.background = 'var(--bg-hover)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none'
+            }}
+          >
+            <AlertTriangle size={16} />
+            <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+              <span>调度卡</span>
+              <span style={{ fontSize: 'var(--fs-micro)', color: !isAvailable ? 'var(--text-muted)' : hasTriage ? 'var(--accent-green)' : 'var(--danger-soft)' }}>
+                {!isAvailable ? '等待通话' : hasTriage ? '已分诊' : '未分诊'}
+              </span>
+            </span>
+          </button>
+          <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--border)' }} />
 
           {/* 回到主菜单 */}
           <button

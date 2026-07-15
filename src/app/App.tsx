@@ -12,10 +12,17 @@ import { LevelSelectScreen } from '../screens/LevelSelectScreen'
 import { KnowledgeScreen } from '../screens/KnowledgeScreen'
 import { AudioProvider } from '../audio/AudioContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
+import { DispatchCardProvider, type DispatchCardControl } from '../contexts/DispatchCardContext'
 import { SettingsPanel } from '../components/SettingsPanel'
 import { ErrorBoundary } from '../components/ui/ErrorBoundary'
 
 type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
+
+const NOOP_DISPATCH: DispatchCardControl = {
+  hasTriage: true,
+  isAvailable: false,
+  open: () => {},
+}
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('title')
@@ -25,6 +32,9 @@ export default function App() {
   const [gameKey, setGameKey] = useState(0)
   const [selectedScenario, setSelectedScenario] = useState<string | undefined>(undefined)
 
+  // 调度卡控制由 GameScreen 注册，App 持有最新值供 SettingsPanel 读取
+  const [dispatchCard, setDispatchCard] = useState<DispatchCardControl>(NOOP_DISPATCH)
+
   const handleStart = useCallback((scenarioId?: string) => {
     setSelectedScenario(scenarioId)
     setGameKey(k => k + 1)
@@ -32,6 +42,7 @@ export default function App() {
     setEnding(null)
     setFinalScore(0)
     setFinalCallScores([])
+    setDispatchCard(NOOP_DISPATCH)
   }, [])
 
   const handleNavigate = useCallback(
@@ -40,6 +51,7 @@ export default function App() {
         setScreen('title')
         setEnding(null)
         setSelectedScenario(undefined)
+        setDispatchCard(NOOP_DISPATCH)
       } else {
         setScreen('ending')
         if (end) setEnding(end)
@@ -56,6 +68,7 @@ export default function App() {
     setEnding(null)
     setFinalScore(0)
     setFinalCallScores([])
+    setDispatchCard(NOOP_DISPATCH)
   }, [])
 
   const mainContent = (
@@ -85,7 +98,12 @@ export default function App() {
           default:
             return (
               <ErrorBoundary title="游戏异常" description="游戏主界面发生了意外错误。将自动返回标题画面。">
-                <GameScreen key={gameKey} onNavigate={handleNavigate} scenarioId={selectedScenario} />
+                <GameScreen
+                  key={gameKey}
+                  onNavigate={handleNavigate}
+                  scenarioId={selectedScenario}
+                  onDispatchCardChange={setDispatchCard}
+                />
               </ErrorBoundary>
             )
         }
@@ -100,7 +118,9 @@ export default function App() {
         <ErrorBoundary title="应用异常" description="游戏核心组件遇到了意外错误。请尝试刷新页面。">
           {mainContent}
         </ErrorBoundary>
-        <SettingsPanel onNavigate={handleNavigate} />
+        <DispatchCardProvider value={dispatchCard}>
+          <SettingsPanel onNavigate={handleNavigate} />
+        </DispatchCardProvider>
       </AudioProvider>
     </ThemeProvider>
   )

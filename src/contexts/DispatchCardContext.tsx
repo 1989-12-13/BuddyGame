@@ -1,18 +1,17 @@
 // ============================================================
-// 调度卡控制上下文 — 允许非 GameScreen 的组件（如设置面板）触发调度卡弹窗
-// 使用方式：
-//   - GameScreen 中用 <DispatchCardProvider value={...}> 包裹内容
-//   - 任何子组件用 const dc = useDispatchCard() 读取状态，dc?.open() 弹卡
+// 调度卡控制上下文 — 跨层级共享调度卡弹窗入口
+// App 持有 Provider，SettingsPanel（在 App 树中）与 GameScreen（在 mainContent 中）都能读写。
+// GameScreen 通过 props 传入 setter；SettingsPanel 通过 useDispatchCard 读取
 // ============================================================
 
 import { createContext, useContext } from 'react'
 
 export interface DispatchCardControl {
-  /** 当前是否在可调度的通话阶段（questioning / connected） */
-  isVisible: boolean
-  /** 是否已经分诊完成（terminal.triage !== null） */
+  /** 当前是否有未分诊状态（红色脉冲提示） */
   hasTriage: boolean
-  /** 触发打开调度卡弹窗 */
+  /** 是否可点击（通话阶段） */
+  isAvailable: boolean
+  /** 触发打开调度卡弹窗（无通话时点击无效） */
   open: () => void
 }
 

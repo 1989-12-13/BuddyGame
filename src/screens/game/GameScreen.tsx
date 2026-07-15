@@ -26,7 +26,7 @@ import { HistoryPanel } from '../../components/call/HistoryPanel'
 import { GuidanceOverlay } from '../../components/guidance/GuidanceOverlay'
 import { useAudio } from '../../audio/AudioContext'
 import { styles } from './styles'
-import { DispatchCardProvider } from '../../contexts/DispatchCardContext'
+import type { DispatchCardControl } from '../../contexts/DispatchCardContext'
 import { useStreamingQueue } from './hooks/useStreamingQueue'
 import { useCallAudio } from './hooks/useCallAudio'
 import { useCallLifecycle } from './hooks/useCallLifecycle'
@@ -44,9 +44,11 @@ import { TerminalModal } from './panels/TerminalModal'
 interface Props {
   onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[]) => void
   scenarioId?: string
+  /** 调度卡控制状态上报给 App，供 SettingsPanel 读取 */
+  onDispatchCardChange?: (control: DispatchCardControl) => void
 }
 
-export function GameScreen({ onNavigate, scenarioId }: Props) {
+export function GameScreen({ onNavigate, scenarioId, onDispatchCardChange }: Props) {
   const [state, dispatch] = useReducer(worldReducer, null, createInitialState)
   const [terminalModalOpen, setTerminalModalOpen] = useState(false)
   const [dispatchPlan, setDispatchPlan] = useState<DispatchPlan | null>(null)
@@ -214,15 +216,16 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     </div>
   ) : null
 
-  // 调度卡入口的控制权下沉到左侧设置面板；通过 Context 暴露给设置面板
-  const dispatchCardControl = {
-    isVisible: state.callPhase === 'questioning' || state.callPhase === 'connected',
-    hasTriage: state.terminal.triage !== null,
-    open: handleOpenTerminal,
-  }
+  // 调度卡入口的控制权下沉到左侧设置面板；通过 onDispatchCardChange 上报给 App（供 SettingsPanel 读取）
+  const isDispatchAvailable = state.callPhase === 'questioning' || state.callPhase === 'connected'
+  const hasTriageNow = state.terminal.triage !== null
+  const openDispatch = handleOpenTerminal
+
+  useEffect(() => {
+    onDispatchCardChange?.({ isAvailable: isDispatchAvailable, hasTriage: hasTriageNow, open: openDispatch })
+  }, [isDispatchAvailable, hasTriageNow, openDispatch, onDispatchCardChange])
 
   return (
-    <DispatchCardProvider value={dispatchCardControl}>
     <div style={styles.container}>
       <Hud state={state} />
 
@@ -522,6 +525,5 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         )}
       </AnimatePresence>
     </div>
-    </DispatchCardProvider>
   )
 }

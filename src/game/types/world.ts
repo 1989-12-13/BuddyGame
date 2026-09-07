@@ -66,6 +66,11 @@ export type GameScreen = 'title' | 'briefing' | 'playing' | 'ending'
 
 export interface WorldState {
   screen: GameScreen
+  pauseReasons: import('../core/session').PauseReason[]
+  callInstanceId: number
+  actionEndsAt: number
+  calmCount: number
+  triggeredEventIds: string[]
 
   // 班次
   shiftNumber: number

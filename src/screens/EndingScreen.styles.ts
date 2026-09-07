@@ -5,7 +5,7 @@
 import type { CSSProperties } from 'react'
 import { C_SUCCESS, C_WARNING, C_DANGER } from '../game/core/colors'
 
-export const SAVE_THRESHOLD = 60 // 每通 ≥60 分视为"救回"
+export const SOLID_THRESHOLD = 60 // 每通操作评价达到“稳健”的参考线
 
 export function ratingColor(rating: string): string {
   switch (rating) {
@@ -56,12 +56,12 @@ export function scoreValueStyle(rating: string): CSSProperties {
   }
 }
 
-export function savedSummaryStyle(saved: number, total: number): CSSProperties {
+export function savedSummaryStyle(solid: number, total: number): CSSProperties {
   return {
     fontSize: 'var(--fs-body)',
     fontWeight: 'var(--fw-extrabold)',
     fontFamily: 'var(--font-mono)',
-    color: saved === total ? C_SUCCESS : saved > total / 2 ? C_WARNING : C_DANGER,
+    color: solid === total ? C_SUCCESS : solid > total / 2 ? C_WARNING : C_DANGER,
     letterSpacing: 1,
   }
 }

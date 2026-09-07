@@ -4,7 +4,7 @@
 // 消除各引擎各写一份 finished ref + setTimeout 的重复与不一致
 // ============================================================
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 
 /**
  * 返回带守卫的 complete 函数：
@@ -16,12 +16,14 @@ export function useMiniGameFinish(
   delayMs = 700,
 ) {
   const guard = useRef(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current) }, [])
 
   const complete = useCallback(
     (score: number, passed: boolean) => {
       if (guard.current) return
       guard.current = true
-      setTimeout(() => onComplete(score, passed), delayMs)
+      timer.current = setTimeout(() => onComplete(score, passed), delayMs)
     },
     [onComplete, delayMs],
   )

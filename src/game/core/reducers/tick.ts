@@ -3,13 +3,14 @@
 // 时钟滴答（每秒）：推进 fleet、衰减患者生命值、判定救援成败
 // ============================================================
 
+import { isWorldPaused } from '../session'
 import type { WorldState, DialogueLine, CallPhase } from '../../types'
 import { createEventSink, sinkEvent } from './helpers'
 import { advanceFleet } from '../fleet'
 import { stabilityToVitalSign, baseRescueRate, calcRescueSuccessRate, judgeRescueSuccess, triageLevelDiff } from '../worldState'
 
 export function handleTick(state: WorldState): WorldState {
-  if (state.screen !== 'playing') return state
+  if (state.screen !== 'playing' || isWorldPaused(state)) return state
 
   const newElapsed = state.shiftElapsed + 1
   const newCallPhase = state.callPhase as CallPhase
@@ -64,7 +65,7 @@ export function handleTick(state: WorldState): WorldState {
   }
 
   // 患者生命体征每秒衰减
-  if (state.patientStatus && !state.patientStatus.died) {
+  if (state.currentCall && state.patientStatus && !state.patientStatus.died && !state.rescue.outcome) {
     const before = state.patientStatus
     const nextStability = Math.max(0, before.stability - before.decayRate)
     const beforeSign = before.vitalSign
@@ -102,7 +103,6 @@ export function handleTick(state: WorldState): WorldState {
     state.dispatchRecord &&
     !state.dispatchRecord.isPrank
   ) {
-    const vehicle = afterRescueVehicle
     const stability = newPatientStatus?.stability ?? 0
     const guidanceWrong = state.guidanceResults.filter(r => r === 'incorrect').length
     const mgScores = state.guidanceMinigameScores.filter((s): s is number => s != null)
@@ -157,28 +157,6 @@ export function handleTick(state: WorldState): WorldState {
       if (idx >= 0 && newCallHistory[idx].outcome === 'pending') {
         newCallHistory = [...newCallHistory]
         newCallHistory[idx] = { ...newCallHistory[idx], outcome: success ? 'success' : 'failed' }
-      }
-    }
-  }
-
-  // 检查时间触发的事件
-  if (state.currentCall && state.callerState) {
-    for (const evt of state.currentCall.specialEvents) {
-      if (evt.trigger === 'time_elapsed' && evt.triggerValue) {
-        const triggerSec = parseInt(evt.triggerValue, 10)
-        const callTime = newElapsed - state.callStartTime
-        if (callTime === triggerSec) {
-          const alreadyInserted = state.dialogueLog.some(
-            l => l.text === evt.dialogue
-          )
-          if (!alreadyInserted) {
-            newDialogue.push({
-              speaker: 'caller',
-              text: evt.dialogue,
-              timestamp: newElapsed,
-            })
-          }
-        }
       }
     }
   }

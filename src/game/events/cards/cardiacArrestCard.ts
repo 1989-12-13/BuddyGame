@@ -75,8 +75,8 @@ export const cardiacArrestCard: EmergencyScenario = {
         feedback: {
           correct: '正确！平躺硬地板是做CPR的前提。',
           incorrect: '不对。心脏骤停必须平躺在硬平面上，坐姿或侧躺无法有效按压。',
-          callerCorrect: '好！我把他放平了！躺地板上了！然后呢？下一步我该做什么？！',
-          callerIncorrect: '啊？扶他起来坐着？他人都没反应了怎么坐啊……你是不是说错了？',
+          callerCorrect: '好！我把她放平了！躺地板上了！然后呢？下一步我该做什么？！',
+          callerIncorrect: '啊？扶她起来坐着？她人都没反应了怎么坐啊……你是不是说错了？',
         },
       },
       {
@@ -93,7 +93,7 @@ export const cardiacArrestCard: EmergencyScenario = {
           correct: '正确！胸骨正中是最有效的按压位置。',
           incorrect: '不对。按压位置应在胸骨正中（两乳头连线中点），不是肚子或左胸。',
           callerCorrect: '放好了！两只手叠在一起，就放在你说的那个位置！现在要怎么按？快告诉我！',
-          callerIncorrect: '放肚子上了……但是他肚子一点反应都没有啊……我真的放对了吗？他没动静啊！',
+          callerIncorrect: '放肚子上了……但是她肚子一点反应都没有啊……我真的放对了吗？她没动静啊！',
         },
       },
       {
@@ -122,7 +122,7 @@ export const cardiacArrestCard: EmergencyScenario = {
         feedback: {
           correct: 'CPR操作到位。',
           incorrect: 'CPR操作需改进。',
-          callerCorrect: '我按了30下又吹了2口气，他好像有反应了！',
+          callerCorrect: '我按了30下又吹了2口气，她好像有反应了！',
           callerIncorrect: '我太紧张了，手一直在抖……按不准节奏',
         },
         miniGame: {
@@ -131,7 +131,7 @@ export const cardiacArrestCard: EmergencyScenario = {
           instruction: CPR_MINI_GAME_INSTRUCTION,
           passThreshold: 0.5,
           cycles: 2,
-          feedback: { good: '我按了30下又吹了2口气，他好像有反应了！', bad: '我太紧张了，手一直在抖……按不准节奏' },
+          feedback: { good: '我按了30下又吹了2口气，她好像有反应了！', bad: '我太紧张了，手一直在抖……按不准节奏' },
         },
       },
     ],

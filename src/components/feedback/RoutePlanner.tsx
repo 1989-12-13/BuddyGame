@@ -12,6 +12,7 @@ import {
 
 interface Props {
   routes: RoutePlan[]
+  embedded?: boolean
   priorityChannelActive?: boolean
   onConfirm: (route: RoutePlan) => void
   onCancel: () => void
@@ -70,7 +71,7 @@ function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
   }]))
 }
 
-export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm, onCancel }: Props) {
+export function RoutePlanner({ routes, embedded = false, priorityChannelActive = false, onConfirm, onCancel }: Props) {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(['route-start'])
   const nodes = useMemo(() => nodeMap(routes), [routes])
   const segments = useMemo(() => uniqueSegments(routes), [routes])
@@ -91,7 +92,7 @@ export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm,
   const reset = () => setSelectedNodeIds(['route-start'])
 
   return (
-    <div data-testid="route-planner" style={{
+    <div className={embedded ? "embedded-route" : undefined} data-testid="route-planner" style={{
       position: 'fixed',
       inset: 0,
       zIndex: 310,
@@ -102,8 +103,8 @@ export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm,
       padding: 16,
     }}>
       <section
-        role="dialog"
-        aria-modal="true"
+        role={embedded ? "region" : "dialog"}
+        aria-modal={embedded ? undefined : true}
         aria-labelledby="route-planner-title"
         style={{
           width: 'min(1040px, 96vw)',
@@ -147,7 +148,7 @@ export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm,
           </button>
         </header>
 
-        <div style={{ minWidth: 0, minHeight: 0, padding: 14, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 14, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
               当前节点：<strong style={{ color: 'var(--text-primary)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong>
@@ -172,7 +173,7 @@ export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm,
             border: '1px solid var(--border)',
             background: 'radial-gradient(circle at 50% 45%, var(--bg-elevated), var(--bg-deep))',
           }}>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
               {segments.map(segment => {
                 const from = points.get(segment.fromId)
                 const to = points.get(segment.toId)
@@ -306,7 +307,7 @@ export function RoutePlanner({ routes, priorityChannelActive = false, onConfirm,
           </div>
         </div>
 
-        <aside style={{ minHeight: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+        <aside className="route-summary-panel" style={{ minHeight: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
           {priorityChannelActive && (
             <div style={{ padding: '8px 10px', borderRadius: 7, color: 'var(--accent-gold)', backgroundColor: 'var(--accent-gold-dim)', fontSize: 11 }}>
               优先通道已生效：所有路线 ETA -5 秒

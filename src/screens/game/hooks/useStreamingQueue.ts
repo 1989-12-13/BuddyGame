@@ -106,7 +106,7 @@ export function useStreamingQueue(state: WorldState, audio: AudioAPI) {
     }
 
     startQueue()
-  }, [state.dialogueLog.length, startQueue, state.callerState?.stress, audio.tts])
+  }, [state.dialogueLog, startQueue, state.callerState?.stress, audio.tts])
 
   return { streamIdx, streamPos, pendingSet, isStreaming }
 }

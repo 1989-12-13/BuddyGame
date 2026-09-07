@@ -10,6 +10,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const normalized = id.replaceAll('\\', '/')
+          if (normalized.includes('/node_modules/motion/')) return 'motion'
+          if (normalized.includes('/node_modules/lucide-react/')) return 'icons'
+          if (normalized.includes('/node_modules/react/') || normalized.includes('/node_modules/react-dom/')) return 'react'
+          return undefined
+        },
+      },
+    },
+  },
   server: {
     // 监听所有网卡接口,让局域网内其他设备可访问
     // 使用 host:true 时 Vite 默认绑定 0.0.0.0

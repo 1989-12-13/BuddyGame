@@ -183,7 +183,7 @@ export const diabeticCard: EmergencyScenario = {
     {
       id: 'db_improve',
       trigger: 'after_question',
-      triggerValue: '',
+      triggerValue: 'step4_vitals',
       type: 'caller_speaks',
       dialogue: '她喝了糖水！好像能听见我说话了！脸色慢慢好起来了！她刚才说谢谢你们！',
     },

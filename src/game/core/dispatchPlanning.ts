@@ -1,3 +1,4 @@
+import { dispatchEligibility } from './session'
 import type { WorldState } from '../types'
 import { DEFAULT_CENTER, STATION_COORDS, lookupCoords } from '../locations'
 import { hasPerk } from './perks'
@@ -6,6 +7,7 @@ import { calcAmbulanceETA } from './worldState'
 
 export interface DispatchPlan {
   routes: RoutePlan[]
+  callInstanceId: number
 }
 
 function addressCompleteness(state: WorldState): 'vague' | 'partial' | 'full' {
@@ -33,7 +35,7 @@ export function buildRouteOptionsForCall(state: WorldState): RoutePlan[] {
  * 返回的路线作为一次不可变的调度方案交给路线选择界面。
  */
 export function buildDispatchPlan(state: WorldState): DispatchPlan | null {
-  if (!state.currentCall || !state.callerState || !state.terminal.triage) return null
+  if (!dispatchEligibility(state).allowed) return null
 
   const vehicle = state.fleet.vehicles[0]
   if (!vehicle || vehicle.status !== 'available') return null
@@ -41,5 +43,5 @@ export function buildDispatchPlan(state: WorldState): DispatchPlan | null {
   const routes = buildRouteOptionsForCall(state)
   if (routes.length === 0) return null
 
-  return { routes }
+  return { routes, callInstanceId: state.callInstanceId }
 }

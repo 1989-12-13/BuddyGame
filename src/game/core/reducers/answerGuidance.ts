@@ -16,7 +16,7 @@ export function handleAnswerGuidance(
   if (!isGuidanceActive(state)) return state
   const guidanceDef = state.currentCall!.guidance!
   const step = guidanceDef.steps[stepIndex]
-  if (!step) return state
+  if (!step || step.miniGame || stepIndex !== state.guidanceStepIndex || state.guidanceResults[stepIndex] != null || !Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= step.options.length) return state
 
   const isCorrect = selectedIndex === step.correctIndex
   const now = state.shiftElapsed
@@ -50,7 +50,7 @@ export function handleAnswerGuidance(
   }
 
   const nextIndex = stepIndex + 1
-  const stepInfo = advanceGuidanceStep(state, nextIndex)
+  const stepInfo = advanceGuidanceStep(nextIndex)
 
   return {
     ...state,

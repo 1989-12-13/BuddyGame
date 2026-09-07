@@ -3,6 +3,8 @@
 // 120急救调度模拟游戏核心逻辑·调度中枢
 // ============================================================
 
+import { isWorldPaused, isActionBusy } from './session'
+import { applyCallEvents } from './callEvents'
 import type { WorldState } from '../types'
 import type { GameAction } from './actions'
 import { handleAskQuestion } from './reducers/askQuestion'
@@ -30,6 +32,17 @@ import {
 } from './reducers/miscHandlers'
 
 export function worldReducer(state: WorldState, action: GameAction): WorldState {
+  if (action.type === 'PAUSE') return state.pauseReasons.includes(action.reason) ? state : { ...state, pauseReasons: [...state.pauseReasons, action.reason] }
+  if (action.type === 'RESUME') return { ...state, pauseReasons: action.reason ? state.pauseReasons.filter(r => r !== action.reason) : state.pauseReasons.filter(r => !['manual', 'background'].includes(r)) }
+  if ('callInstanceId' in action && action.callInstanceId !== undefined && action.callInstanceId !== state.callInstanceId) return state
+  if (isWorldPaused(state) && !['DISMISS_DEBRIEF', 'CHOOSE_PERK', 'BACK_TO_TITLE', 'START_SHIFT'].includes(action.type)) return state
+  if (isActionBusy(state) && ['ASK_QUESTION', 'CALM_CALLER', 'DISPATCH'].includes(action.type)) return state
+  if (action.type === 'ADVANCE_TURNAROUND') {
+    if (state.currentCall) return state
+    let next = state
+    for (let i = 0; i < 15; i++) next = handleTick(next)
+    return next
+  }
   switch (action.type) {
     case 'START_SHIFT':
       return handleStartShift(state, action.forceScenarios)
@@ -37,8 +50,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     case 'ANSWER_CALL':
       return handleAnswerCall(state)
 
-    case 'ASK_QUESTION':
-      return handleAskQuestion(state, action.questionId)
+    case 'ASK_QUESTION': {
+      const next = handleAskQuestion(state, action.questionId)
+      return next === state ? state : applyCallEvents(next, 'after_question', action.questionId)
+    }
 
     case 'CALM_CALLER':
       return handleCalmCaller(state)
@@ -64,8 +79,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     case 'SET_TRIAGE':
       return handleSetTriage(state, action.level)
 
-    case 'DISPATCH':
-      return handleDispatch(state, action.vehicleId, action.route)
+    case 'DISPATCH': {
+      const next = handleDispatch(state, action.vehicleId, action.route)
+      return next === state ? state : applyCallEvents(next, 'after_dispatch')
+    }
 
     case 'ANSWER_GUIDANCE':
       return handleAnswerGuidance(state, action.stepIndex, action.selectedIndex)
@@ -86,13 +103,13 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleChoosePerk(state, action.perkId)
 
     case 'TICK':
-      return handleTick(state)
+      return applyCallEvents(handleTick(state), 'time_elapsed')
 
     case 'SHOW_ENDING':
       return handleShowEnding(state)
 
     case 'BACK_TO_TITLE':
-      return handleBackToTitle(state)
+      return handleBackToTitle()
 
     default:
       return state

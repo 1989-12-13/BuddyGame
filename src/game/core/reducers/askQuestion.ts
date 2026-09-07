@@ -56,7 +56,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newAddress = nq.quality === 'clear' ? 'partial' : 'vague'
     newInfoQuality['address'] = nq.quality
     // 自动填写调度卡：事件地址
-    newTerminal = { ...newTerminal, address: call.fourElements.address.partial }
+    newTerminal = { ...newTerminal, address: newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
   }
 
   // --- 步骤1b：标志建筑（补充精确地址）---
@@ -73,7 +73,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newAddress = nq.quality === 'clear' ? 'full' : (nq.quality === 'partial' ? 'partial' : newRevealed.address)
     newInfoQuality['address'] = nq.quality
     // 自动填写调度卡：完整地址（覆盖步骤1的部分地址）
-    newTerminal = { ...newTerminal, address: call.fourElements.address.full }
+    newTerminal = { ...newTerminal, address: newAddress === 'full' ? call.fourElements.address.full : newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
   }
 
   // --- 步骤2：事件简述 ---
@@ -277,7 +277,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
 
   if (questionId === 'step1_location' && hasPerk(state.perks, 'address_memory') && newAddress === 'vague') {
     newAddress = 'partial'
-    newTerminal = { ...newTerminal, address: call.fourElements.address.partial }
+    newTerminal = { ...newTerminal, address: newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
     newInfoQuality['address'] = 'partial'
   }
 
@@ -290,7 +290,8 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   return {
     ...state,
     eventSeq: sink.seq,
-    shiftElapsed: state.shiftElapsed + questionTimeCost,
+    actionEndsAt: state.shiftElapsed + questionTimeCost,
+    calmCount: 0,
     questionCost: state.questionCost + questionTimeCost,
     callPhase: 'questioning',
     pendingJudgments: newJudgments,

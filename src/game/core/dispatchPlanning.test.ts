@@ -11,7 +11,7 @@ function classifiedCall(): WorldState {
     scenarioQueue: ['cardiac_arrest', ...started.scenarioQueue.filter(id => id !== 'cardiac_arrest')],
   }
   const answered = worldReducer(queued, { type: 'ANSWER_CALL' })
-  return worldReducer(answered, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
+  return worldReducer({ ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
 }
 
 describe('automatic ambulance dispatch planning', () => {

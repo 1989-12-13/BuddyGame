@@ -26,6 +26,10 @@ export function GuidancePanel({
   /** 流式输出进行中，禁止操作 */
   disabled?: boolean
 }) {
+  const currentStep = guidance.steps[stepIndex]
+  const optionCount = currentStep?.options.length ?? 0
+  const shuffleMap = useMemo(() => createShuffleMap(optionCount), [optionCount])
+  const displayOptions = shuffleMap.toOriginal.map(i => currentStep.options[i])
   if (stepIndex >= guidance.steps.length) {
     return (
       <div style={styles.guidancePanel}>
@@ -62,22 +66,14 @@ export function GuidancePanel({
               letterSpacing: 2,
             }}
           >
-            ▸ 结束通话
+            查看交接选项
           </button>
         </div>
       </div>
     )
   }
 
-  const currentStep = guidance.steps[stepIndex]
   const previousResults = results.slice(0, stepIndex)
-
-  // 打乱当前步骤的选项顺序，防止玩家通过位置记忆作答
-  const shuffleMap = useMemo(
-    () => createShuffleMap(currentStep.options.length),
-    [currentStep.id],
-  )
-  const displayOptions = shuffleMap.toOriginal.map(i => currentStep.options[i])
 
   /** 步骤历史记录渲染（两分支共用） */
   const renderStepHistory = () => previousResults.map((r, i) => (

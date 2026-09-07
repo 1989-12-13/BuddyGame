@@ -1,3 +1,4 @@
+import { readStorage, writeStorage } from '../utils/storage'
 // ============================================================
 // 主题上下文 — 浅色 / 深色切换 + 语义色板
 // 使用方式：const { theme, colors, toggle } = useTheme()
@@ -87,14 +88,14 @@ const STORAGE_KEY = 'buddy-game-theme'
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem(STORAGE_KEY) as Theme) ?? 'light'
+    return readStorage(STORAGE_KEY) === 'light' ? 'light' : 'dark'
   })
 
   const colors = useMemo(() => theme === 'dark' ? darkColors : lightColors, [theme])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem(STORAGE_KEY, theme)
+    writeStorage(STORAGE_KEY, theme)
   }, [theme])
 
   const toggle = useCallback(() => {

@@ -9,6 +9,9 @@ import type { RoutePlan } from './routing'
 export type TerminalField = 'address' | 'contact' | 'chiefComplaint' | 'patientAge' | 'patientGender' | 'conditionNote'
 
 export type GameAction =
+  | { type: 'PAUSE'; reason: import('./session').PauseReason }
+  | { type: 'RESUME'; reason?: import('./session').PauseReason }
+  | { type: 'ADVANCE_TURNAROUND' }
   | { type: 'START_SHIFT'; forceScenarios?: string[] }
   | { type: 'ANSWER_CALL' }
   | { type: 'ASK_QUESTION'; questionId: string }
@@ -20,9 +23,9 @@ export type GameAction =
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
-  | { type: 'DISPATCH'; vehicleId: string; route: RoutePlan }   // 系统车辆 + 玩家逐节点确认的完整路线
-  | { type: 'ANSWER_GUIDANCE'; stepIndex: number; selectedIndex: number }
-  | { type: 'COMPLETE_MINIGAME'; stepIndex: number; score: number; passed: boolean }
+  | { type: 'DISPATCH'; callInstanceId?: number; vehicleId: string; route: RoutePlan }   // 系统车辆 + 玩家逐节点确认的完整路线
+  | { type: 'ANSWER_GUIDANCE'; callInstanceId?: number; stepIndex: number; selectedIndex: number }
+  | { type: 'COMPLETE_MINIGAME'; callInstanceId?: number; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL'; perkChoices?: RoguePerkId[] }
   | { type: 'DISMISS_DEBRIEF' }
   | { type: 'CHOOSE_PERK'; perkId: RoguePerkId }

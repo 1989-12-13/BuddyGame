@@ -17,7 +17,8 @@ export function handleCompleteMinigame(
   if (!isGuidanceActive(state)) return state
   const guidanceDef = state.currentCall!.guidance!
   const step = guidanceDef.steps[stepIndex]
-  if (!step?.miniGame) return state
+  if (!step?.miniGame || stepIndex !== state.guidanceStepIndex || state.guidanceResults[stepIndex] != null || !Number.isFinite(score) || score < 0 || score > 1) return state
+  passed = score >= step.miniGame.passThreshold
 
   const now = state.shiftElapsed
   const spec = step.miniGame
@@ -57,7 +58,7 @@ export function handleCompleteMinigame(
   }
 
   const nextIndex = stepIndex + 1
-  const stepInfo = advanceGuidanceStep(state, nextIndex)
+  const stepInfo = advanceGuidanceStep(nextIndex)
 
   return {
     ...state,

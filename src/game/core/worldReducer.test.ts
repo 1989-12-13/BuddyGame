@@ -11,7 +11,8 @@ function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
     ...started,
     scenarioQueue: [scenarioId, ...started.scenarioQueue.filter(id => id !== scenarioId)],
   }
-  return worldReducer(withScenario, { type: 'ANSWER_CALL' })
+  const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
+  return { ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }
 }
 
 function dispatchWithPlannedRoute(state: WorldState): WorldState {
@@ -31,13 +32,16 @@ describe('worldReducer', () => {
       type: 'ASK_QUESTION',
       questionId: 'step1_location',
     })
-    const afterPurpose = worldReducer(afterLocation, {
+    const ready = worldReducer(worldReducer(afterLocation, { type: 'TICK' }), { type: 'TICK' })
+    const afterPurpose = worldReducer(ready, {
       type: 'ASK_QUESTION',
       questionId: 'ask_purpose',
     })
 
-    expect(afterLocation.shiftElapsed).toBe(answered.shiftElapsed + 2)
-    expect(afterPurpose.shiftElapsed).toBe(answered.shiftElapsed + 3)
+    expect(afterLocation.shiftElapsed).toBe(answered.shiftElapsed)
+    expect(afterLocation.actionEndsAt).toBe(answered.shiftElapsed + 2)
+    expect(afterPurpose.shiftElapsed).toBe(answered.shiftElapsed + 2)
+    expect(afterPurpose.actionEndsAt).toBe(answered.shiftElapsed + 3)
     expect(afterPurpose.callerState?.questionCount).toBe(2)
     expect(afterPurpose.callerState?.revealedInfo.purpose).toBe(true)
   })

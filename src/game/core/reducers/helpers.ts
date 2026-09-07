@@ -41,11 +41,11 @@ export function toneToInitialStress(tone: string): number {
 // -------------------- Guidance 步骤推进公用逻辑 --------------------
 /** 检查 guidance 阶段是否活跃（三条件：有 guidance、guidanceActive、phase === guidance） */
 export function isGuidanceActive(state: WorldState): boolean {
-  return !!(state.currentCall?.guidance && state.guidanceActive && state.callPhase === 'guidance')
+  return !!(state.currentCall?.guidance && state.guidanceActive && state.callPhase === 'guidance' && !state.rescue.outcome && !state.patientStatus?.died && state.pauseReasons.length === 0)
 }
 
 /** 返回推进下一步后的 { guidanceStepIndex, callPhase } */
-export function advanceGuidanceStep(state: WorldState, nextIndex: number) {
+export function advanceGuidanceStep(nextIndex: number) {
   return {
     guidanceStepIndex: nextIndex,
     callPhase: 'guidance' as const,

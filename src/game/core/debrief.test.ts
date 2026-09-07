@@ -7,6 +7,7 @@ import { worldReducer } from './worldReducer'
 import { createCallerState, createInitialState, createTerminalState } from './worldState'
 
 function dispatchWithPlannedRoute(state: WorldState): WorldState {
+  state = { ...state, terminal: { ...state.terminal, address: '测试现场', conscious: false, breathing: false } }
   const plan = buildDispatchPlan(state)
   if (!plan) throw new Error('Expected an automatic dispatch plan')
   return worldReducer(state, {
@@ -68,22 +69,23 @@ function makeDebriefState(
 describe('buildDebrief', () => {
   it('resolves a strong call as a good patient outcome', () => {
     const scenario = getScenario('cardiac_arrest')
-    const debrief = buildDebrief(makeDebriefState(scenario.id), scenario)
+    const input = makeDebriefState(scenario.id)
+    const debrief = buildDebrief({ ...input, rescue: { ...input.rescue, phase: 'success', outcome: 'success' } }, scenario)
 
     expect(debrief.outcomeTier).toBe('good')
-    expect(debrief.outcomeTitle).toContain('好结局')
+    expect(debrief.outcomeTitle).toContain('交接')
     expect(debrief.reviewPoints.some(point => point.includes('时间控制合格'))).toBe(true)
   })
 
-  it('resolves missing dispatch as a bad outcome', () => {
+  it('does not invent a patient outcome when dispatch is missing', () => {
     const scenario = getScenario('cardiac_arrest')
     const debrief = buildDebrief(makeDebriefState(scenario.id, {
       dispatchRecord: null,
       callScores: [30],
     }), scenario)
 
-    expect(debrief.outcomeTier).toBe('bad')
-    expect(debrief.patientStatus).toContain('风险')
+    expect(debrief.outcomeTier).toBe('normal')
+    expect(debrief.patientStatus).toContain('尚未确认')
     expect(debrief.reviewPoints.some(point => point.includes('未形成有效派车记录'))).toBe(true)
   })
 

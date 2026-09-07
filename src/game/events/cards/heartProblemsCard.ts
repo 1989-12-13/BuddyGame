@@ -179,7 +179,7 @@ export const heartProblemsCard: EmergencyScenario = {
     {
       id: 'heart_improve',
       trigger: 'after_question',
-      triggerValue: '',
+      triggerValue: 'step4_vitals',
       type: 'caller_speaks',
       dialogue: '她坐着休息了一会儿感觉好一些了心跳没那么快了但还是有点心慌',
     },

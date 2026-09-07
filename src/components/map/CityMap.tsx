@@ -3,7 +3,8 @@
 // 跨通话显示所有占用车辆（en_route/on_scene/returning）
 // ============================================================
 
-import { Fragment, useEffect, useMemo } from 'react'
+import { OfflineMap } from './OfflineMap'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { CircleMarker, MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -34,8 +35,7 @@ function ZoomControl() {
     const zoomControl = L.control.zoom({ position: 'bottomleft' })
     zoomControl.addTo(map)
     return () => { zoomControl.remove() }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [map])
   return null
 }
 
@@ -58,12 +58,24 @@ function FitBounds({ points }: { points: LatLng[] }) {
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key])
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize())
+    observer.observe(map.getContainer())
+    return () => observer.disconnect()
+  }, [map])
   return null
 }
 
 // -------------------- 主组件 --------------------
 export function CityMap({ state, onAmbulanceClick }: Props) {
   const { theme, colors } = useTheme()
+  const [mapFailed, setMapFailed] = useState(false)
+  const [mapLoaded, setMapLoaded] = useState(false)
+  useEffect(() => {
+    if (mapLoaded || mapFailed) return
+    const timer = setTimeout(() => setMapFailed(true), 5000)
+    return () => clearTimeout(timer)
+  }, [mapLoaded, mapFailed])
   const hasCall = state.currentCall !== null
   const isPrank = state.currentCall?.isPrank ?? false
 
@@ -133,6 +145,7 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
     : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
 
+  if (mapFailed) return <OfflineMap state={state} onRetry={() => { setMapLoaded(false); setMapFailed(false) }} />
   return (
     <div style={styles.wrap}>
       <MapContainer
@@ -141,9 +154,10 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
         style={styles.map}
         scrollWheelZoom
         zoomControl={false}
-        attributionControl={false}
+        attributionControl
       >
         <TileLayer
+          eventHandlers={{ tileerror: () => setMapFailed(true), tileload: () => setMapLoaded(true) }}
           key={theme}
           url={tileUrl}
           subdomains={['a', 'b', 'c', 'd']}

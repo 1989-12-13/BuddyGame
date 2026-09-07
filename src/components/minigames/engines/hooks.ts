@@ -12,8 +12,8 @@ import { useMiniGameFinish } from './useMiniGameFinish'
 // -------------------- 暂停跟踪 --------------------
 /** 标准化暂停引用，各引擎复用，避免每处各写一遍 useEffect + pausedRef */
 export function usePauseRef(paused?: boolean) {
-  const pausedRef = useRef(false)
-  useEffect(() => { pausedRef.current = !!paused }, [paused])
+  const pausedRef = useRef(!!paused)
+  pausedRef.current = !!paused
   return pausedRef
 }
 
@@ -33,7 +33,8 @@ export function useKeyboard(
 
   useEffect(() => {
     const handler = (e: KeyboardEvent, type: 'down' | 'up') => {
-      if (e.code !== key) return
+      if (e.code !== key || e.repeat || document.querySelector('dialog[open]')) return
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(e.target.tagName))) return
       e.preventDefault()
       if (type === 'down') downRef.current?.(e)
       else upRef.current?.(e)

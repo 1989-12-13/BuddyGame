@@ -4,7 +4,7 @@
 
 import { useEffect } from 'react'
 import type { EndingDef } from '../game/types'
-import { RotateCcw, Trophy, ShieldCheck, ShieldAlert, Skull } from 'lucide-react'
+import { Activity, RotateCcw, Trophy, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 import {
   styles,
@@ -17,7 +17,7 @@ import {
   callCardStatusStyle,
   callCardBarFillStyle,
   ecgLineStyle,
-  SAVE_THRESHOLD,
+  SOLID_THRESHOLD,
 } from './EndingScreen.styles'
 
 interface Props {
@@ -40,10 +40,12 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
   }
 
   const calls = callScores ?? []
-  const savedCount = calls.filter(s => s >= SAVE_THRESHOLD).length
+  const solidCount = calls.filter(s => s >= SOLID_THRESHOLD).length
   const totalCalls = calls.length || 5
+  const maxScore = totalCalls * 100
+  const averageScore = totalScore / totalCalls
 
-  const rating = totalScore >= 350 ? 'gold' : totalScore >= 250 ? 'silver' : totalScore >= 150 ? 'bronze' : 'fail'
+  const rating = averageScore >= 70 ? 'gold' : averageScore >= 50 ? 'silver' : averageScore >= 30 ? 'bronze' : 'fail'
 
   return (
     <div style={styles.container}>
@@ -53,10 +55,7 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
         {/* Rating badge */}
         <div style={styles.badgeWrap}>
           <div style={badgeStyle(rating)}>
-            {rating === 'gold' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />金牌调度员</>}
-            {rating === 'silver' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />银牌调度员</>}
-            {rating === 'bronze' && <><Trophy size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />铜牌调度员</>}
-            {rating === 'fail' && <><Skull size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />需要复训</>}
+            {rating !== 'fail' ? <Trophy size={14} /> : <Activity size={14} />}{ending.badge}
           </div>
         </div>
 
@@ -68,9 +67,9 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
 
         {/* Total score */}
         <div style={scoreBoxStyle(rating)}>
-          <span style={styles.scoreLabel}>班次总分</span>
+          <span style={styles.scoreLabel}>操作评价</span>
           <span style={scoreValueStyle(rating)}>{totalScore}</span>
-          <span style={styles.scoreMax}>/ 500</span>
+          <span style={styles.scoreMax}>/ {maxScore}</span>
         </div>
 
         {/* Per-call cards */}
@@ -79,13 +78,13 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
             <div style={styles.divider} />
             <div style={styles.callsHeader}>
               <span style={styles.callsHeaderText}>今晚接警记录</span>
-              <span style={savedSummaryStyle(savedCount, totalCalls)}>
-                救回 {savedCount} / {totalCalls} 人
+              <span style={savedSummaryStyle(solidCount, totalCalls)}>
+                稳健处理 {solidCount} / {totalCalls} 通
               </span>
             </div>
             <div style={styles.cardsGrid}>
               {calls.map((score, i) => {
-                const saved = score >= SAVE_THRESHOLD
+                const saved = score >= SOLID_THRESHOLD
                 return (
                   <div key={i} style={callCardStyle(saved)} className="animate-card-reveal">
                     <div style={styles.callCardNum}>{String(i + 1).padStart(2, '0')}</div>
@@ -95,7 +94,7 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
                         <span style={styles.callCardMax}>/100</span>
                       </div>
                       <div style={callCardStatusStyle(saved)}>
-                        {saved ? <><ShieldCheck size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />救回</> : <><ShieldAlert size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />错失</>}
+                        {saved ? <><ShieldCheck size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />操作稳健</> : <><ShieldAlert size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />建议复盘</>}
                       </div>
                     </div>
                     <div style={styles.callCardBar}>

@@ -3,6 +3,7 @@
 // 派出救护车（单辆，专注路线）
 // ============================================================
 
+import { dispatchEligibility } from '../session'
 import type { WorldState, DialogueLine } from '../../types'
 import { calcOnSceneDuration } from '../worldState'
 import { lookupCoords, DEFAULT_CENTER } from '../../locations'
@@ -19,7 +20,7 @@ function isValidRouteSelection(route: RoutePlan): boolean {
 }
 
 export function handleDispatch(state: WorldState, vehicleId: string, selectedRoute: RoutePlan): WorldState {
-  if (!state.currentCall || !state.callerState) return state
+  if (!state.currentCall || !state.callerState || !dispatchEligibility(state).allowed || vehicleId !== state.fleet.vehicles[0]?.id) return state
   if (state.dispatchSent) return state
   if (!state.terminal.determinant || !state.terminal.triage) return state
 
@@ -61,14 +62,6 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
     routeLabel: route.label,
     routeRisk: route.risk,
   }
-  const afterDispatchLines: DialogueLine[] = state.currentCall.specialEvents
-    .filter(evt => evt.trigger === 'after_dispatch')
-    .map(evt => ({
-      speaker: 'caller' as const,
-      text: evt.dialogue,
-      timestamp: state.shiftElapsed,
-    }))
-
   // 派车超时即时反馈
   const sink = createEventSink(state)
   if (state.patientStatus && dispatchTime > DISPATCH_CRITICAL_TIME) {
@@ -107,7 +100,7 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
     guidanceMinigameScores: hasGuidance
       ? new Array(state.currentCall.guidance!.steps.length).fill(null)
       : [],
-    dialogueLog: [...state.dialogueLog, systemLine, ...afterDispatchLines],
+    dialogueLog: [...state.dialogueLog, systemLine],
     rescue,
     fleet: {
       ...state.fleet,

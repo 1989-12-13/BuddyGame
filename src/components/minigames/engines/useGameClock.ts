@@ -78,7 +78,7 @@ export function useGameClock(
       // 卸载时取消动画帧循环，避免内存泄漏
       cancelAnimationFrame(rafId)
     }
-  }, [durationSec])
+  }, [durationSec, pausedRef])
 
   return { finishedRef: finished }
 }

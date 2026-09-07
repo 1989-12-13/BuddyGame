@@ -3,7 +3,7 @@
 // 按空格/点击模拟按压，检测频率与稳定度
 // ============================================================
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, useEffect } from 'react'
 import type { MiniGameProps, RhythmPressSpec } from '../../../game/types'
 import { isRhythmPress } from '../../../game/types'
 import { Readout } from '../Readout'
@@ -15,8 +15,11 @@ import { calcLiveBpm, assessBpmQuality, calcRhythmScore } from './cprUtils'
 import type { RhythmQuality } from './cprUtils'
 import { engineWrap, readoutRow } from './styles'
 
-export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
-  if (!isRhythmPress(spec)) return null
+export function RhythmPress(props: MiniGameProps) {
+  if (!isRhythmPress(props.spec)) return null
+  return <RhythmPressEngine {...props} spec={props.spec} />
+}
+function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'spec'> & { spec: Extract<MiniGameProps['spec'], { kind: 'rhythmPress' }> }) {
   const s: RhythmPressSpec = spec
   const [timeLeft, setTimeLeft] = useState(s.durationSec)
   const [bpm, setBpm] = useState(0)
@@ -29,6 +32,15 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
   const pausedRef = usePauseRef(paused)
   const { complete } = useMiniGameFinish(onComplete, 700)
 
+  const pauseStarted = useRef<number | null>(null)
+  useEffect(() => {
+    if (paused) pauseStarted.current = performance.now()
+    else if (pauseStarted.current !== null) {
+      const gap = performance.now() - pauseStarted.current
+      pressTimes.current = pressTimes.current.map(time => time + gap)
+      pauseStarted.current = null
+    }
+  }, [paused])
   const registerPress = () => {
     if (doneRef.current || pausedRef.current) return
     const now = performance.now()
@@ -56,7 +68,7 @@ export function RhythmPress({ spec, onComplete, paused }: MiniGameProps) {
     }
     setDone(true)
     complete(score, computePassed(score, s.passThreshold))
-  }, [s.durationSec, s.targetBpm, s.bpmTolerance, s.passThreshold, complete])
+  }, [s.durationSec, s.targetBpm, s.passThreshold, complete])
 
   useGameClock(s.durationSec, pausedRef, {
     onTick: (elapsedSec) => {

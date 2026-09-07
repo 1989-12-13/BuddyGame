@@ -33,8 +33,11 @@ const resultBox: React.CSSProperties = {
   textAlign: 'center',
 }
 
-export function QuickChoice({ spec, onComplete, paused }: MiniGameProps) {
-  if (!isQuickChoice(spec)) return null
+export function QuickChoice(props: MiniGameProps) {
+  if (!isQuickChoice(props.spec)) return null
+  return <QuickChoiceEngine {...props} spec={props.spec} />
+}
+function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'spec'> & { spec: Extract<MiniGameProps['spec'], { kind: 'quickChoice' }> }) {
   const s = spec
   const pausedRef = usePauseRef(paused)
 

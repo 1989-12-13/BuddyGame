@@ -27,8 +27,11 @@ const colLeft: React.CSSProperties = {
   flexShrink: 0,
 }
 
-export function LocationSelect({ spec, onComplete, paused }: MiniGameProps) {
-  if (!isLocationSelect(spec)) return null
+export function LocationSelect(props: MiniGameProps) {
+  if (!isLocationSelect(props.spec)) return null
+  return <LocationSelectEngine {...props} spec={props.spec} />
+}
+function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'spec'> & { spec: Extract<MiniGameProps['spec'], { kind: 'locationSelect' }> }) {
   const s: LocationSelectSpec = spec
   const pausedRef = usePauseRef(paused)
 

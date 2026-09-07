@@ -16,7 +16,7 @@ export function handleCalmCaller(state: WorldState): WorldState {
   const cs = state.callerState
   const now = state.shiftElapsed
   const hasCalmScript = hasPerk(state.perks, 'calm_script')
-  const stressDrop = (hasCalmScript ? CALM_STRESS_DROP_PERK : CALM_STRESS_DROP_BASE) + rngInt(10)
+  const stressDrop = Math.max(3, Math.round((hasCalmScript ? CALM_STRESS_DROP_PERK : CALM_STRESS_DROP_BASE) / (1 + state.calmCount)))
   const calmCost = hasCalmScript ? CALM_TIME_COST_PERK : CALM_TIME_COST_BASE
   const newStress = Math.max(0, cs.stress - stressDrop)
   const newStressLevel = stressToLevel(newStress)
@@ -46,7 +46,8 @@ export function handleCalmCaller(state: WorldState): WorldState {
 
   return {
     ...state,
-    shiftElapsed: state.shiftElapsed + calmCost,
+    actionEndsAt: state.shiftElapsed + calmCost,
+    calmCount: state.calmCount + 1,
     questionCost: state.questionCost + calmCost,
     callerState: {
       ...cs,

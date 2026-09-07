@@ -10,7 +10,7 @@ import { getCaller } from '../../npc/personas'
 import { toneToInitialStress } from './helpers'
 
 export function handleAnswerCall(state: WorldState): WorldState {
-  if (state.callIndex >= state.totalCalls) return state
+  if (state.callIndex >= state.totalCalls || state.currentCall || state.lastDebrief || state.pendingPerkChoices.length) return state
 
   const scenarioId = state.scenarioQueue[state.callIndex]
   if (!scenarioId) return state
@@ -38,6 +38,10 @@ export function handleAnswerCall(state: WorldState): WorldState {
   return {
     ...state,
     currentCall: scenario,
+    callInstanceId: state.callInstanceId + 1,
+    actionEndsAt: state.shiftElapsed,
+    calmCount: 0,
+    triggeredEventIds: [],
     callPhase: 'questioning',
     callStartTime: state.shiftElapsed,
     callerState,

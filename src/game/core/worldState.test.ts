@@ -253,7 +253,7 @@ describe('calcRescueSuccessRate', () => {
     const rate = calcRescueSuccessRate({
       base: 0.95,
       stability: 90,
-      capability: 5,
+
       dispatchTime: 25,
       triageDiff: 0,
       guidanceWrongCount: 0,
@@ -368,7 +368,7 @@ describe('triageLevelDiff', () => {
 // ============================================================
 describe('calcAmbulanceETA', () => {
   it('ETA 裁剪在 20-100 区间', () => {
-    const eta = calcAmbulanceETA(30, 'partial', 2)
+    const eta = calcAmbulanceETA(30, 'partial')
     expect(eta).toBeGreaterThanOrEqual(20)
     expect(eta).toBeLessThanOrEqual(100)
   })

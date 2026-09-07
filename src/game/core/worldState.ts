@@ -103,6 +103,11 @@ export function buildScenarioQueue(): string[] {
 export function createInitialState(): WorldState {
   return {
     screen: 'title',
+    pauseReasons: [],
+    callInstanceId: 0,
+    actionEndsAt: 0,
+    calmCount: 0,
+    triggeredEventIds: [],
     shiftNumber: 0,
     callIndex: 0,
     totalCalls: 5,

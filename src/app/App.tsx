@@ -2,19 +2,20 @@
 // 120调度台 — App 根组件
 // ============================================================
 
-import { useState, useCallback } from 'react'
+import { lazy, Suspense, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { EndingDef } from '../game/types'
 import { TitleScreen } from '../screens/TitleScreen'
-import { GameScreen } from '../screens/game/GameScreen'
-import { EndingScreen } from '../screens/EndingScreen'
-import { LevelSelectScreen } from '../screens/LevelSelectScreen'
-import { KnowledgeScreen } from '../screens/KnowledgeScreen'
 import { AudioProvider } from '../audio/AudioContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
 import { DispatchCardProvider, type DispatchCardControl } from '../contexts/DispatchCardContext'
 import { SettingsPanel } from '../components/SettingsPanel'
 import { ErrorBoundary } from '../components/ui/ErrorBoundary'
+
+const GameScreen = lazy(() => import('../screens/game/GameScreen').then(module => ({ default: module.GameScreen })))
+const EndingScreen = lazy(() => import('../screens/EndingScreen').then(module => ({ default: module.EndingScreen })))
+const LevelSelectScreen = lazy(() => import('../screens/LevelSelectScreen').then(module => ({ default: module.LevelSelectScreen })))
+const KnowledgeScreen = lazy(() => import('../screens/KnowledgeScreen').then(module => ({ default: module.KnowledgeScreen })))
 
 type AppScreen = 'title' | 'level_select' | 'game' | 'ending' | 'knowledge'
 
@@ -118,8 +119,10 @@ export default function App() {
       <AudioProvider>
         <ErrorBoundary title="应用异常" description="游戏核心组件遇到了意外错误。请尝试刷新页面。">
           <DispatchCardProvider value={dispatchCard}>
-            {mainContent}
-            <SettingsPanel onNavigate={handleNavigate} />
+            <Suspense fallback={<div role="status" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: 'var(--bg)', color: 'var(--text-secondary)' }}>正在连接调度台…</div>}>
+              {mainContent}
+            </Suspense>
+            {screen !== 'game' && screen !== 'title' && <SettingsPanel onNavigate={handleNavigate} />}
           </DispatchCardProvider>
         </ErrorBoundary>
       </AudioProvider>

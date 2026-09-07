@@ -16,6 +16,7 @@ export function handleMakeJudgment(
   if (idx < 0) return state
 
   const judgment = state.pendingJudgments[idx]
+  if (judgment.chosenOptionIndex !== null || !Number.isInteger(chosenOptionIndex) || !judgment.options[chosenOptionIndex]) return state
   const updatedJudgment = { ...judgment, chosenOptionIndex }
   const newJudgments = [...state.pendingJudgments]
   newJudgments[idx] = updatedJudgment

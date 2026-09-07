@@ -27,7 +27,7 @@ interface Props {
 const DRAWER_W_OPEN = 600
 const DRAWER_W_CLOSED = 72
 
-export function CallDrawer({ open, onToggle, mini, children, title, active, historyBadge }: Props) {
+export function CallDrawer({ open, onToggle, mini, children, title, active }: Props) {
   return (
     <motion.aside
       animate={{ width: open ? DRAWER_W_OPEN : DRAWER_W_CLOSED }}

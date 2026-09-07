@@ -1,8 +1,9 @@
+import { readStorage, writeStorage } from '../utils/storage'
 // ============================================================
 // 120调度台 — 音效 + TTS 全局上下文
 // ============================================================
 
-import { createContext, useContext, useRef, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useRef, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { useGameAudio, type GameAudioCue } from './useGameAudio'
 import { TtsPlayer } from './ttsPlayer'
 import { logger } from '../utils/logger'
@@ -38,15 +39,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const [volume, setVolumeState] = useState(() => {
     if (typeof window === 'undefined') return 0.65
-    const saved = localStorage.getItem(VOLUME_KEY)
-    return saved ? parseFloat(saved) : 0.65
+    const saved = readStorage(VOLUME_KEY)
+    const parsed = Number(saved)
+    return saved !== null && Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : 0.65
   })
 
   const setVolume = useCallback((v: number) => {
     const clamped = Math.max(0, Math.min(1, v))
     setVolumeState(clamped)
-    localStorage.setItem(VOLUME_KEY, String(clamped))
+    writeStorage(VOLUME_KEY, String(clamped))
   }, [])
+
+  useEffect(() => { ttsRef.current?.setVolume(volume) }, [volume])
+  useEffect(() => () => ttsRef.current?.stop(), [])
 
   const play = useCallback((cue: GameAudioCue) => {
     try { rawPlay(cue, volume) } catch (e) { logger.warn('[audio] play failed:', e) }

@@ -59,6 +59,17 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   // 用 ref 暴露 finishGame，使超时和呼吸回调总能拿到最新版本
   const finishGameRef = useRef<(() => void) | null>(null)
 
+  const pauseStarted = useRef<number | null>(null)
+  useEffect(() => {
+    const now = performance.now()
+    if (paused) pauseStarted.current = now
+    else if (pauseStarted.current !== null) {
+      const gap = now - pauseStarted.current
+      pressTimes.current = pressTimes.current.map(time => time + gap)
+      if (breathHolding) breathStart.current += gap
+      pauseStarted.current = null
+    }
+  }, [paused, breathHolding])
   // ---- 修复 #3: 超时机制 ----
   // 每轮最多给 90 秒（远大于正常操作时长），超时自动低分结束
   useGameClock(
@@ -84,13 +95,14 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         cancelAnimationFrame(rafId)
         return
       }
+      if (pausedRef.current) { rafId = requestAnimationFrame(tick); return }
       const fill = Math.min(100, ((performance.now() - breathStart.current) / CPR_BREATH_PAUSE_MS) * 100)
       setBlowFill(fill)
       rafId = requestAnimationFrame(tick)
     }
     rafId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafId)
-  }, [breathHolding])
+  }, [breathHolding, pausedRef])
 
   // ---- 修复 #2: 按压阶段 30 次上限 ----
   const registerPress = useCallback(() => {
@@ -109,7 +121,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       const interval = now - prev
       compQualities.current.push(assessBpmQuality(interval, CPR_TARGET_BPM))
     }
-  }, [phase])
+  }, [phase, pausedRef])
 
   const startBreath = useCallback(() => {
     if (doneRef.current || pausedRef.current || phase !== 'breath' || breathHolding) return
@@ -117,7 +129,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     setBreathHolding(true)
     setBlowFill(0)
     setBreathRatio(0)
-  }, [phase, breathHolding])
+  }, [phase, breathHolding, pausedRef])
 
   // ---- 修复 #4: 完整依赖，通过 finishGameRef 避免闭包陈旧 ----
   const releaseBreath = useCallback(() => {
@@ -157,7 +169,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         setPhase('compression')
       }
     }
-  }, [phase, breathHolding, breathCount, cycle])
+  }, [phase, breathHolding, breathCount, cycle, cycles, pausedRef])
 
   useKeyboard('Space', {
     onDown: () => {

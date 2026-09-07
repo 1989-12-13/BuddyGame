@@ -13,8 +13,11 @@ import { engineWrap } from './styles'
 
 const WRONG_FLASH_MS = 400
 
-export function StepOrder({ spec, onComplete, paused }: MiniGameProps) {
-  if (!isStepOrder(spec)) return null
+export function StepOrder(props: MiniGameProps) {
+  if (!isStepOrder(props.spec)) return null
+  return <StepOrderEngine {...props} spec={props.spec} />
+}
+function StepOrderEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'spec'> & { spec: Extract<MiniGameProps['spec'], { kind: 'stepOrder' }> }) {
   const s: StepOrderSpec = spec
   const finished = useRef(false)
   const pausedRef = usePauseRef(paused)

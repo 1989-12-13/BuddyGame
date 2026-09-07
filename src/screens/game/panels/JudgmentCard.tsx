@@ -75,9 +75,11 @@ export function JudgmentCard({
   })()
 
   // 打乱当前题目的选项顺序，防止玩家通过位置记忆作答
+  const displayJudgmentId = displayJudgment?.id
+  const displayOptionCount = displayJudgment?.options.length ?? 0
   const shuffleMap = useMemo(
-    () => displayJudgment ? createShuffleMap(displayJudgment.options.length) : { toOriginal: [], toDisplay: [] },
-    [displayJudgment?.id],
+    () => displayJudgmentId ? createShuffleMap(displayOptionCount) : { toOriginal: [], toDisplay: [] },
+    [displayJudgmentId, displayOptionCount],
   )
 
   // 关闭判断浮层（触发下一题或结束）

@@ -90,6 +90,8 @@ export function TerminalModal({
           </div>
         </div>
 
+        <p style={{ padding: 12 }}>下一步 · 路线规划</p>
+        <p style={{ padding: 12 }}>沿相邻节点选择完整路线，再确认派车。</p>
         {/* sider 底部 — 操作按钮 */}
         <div style={styles.modalFooter}>
           {!dispatchSent ? (

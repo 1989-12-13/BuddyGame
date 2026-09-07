@@ -54,9 +54,6 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
       triageScore = 0
       guidanceScore = 0
     }
-  } else if (rescueFailed) {
-    // 患者死亡：本通 0 分（不影响班次继续）
-    total = 0
   } else {
     // 统计信息质量加分
     const qualityCount = Object.values(cs.infoQuality)
@@ -133,7 +130,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   const summaryLine: DialogueLine = {
     speaker: 'system',
     text: rescueFailed
-      ? `【通话结束 | 患者死亡 · 任务失败 · 本轮得分 0 分】`
+      ? `【通话结束 | 救援未成功 · 操作评价 ${total} 分，详见复盘】`
       : `【通话结束 | 总分:${total}/100 — 速度:${speed} 信息:${info} 分诊:${triageScore} 判定:${decisionScore} 指导:${guidanceScore} 判断扣分:${penaltyScore}】`,
     timestamp: state.shiftElapsed,
   }
@@ -190,7 +187,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     vehicleName: state.rescue.vehicleName,
     isPrank: call.isPrank,
     outcome: archivedOutcome,
-    score: rescueFailed ? 0 : total,
+    score: total,
     dialogueLog: [...state.dialogueLog, summaryLine],
   }
 

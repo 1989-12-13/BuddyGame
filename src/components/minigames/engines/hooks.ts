@@ -34,7 +34,7 @@ export function useKeyboard(
   useEffect(() => {
     const handler = (e: KeyboardEvent, type: 'down' | 'up') => {
       if (e.code !== key || e.repeat || document.querySelector('dialog[open]')) return
-      if (e.target instanceof HTMLElement && (e.target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(e.target.tagName))) return
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || e.target.closest('[role="button"]') || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(e.target.tagName))) return
       e.preventDefault()
       if (type === 'down') downRef.current?.(e)
       else upRef.current?.(e)

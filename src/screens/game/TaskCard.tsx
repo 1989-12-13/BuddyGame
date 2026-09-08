@@ -3,6 +3,7 @@ import { MapPin, Navigation, ClipboardList, CheckCircle2 } from 'lucide-react'
 import type { WorldState, MpdsDeterminant } from '../../game/types'
 import type { GameAction } from '../../game/core/actions'
 import { dispatchEligibility } from '../../game/core/session'
+import { PatientVitals } from './PatientVitals'
 import { TerminalForm } from './panels/TerminalForm'
 const PRIORITIES: [MpdsDeterminant, string][] = [['ECHO', '立即响应 · 极危急'], ['DELTA', '紧急响应 · 高风险'], ['CHARLIE', '优先响应 · 需评估'], ['BRAVO', '及时响应 · 较低风险'], ['ALPHA', '常规响应 · 低风险']]
 export function TaskCard({ state, dispatch, onRoute, onEnd }: { state: WorldState; dispatch: Dispatch<GameAction>; onRoute: () => void; onEnd: () => void }) {
@@ -10,6 +11,7 @@ export function TaskCard({ state, dispatch, onRoute, onEnd }: { state: WorldStat
   const eligibility = dispatchEligibility(state)
   return <>
     <div className="panel-heading"><ClipboardList size={18} /><h2>这通电话的记录</h2><span className="eyebrow">TASK CARD</span></div>
+    <PatientVitals state={state} />
     <div className="task-fields">
       <label><span><MapPin size={14} /> 事发地址</span><textarea rows={3} value={t.address} placeholder="从来电中确认位置" onChange={e => dispatch({ type: 'UPDATE_TERMINAL', field: 'address', value: e.target.value })} /></label>
       <label><span>联系电话</span><input value={t.contact} placeholder="等待核实" onChange={e => dispatch({ type: 'UPDATE_TERMINAL', field: 'contact', value: e.target.value })} /></label>

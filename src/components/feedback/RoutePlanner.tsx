@@ -65,7 +65,7 @@ function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
   const pad = 5
   const scale = 100 - pad * 2
 
-  return new Map(values.map(node => [node.id, {
+  return new Map(values.map(node => [node.id, node.diagram ?? {
     x: pad + ((node.pos.lng - minLng) / lngSpan) * scale,
     y: pad + ((maxLat - node.pos.lat) / latSpan) * scale,
   }]))
@@ -133,7 +133,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
               城市路网 · 节点式路线规划
             </div>
             <div style={{ marginTop: 3, fontSize: 11, color: 'var(--text-muted)' }}>
-              读取道路文字状态，在共享路口逐段选择，直至到达事件现场
+              路网示意图 · 从上到下逐段选择，直至到达事件现场
             </div>
             <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 10 }}>
               <span style={{ color: 'var(--success-green)' }}>✓ 系统自动配车</span>
@@ -167,7 +167,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           <div style={{
             position: 'relative',
             flex: 1,
-            minHeight: 350,
+            minHeight: 520,
             overflow: 'hidden',
             borderRadius: 10,
             border: '1px solid var(--border)',
@@ -259,8 +259,8 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                     left: `${point.x}%`,
                     top: `${point.y}%`,
                     transform: 'translate(-50%, -50%)',
-                    width: node.kind === 'station' || node.kind === 'incident' ? 32 : 25,
-                    height: node.kind === 'station' || node.kind === 'incident' ? 32 : 25,
+                    width: 44,
+                    height: 44,
                     borderRadius: '50%',
                     border: `2px solid ${selected ? 'var(--accent-cyan)' : available ? 'var(--accent-gold)' : 'var(--border)'}`,
                     backgroundColor: selected ? 'var(--accent-cyan)' : available ? 'var(--bg-surface)' : 'var(--bg-elevated)',
@@ -284,7 +284,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                 <span key={`${node.id}-label`} style={{
                   position: 'absolute',
                   left: `${point.x}%`,
-                  top: `calc(${point.y}% + 19px)`,
+                  top: `calc(${point.y}% + 23px)`,
                   transform: 'translateX(-50%)',
                   whiteSpace: 'nowrap',
                   pointerEvents: 'none',

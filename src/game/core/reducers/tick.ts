@@ -165,6 +165,7 @@ export function handleTick(state: WorldState): WorldState {
     ...state,
     eventSeq: sink.seq,
     shiftElapsed: newElapsed,
+    activePlaySeconds: state.activePlaySeconds + (state.currentCall && !state.rescue.outcome && !state.patientStatus?.died ? 1 : 0),
     ambulanceRemaining: newAmbulanceRemaining,
     callPhase: newCallPhase,
     patientStatus: newPatientStatus,

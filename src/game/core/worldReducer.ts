@@ -16,6 +16,8 @@ import { handleMakeJudgment } from './reducers/makeJudgment'
 import { handleAnswerGuidance } from './reducers/answerGuidance'
 import { handleCompleteMinigame } from './reducers/completeMinigame'
 import { handleTick } from './reducers/tick'
+import { isGuidanceActive } from './reducers/helpers'
+import { handleCareCheck } from './waitingCare'
 import {
   handleStartShift,
   handleUpdateTerminal,
@@ -44,6 +46,8 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
     return next
   }
   switch (action.type) {
+    case 'CARE_CHECK':
+      return handleCareCheck(state, action.checkId, action.selectedIndex)
     case 'START_SHIFT':
       return handleStartShift(state, action.forceScenarios)
 
@@ -86,6 +90,10 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
     case 'ANSWER_GUIDANCE':
       return handleAnswerGuidance(state, action.stepIndex, action.selectedIndex)
+
+    case 'CONTINUE_GUIDANCE':
+      if (!isGuidanceActive(state) || action.stepIndex !== state.guidanceStepIndex || state.guidanceResults[action.stepIndex] == null) return state
+      return { ...state, guidanceStepIndex: state.guidanceStepIndex + 1 }
 
     case 'COMPLETE_MINIGAME':
       return handleCompleteMinigame(state, action.stepIndex, action.score, action.passed)

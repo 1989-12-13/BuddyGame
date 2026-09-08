@@ -1,10 +1,10 @@
 // ============================================================
 // 120调度台 — ANSWER_GUIDANCE reducer 处理器
-// 回答急救指导（记录结果，直接推进下一步）
+// 回答急救指导：记录结果，玩家核对反馈后再推进。
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
-import { createEventSink, sinkEvent, isGuidanceActive, advanceGuidanceStep } from './helpers'
+import { createEventSink, sinkEvent, isGuidanceActive } from './helpers'
 import { GUIDANCE_CORRECT_BONUS, GUIDANCE_INCORRECT_PENALTY } from '../constants'
 import { stabilityToVitalSign } from '../worldState'
 
@@ -23,7 +23,7 @@ export function handleAnswerGuidance(
 
   const operatorLine: DialogueLine = {
     speaker: 'operator',
-    text: step.instruction,
+    text: `我的选择：${step.options[selectedIndex]}`,
     timestamp: now,
   }
   const feedbackLine: DialogueLine = {
@@ -49,13 +49,9 @@ export function handleAnswerGuidance(
     }
   }
 
-  const nextIndex = stepIndex + 1
-  const stepInfo = advanceGuidanceStep(nextIndex)
-
   return {
     ...state,
     eventSeq: sink.seq,
-    ...stepInfo,
     guidanceResults: newResults,
     patientStatus: newPatientStatus,
     patientEvents: sink.events,

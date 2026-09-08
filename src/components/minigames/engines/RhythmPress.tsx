@@ -64,7 +64,7 @@ function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
       // 按压数量要求：达到目标频率的 65% 才算合格节奏
       const expected = (s.durationSec * s.targetBpm) / 60
       const countFactor = Math.min(1, pts.length / (expected * 0.65))
-      score = Math.max(0, Math.min(1, rateScore * (0.6 + 0.4 * countFactor)))
+      score = Math.max(0, Math.min(1, rateScore * countFactor))
     }
     setDone(true)
     complete(score, computePassed(score, s.passThreshold))
@@ -102,6 +102,11 @@ function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
       </div>
 
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="胸外按压节奏操作区"
+        aria-disabled={paused || done}
+        onKeyDown={e => { if (['Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) registerPress() } }}
         onPointerDown={registerPress}
         style={{
           width: 160,

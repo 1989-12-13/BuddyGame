@@ -71,6 +71,8 @@ export interface WorldState {
   actionEndsAt: number
   calmCount: number
   triggeredEventIds: string[]
+  careChecks: Record<string, number>
+  activePlaySeconds: number
 
   // 班次
   shiftNumber: number

@@ -1,10 +1,10 @@
 // ============================================================
 // 120调度台 — COMPLETE_MINIGAME reducer 处理器
-// 互动小游戏完成（记录分数，推进步骤）
+// 互动小游戏完成：记录分数，玩家核对反馈后再推进。
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
-import { createEventSink, sinkEvent, isGuidanceActive, advanceGuidanceStep } from './helpers'
+import { createEventSink, sinkEvent, isGuidanceActive } from './helpers'
 import { MINIGAME_STABILITY_MULT } from '../constants'
 import { stabilityToVitalSign } from '../worldState'
 
@@ -57,13 +57,9 @@ export function handleCompleteMinigame(
     )
   }
 
-  const nextIndex = stepIndex + 1
-  const stepInfo = advanceGuidanceStep(nextIndex)
-
   return {
     ...state,
     eventSeq: sink.seq,
-    ...stepInfo,
     guidanceResults: newResults,
     guidanceMinigameScores: newScores,
     patientStatus: newPatientStatus,

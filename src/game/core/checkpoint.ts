@@ -7,7 +7,7 @@ import { readStorage, writeStorage, removeStorage } from '../../utils/storage'
 const KEY = 'dispatch120-checkpoint-v1'
 export function saveCheckpoint(state: WorldState): boolean {
   if (state.callIndex >= state.totalCalls) { removeStorage(KEY); return true }
-  return writeStorage(KEY, JSON.stringify({ version: 1, queue: state.scenarioQueue, index: state.callIndex, scores: state.callScores, perks: state.perks, elapsed: state.shiftElapsed }))
+  return writeStorage(KEY, JSON.stringify({ version: 1, queue: state.scenarioQueue, index: state.callIndex, scores: state.callScores, perks: state.perks, elapsed: state.shiftElapsed, activeSeconds: Math.max(0, state.activePlaySeconds - (state.currentCall ? state.shiftElapsed - state.callStartTime : 0)) }))
 }
 export function loadCheckpoint(): WorldState | null {
   try {
@@ -17,6 +17,7 @@ export function loadCheckpoint(): WorldState | null {
     if (!Array.isArray(saved.scores) || saved.scores.length !== saved.index || !saved.scores.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 100)) return null
     if (!Array.isArray(saved.perks) || !saved.perks.every((id: unknown) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(ROGUE_PERKS, id))) return null
     if (!Number.isFinite(saved.elapsed) || saved.elapsed < 0) return null
-    return { ...createInitialState(), screen: 'playing', shiftNumber: 1, callPhase: 'completed', scenarioQueue: saved.queue, totalCalls: saved.queue.length, callIndex: saved.index, callScores: saved.scores, totalScore: saved.scores.reduce((a: number, b: number) => a + b, 0), perks: [...new Set<string>(saved.perks)] as WorldState['perks'], shiftElapsed: saved.elapsed }
+    if (saved.activeSeconds !== undefined && (!Number.isInteger(saved.activeSeconds) || saved.activeSeconds < 0 || saved.activeSeconds > saved.elapsed)) return null
+    return { ...createInitialState(), screen: 'playing', shiftNumber: 1, callPhase: 'completed', scenarioQueue: saved.queue, totalCalls: saved.queue.length, callIndex: saved.index, callScores: saved.scores, totalScore: saved.scores.reduce((a: number, b: number) => a + b, 0), perks: [...new Set<string>(saved.perks)] as WorldState['perks'], shiftElapsed: saved.elapsed, activePlaySeconds: saved.activeSeconds ?? 0 }
   } catch { return null }
 }

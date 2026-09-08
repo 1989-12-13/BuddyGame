@@ -30,6 +30,7 @@ export default function App() {
   const [screen, setScreen] = useState<AppScreen>('title')
   const [ending, setEnding] = useState<EndingDef | null>(null)
   const [finalScore, setFinalScore] = useState(0)
+  const [finalActiveSeconds, setFinalActiveSeconds] = useState(0)
   const [finalCallScores, setFinalCallScores] = useState<number[]>([])
   const [gameKey, setGameKey] = useState(0)
   const [selectedScenario, setSelectedScenario] = useState<string | undefined>(undefined)
@@ -48,7 +49,7 @@ export default function App() {
   }, [])
 
   const handleNavigate = useCallback(
-    (target: 'title' | 'ending', end?: EndingDef, totalScore?: number, callScores?: number[]) => {
+    (target: 'title' | 'ending', end?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => {
       if (target === 'title') {
         setScreen('title')
         setEnding(null)
@@ -59,6 +60,7 @@ export default function App() {
         if (end) setEnding(end)
         if (totalScore !== undefined) setFinalScore(totalScore)
         if (callScores) setFinalCallScores(callScores)
+        setFinalActiveSeconds(activeSeconds ?? 0)
       }
     },
     [],
@@ -92,7 +94,7 @@ export default function App() {
             return <KnowledgeScreen onBack={() => setScreen('title')} />
           case 'ending':
             return ending ? (
-              <EndingScreen ending={ending} totalScore={finalScore} callScores={finalCallScores} onRestart={handleRestart} />
+              <EndingScreen ending={ending} totalScore={finalScore} callScores={finalCallScores} activeSeconds={finalActiveSeconds} onRestart={handleRestart} />
             ) : (
               <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
             )

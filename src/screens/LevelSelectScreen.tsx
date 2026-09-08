@@ -29,19 +29,19 @@ const ALL_SCENARIOS: ScenarioEntry[] = [
   { id: 'asthma',         num: 2, title: '哮喘发作', desc: '辅助呼吸胸外按压', category: '呼吸系统', tag: '🤲' },
   { id: 'carbon_monoxide', num: 26, title: '一氧化碳中毒', desc: '复苏体位步骤排序', category: '呼吸系统', tag: '🔢' },
   // 创伤出血
-  { id: 'hemorrhage',     num: 21, title: '刀割伤大出血', desc: '近心端止血点选择', category: '创伤出血', tag: '🎯' },
+  { id: 'hemorrhage',     num: 21, title: '玻璃割伤大出血', desc: '保留异物、照护步骤排序', category: '创伤出血', tag: '🔢' },
   { id: 'stab_gunshot',   num: 18, title: '刀刺/枪伤', desc: '近心端止血点选择', category: '创伤出血', tag: '🎯' },
   { id: 'trauma_car',     num: 4, title: '严重车祸', desc: '近心端止血点选择', category: '创伤出血', tag: '🎯' },
   { id: 'trauma',         num: 17, title: '高处坠落伤', desc: '急救指导', category: '创伤出血', tag: '📞' },
   { id: 'animal_bite',    num: 3, title: '狗咬伤', desc: '近心端止血点选择', category: '创伤出血', tag: '🎯' },
   { id: 'assault',        num: 5, title: '暴力袭击', desc: '近心端止血点选择', category: '创伤出血', tag: '🎯' },
   // 神经系统
-  { id: 'stroke',         num: 28, title: '脑卒中', desc: 'FAST 识别 + 复苏体位步骤', category: '神经系统', tag: '🔢' },
+  { id: 'stroke',         num: 28, title: '脑卒中', desc: '症状与时间线整理', category: '神经系统', tag: '🔢' },
   { id: 'seizure',        num: 12, title: '癫痫发作', desc: '复苏体位步骤排序', category: '神经系统', tag: '🔢' },
   { id: 'unconscious_fainting', num: 31, title: '晕厥/意识丧失', desc: '复苏体位步骤排序', category: '神经系统', tag: '🔢' },
   { id: 'severe_headache', num: 27, title: '剧烈头痛', desc: '急救指导', category: '神经系统', tag: '📞' },
   // 心血管
-  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '胸外按压训练', category: '心血管', tag: '🤲' },
+  { id: 'chest_pain',     num: 10, title: '疑似心梗', desc: '停止活动、症状观察与交接', category: '心血管', tag: '🔢' },
   { id: 'heart_problems', num: 19, title: '心律失常', desc: '胸外按压训练', category: '心血管', tag: '🤲' },
   { id: 'electrocution',  num: 15, title: '触电', desc: 'CPR 30:2', category: '心血管', tag: '❤️' },
   // 消化与泌尿
@@ -61,7 +61,7 @@ const ALL_SCENARIOS: ScenarioEntry[] = [
   { id: 'entrapment',     num: 22, title: '电梯困人', desc: '急救指导', category: '精神特殊', tag: '📞' },
   // 妇儿与老年
   { id: 'obstetric',      num: 24, title: '产科急症', desc: '急救指导', category: '妇儿老年', tag: '📞' },
-  { id: 'falls_elderly',  num: 17, title: '老人跌倒', desc: '复苏体位步骤排序', category: '妇儿老年', tag: '🔢' },
+  { id: 'falls_elderly',  num: 17, title: '老人跌倒', desc: '避免搬动、照护与接应安排', category: '妇儿老年', tag: '🔢' },
   { id: 'sick_person',    num: 33, title: '不明原因发烧', desc: '急救指导', category: '妇儿老年', tag: '📞' },
 ]
 
@@ -148,6 +148,10 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
               {grouped.get(cat)!.map(s => (
                 <div
                   key={s.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`练习${s.title}`}
+                  onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleScenarioClick(s.id) } }}
                   style={{
                     ...styles.card,
                     borderColor: hoveredId === s.id ? 'var(--accent-amber)' : 'var(--border)',

@@ -55,7 +55,11 @@ describe('workbench state boundaries', () => {
     expect(worldReducer(state, { type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: state.callInstanceId - 1 })).toBe(state)
     const started = dispatch(state)
     const answered = worldReducer(started, { type: 'ANSWER_GUIDANCE', callInstanceId: started.callInstanceId, stepIndex: 0, selectedIndex: 0 })
-    expect(answered.guidanceStepIndex).toBe(1)
+    expect(answered.guidanceStepIndex).toBe(0)
+    expect(worldReducer(answered, { type: 'ANSWER_GUIDANCE', stepIndex: 1, selectedIndex: 0 })).toBe(answered)
+    const continued = worldReducer(answered, { type: 'CONTINUE_GUIDANCE', callInstanceId: started.callInstanceId, stepIndex: 0 })
+    expect(continued.guidanceStepIndex).toBe(1)
+    expect(worldReducer(continued, { type: 'CONTINUE_GUIDANCE', callInstanceId: started.callInstanceId, stepIndex: 0 })).toBe(continued)
     expect(worldReducer(answered, { type: 'ANSWER_GUIDANCE', callInstanceId: started.callInstanceId, stepIndex: 0, selectedIndex: 0 })).toBe(answered)
     const mgIndex = started.currentCall!.guidance!.steps.findIndex(step => step.miniGame)
     const mg = { ...started, guidanceStepIndex: mgIndex }
@@ -109,8 +113,9 @@ describe('workbench state boundaries', () => {
       for (let i = 0; i < (call.guidance?.steps.length ?? 0); i++) {
         const step = call.guidance!.steps[i]
         state = worldReducer(state, step.miniGame ? { type: 'COMPLETE_MINIGAME', callInstanceId: state.callInstanceId, stepIndex: i, score: 1, passed: true } : { type: 'ANSWER_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex: i, selectedIndex: step.correctIndex })
+        state = worldReducer(state, { type: 'CONTINUE_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex: i })
       }
-      for (let i = 0; i < 200 && !state.rescue.outcome; i++) state = worldReducer(state, { type: 'TICK' })
+      for (let i = 0; i < 600 && !state.rescue.outcome; i++) state = worldReducer(state, { type: 'TICK' })
       expect(state.rescue.outcome).not.toBeNull()
       state = worldReducer(state, { type: 'END_CALL' })
       expect(state.callScores).toHaveLength(index + 1)

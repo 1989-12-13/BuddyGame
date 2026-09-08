@@ -12,6 +12,7 @@ export type GameAction =
   | { type: 'PAUSE'; reason: import('./session').PauseReason }
   | { type: 'RESUME'; reason?: import('./session').PauseReason }
   | { type: 'ADVANCE_TURNAROUND' }
+  | { type: 'CARE_CHECK'; callInstanceId: number; checkId: string; selectedIndex: number }
   | { type: 'START_SHIFT'; forceScenarios?: string[] }
   | { type: 'ANSWER_CALL' }
   | { type: 'ASK_QUESTION'; questionId: string }
@@ -25,6 +26,7 @@ export type GameAction =
   | { type: 'SET_TRIAGE'; level: TriageLevel }
   | { type: 'DISPATCH'; callInstanceId?: number; vehicleId: string; route: RoutePlan }   // 系统车辆 + 玩家逐节点确认的完整路线
   | { type: 'ANSWER_GUIDANCE'; callInstanceId?: number; stepIndex: number; selectedIndex: number }
+  | { type: 'CONTINUE_GUIDANCE'; callInstanceId: number; stepIndex: number }
   | { type: 'COMPLETE_MINIGAME'; callInstanceId?: number; stepIndex: number; score: number; passed: boolean }
   | { type: 'END_CALL'; perkChoices?: RoguePerkId[] }
   | { type: 'DISMISS_DEBRIEF' }

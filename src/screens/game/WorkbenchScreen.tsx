@@ -17,6 +17,8 @@ import { useTheme } from '../../contexts/ThemeContext'
 import { CityMap } from '../../components/map/CityMap'
 import { RoutePlanner } from '../../components/feedback/RoutePlanner'
 import { GuidancePanel } from './panels/GuidancePanel'
+import { WaitingCarePanel } from './WaitingCarePanel'
+import { formatPlayTime } from '../../game/core/pacing'
 import { TaskCard } from './TaskCard'
 import { Transcript } from './Transcript'
 import { QuestionDock } from './QuestionDock'
@@ -24,7 +26,7 @@ import { Dialog } from '../../components/ui/Dialog'
 import { ROGUE_PERKS } from '../../game/core/perks'
 import './workbench.css'
 
-interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[]) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void }
+interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void }
 type Tab = 'call' | 'map' | 'task'
 type Modal = 'settings' | 'help' | 'exit' | 'end' | null
 const PHASES = ['接听', '问询', '路线', '指导', '交接']
@@ -72,13 +74,14 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   useEffect(() => {
     const lines = state.dialogueLog.slice(lastSpoken.current)
     lastSpoken.current = state.dialogueLog.length
+    if (lines.some(line => line.speaker === 'caller')) audio.tts.stop()
     lines.forEach((line, i) => { if (line.speaker === 'caller') void audio.tts.enqueue(`${state.callInstanceId}-${i}-${line.timestamp}`, { text: line.text, kind: 'caller', emotion: stressToEmotion(state.callerState?.stress ?? 40) }).catch(() => setAudioFailed(true)) })
   }, [state.dialogueLog, state.callInstanceId, state.callerState?.stress, audio.tts])
   // Deliberately persist only at safe boundaries, never every timer tick.
   useEffect(() => { setSaveFailed(!saveCheckpoint(state)) }, [state.callIndex, state.scenarioQueue, state.perks]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (state.screen === 'ending') onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores)
-  }, [state.screen, state.totalScore, state.totalCalls, state.callScores, onNavigate])
+    if (state.screen === 'ending') onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores, state.activePlaySeconds)
+  }, [state.screen, state.totalScore, state.totalCalls, state.callScores, state.activePlaySeconds, onNavigate])
   const openModal = (value: Modal) => { dispatch({ type: 'PAUSE', reason: value === 'settings' ? 'settings' : value === 'help' ? 'help' : 'confirm' }); setModal(value) }
   const closeModal = () => { dispatch({ type: 'RESUME', reason: modal === 'settings' ? 'settings' : modal === 'help' ? 'help' : 'confirm' }); setModal(null) }
   const endCall = () => { setPlan(null); audio.tts.stop(); dispatch({ type: 'END_CALL' }) }
@@ -113,7 +116,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
         {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">准备接听 · 第 {state.callIndex + 1} 通</span><h2>{chapter?.focus ?? '让帮助抵达需要的地方'}</h2><p>{chapter?.note ?? '这一次，留意电话里的细节，做出你的判断。'}</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p><button className="secondary" onClick={() => dispatch({ type: 'ADVANCE_TURNAROUND' })}>加速车辆周转 · 15 秒</button></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className="patient-summary"><span><ShieldCheck size={16} />{state.rescue.outcome ? '现场已接手' : state.dispatchSent ? '救护车已出发' : '等待派车'}</span><span>{state.terminal.address || '地点待确认'}</span><time>{Math.floor((state.shiftElapsed - state.callStartTime) / 60).toString().padStart(2, '0')}:{((state.shiftElapsed - state.callStartTime) % 60).toString().padStart(2, '0')}</time></div>
           <div className={`main-workspace ${plan || state.guidanceActive ? 'has-activity' : ''}`}>
-            {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <div className="handoff"><ShieldCheck size={52} /><h2>{state.rescue.outcome === 'success' ? '现场人员已接过这份守护' : '这通电话，需要一次认真回顾'}</h2><p>{state.rescue.failureReason ?? (state.patientStatus?.died ? '患者情况恶化，本次救援未成功。' : '通话记录已就绪。看看哪些行动提供了帮助，以及下一次还能怎样做。')}</p><button className="primary" onClick={endCall}>完成交接，查看复盘<ArrowRight size={18} /></button></div> : state.guidanceActive && call.guidance ? <div className="embedded-guidance"><GuidancePanel key={`${state.callInstanceId}-${state.guidanceStepIndex}`} guidance={call.guidance} stepIndex={state.guidanceStepIndex} results={state.guidanceResults} paused={paused} disabled={paused} onAnswer={(stepIndex, selectedIndex) => dispatch({ type: 'ANSWER_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex, selectedIndex })} onCompleteMiniGame={onFinishMiniGame} onEndGuidance={() => openModal('end')} /><p className="helper">救护车预计 {Math.max(0, state.ambulanceRemaining)} 秒后到达。保持通话，留意来电者反馈。</p></div> : <CityMap state={state} />}
+            {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <div className="handoff"><ShieldCheck size={52} /><h2>{state.rescue.outcome === 'success' ? '现场人员已接过这份守护' : '这通电话，需要一次认真回顾'}</h2><p>{state.rescue.failureReason ?? (state.patientStatus?.died ? '患者情况恶化，本次救援未成功。' : '通话记录已就绪。看看哪些行动提供了帮助，以及下一次还能怎样做。')}</p><button className="primary" onClick={endCall}>完成交接，查看复盘<ArrowRight size={18} /></button></div> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : state.guidanceActive && call.guidance ? <div className="embedded-guidance"><GuidancePanel key={`${state.callInstanceId}-${state.guidanceStepIndex}`} guidance={call.guidance} stepIndex={state.guidanceStepIndex} results={state.guidanceResults} onContinue={() => { audio.tts.stop(); dispatch({ type: 'CONTINUE_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex: state.guidanceStepIndex }) }} paused={paused} disabled={paused} onAnswer={(stepIndex, selectedIndex) => dispatch({ type: 'ANSWER_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex, selectedIndex })} onCompleteMiniGame={onFinishMiniGame} onEndGuidance={() => openModal('end')} /><p className="helper">救护车预计 {Math.max(0, state.ambulanceRemaining)} 秒后到达。保持通话，留意来电者反馈。</p></div> : <CityMap state={state} />}
           </div>
           {!plan && !state.guidanceActive && !state.rescue.outcome && !state.patientStatus?.died && <QuestionDock state={state} dispatch={dispatch} />}
           {!state.dispatchSent && <button className="mobile-primary primary" onClick={() => setTab('task')}>核对任务卡<ArrowRight size={17} /></button>}
@@ -122,7 +125,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       </section>
       <aside className="desk-panel task-panel">{call ? <TaskCard state={state} dispatch={dispatch} onRoute={openRoute} onEnd={() => openModal('end')} /> : <><div className="panel-heading"><ClipboardList size={18} /><h2>值班备忘</h2></div><div className="shift-memo"><span className="eyebrow">BEFORE THE CALL</span><h3>不必知道所有答案，<br />先问对下一个问题。</h3><ul><li>确认事发地点</li><li>描述意识与呼吸</li><li>记录，再核实</li><li>让指导清楚可执行</li></ul><p>一通电话的成绩衡量游戏操作，不代表真实急救能力。</p></div></>}</aside>
     </main>
-    <footer className="desk-bottom"><span><span className="live-dot" /> 调度中心在线</span><span>倾听 · 确认 · 行动</span><button className="text-button" onClick={() => openModal('exit')}><X size={14} /> 离开工作台</button></footer>
+    <footer className="desk-bottom"><span><span className="live-dot" /> 调度中心在线</span><span>有效体验 {formatPlayTime(state.activePlaySeconds)}</span><button className="text-button" onClick={() => openModal('exit')}><X size={14} /> 离开工作台</button></footer>
     {overlay}
   </div>
 }

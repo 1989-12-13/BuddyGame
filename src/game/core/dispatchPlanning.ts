@@ -4,6 +4,7 @@ import { DEFAULT_CENTER, STATION_COORDS, lookupCoords } from '../locations'
 import { hasPerk } from './perks'
 import { buildRouteOptions, type RoutePlan } from './routing'
 import { calcAmbulanceETA } from './worldState'
+import { paceRoutes } from './pacing'
 
 export interface DispatchPlan {
   routes: RoutePlan[]
@@ -21,13 +22,13 @@ export function buildRouteOptionsForCall(state: WorldState): RoutePlan[] {
   const end = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
   const start = STATION_COORDS['ambulance']?.pos ?? DEFAULT_CENTER
   const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness(state))
-  return buildRouteOptions({
+  return paceRoutes(buildRouteOptions({
     start,
     end,
     baseEta,
     seed: `${state.currentCall.id}:${state.shiftNumber}:${state.callIndex}:${dispatchTime}`,
     priorityChannel: hasPerk(state.perks, 'priority_channel'),
-  })
+  }), state.currentCall.id)
 }
 
 /**

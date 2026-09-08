@@ -21,6 +21,8 @@ export interface RoadNode {
   label: string
   kind: 'station' | 'junction' | 'special' | 'incident'
   pos: LatLng
+  /** 路线面板使用独立示意坐标，避免附近地点的地理投影挤在一起。 */
+  diagram?: { x: number; y: number }
 }
 
 export interface RoadSegment {
@@ -242,11 +244,12 @@ function buildRoadNodes(start: LatLng, end: LatLng, seed: string): Map<string, R
   const random = createSeededRandom(`${seed}:nodes`)
 
   return new Map(ROAD_NODE_TEMPLATES.map(template => {
+    const diagram = { x: 50 + template.lane * 80, y: 7 + template.progress * 86 }
     if (template.id === 'route-start') {
-      return [template.id, { id: template.id, label: template.label, kind: template.kind, pos: start }]
+      return [template.id, { id: template.id, label: template.label, kind: template.kind, pos: start, diagram }]
     }
     if (template.id === 'route-scene') {
-      return [template.id, { id: template.id, label: template.label, kind: template.kind, pos: end }]
+      return [template.id, { id: template.id, label: template.label, kind: template.kind, pos: end, diagram }]
     }
 
     const base = interpolate(start, end, template.progress)
@@ -256,6 +259,7 @@ function buildRoadNodes(start: LatLng, end: LatLng, seed: string): Map<string, R
       id: template.id,
       label: template.label,
       kind: template.kind,
+      diagram,
       pos: {
         lat: base.lat + normalLat * scale * lane,
         lng: base.lng + normalLng * scale * lane,

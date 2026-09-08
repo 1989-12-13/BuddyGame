@@ -22,6 +22,7 @@ import {
 } from './cprUtils'
 import { computePassed } from './cprUtils'
 import { engineWrap, readoutRow } from './styles'
+import { scoreBreath } from './breathing'
 
 interface BreathResult {
   ratio: number
@@ -53,6 +54,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const compQualities = useRef<string[]>([])
   const doneRef = useRef(false)
   const compCountRef = useRef(0) // 与 compCount 同步，避免闭包陈旧
+  const totalCompressions = useRef(0)
   const pausedRef = usePauseRef(paused)
   const { complete } = useMiniGameFinish(onComplete, 700)
 
@@ -62,7 +64,11 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   const pauseStarted = useRef<number | null>(null)
   useEffect(() => {
     const now = performance.now()
-    if (paused) pauseStarted.current = now
+    if (paused) {
+      if (pauseStarted.current === null) pauseStarted.current = now
+      setBreathHolding(false)
+      setBlowFill(0)
+    }
     else if (pauseStarted.current !== null) {
       const gap = now - pauseStarted.current
       pressTimes.current = pressTimes.current.map(time => time + gap)
@@ -96,7 +102,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         return
       }
       if (pausedRef.current) { rafId = requestAnimationFrame(tick); return }
-      const fill = Math.min(100, ((performance.now() - breathStart.current) / CPR_BREATH_PAUSE_MS) * 100)
+      const fill = Math.min(150, ((performance.now() - breathStart.current) / CPR_BREATH_PAUSE_MS) * 100)
       setBlowFill(fill)
       rafId = requestAnimationFrame(tick)
     }
@@ -109,7 +115,9 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     if (doneRef.current || pausedRef.current || phase !== 'compression') return
     if (compCountRef.current >= CPR_COMPRESSIONS_PER_CYCLE) return
     const now = performance.now()
+    if (pressTimes.current.length && now - pressTimes.current[pressTimes.current.length - 1] < 250) return
     pressTimes.current.push(now)
+    totalCompressions.current += 1
     const count = pressTimes.current.length
     compCountRef.current = count
     setCompCount(count)
@@ -143,7 +151,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     let quality: BreathResult['quality']
     if (ratio >= CPR_BLOW_IDEAL_MIN && ratio <= CPR_BLOW_OVER_THRESHOLD) {
       quality = 'perfect'
-    } else if (ratio > 0.1) {
+    } else if (scoreBreath(holdMs / 1000) > 0) {
       quality = 'good'
     } else {
       quality = 'bad'
@@ -163,8 +171,6 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         setBreathRatio(0)
         setBlowFill(0)
         pressTimes.current = []
-        compQualities.current = []
-        breathQualities.current = []
         compCountRef.current = 0
         setPhase('compression')
       }
@@ -191,12 +197,11 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
   }
 
   const nextPhase = () => {
-    if (phase === 'compression') {
+    if (!pausedRef.current && !doneRef.current && phase === 'compression' && compCountRef.current >= 30) {
       setPhase('breath')
       setBreathCount(0)
       setBreathRatio(0)
       setBlowFill(0)
-      breathQualities.current = []
     }
   }
 
@@ -218,13 +223,14 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       ? breathQualities.current.reduce((sum, b) => {
           if (b.quality === 'perfect') return sum + 1
           if (b.quality === 'good') return sum + 0.6
-          return sum + 0.2
+          return sum
         }, 0) / breathQualities.current.length
       : 0
 
-    const finalScore = Math.max(0, Math.min(1, compScore * 0.6 + breathScore * 0.4))
+    const completion = Math.min(1, (totalCompressions.current + breathQualities.current.length) / (cycles * 32))
+    const finalScore = Math.max(0, Math.min(1, (compScore * 0.6 + breathScore * 0.4) * completion))
     complete(finalScore, computePassed(finalScore, s.passThreshold))
-  }, [complete, s.passThreshold])
+  }, [complete, s.passThreshold, cycles])
 
   finishGameRef.current = finishGame
 
@@ -238,9 +244,9 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
 
   // 吹气进度显示：按住时用 rAF 动画值，松开后用最终比例
   const displayBlowFill = breathHolding
-    ? blowFill
+    ? blowFill / 1.5
     : breathRatio > 0
-      ? Math.min(100, breathRatio * 100)
+      ? Math.min(100, breathRatio / 1.5 * 100)
       : 0
 
   const blowColor = breathHolding
@@ -249,8 +255,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       ? 'var(--accent-green)'
       : 'var(--danger-red)'
 
-  const idealStart = CPR_BLOW_IDEAL_MIN * 100
-  const idealEnd = CPR_BLOW_OVER_THRESHOLD * 100
+  const idealStart = CPR_BLOW_IDEAL_MIN / 1.5 * 100
+  const idealEnd = CPR_BLOW_OVER_THRESHOLD / 1.5 * 100
 
   // Helper to build cycle display string
   const cycleLabel = cycle + '/' + cycles
@@ -285,9 +291,16 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
 
       {phase !== 'done' && (
         <div
-          onPointerDown={handlePointerDown}
+          role="button"
+          tabIndex={0}
+          aria-label={phase === 'compression' ? '胸外按压操作区' : '人工呼吸操作区'}
+          aria-disabled={paused}
+          onKeyDown={e => { if (['Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) handlePointerDown() } }}
+          onKeyUp={e => { if (['Space', 'Enter'].includes(e.code)) { e.preventDefault(); handlePointerUp() } }}
+          onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); handlePointerDown() }}
           onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+          onPointerCancel={() => { setBreathHolding(false); setBlowFill(0) }}
+          onBlur={() => { setBreathHolding(false); setBlowFill(0) }}
           style={{
             width: 160, height: 160, borderRadius: '50%',
             backgroundColor: 'var(--border-light)',
@@ -333,6 +346,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       {phase === 'compression' && compCount >= 30 && (
         <button
           onClick={nextPhase}
+          disabled={paused}
           style={{
             padding: '8px 24px', borderRadius: 8, border: 'none',
             backgroundColor: 'var(--accent-blue)', color: '#fff',

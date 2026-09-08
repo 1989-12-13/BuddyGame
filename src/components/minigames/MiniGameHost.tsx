@@ -11,6 +11,7 @@ import { QuickChoice } from './engines/QuickChoice'
 import { StepOrder } from './engines/StepOrder'
 import { LocationSelect } from './engines/LocationSelect'
 import { CprGame } from './engines/CprGame'
+import { RescueBreaths } from './engines/RescueBreaths'
 
 interface Props {
   spec: MiniGameSpec
@@ -58,6 +59,7 @@ const ENGINE_MAP: Record<MiniGameKind, ComponentType<{ spec: MiniGameSpec; onCom
   stepOrder: StepOrder,
   locationSelect: LocationSelect,
   cpr: CprGame,
+  rescueBreaths: RescueBreaths,
 }
 
 const SHELL: React.CSSProperties = {

@@ -2,6 +2,7 @@
 // 120调度台 — 班次评估/结局画面（暗色调度台主题 + 通话卡片）
 // ============================================================
 
+import { formatPlayTime } from '../game/core/pacing'
 import { useEffect } from 'react'
 import type { EndingDef } from '../game/types'
 import { Activity, RotateCcw, Trophy, ShieldCheck, ShieldAlert } from 'lucide-react'
@@ -23,11 +24,12 @@ import {
 interface Props {
   ending: EndingDef
   totalScore: number
+  activeSeconds?: number
   callScores?: number[]
   onRestart: () => void
 }
 
-export function EndingScreen({ ending, totalScore, callScores, onRestart }: Props) {
+export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0, onRestart }: Props) {
   const audio = useAudio()
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export function EndingScreen({ ending, totalScore, callScores, onRestart }: Prop
         {/* Title */}
         <h1 style={styles.title}>{ending.title}</h1>
         <p style={styles.subtitle}>{ending.subtitle}</p>
+        <p style={styles.description}>本班次有效体验：{formatPlayTime(activeSeconds)}<br />不包含暂停、复盘和车辆周转时间。</p>
 
         <div style={styles.divider} />
 

@@ -37,11 +37,11 @@ export const CPR_BREATH_PAUSE_MS = 1000
 /** CPR 小游戏指导文字（30:2 循环） */
 export const CPR_MINI_GAME_INSTRUCTION = '30次胸外按压 → 人工呼吸2次，共2个循环。按空格按压，吹气时按住空格在理想区松手。'
 
-/** 吹气理想区间下限（比例 0-1 对应 30%） */
-export const CPR_BLOW_IDEAL_MIN = 0.30
+/** 一次约 1 秒通气的交互容差下限：0.8 秒。 */
+export const CPR_BLOW_IDEAL_MIN = 0.8
 
-/** 吹气过量阈值（比例 0-1 对应 72%） */
-export const CPR_BLOW_OVER_THRESHOLD = 0.72
+/** 一次约 1 秒通气的交互容差上限：1.2 秒。 */
+export const CPR_BLOW_OVER_THRESHOLD = 1.2
 
 // -------------------- 类型 --------------------
 

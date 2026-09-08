@@ -110,6 +110,7 @@ export type MiniGameKind =
   | 'stepOrder'     // 步骤排序：按正确顺序排列步骤
   | 'locationSelect'// 位置选择：选择正确的止血点位置
   | 'cpr'           // 心肺复苏：30:2 循环
+  | 'rescueBreaths' // 受训施救者的双次通气节奏
 
 /** 小游戏公共字段 */
 export interface BaseMiniGame {
@@ -159,6 +160,7 @@ export interface CprSpec extends BaseMiniGame {
 }
 
 export type MiniGameSpec =
+  | (BaseMiniGame & { kind: 'rescueBreaths' })
   | RhythmPressSpec
   | QuickChoiceSpec
   | StepOrderSpec

@@ -8,6 +8,7 @@ import { createCallerState, createTerminalState, createPatientStatus } from '../
 import { getScenario } from '../../events/templates'
 import { getCaller } from '../../npc/personas'
 import { toneToInitialStress } from './helpers'
+import { CARE_WINDOWS } from '../pacing'
 
 export function handleAnswerCall(state: WorldState): WorldState {
   if (state.callIndex >= state.totalCalls || state.currentCall || state.lastDebrief || state.pendingPerkChoices.length) return state
@@ -34,6 +35,7 @@ export function handleAnswerCall(state: WorldState): WorldState {
 
   const terminal = createTerminalState()
   const patientStatus = scenario.isPrank ? null : createPatientStatus(scenario.correctTriage)
+  if (patientStatus && CARE_WINDOWS[scenarioId]) patientStatus.decayRate *= 0.4
 
   return {
     ...state,
@@ -42,6 +44,7 @@ export function handleAnswerCall(state: WorldState): WorldState {
     actionEndsAt: state.shiftElapsed,
     calmCount: 0,
     triggeredEventIds: [],
+    careChecks: {},
     callPhase: 'questioning',
     callStartTime: state.shiftElapsed,
     callerState,

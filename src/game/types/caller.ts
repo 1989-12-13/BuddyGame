@@ -44,6 +44,9 @@ export interface CallerState {
   }
   infoQuality: Record<string, InfoQuality>  // 每个字段的信息质量
   askedMPDS: string[]        // 已问过的MPDS问题id列表
+  questionAttempts: Record<string, number>
+  questionQuality: Record<string, InfoQuality>
+  questionStress: Record<string, number>
   questionCount: number      // 已问问题数（用于压力累加）
 }
 

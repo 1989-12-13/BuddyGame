@@ -83,11 +83,26 @@ export function handleDismissPatientEvent(state: WorldState, eventId: string): W
   }
 }
 
+export function handleDismissRescueNotification(state: WorldState, notificationId: string): WorldState {
+  const notifications = state.rescueNotifications.filter(notification => notification.id !== notificationId)
+  return {
+    ...state,
+    rescueNotifications: notifications,
+    screen: state.shiftCompletePending
+      && notifications.length === 0
+      && state.backgroundRescues.every(rescue => rescue.outcome)
+      ? 'ending'
+      : state.screen,
+  }
+}
+
 export function handleDismissDebrief(state: WorldState): WorldState {
   return {
     ...state,
     lastDebrief: null,
-    screen: state.shiftCompletePending && state.pendingPerkChoices.length === 0
+    screen: state.shiftCompletePending
+      && state.pendingPerkChoices.length === 0
+      && state.backgroundRescues.every(rescue => rescue.outcome)
       ? 'ending'
       : state.screen,
   }

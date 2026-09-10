@@ -18,6 +18,8 @@ import { handleCompleteMinigame } from './reducers/completeMinigame'
 import { handleTick } from './reducers/tick'
 import { isGuidanceActive } from './reducers/helpers'
 import { handleCareCheck } from './waitingCare'
+import { handleReroute } from './reducers/reroute'
+import { handleSubmitHandoff } from './handoff'
 import {
   handleStartShift,
   handleUpdateTerminal,
@@ -27,6 +29,7 @@ import {
   handleSetProtocol,
   handleSetTriage,
   handleDismissPatientEvent,
+  handleDismissRescueNotification,
   handleDismissDebrief,
   handleChoosePerk,
   handleShowEnding,
@@ -84,9 +87,15 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleSetTriage(state, action.level)
 
     case 'DISPATCH': {
-      const next = handleDispatch(state, action.vehicleId, action.route)
+      const next = handleDispatch(state, action.vehicleId, action.route, action.routeOptions)
       return next === state ? state : applyCallEvents(next, 'after_dispatch')
     }
+
+    case 'REROUTE_AMBULANCE':
+      return handleReroute(state, action.routeId)
+
+    case 'SUBMIT_HANDOFF':
+      return handleSubmitHandoff(state, action.factIds)
 
     case 'ANSWER_GUIDANCE':
       return handleAnswerGuidance(state, action.stepIndex, action.selectedIndex)
@@ -100,6 +109,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
     case 'DISMISS_PATIENT_EVENT':
       return handleDismissPatientEvent(state, action.eventId)
+
+    case 'DISMISS_RESCUE_NOTIFICATION':
+      return handleDismissRescueNotification(state, action.notificationId)
 
     case 'END_CALL':
       return handleEndCall(state, action.perkChoices)

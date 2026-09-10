@@ -43,13 +43,17 @@ export const guidancePanel: CSSProperties = {
   flex: 1,
   minHeight: 60,
   overflowY: 'auto',
-  boxShadow: '0 0 0 1px var(--danger-red-border), var(--shadow-md)',
+  border: '1px solid var(--border)',
+  boxShadow: 'none',
 }
 
 export const guidanceTitle: CSSProperties = {
   fontSize: 'var(--fs-subtitle)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--danger-red)',
+  color: 'var(--text-primary)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
   marginBottom: 8,
   letterSpacing: 0.5,
 }
@@ -59,9 +63,9 @@ export const guidanceIntro: CSSProperties = {
   color: 'var(--text-secondary)',
   marginBottom: 10,
   padding: '10px 12px',
-  backgroundColor: 'var(--warning-amber-bg)',
+  backgroundColor: 'var(--bg-elevated)',
   borderRadius: 8,
-  borderLeft: '2px solid var(--warning-amber)',
+  borderLeft: '2px solid var(--accent-cyan)',
   lineHeight: 1.6,
 }
 

@@ -7,6 +7,7 @@ import { buildDispatchPlan } from './dispatchPlanning'
 import { dispatchEligibility } from './session'
 import { loadCheckpoint, saveCheckpoint } from './checkpoint'
 import type { WorldState, MpdsDeterminant } from '../types'
+import { buildHandoffFacts } from './handoff'
 
 function begin(id = 'cardiac_arrest') {
   return worldReducer(worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [id] }), { type: 'ANSWER_CALL' })
@@ -79,6 +80,25 @@ describe('workbench state boundaries', () => {
     expect(applyCallEvents(after, 'after_question', 'step1_location')).toBe(after)
     expect(applyCallEvents(after, 'after_question', 'step4_vitals').triggeredEventIds).toEqual(['time', 'ask'])
   })
+  it('allows one justified re-question after a vague answer and calming', () => {
+    const started = begin('falls_elderly')
+    let state: WorldState = {
+      ...started,
+      callerState: { ...started.callerState!, stress: 90, stressLevel: '失控' as const },
+    }
+    state = worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
+    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
+    const beforeCalm = state
+    expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
+    state = worldReducer(state, { type: 'CALM_CALLER' })
+    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
+    state = worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
+    expect(state).not.toBe(beforeCalm)
+    expect(state.callerState!.questionAttempts.step1_location).toBe(2)
+    expect(state.callerState!.askedMPDS.filter(id => id === 'step1_location')).toHaveLength(1)
+    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
+    expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
+  })
   it('does not automatically end a call after arrival, and never scores twice', () => {
     let state = dispatch(ready())
     for (let i = 0; i < 200; i++) state = worldReducer(state, { type: 'TICK' })
@@ -87,6 +107,55 @@ describe('workbench state boundaries', () => {
     expect(ended.callScores).toHaveLength(1)
     expect(worldReducer(ended, { type: 'TICK' })).toBe(ended)
     expect(worldReducer(ended, { type: 'END_CALL' })).toBe(ended)
+  })
+
+  it('continues an en-route rescue after hangup and resolves it once', () => {
+    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['cardiac_arrest', 'stroke'] })
+    state = dispatch(ready(worldReducer(state, { type: 'ANSWER_CALL' })))
+    state = worldReducer(state, { type: 'END_CALL', perkChoices: ['rapid_intake'] })
+    expect(state.backgroundRescues).toHaveLength(1)
+    expect(state.callHistory[0].rescueStatus).toBe('missed-handoff')
+    expect(state.callHistory[0].outcome).toBe('pending')
+    state = worldReducer(state, { type: 'DISMISS_DEBRIEF' })
+    state = worldReducer(state, { type: 'CHOOSE_PERK', perkId: 'rapid_intake' })
+    const scoreCount = state.callScores.length
+    for (let i = 0; i < 600 && !state.backgroundRescues[0].outcome; i++) state = worldReducer(state, { type: 'TICK' })
+    expect(state.backgroundRescues[0].outcome).not.toBeNull()
+    expect(state.callHistory[0].outcome).not.toBe('pending')
+    expect(state.rescueNotifications).toHaveLength(1)
+    expect(state.callScores).toHaveLength(scoreCount)
+    for (let i = 0; i < 10; i++) state = worldReducer(state, { type: 'TICK' })
+    expect(state.rescueNotifications).toHaveLength(1)
+  })
+  it('offers one stroke reroute and rejects a second or stale choice', () => {
+    let state: WorldState = ready(begin('stroke'))
+    const plan = buildDispatchPlan(state)!
+    state = worldReducer(state, { type: 'DISPATCH', vehicleId: 'ambulance', route: plan.routes[0], routeOptions: plan.routes, callInstanceId: state.callInstanceId })
+    for (let i = 0; i < 300 && !state.pendingReroute; i++) state = worldReducer(state, { type: 'TICK' })
+    expect(state.pendingReroute).not.toBeNull()
+    expect(state.pendingReroute!.options).toHaveLength(2)
+    const alternate = state.pendingReroute!.options.find(route => route.id !== state.pendingReroute!.currentRouteId)!
+    const rerouted = worldReducer(state, { type: 'REROUTE_AMBULANCE', callInstanceId: state.callInstanceId, routeId: alternate.id })
+    expect(rerouted.rerouteUsed).toBe(true)
+    expect(rerouted.pendingReroute).toBeNull()
+    expect(rerouted.dispatchRecord!.routeId).toBe(alternate.id)
+    expect(worldReducer(rerouted, { type: 'REROUTE_AMBULANCE', callInstanceId: rerouted.callInstanceId, routeId: plan.routes[0].id })).toBe(rerouted)
+    expect(worldReducer(state, { type: 'REROUTE_AMBULANCE', callInstanceId: state.callInstanceId - 1, routeId: alternate.id })).toBe(state)
+  })
+  it('requires fact-based handoff and allows one correction', () => {
+    let state = dispatch(ready(begin('falls_elderly')))
+    for (let i = 0; i < 600 && !state.rescue.outcome; i++) state = worldReducer(state, { type: 'TICK' })
+    const { facts, requiredIds } = buildHandoffFacts(state)
+    const distractor = facts.find(fact => !fact.required)!
+    const wrong = [...requiredIds.slice(1), distractor.id]
+    state = worldReducer(state, { type: 'SUBMIT_HANDOFF', callInstanceId: state.callInstanceId, factIds: wrong })
+    expect(state.handoff.completed).toBe(false)
+    expect(state.handoff.firstAttemptCorrect).toBe(false)
+    expect(state.handoff.feedback.some(line => line.startsWith('漏交接'))).toBe(true)
+    state = worldReducer(state, { type: 'SUBMIT_HANDOFF', callInstanceId: state.callInstanceId, factIds: requiredIds })
+    expect(state.handoff.completed).toBe(true)
+    expect(state.handoff.attempts).toBe(2)
+    expect(worldReducer(state, { type: 'SUBMIT_HANDOFF', callInstanceId: state.callInstanceId, factIds: requiredIds })).toBe(state)
   })
   it('persists completed progress but restarts an interrupted call safely', () => {
     const state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
@@ -98,6 +167,17 @@ describe('workbench state boundaries', () => {
     expect(restored.fleet.vehicles[0].status).toBe('available')
     localStorage.setItem('dispatch120-checkpoint-v1', '{broken')
     expect(loadCheckpoint()).toBeNull()
+  })
+  it('restores a pending background rescue with its vehicle and history', () => {
+    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['falls_elderly', 'stroke'] })
+    state = dispatch(ready(worldReducer(state, { type: 'ANSWER_CALL' })))
+    state = worldReducer(state, { type: 'END_CALL', perkChoices: ['rapid_intake'] })
+    expect(saveCheckpoint(state)).toBe(true)
+    const restored = loadCheckpoint()!
+    expect(restored.backgroundRescues).toHaveLength(1)
+    expect(restored.fleet.vehicles[0].status).toBe('en_route')
+    expect(restored.callHistory[0].outcome).toBe('pending')
+    expect(restored.currentCall).toBeNull()
   })
   it('completes all five campaign calls with independent results and no deadlock', () => {
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })

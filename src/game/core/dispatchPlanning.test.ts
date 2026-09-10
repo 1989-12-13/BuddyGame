@@ -40,4 +40,18 @@ describe('automatic ambulance dispatch planning', () => {
     const state = classifiedCall()
     expect(buildDispatchPlan(state)).toEqual(buildDispatchPlan(state))
   })
+
+  it('applies priority channel after campaign pacing', () => {
+    const normal = classifiedCall()
+    const priority = { ...normal, perks: ['priority_channel' as const] }
+    const normalRoutes = buildDispatchPlan(normal)!.routes
+    const priorityRoutes = buildDispatchPlan(priority)!.routes
+    expect(priorityRoutes.map(route => route.totalEta)).toEqual(normalRoutes.map(route => route.totalEta - 5))
+  })
+
+  it('does not plan routes for a dead or resolved patient', () => {
+    const state = classifiedCall()
+    expect(buildDispatchPlan({ ...state, patientStatus: { ...state.patientStatus!, died: true } })).toBeNull()
+    expect(buildDispatchPlan({ ...state, rescue: { ...state.rescue, outcome: 'failed' } })).toBeNull()
+  })
 })

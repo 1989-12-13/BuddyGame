@@ -28,7 +28,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   let guidanceScore = 0
   let penaltyScore = 0
 
-  // 患者死亡（救援失败）→ 本通 0 分
+  // 救援结局只影响总结文案；操作评价独立保留。
   const rescueFailed = call.isPrank
     ? false
     : (state.rescue.outcome === 'failed' || (state.patientStatus?.died ?? false))
@@ -97,6 +97,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
       state.terminal.determinant,
       call.mpdsCard.determinantCode,
       state.terminal.determinantSubcode,
+      mgScores.length,
     )
     total = result.total
     speed = result.speed
@@ -118,7 +119,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
       )
         ? 6
         : 0
-    penaltyScore = countIncorrectJudgments(state.pendingJudgments) * 5 + vitalsPenalty
+    penaltyScore = countIncorrectJudgments(state.pendingJudgments) * 5 + vitalsPenalty + (state.handoff.firstAttemptCorrect === false ? 3 : 0)
     total = Math.max(0, total - penaltyScore)
   }
 
@@ -174,6 +175,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     ? call.openingLine.slice(0, 16) + '…'
     : call.openingLine
   const historyEntry: CallHistoryEntry = {
+    callInstanceId: state.callInstanceId,
     callId: call.id,
     scenarioTitle: call.title,
     shortSummary,
@@ -187,9 +189,35 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     vehicleName: state.rescue.vehicleName,
     isPrank: call.isPrank,
     outcome: archivedOutcome,
+    rescueStatus: didDispatch && !state.handoff.completed ? 'missed-handoff' : 'resolved',
     score: total,
     dialogueLog: [...state.dialogueLog, summaryLine],
   }
+
+  const shouldContinueInBackground = !!(
+    dispatchRecord
+    && state.patientStatus
+    && !state.rescue.outcome
+    && state.rescue.vehicleId
+  )
+  const backgroundRescues = shouldContinueInBackground
+    ? [...state.backgroundRescues, {
+        id: `rescue-${state.callInstanceId}`,
+        callInstanceId: state.callInstanceId,
+        callId: call.id,
+        scenarioTitle: call.title,
+        vehicleId: state.rescue.vehicleId!,
+        dispatchRecord,
+        patientStatus: { ...state.patientStatus! },
+        guidanceResults: [...state.guidanceResults],
+        guidanceMinigameScores: [...state.guidanceMinigameScores],
+        guidanceRequiredTotal: call.guidance?.steps.length ?? 0,
+        perks: [...state.perks],
+        outcome: null,
+        successScore: null,
+        failureReason: null,
+      }]
+    : state.backgroundRescues
 
   return {
     ...state,
@@ -209,5 +237,6 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     lastDebrief,
     pendingPerkChoices: isShiftOver ? [] : (perkChoices ?? getPerkChoices(state.perks, 3)),
     callHistory: [historyEntry, ...state.callHistory],
+    backgroundRescues,
   }
 }

@@ -6,7 +6,7 @@ import type { FleetState } from '../core/fleet'
 import type { TriageLevel } from './mpds'
 import type { EmergencyScenario, CallPhase, JudgmentPrompt } from './scenario'
 import type { CallerState } from './caller'
-import type { RouteStrategy } from '../core/routing'
+import type { RouteStrategy, RoutePlan } from '../core/routing'
 
 // -------------------- 调度记录 --------------------
 export interface DispatchRecord {
@@ -61,6 +61,48 @@ export interface RescueState {
   failureReason: string | null
 }
 
+export type RescueStatus = 'pending' | 'arrived' | 'resolved' | 'missed-handoff'
+
+/** 已结束通话仍在执行的院前任务。车辆与患者在世界时钟上继续推进。 */
+export interface BackgroundRescue {
+  id: string
+  callInstanceId: number
+  callId: string
+  scenarioTitle: string
+  vehicleId: string
+  dispatchRecord: DispatchRecord
+  patientStatus: PatientStatus
+  guidanceResults: ('correct' | 'incorrect' | null)[]
+  guidanceMinigameScores: (number | null)[]
+  guidanceRequiredTotal: number
+  perks: import('../core/perks').RoguePerkId[]
+  outcome: 'success' | 'failed' | null
+  successScore: number | null
+  failureReason: string | null
+}
+
+export interface RescueNotification {
+  id: string
+  callInstanceId: number
+  kind: 'good' | 'bad'
+  text: string
+}
+
+export interface ReroutePrompt {
+  callInstanceId: number
+  message: string
+  currentRouteId: string
+  options: RoutePlan[]
+}
+
+export interface HandoffState {
+  attempts: number
+  selectedFactIds: string[]
+  firstAttemptCorrect: boolean | null
+  feedback: string[]
+  completed: boolean
+}
+
 // -------------------- 游戏全局状态 --------------------
 export type GameScreen = 'title' | 'briefing' | 'playing' | 'ending'
 
@@ -97,6 +139,12 @@ export interface WorldState {
   patientStatus: PatientStatus | null
   patientEvents: PatientEvent[]   // 顶部 toast 事件队列
   rescue: RescueState             // 救护车救援闭环
+  backgroundRescues: BackgroundRescue[]
+  rescueNotifications: RescueNotification[]
+  rerouteOptions: RoutePlan[]
+  pendingReroute: ReroutePrompt | null
+  rerouteUsed: boolean
+  handoff: HandoffState
 
   // 终端（计算机登记）
   terminal: import('./mpds').TerminalState
@@ -138,6 +186,7 @@ export interface WorldState {
 
 /** 归档的通话 — 玩家点击地图救护车时查看该任务的完整对话 + 救援结果 */
 export interface CallHistoryEntry {
+  callInstanceId: number
   callId: string
   scenarioTitle: string
   /** 调度摘要（首句主诉 / 地点 / 分诊）— 用于地图标识 */
@@ -154,6 +203,7 @@ export interface CallHistoryEntry {
   isPrank: boolean
   /** 救援结局 — 'pending' 表示救护车仍在 background 跑 */
   outcome: 'success' | 'failed' | 'pending' | 'no_dispatch'
+  rescueStatus: RescueStatus
   /** 单通电话得分（rescue 仍 pending 时为 null） */
   score: number | null
   /** 该通话完整对话流（END_CALL 时快照） */

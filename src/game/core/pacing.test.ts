@@ -32,7 +32,7 @@ describe('campaign care pacing', () => {
         state = ticks(state, 1)
       }
       expect(state.rescue.outcome).toBe('success')
-      expect(Object.keys(state.careChecks)).toHaveLength(3)
+      expect(Object.keys(state.careChecks)).toHaveLength(6)
       state = worldReducer(state, { type: 'END_CALL' })
       const active = state.activePlaySeconds
       expect(ticks(state, 60).activePlaySeconds).toBe(active)

@@ -496,6 +496,11 @@ describe('scoreCall', () => {
     expect(s.guidance).toBe(0)
   })
 
+  it('已参加但得零分的小游戏不会被当作缺席', () => {
+    const s = scoreCall(30, 'full', true, true, true, 'red', 'red', 3, 3, 0, 0, null, 0, null, '', null, 1)
+    expect(s.guidance).toBe(6)
+  })
+
   it('协议正确 +2，判定字母正确 +2，子码正确 +1 = 5', () => {
     // correctDeterminant 格式: '协议号-判定字母-子码'，如 '6-E-1'
     const s = scoreCall(30, 'full', true, true, true, 'red', 'red', 0, 0, 0, 0, 6, 6, 'ECHO', '6-E-1', 1)

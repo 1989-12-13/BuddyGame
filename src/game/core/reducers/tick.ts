@@ -7,7 +7,8 @@ import { isWorldPaused } from '../session'
 import type { WorldState, DialogueLine, CallPhase } from '../../types'
 import { createEventSink, sinkEvent } from './helpers'
 import { advanceFleet } from '../fleet'
-import { stabilityToVitalSign, baseRescueRate, calcRescueSuccessRate, judgeRescueSuccess, triageLevelDiff } from '../worldState'
+import { stabilityToVitalSign } from '../worldState'
+import { resolveRescue } from '../rescueResolution'
 
 export function handleTick(state: WorldState): WorldState {
   if (state.screen !== 'playing' || isWorldPaused(state)) return state
@@ -19,6 +20,8 @@ export function handleTick(state: WorldState): WorldState {
   let newPatientStatus = state.patientStatus
   let newRescue = state.rescue
   let newCallHistory = state.callHistory
+  let newRescueNotifications = state.rescueNotifications
+  let newPendingReroute = state.pendingReroute
 
   // 救护车到达判定：基于 fleet 状态机 en_route→on_scene 转移
   const beforeFleet = state.fleet
@@ -62,6 +65,20 @@ export function handleTick(state: WorldState): WorldState {
       ...newRescue,
       etaTotal: Math.max(1, newRescue.etaTotal + trafficUpdate.deltaSeconds),
     }
+    if (state.currentCall?.id === 'stroke' && !state.rerouteUsed && afterRescueVehicle.mission?.route) {
+      const currentRoute = afterRescueVehicle.mission.route
+      const alternative = [...state.rerouteOptions]
+        .filter(route => route.id !== currentRoute.id)
+        .sort((a, b) => a.totalEta - b.totalEta)[0]
+      if (alternative) {
+        newPendingReroute = {
+          callInstanceId: state.callInstanceId,
+          message: trafficUpdate.message,
+          currentRouteId: currentRoute.id,
+          options: [currentRoute, alternative],
+        }
+      }
+    }
   }
 
   // 患者生命体征每秒衰减
@@ -103,63 +120,89 @@ export function handleTick(state: WorldState): WorldState {
     state.dispatchRecord &&
     !state.dispatchRecord.isPrank
   ) {
-    const stability = newPatientStatus?.stability ?? 0
-    const guidanceWrong = state.guidanceResults.filter(r => r === 'incorrect').length
-    const mgScores = state.guidanceMinigameScores.filter((s): s is number => s != null)
-    const miniGameAvg = mgScores.length ? mgScores.reduce((a, b) => a + b, 0) / mgScores.length : 0
-    const triageDiff = triageLevelDiff(
-      state.dispatchRecord.triage,
-      state.dispatchRecord.correctTriage,
-    )
-
-    const rate = calcRescueSuccessRate({
-      base: baseRescueRate(state.dispatchRecord.correctTriage),
-      stability,
-      dispatchTime: state.dispatchRecord.dispatchTime,
-      triageDiff,
-      guidanceWrongCount: guidanceWrong,
-      miniGameAvg,
+    const resolution = resolveRescue({
+      dispatchRecord: state.dispatchRecord,
+      patientStatus: newPatientStatus!,
+      guidanceResults: state.guidanceResults,
+      guidanceMinigameScores: state.guidanceMinigameScores,
+      guidanceRequiredTotal: state.currentCall?.guidance?.steps.length ?? 0,
+      perks: state.perks,
     })
-    const success = judgeRescueSuccess(rate) && !(newPatientStatus?.died ?? false)
+    const success = resolution.outcome === 'success'
+    const rate = resolution.successScore
+    newPatientStatus = resolution.patientStatus
 
     newRescue = {
       ...state.rescue,
-      phase: success ? 'success' : 'failed',
+      phase: resolution.outcome,
       arrivalShiftTime: newElapsed,
-      outcome: success ? 'success' : 'failed',
+      outcome: resolution.outcome,
       successScore: rate,
-      failureReason: success ? null : (triageDiff >= 2 ? '分诊严重不足，院前响应延误'
-        : triageDiff === 1 ? '分诊偏低，院前响应降级'
-        : state.dispatchRecord.dispatchTime > 60 ? '派车超时，错过黄金窗'
-        : stability < 30 ? '患者生命体征耗尽'
-        : '现场救治未成功'),
+      failureReason: resolution.failureReason,
     }
 
     newDialogue.push({
       speaker: 'system',
       text: success
-        ? `【✓ 救治成功 · 救护车抵达后患者获救（成功率 ${(rate * 100).toFixed(0)}%）】`
-        : `【✗ 救治失败 · ${newRescue.failureReason}（成功率 ${(rate * 100).toFixed(0)}%）】`,
+        ? '【✓ 救护车已到达 · 现场交接准备完成】'
+        : `【✗ 本次模拟救援未成功 · ${newRescue.failureReason}】`,
       timestamp: newElapsed,
     })
     sinkEvent(sink,
       success ? 'good' : 'bad',
-      success ? `✓ 救治成功 · 患者获救` : `✗ 患者死亡 · ${newRescue.failureReason}`,
+      success ? '✓ 救护车已到达 · 请完成现场交接' : `✗ 本次模拟救援未成功 · ${newRescue.failureReason}`,
       newElapsed,
     )
-    if (!success && newPatientStatus && !newPatientStatus.died) {
-      newPatientStatus = { ...newPatientStatus, died: true, vitalSign: 'arrest', stability: 0 }
-    }
-
-    const completedCallId = state.dispatchRecord?.callId
-    if (completedCallId) {
-      const idx = newCallHistory.findIndex(h => h.callId === completedCallId)
-      if (idx >= 0 && newCallHistory[idx].outcome === 'pending') {
-        newCallHistory = [...newCallHistory]
-        newCallHistory[idx] = { ...newCallHistory[idx], outcome: success ? 'success' : 'failed' }
-      }
-    }
   }
+
+  // 已挂断但已派车的任务仍随统一世界时钟推进并在到达时结算。
+  const newBackgroundRescues = state.backgroundRescues.map(mission => {
+    if (mission.outcome) return mission
+    const beforeVehicle = beforeFleet.vehicles.find(vehicle => vehicle.id === mission.vehicleId)
+    const afterVehicle = afterFleet.vehicles.find(vehicle => vehicle.id === mission.vehicleId)
+    const nextStability = mission.patientStatus.died
+      ? mission.patientStatus.stability
+      : Math.max(0, mission.patientStatus.stability - mission.patientStatus.decayRate)
+    let patientStatus = {
+      ...mission.patientStatus,
+      stability: nextStability,
+      vitalSign: nextStability <= 0 ? 'arrest' as const : stabilityToVitalSign(nextStability),
+      died: mission.patientStatus.died || nextStability <= 0,
+    }
+    const arrived = beforeVehicle?.status === 'en_route' && afterVehicle?.status === 'on_scene'
+    if (!arrived) return { ...mission, patientStatus }
+
+    const resolution = resolveRescue({
+      dispatchRecord: mission.dispatchRecord,
+      patientStatus,
+      guidanceResults: mission.guidanceResults,
+      guidanceMinigameScores: mission.guidanceMinigameScores,
+      guidanceRequiredTotal: mission.guidanceRequiredTotal,
+      perks: mission.perks,
+    })
+    patientStatus = resolution.patientStatus
+    newCallHistory = newCallHistory.map(entry => entry.callInstanceId === mission.callInstanceId
+      ? { ...entry, outcome: resolution.outcome }
+      : entry)
+    const notificationId = `rescue-result-${mission.callInstanceId}`
+    if (!newRescueNotifications.some(notification => notification.id === notificationId)) {
+      newRescueNotifications = [...newRescueNotifications, {
+        id: notificationId,
+        callInstanceId: mission.callInstanceId,
+        kind: resolution.outcome === 'success' ? 'good' as const : 'bad' as const,
+        text: resolution.outcome === 'success'
+          ? `${mission.scenarioTitle}：救护车已到达，后台救援完成。`
+          : `${mission.scenarioTitle}：救护车已到达，${resolution.failureReason ?? '救援未成功'}。`,
+      }]
+    }
+    return {
+      ...mission,
+      patientStatus,
+      outcome: resolution.outcome,
+      successScore: resolution.successScore,
+      failureReason: resolution.failureReason,
+    }
+  })
 
   return {
     ...state,
@@ -171,6 +214,9 @@ export function handleTick(state: WorldState): WorldState {
     patientStatus: newPatientStatus,
     patientEvents: sink.events,
     rescue: newRescue,
+    backgroundRescues: newBackgroundRescues,
+    rescueNotifications: newRescueNotifications,
+    pendingReroute: newPendingReroute,
     callHistory: newCallHistory,
     fleet: afterFleet,
     dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0

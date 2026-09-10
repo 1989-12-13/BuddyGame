@@ -52,6 +52,9 @@ export function createCallerState(callerId: CallerId, initialStress = 40): Calle
     },
     infoQuality: {},
     askedMPDS: [],
+    questionAttempts: {},
+    questionQuality: {},
+    questionStress: {},
     questionCount: 0,
   }
 }
@@ -124,6 +127,12 @@ export function createInitialState(): WorldState {
     patientStatus: null,
     patientEvents: [],
     rescue: { phase: 'idle', vehicleId: null, vehicleName: null, etaTotal: 0, arrivalShiftTime: null, outcome: null, successScore: null, failureReason: null },
+    backgroundRescues: [],
+    rescueNotifications: [],
+    rerouteOptions: [],
+    pendingReroute: null,
+    rerouteUsed: false,
+    handoff: { attempts: 0, selectedFactIds: [], firstAttemptCorrect: null, feedback: [], completed: false },
     terminal: createTerminalState(),
     dispatchSent: false,
     dispatchRecord: null,
@@ -204,6 +213,7 @@ export interface RescueInputs {
   triageDiff: number                 // 玩家分诊与正确分诊的档位差（0=对，1/2=错档）
   guidanceWrongCount: number         // 急救指导错答数
   miniGameAvg: number                // 小游戏平均分 0-1
+  guidanceCompletionRatio?: number  // 必做指导完成率 0-1；缺省视为完整
 }
 
 /** 计算救治成功概率 0-1 */
@@ -211,6 +221,7 @@ export function calcRescueSuccessRate(inp: RescueInputs): number {
   let p = inp.base
   p += inp.stability / 200               // 生命条贡献最多 ±50
   p += (inp.miniGameAvg - 0.5) * 0.1     // 小游戏 ±5
+  p -= (1 - Math.max(0, Math.min(1, inp.guidanceCompletionRatio ?? 1))) * 0.12
   if (inp.dispatchTime !== null) {
     if (inp.dispatchTime > DISPATCH_COPPER_TIME) p -= 0.25
     else if (inp.dispatchTime > DISPATCH_BRONZE_TIME) p -= 0.15
@@ -299,6 +310,7 @@ export function scoreCall(
   chosenDeterminant: string | null = null,
   correctDeterminant = '',
   chosenSubcode: number | null = null,
+  miniGameAttemptCount = miniGameAvg > 0 ? 1 : 0,
 ): CallScore {
   // 1. 派车速度分（0-35）— 自然时间流逝，不扣除问询耗时
   const netTime = dispatchTime
@@ -349,11 +361,11 @@ export function scoreCall(
 
   // 5. 急救指导分（0-10）— 选择题与互动小游戏各占一半
   let guidance = 0
-  if (guidanceTotal > 0 || miniGameAvg > 0) {
+  if (guidanceTotal > 0 || miniGameAttemptCount > 0) {
     const choiceFrac = guidanceTotal > 0 ? guidanceCorrect / guidanceTotal : 0
     let combined: number
-    if (guidanceTotal > 0 && miniGameAvg > 0) combined = choiceFrac * 0.5 + miniGameAvg * 0.5
-    else if (miniGameAvg > 0) combined = miniGameAvg
+    if (guidanceTotal > 0 && miniGameAttemptCount > 0) combined = choiceFrac * 0.6 + miniGameAvg * 0.4
+    else if (miniGameAttemptCount > 0) combined = miniGameAvg
     else combined = choiceFrac
     guidance = Math.round(combined * GUIDANCE_MAX_SCORE)
   }

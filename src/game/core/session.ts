@@ -15,6 +15,8 @@ export function dispatchEligibility(state: WorldState): { allowed: boolean; reas
   const reasons: string[] = []
   if (!state.currentCall || state.screen !== 'playing') reasons.push('请先接听来电')
   if (state.dispatchSent) reasons.push('救护车已经派出')
+  if (state.patientStatus?.died) reasons.push('患者状态已经结算')
+  if (state.rescue.outcome) reasons.push('本次救援已经结算')
   if (state.currentCall && !['questioning', 'connected'].includes(state.callPhase)) reasons.push('当前阶段不能派车')
   if (isWorldPaused(state)) reasons.push('请先继续值班')
   if (isActionBusy(state)) reasons.push('当前问询正在进行')

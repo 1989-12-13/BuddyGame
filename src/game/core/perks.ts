@@ -54,8 +54,8 @@ export const ROGUE_PERKS: Record<RoguePerkId, RoguePerkDef> = {
     id: 'protocol_hint',
     title: '协议书签',
     category: 'info',
-    description: '结算复盘会突出 MPDS 判定码是否匹配。',
-    effect: '复盘强化',
+    description: '问询时突出一个尚未确认的必要事实。',
+    effect: '下一问提示',
   },
 }
 

@@ -22,16 +22,24 @@ import { createEventSink } from './helpers'
 export function handleAskQuestion(state: WorldState, questionId: string): WorldState {
   const call = state.currentCall
   const cs = state.callerState
-  // 防御：必须满足前置条件，且不重复问同一个问题
+  // 清晰答案只问一次；模糊答案在安抚后允许再确认一次。
   if (!call || !cs) return state
   if (state.callPhase !== 'questioning' && state.callPhase !== 'connected') return state
-  if (cs.askedMPDS.includes(questionId)) return state
+  const attemptCount = cs.questionAttempts[questionId] ?? 0
+  const previousQuality = cs.questionQuality[questionId]
+  const previousStress = cs.questionStress[questionId] ?? cs.stress
+  const isRetry = attemptCount > 0
+  if (attemptCount >= 2 || (isRetry && (previousQuality === 'clear' || cs.stress >= previousStress))) return state
 
   const now = state.shiftElapsed
   const newDialogue: DialogueLine[] = []
   const newRevealed = { ...cs.revealedInfo }
   const newInfoQuality: Record<string, InfoQuality> = { ...cs.infoQuality }
   const newAskedMPDS = [...cs.askedMPDS]
+  const newQuestionAttempts = { ...cs.questionAttempts }
+  const newQuestionQuality = { ...cs.questionQuality }
+  const newQuestionStress = { ...cs.questionStress }
+  let answerQuality: InfoQuality = 'clear'
   let newAddress: 'none' | 'vague' | 'partial' | 'full' = newRevealed.address
   let newStress = cs.stress
   let stressEffect = 0
@@ -54,6 +62,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     )
     newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
     newAddress = nq.quality === 'clear' ? 'partial' : 'vague'
+    answerQuality = nq.quality
     newInfoQuality['address'] = nq.quality
     // 自动填写调度卡：事件地址
     newTerminal = { ...newTerminal, address: newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
@@ -71,6 +80,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     )
     newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
     newAddress = nq.quality === 'clear' ? 'full' : (nq.quality === 'partial' ? 'partial' : newRevealed.address)
+    answerQuality = nq.quality
     newInfoQuality['address'] = nq.quality
     // 自动填写调度卡：完整地址（覆盖步骤1的部分地址）
     newTerminal = { ...newTerminal, address: newAddress === 'full' ? call.fourElements.address.full : newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
@@ -89,6 +99,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     )
     newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
     newRevealed.chiefComplaint = nq.quality !== 'vague'
+    answerQuality = nq.quality
     newInfoQuality['chiefComplaint'] = nq.quality
     if (nq.quality !== 'vague' && call.fourElements.condition.gender !== '不详') {
       newRevealed.gender = true
@@ -112,7 +123,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     const options = [correctProtocol, ...shuffledDists].sort(() => rng() - 0.5)
     const protoNameMap = Object.fromEntries(PROTOCOL_REF)
     const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
-    newJudgments.push({
+    if (!isRetry) newJudgments.push({
       id: `judge_step2_protocol_${sink.seq++}`,
       questionId: 'step2_event',
       dialogueIndex: state.dialogueLog.length + (callerIdx >= 0 ? callerIdx : 1),
@@ -135,6 +146,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newDialogue.push({ speaker: 'caller', text: ageText, timestamp: now })
     newRevealed.age = newStress < 75
     newInfoQuality['age'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
+    answerQuality = newInfoQuality['age']
 
     // 自动填写调度卡：患者年龄
     const ageStripped = age.replace(/左右|约|多岁|大概|男性|女性|男|女|不详/gi, '').trim()
@@ -154,13 +166,14 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newRevealed.breathing = newStress < 75
     newInfoQuality['consciousness'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
     newInfoQuality['breathing'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
+    answerQuality = newInfoQuality['breathing']
 
     // 生成意识+呼吸判断卡
     const isUnconscious = consciousness.includes('无意识') || consciousness.includes('不醒') || consciousness.includes('呼之不应') || consciousness.includes('昏迷')
     const isNotBreathing = breathing.includes('没有呼吸') || breathing.includes('无呼吸') || breathing.includes('窒息') || breathing.includes('胸口不动')
     const isBreathingAbnormal = breathing.includes('急促') || breathing.includes('喘') || breathing.includes('异常')
     const callerIdx2 = newDialogue.findIndex(d => d.speaker === 'caller')
-    newJudgments.push({
+    if (!isRetry) newJudgments.push({
       id: `judge_step4_${sink.seq++}`,
       questionId: 'step4_vitals',
       dialogueIndex: state.dialogueLog.length + (callerIdx2 >= 0 ? callerIdx2 : 1),
@@ -192,6 +205,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newDialogue.push({ speaker: 'caller', text: cq.text, timestamp: now })
     newRevealed.contact = cq.quality !== 'vague'
     newInfoQuality['contact'] = cq.quality
+    answerQuality = cq.quality
     // 自动填写调度卡：联系电话
     newTerminal = { ...newTerminal, contact: call.fourElements.contact }
   }
@@ -203,6 +217,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newDialogue.push({ speaker: 'caller', text: call.fourElements.purpose, timestamp: now })
     newRevealed.purpose = true
     newInfoQuality['purpose'] = newStress >= 50 ? 'partial' : 'clear'
+    answerQuality = newInfoQuality['purpose']
   }
 
   // --- MPDS 标准问询 ---
@@ -216,6 +231,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
 
     // 使用叙述式回答，基于情绪选择版本
     const nq = pickNarrativeAnswer(newStress, mpdsQ.answer, mpdsQ.ramblingAnswer, mpdsQ.panickedAnswer)
+    answerQuality = nq.quality
     newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
 
     // 为每个揭示的字段标记信息质量（仅用于评分计算，不展示给玩家）
@@ -244,7 +260,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     }
 
     // 若该问询定义了临床判断选择题，为来电者回答生成判断卡
-    if (mpdsQ.judgment) {
+    if (mpdsQ.judgment && !isRetry) {
       const callerIdx = newDialogue.findIndex(d => d.speaker === 'caller')
       newJudgments.push({
         id: `judge_${questionId}_${sink.seq++}`,
@@ -258,10 +274,12 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   }
 
   // --- 统一收尾 ---
-  newAskedMPDS.push(questionId)
-
+  if (!newAskedMPDS.includes(questionId)) newAskedMPDS.push(questionId)
+  newQuestionAttempts[questionId] = attemptCount + 1
+  newQuestionQuality[questionId] = answerQuality
   const questionPenalty = Math.max(0, cs.questionCount - 4) * 3
   newStress = Math.max(0, Math.min(100, newStress + stressEffect + questionPenalty))
+  newQuestionStress[questionId] = newStress
   const newStressLevel = stressToLevel(newStress)
 
   // 情绪爆发
@@ -279,6 +297,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
     newAddress = 'partial'
     newTerminal = { ...newTerminal, address: newAddress === 'partial' ? call.fourElements.address.partial : call.fourElements.address.vague }
     newInfoQuality['address'] = 'partial'
+    newQuestionQuality[questionId] = 'partial'
   }
 
   const updatedRevealed = { ...newRevealed, address: newAddress }
@@ -301,6 +320,9 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
       revealedInfo: updatedRevealed,
       infoQuality: newInfoQuality,
       askedMPDS: newAskedMPDS,
+      questionAttempts: newQuestionAttempts,
+      questionQuality: newQuestionQuality,
+      questionStress: newQuestionStress,
       stress: newStress,
       stressLevel: newStressLevel,
       questionCount: cs.questionCount + 1,

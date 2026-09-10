@@ -26,7 +26,7 @@ export function SectionTitle({
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     }}>
-      <span>{icon} {text}</span>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{icon} {text}</span>
       {required && (
         <span style={{ color: 'var(--danger-red)', fontWeight: 'var(--fw-bold)' }}>*</span>
       )}

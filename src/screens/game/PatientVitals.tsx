@@ -1,4 +1,4 @@
-import { Activity, Ambulance, Eye, Wind } from 'lucide-react'
+import { Activity, Ambulance, Eye, Minus, TrendingDown, Wind } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 
 export function PatientVitals({ state }: { state: WorldState }) {
@@ -10,11 +10,12 @@ export function PatientVitals({ state }: { state: WorldState }) {
   const elapsed = Math.max(0, state.rescue.etaTotal - state.ambulanceRemaining)
   const progress = state.rescue.outcome ? 100 : state.dispatchSent ? Math.min(99, elapsed / Math.max(1, state.rescue.etaTotal) * 100) : 0
   const event = [...state.patientEvents].reverse().find(item => state.shiftElapsed - item.createdAt <= 12)
+  const trendSettled = Boolean(state.rescue.outcome)
   return <section className={`patient-vitals ${tone}`} aria-label="患者体征与车辆进度">
     <header><strong><Activity size={18} />患者体征</strong><span>{label}</span></header>
     <div className="vital-observations"><span><Eye size={15} />意识：{state.terminal.conscious === null ? '待确认' : state.terminal.conscious ? '有反应（记录）' : '无反应（记录）'}</span><span><Wind size={15} />正常呼吸：{state.terminal.breathing === null ? '待确认' : state.terminal.breathing ? '有（记录）' : '无（记录）'}</span></div>
     <div className="vital-meter" role="meter" aria-label="模拟照护余量" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value)} aria-valuetext={`${Math.round(value)} / 100，${label}`}><span style={{ width: `${value}%` }} /></div>
-    <p className="vital-caption">模拟照护余量 {Math.round(value)}/100 · 不是血氧、心率或存活概率</p>
+    <p className="vital-caption"><span>模拟照护余量 {Math.round(value)}/100 · 不是血氧、心率或存活概率</span><span>{trendSettled ? <Minus size={14} /> : <TrendingDown size={14} />}{trendSettled ? '趋势：现场已接手' : '趋势：持续消耗'}</span></p>
     {state.dispatchSent && <div className="vehicle-readout"><span><Ambulance size={16} />{state.rescue.outcome ? '救护车已到达' : `距到达约 ${Math.floor(state.ambulanceRemaining / 60)} 分 ${Math.max(0, state.ambulanceRemaining % 60)} 秒`}</span><progress aria-label="车辆到达进度" max={100} value={progress} /></div>}
     <p className="vital-event" role="status">{event?.text ?? '等待与操作会影响模拟余量，请持续关注反馈。'}</p>
   </section>

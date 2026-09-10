@@ -239,8 +239,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     : 0
 
   const pulseStyle = flash
-    ? { transform: 'scale(0.86)', boxShadow: '0 0 30px var(--danger-red)' }
-    : { transform: 'scale(1)', boxShadow: '0 0 12px rgba(239,68,68,0.4)' }
+    ? { transform: 'scale(0.94)', boxShadow: '0 0 0 8px var(--success-green-bg)' }
+    : { transform: 'scale(1)', boxShadow: '0 0 0 4px var(--success-green-bg)' }
 
   // 吹气进度显示：按住时用 rAF 动画值，松开后用最终比例
   const displayBlowFill = breathHolding
@@ -282,7 +282,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
         <Readout label="循环" value={cycleLabel} color="var(--accent-blue)" />
         <Readout label={phase === 'compression' ? '按压' : '吹气'}
           value={phase === 'compression' ? String(compCount) : breathLabel}
-          color={phase === 'compression' ? 'var(--border)' : 'var(--accent-cyan)'} />
+          color="var(--text-primary)" />
       </div>
 
       <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', fontWeight: 'var(--fw-bold)' }}>
@@ -303,8 +303,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           onBlur={() => { setBreathHolding(false); setBlowFill(0) }}
           style={{
             width: 160, height: 160, borderRadius: '50%',
-            backgroundColor: 'var(--border-light)',
-            border: '3px solid ' + (phase === 'compression' ? 'var(--danger-red)' : 'var(--accent-cyan)'),
+            backgroundColor: 'var(--bg-elevated)',
+            border: '2px solid var(--accent-cyan)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', userSelect: 'none',
             transition: 'transform 0.09s ease, box-shadow 0.09s ease',
@@ -349,7 +349,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           disabled={paused}
           style={{
             padding: '8px 24px', borderRadius: 8, border: 'none',
-            backgroundColor: 'var(--accent-blue)', color: '#fff',
+            backgroundColor: 'var(--accent-blue)', color: 'var(--desk-ink, #fff)',
             fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', cursor: 'pointer',
           }}
         >

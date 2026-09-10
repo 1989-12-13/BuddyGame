@@ -12,7 +12,7 @@ export function FieldRow({
 }) {
   return (
     <div style={{ marginBottom: 6 }}>
-      <label style={styles.formLabel}>
+      <label style={{ ...styles.formLabel, display: 'flex', alignItems: 'center', gap: 6 }}>
         {icon} {label}
       </label>
       {children}

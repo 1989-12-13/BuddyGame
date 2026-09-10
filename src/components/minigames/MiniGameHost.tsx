@@ -5,6 +5,7 @@
 
 import type { ComponentType } from 'react'
 import { Component } from 'react'
+import { Hand } from 'lucide-react'
 import type { MiniGameSpec, MiniGameKind } from '../../game/types'
 import { RhythmPress } from './engines/RhythmPress'
 import { QuickChoice } from './engines/QuickChoice'
@@ -63,18 +64,22 @@ const ENGINE_MAP: Record<MiniGameKind, ComponentType<{ spec: MiniGameSpec; onCom
 }
 
 const SHELL: React.CSSProperties = {
-  borderTop: '2px solid var(--accent-blue)',
-  padding: '12px 14px',
-  backgroundColor: 'transparent',
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  padding: '16px',
+  backgroundColor: 'var(--bg-surface)',
   overflowY: 'auto',
-  boxShadow: '0 1px 0 0 var(--accent-blue), var(--shadow-md)',
+  boxShadow: 'none',
 }
 
 const TITLE: React.CSSProperties = {
   fontSize: 'var(--fs-body-lg)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--accent-blue)',
-  marginBottom: 2,
+  color: 'var(--text-primary)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  marginBottom: 8,
   letterSpacing: 0.3,
 }
 
@@ -91,8 +96,8 @@ export function MiniGameHost({ spec, onComplete, paused }: Props) {
 
   return (
     <MiniGameErrorBoundary>
-      <div style={SHELL}>
-        <div style={TITLE}>◆ {spec.title}</div>
+      <div className="minigame-shell" style={SHELL}>
+        <div className="minigame-title" style={TITLE}><Hand size={18} color="var(--accent-cyan)" />{spec.title}</div>
         <div style={INSTR}>{spec.instruction}</div>
         {Engine && <Engine spec={spec} onComplete={onComplete} paused={paused} />}
       </div>

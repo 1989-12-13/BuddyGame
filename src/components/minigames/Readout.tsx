@@ -3,7 +3,7 @@ export function Readout({ label, value, color }: { label: string; value: string;
   return (
     <div style={{ textAlign: 'center', minWidth: 50 }}>
       <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-secondary)' }}>{label}</div>
-      <div style={{ fontSize: 'var(--fs-title)', fontWeight: 'var(--fw-black)', color, textShadow: `0 0 8px ${color}55` }}>{value}</div>
+      <div style={{ fontSize: 'var(--fs-title)', fontWeight: 'var(--fw-black)', color }}>{value}</div>
     </div>
   )
 }

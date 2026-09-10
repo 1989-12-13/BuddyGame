@@ -24,7 +24,9 @@ export type GameAction =
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
   | { type: 'SET_PROTOCOL'; protocolNumber: number }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
-  | { type: 'DISPATCH'; callInstanceId?: number; vehicleId: string; route: RoutePlan }   // 系统车辆 + 玩家逐节点确认的完整路线
+  | { type: 'DISPATCH'; callInstanceId?: number; vehicleId: string; route: RoutePlan; routeOptions?: RoutePlan[] }   // 系统车辆 + 玩家逐节点确认的完整路线
+  | { type: 'REROUTE_AMBULANCE'; callInstanceId: number; routeId: string }
+  | { type: 'SUBMIT_HANDOFF'; callInstanceId: number; factIds: string[] }
   | { type: 'ANSWER_GUIDANCE'; callInstanceId?: number; stepIndex: number; selectedIndex: number }
   | { type: 'CONTINUE_GUIDANCE'; callInstanceId: number; stepIndex: number }
   | { type: 'COMPLETE_MINIGAME'; callInstanceId?: number; stepIndex: number; score: number; passed: boolean }
@@ -32,6 +34,7 @@ export type GameAction =
   | { type: 'DISMISS_DEBRIEF' }
   | { type: 'CHOOSE_PERK'; perkId: RoguePerkId }
   | { type: 'DISMISS_PATIENT_EVENT'; eventId: string }            // 关闭一个顶部 toast
+  | { type: 'DISMISS_RESCUE_NOTIFICATION'; notificationId: string }
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }
   | { type: 'BACK_TO_TITLE' }

@@ -1,7 +1,7 @@
-import { Phone } from 'lucide-react'
+import { Phone, MapPin, HeartPulse, UserRound, Hash, ListChecks, FileText, Activity, ClipboardList } from 'lucide-react'
 import type { TerminalState, MpdsDeterminant } from '../../../game/types'
 import type { TerminalField } from '../../../game/core/actions'
-import { PROTOCOL_REF, TRIAGE_LABELS, TRIAGE_COLORS } from '../../../game/types'
+import { PROTOCOL_REF, TRIAGE_LABELS } from '../../../game/types'
 import { styles } from '../styles'
 import { SectionTitle } from './SectionTitle'
 import { FieldRow } from './FieldRow'
@@ -30,13 +30,14 @@ export function TerminalForm({
     <span style={{ color: 'var(--danger-red)', marginLeft: 2, fontWeight: 'var(--fw-bold)' }}>*</span>
   )
   return (
-    <div style={styles.terminalForm}>
+    <div className="terminal-record-form" style={styles.terminalForm}>
       {/* ====== 协议号 ====== */}
       {/* ====== Case Entry（病例录入） ====== */}
 
       {/* 地址（可选） */}
-      <FieldRow icon="◉" label="事件地址">
+      <FieldRow icon={<MapPin size={15} />} label="事件地址">
         <textarea
+          aria-label="事件地址"
           style={styles.formInput}
           value={terminal.address}
           onChange={(e) => onChange('address', e.target.value)}
@@ -48,6 +49,7 @@ export function TerminalForm({
       {/* 联系电话（可选） */}
       <FieldRow icon={<Phone size={13} />} label="联系电话">
         <input
+          aria-label="联系电话"
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.contact}
           onChange={(e) => onChange('contact', e.target.value)}
@@ -56,8 +58,9 @@ export function TerminalForm({
       </FieldRow>
 
       {/* 主诉（可选） */}
-      <FieldRow icon="♥" label="主诉">
+      <FieldRow icon={<HeartPulse size={15} />} label="主诉">
         <input
+          aria-label="主诉"
           style={{ ...styles.formInput, height: 30 }}
           value={terminal.chiefComplaint}
           onChange={(e) => onChange('chiefComplaint', e.target.value)}
@@ -68,8 +71,9 @@ export function TerminalForm({
       {/* 患者基本信息（可选） */}
       <div style={{ display: 'flex', gap: 6 }}>
         <div style={{ flex: 1 }}>
-          <FieldRow icon="○" label="年龄">
+          <FieldRow icon={<UserRound size={15} />} label="年龄">
             <input
+              aria-label="患者年龄"
               style={{ ...styles.formInput, height: 28 }}
               value={terminal.patientAge}
               onChange={(e) => onChange('patientAge', e.target.value)}
@@ -78,8 +82,9 @@ export function TerminalForm({
           </FieldRow>
         </div>
         <div style={{ flex: 1 }}>
-          <FieldRow icon="⚧" label="性别">
+          <FieldRow icon={<UserRound size={15} />} label="性别">
             <input
+              aria-label="患者性别"
               style={{ ...styles.formInput, height: 28 }}
               value={terminal.patientGender}
               onChange={(e) => onChange('patientGender', e.target.value)}
@@ -90,7 +95,7 @@ export function TerminalForm({
       </div>
 
       {/* ====== 患者生命体征 — 关键问题（必填） ====== */}
-      <SectionTitle icon="♥" text="关键问题" required />
+      <SectionTitle icon={<Activity size={15} />} text="关键问题" required />
 
       {/* 意识状态（必填） */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -98,6 +103,7 @@ export function TerminalForm({
         <RequiredMark />
       </div>
       <StatusToggle
+        ariaLabel="患者有意识吗？"
         field="conscious"
         value={terminal.conscious}
         trueLabel="有意识"
@@ -113,6 +119,7 @@ export function TerminalForm({
         <RequiredMark />
       </div>
       <StatusToggle
+        ariaLabel="患者有正常呼吸吗？"
         field="breathing"
         value={terminal.breathing}
         trueLabel="正常呼吸"
@@ -123,9 +130,10 @@ export function TerminalForm({
       />
 
       {/* ====== 协议号（可选） ====== */}
-      <SectionTitle icon="≡" text="MPDS 协议" />
-      <FieldRow icon="#" label="协议编号">
+      <SectionTitle icon={<ListChecks size={15} />} text="MPDS 协议" />
+      <FieldRow icon={<Hash size={15} />} label="协议编号">
         <input
+          aria-label="协议编号"
           type="number"
           min={1}
           max={33}
@@ -142,7 +150,7 @@ export function TerminalForm({
       {/* 协议号对照参考（折叠） */}
       <details style={{ margin: '-4px 0 8px 22px', fontSize: 'var(--fs-small)' }}>
         <summary style={{ color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
-          ¶ 协议编号对照
+          协议编号对照
         </summary>
         <div style={{
           marginTop: 4,
@@ -168,7 +176,7 @@ export function TerminalForm({
 
       {/* ====== 判定码（必填） ====== */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <SectionTitle icon="◎" text="MPDS 判定码" inline />
+        <SectionTitle icon={<ClipboardList size={15} />} text="MPDS 判定码" inline />
         <RequiredMark />
       </div>
       <DeterminantSelector
@@ -176,17 +184,17 @@ export function TerminalForm({
         onSelect={onSetDeterminant}
       />
       {terminal.triage && (
-        <FieldRow icon="▲" label="分诊等级">
+        <FieldRow icon={<Activity size={15} />} label="分诊等级">
           <span style={{
             fontSize: 'var(--fs-body-sm)',
             fontWeight: 'var(--fw-bold)',
-            color: TRIAGE_COLORS[terminal.triage],
+            color: terminal.triage === 'red' ? 'var(--danger-red)' : terminal.triage === 'yellow' ? 'var(--warning-amber)' : 'var(--success-green)',
           }}>
             {TRIAGE_LABELS[terminal.triage]}
           </span>
         </FieldRow>
       )}
-      <FieldRow icon="#" label="子编码">
+      <FieldRow icon={<Hash size={15} />} label="子编码">
         <div style={{ display: 'flex', gap: 4 }}>
           {[
             { n: 1, color: 'var(--danger-red)', label: '危重伤' },
@@ -198,13 +206,17 @@ export function TerminalForm({
             return (
               <button
                 key={n}
+                aria-pressed={active}
                 style={{
                   flex: 1,
                   padding: '6px 4px',
-                  borderRadius: 4,
-                  border: `2px solid ${color}`,
-                  backgroundColor: active ? color : 'var(--bg-elevated)',
-                  color: active ? '#fff' : color,
+                  borderRadius: 8,
+                  border: `1px solid ${active ? color : 'var(--border)'}`,
+                  backgroundColor: active ? `color-mix(in srgb, ${color} 9%, var(--bg-surface))` : 'var(--bg-surface)',
+                  color: active ? color : 'var(--text-secondary)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
                   fontSize: 'var(--fs-small)',
                   fontWeight: active ? 'var(--fw-bold)' : 'var(--fw-normal)',
                   cursor: 'pointer',
@@ -213,7 +225,7 @@ export function TerminalForm({
                 onClick={() => onSetDeterminantSubcode(n)}
               >
                 <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body-sm)' }}>{n}</div>
-                <div style={{ fontSize: 'var(--fs-micro)', opacity: active ? 1 : 0.6 }}>{label}</div>
+                <div style={{ fontSize: 'var(--fs-micro)' }}>{label}</div>
               </button>
             )
           })}
@@ -221,8 +233,9 @@ export function TerminalForm({
       </FieldRow>
 
       {/* ====== 备注（可选） ====== */}
-      <SectionTitle icon="📝" text="事件备注" />
+      <SectionTitle icon={<FileText size={15} />} text="事件备注" />
       <textarea
+        aria-label="事件备注"
         style={styles.formInput}
         value={terminal.conditionNote}
         onChange={(e) => onChange('conditionNote', e.target.value)}

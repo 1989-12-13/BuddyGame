@@ -22,13 +22,25 @@ export function buildRouteOptionsForCall(state: WorldState): RoutePlan[] {
   const end = lookupCoords(state.currentCall.baseStation) ?? DEFAULT_CENTER
   const start = STATION_COORDS['ambulance']?.pos ?? DEFAULT_CENTER
   const baseEta = calcAmbulanceETA(dispatchTime, addressCompleteness(state))
-  return paceRoutes(buildRouteOptions({
+  const priorityChannel = hasPerk(state.perks, 'priority_channel')
+  const paced = paceRoutes(buildRouteOptions({
     start,
     end,
     baseEta,
     seed: `${state.currentCall.id}:${state.shiftNumber}:${state.callIndex}:${dispatchTime}`,
-    priorityChannel: hasPerk(state.perks, 'priority_channel'),
+    priorityChannel: false,
   }), state.currentCall.id)
+  return priorityChannel ? paced.map(route => {
+    const totalEta = Math.max(20, route.totalEta - 5)
+    return {
+      ...route,
+      totalEta,
+      scheduledUpdate: {
+        ...route.scheduledUpdate,
+        atSecond: Math.max(1, Math.round(route.scheduledUpdate.atSecond * totalEta / route.totalEta)),
+      },
+    }
+  }) : paced
 }
 
 /**

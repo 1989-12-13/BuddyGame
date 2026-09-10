@@ -19,7 +19,7 @@ function isValidRouteSelection(route: RoutePlan): boolean {
       segment.fromId === route.nodes[index]?.id && segment.toId === route.nodes[index + 1]?.id)
 }
 
-export function handleDispatch(state: WorldState, vehicleId: string, selectedRoute: RoutePlan): WorldState {
+export function handleDispatch(state: WorldState, vehicleId: string, selectedRoute: RoutePlan, routeOptions: RoutePlan[] = []): WorldState {
   if (!state.currentCall || !state.callerState || !dispatchEligibility(state).allowed || vehicleId !== state.fleet.vehicles[0]?.id) return state
   if (state.dispatchSent) return state
   if (!state.terminal.determinant || !state.terminal.triage) return state
@@ -102,6 +102,9 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
       : [],
     dialogueLog: [...state.dialogueLog, systemLine],
     rescue,
+    rerouteOptions: routeOptions.filter(routeOption => routeOption.id !== route.id),
+    pendingReroute: null,
+    rerouteUsed: false,
     fleet: {
       ...state.fleet,
       selectedVehicleId: vehicle.id,

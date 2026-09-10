@@ -109,6 +109,18 @@ describe('buildDebrief', () => {
     expect(debrief.reviewPoints.some(point => point.includes('接近正确答案'))).toBe(true)
   })
 
+  it('reports guidance completion and whether the call reached handoff', () => {
+    const scenario = getScenario('cardiac_arrest')
+    const input = makeDebriefState(scenario.id, {
+      guidanceResults: ['correct', null, null, null],
+      handoff: { attempts: 0, completed: false, firstAttemptCorrect: null, feedback: [], selectedFactIds: [] },
+    })
+    const debrief = buildDebrief(input, scenario)
+
+    expect(debrief.reviewPoints.some(point => point.includes(`电话急救指导完成 1/${scenario.guidance!.steps.length} 步`))).toBe(true)
+    expect(debrief.reviewPoints.some(point => point.includes('未完成现场交接'))).toBe(true)
+  })
+
   it('resolves a verified prank as a special outcome', () => {
     const scenario = getScenario('prank_call')
     const verifiedJudgment: JudgmentPrompt = {
@@ -153,7 +165,12 @@ describe('buildDebrief', () => {
     expect(ended.lastDebrief?.breakdown.speed).toBeGreaterThan(0)
     expect(ended.lastDebrief?.breakdown.triage).toBeGreaterThan(0)
     expect(ended.screen).toBe('playing')
-    expect(worldReducer(ended, { type: 'DISMISS_DEBRIEF' }).screen).toBe('ending')
+    let continued = worldReducer(ended, { type: 'DISMISS_DEBRIEF' })
+    expect(continued.screen).toBe('playing')
+    for (let i = 0; i < 600 && continued.rescueNotifications.length === 0; i++) continued = worldReducer(continued, { type: 'TICK' })
+    expect(continued.rescueNotifications).toHaveLength(1)
+    continued = worldReducer(continued, { type: 'DISMISS_RESCUE_NOTIFICATION', notificationId: continued.rescueNotifications[0].id })
+    expect(continued.screen).toBe('ending')
   })
 
   it('offers a shift perk after non-final calls and applies the selected perk', () => {

@@ -71,9 +71,9 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
 
           if (showResult && isSelected) {
             if (isThisCorrect) {
-              bg = 'var(--accent-green)'; border = 'var(--accent-green)'; color = '#fff'
+              bg = 'var(--success-green-bg)'; border = 'var(--accent-green)'; color = 'var(--accent-green)'
             } else {
-              bg = 'var(--danger-red)'; border = 'var(--danger-red)'; color = '#fff'
+              bg = 'var(--danger-red-bg)'; border = 'var(--danger-red)'; color = 'var(--danger-red)'
             }
           } else if (showResult && isThisCorrect && !isCorrect) {
             bg = 'var(--success-green-bg)'; border = 'var(--accent-green)'; color = 'var(--accent-green)'

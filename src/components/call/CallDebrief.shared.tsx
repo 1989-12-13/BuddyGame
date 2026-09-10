@@ -6,11 +6,11 @@ interface Props {
 }
 
 const BARS = [
-  { label: '派车速度', key: 'speed', max: 40, color: '#00d4ff' },
-  { label: '信息完整', key: 'info', max: 30, color: '#22c55e' },
-  { label: '分诊准确', key: 'triage', max: 20, color: '#ffb000' },
-  { label: '判定码', key: 'decision', max: 5, color: '#a78bfa' },
-  { label: '急救指导', key: 'guidance', max: 10, color: '#ff8c00' },
+  { label: '派车速度', key: 'speed', max: 40, color: 'var(--accent)' },
+  { label: '信息完整', key: 'info', max: 30, color: 'var(--info)' },
+  { label: '分诊准确', key: 'triage', max: 20, color: 'var(--success)' },
+  { label: '判定码', key: 'decision', max: 5, color: 'var(--warning)' },
+  { label: '急救指导', key: 'guidance', max: 10, color: 'var(--sev-4)' },
 ] as const
 
 export function ScoreBreakdown({ breakdown }: Props) {
@@ -42,7 +42,7 @@ export function DetailItem({
   icon: ReactNode; label: string; value?: string; ok: boolean; partial?: boolean
 }) {
   const statusIcon = ok ? '✓' : partial ? '⚠' : '✕'
-  const statusColor = ok ? 'var(--accent-green)' : partial ? 'var(--accent-amber)' : 'var(--danger-red)'
+  const statusColor = ok ? 'var(--success)' : partial ? 'var(--warning)' : 'var(--danger)'
   return (
     <div style={styles.detailItem}>
       <span style={{ fontSize: 'var(--fs-body-sm)' }}>{statusIcon}</span>

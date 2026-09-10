@@ -10,7 +10,7 @@ export const SOLID_THRESHOLD = 60 // 每通操作评价达到“稳健”的参�
 export function ratingColor(rating: string): string {
   switch (rating) {
     case 'gold': return C_WARNING
-    case 'silver': return 'var(--text-secondary)'
+    case 'silver': return 'var(--text-2)'
     case 'bronze': return C_WARNING
     default: return C_DANGER
   }
@@ -22,9 +22,9 @@ export function badgeStyle(rating: string): CSSProperties {
     alignItems: 'center',
     gap: 4,
     padding: '4px 16px',
-    borderRadius: 4,
+    borderRadius: 'var(--radius-sm)',
     border: `1px solid ${ratingColor(rating)}`,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'var(--bg-raised)',
     color: ratingColor(rating),
     fontSize: 'var(--fs-caption)',
     fontWeight: 'var(--fw-bold)',
@@ -39,9 +39,9 @@ export function scoreBoxStyle(rating: string): CSSProperties {
     alignItems: 'baseline',
     gap: 8,
     padding: '12px 28px',
-    borderRadius: 6,
-    border: `1px solid ${ratingColor(rating)}40`,
-    backgroundColor: `${ratingColor(rating)}10`,
+    borderRadius: 'var(--radius-md)',
+    border: `1px solid color-mix(in srgb, ${ratingColor(rating)} 25%, transparent)`,
+    backgroundColor: `color-mix(in srgb, ${ratingColor(rating)} 8%, transparent)`,
   }
 }
 
@@ -52,7 +52,7 @@ export function scoreValueStyle(rating: string): CSSProperties {
     color: ratingColor(rating),
     lineHeight: 1,
     fontFamily: 'var(--font-mono)',
-    textShadow: `0 0 20px ${ratingColor(rating)}40`,
+    textShadow: `0 0 20px color-mix(in srgb, ${ratingColor(rating)} 25%, transparent)`,
   }
 }
 
@@ -70,9 +70,9 @@ export function callCardStyle(saved: boolean): CSSProperties {
   return {
     width: 78,
     padding: '8px 6px',
-    borderRadius: 6,
-    border: `1px solid ${saved ? 'rgba(22, 163, 74, 0.2)' : 'rgba(220, 38, 38, 0.25)'}`,
-    backgroundColor: saved ? 'rgba(22, 163, 74, 0.05)' : 'rgba(220, 38, 38, 0.05)',
+    borderRadius: 'var(--radius-md)',
+    border: `1px solid ${saved ? 'var(--success-line)' : 'var(--danger-line)'}`,
+    backgroundColor: saved ? 'var(--success-bg)' : 'var(--danger-bg)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -154,14 +154,14 @@ export const styles: Record<string, CSSProperties> = {
   title: {
     fontSize: 'var(--fs-heading-xl)',
     fontWeight: 'var(--fw-extrabold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     margin: 0,
     fontFamily: 'var(--font-mono)',
     letterSpacing: 3,
   },
   subtitle: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     margin: 0,
     fontStyle: 'italic',
     fontFamily: 'var(--font-body)',
@@ -169,18 +169,18 @@ export const styles: Record<string, CSSProperties> = {
   divider: {
     width: 220,
     height: 1,
-    background: 'linear-gradient(90deg, transparent, var(--border-bright), transparent)',
+    background: 'linear-gradient(90deg, transparent, var(--line-strong), transparent)',
     margin: '8px 0',
   },
   scoreLabel: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 'var(--fw-semibold)',
   },
   scoreMax: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     fontFamily: 'var(--font-mono)',
   },
   callsHeader: {
@@ -192,7 +192,7 @@ export const styles: Record<string, CSSProperties> = {
   },
   callsHeaderText: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
@@ -207,7 +207,7 @@ export const styles: Record<string, CSSProperties> = {
   },
   callCardNum: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
@@ -226,13 +226,13 @@ export const styles: Record<string, CSSProperties> = {
     width: '100%',
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'var(--line)',
     overflow: 'hidden',
     marginTop: 2,
   },
   description: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     lineHeight: 1.8,
     padding: '0 10px',
     fontFamily: 'var(--font-body)',
@@ -245,14 +245,14 @@ export const styles: Record<string, CSSProperties> = {
     padding: '12px 48px',
     fontSize: 'var(--fs-subtitle)',
     fontWeight: 'var(--fw-bold)',
-    color: '#fff',
+    color: 'var(--on-danger)',
     backgroundColor: C_DANGER,
     border: 'none',
-    borderRadius: 6,
+    borderRadius: 'var(--radius-md)',
     cursor: 'pointer',
     letterSpacing: 2,
     fontFamily: 'var(--font-mono)',
-    boxShadow: `0 0 16px ${C_DANGER}40`,
+    boxShadow: 'var(--shadow-glow-danger)',
     transition: 'all 0.3s',
   },
 }

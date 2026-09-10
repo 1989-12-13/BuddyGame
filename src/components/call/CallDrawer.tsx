@@ -50,13 +50,13 @@ export function CallDrawer({ open, onToggle, mini, children, title, active }: Pr
                   <span
                     style={{
                       ...styles.liveDot,
-                      backgroundColor: active ? '#ff3b3b' : 'var(--border-bright)',
+                      backgroundColor: active ? 'var(--danger)' : 'var(--line-strong)',
                       animation: active ? 'pulse-live 1s ease-in-out infinite' : 'none',
                     }}
                   />
                   <span style={styles.verticalText}>{title}</span>
                   <div style={styles.miniWrap}>{mini}</div>
-                  <span style={styles.expandIcon}><ChevronLeft size={20} color="var(--text-secondary)" /></span>
+                  <span style={styles.expandIcon}><ChevronLeft size={20} color="var(--text-2)" /></span>
                 </div>
               </button>
             </motion.div>
@@ -89,7 +89,7 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-    borderLeft: '1px solid var(--glass-border)',
+    borderLeft: '1px solid var(--glass-line)',
     boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
     overflow: 'hidden',
     zIndex: Z_DRAWER,
@@ -135,7 +135,7 @@ const styles: Record<string, CSSProperties> = {
     writingMode: 'vertical-rl',
     textOrientation: 'mixed',
     fontSize: 'var(--fs-small)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 1,
     fontWeight: 'var(--fw-bold)',

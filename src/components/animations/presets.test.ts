@@ -15,8 +15,8 @@ describe('动画时长常量', () => {
   })
 
   it('时长值在合理范围内', () => {
-    expect(DUR_INSTANT).toBeLessThanOrEqual(0.1)
-    expect(DUR_EMPHASIS).toBeGreaterThanOrEqual(0.4)
+    expect(DUR_INSTANT).toBeLessThanOrEqual(0.15)
+    expect(DUR_EMPHASIS).toBeGreaterThanOrEqual(0.3)
   })
 })
 

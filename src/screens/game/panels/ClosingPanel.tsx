@@ -18,7 +18,7 @@ export function ClosingPanel({
   const protocolEntry = PROTOCOL_REF.find(([n]) => n === terminal.protocolNumber)
   const triageLabel = terminal.triage ? TRIAGE_LABELS[terminal.triage] : '—'
 
-  const triageColor = terminal.triage ? TRIAGE_COLORS[terminal.triage] : 'var(--text-muted)'
+  const triageColor = terminal.triage ? TRIAGE_COLORS[terminal.triage] : 'var(--text-3)'
 
   return (
     <div style={styles.closingPanel}>
@@ -27,10 +27,10 @@ export function ClosingPanel({
         <div style={{ fontSize: 'var(--fs-score)', marginBottom: 8, filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
           🚑
         </div>
-        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', marginBottom: 4 }}>
           {arrived ? '救护车已到达现场' : '等待救护车到达'}
         </div>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', marginBottom: 12 }}>
           {arrived ? '急救人员正在接手处理' : guidance ? '急救指导已完成' : '派车指令已发出'}
         </div>
         {!arrived && (
@@ -38,29 +38,29 @@ export function ClosingPanel({
             <div style={{
               width: '100%',
               height: 6,
-              borderRadius: 3,
-              backgroundColor: 'var(--border)',
+              borderRadius: 'var(--radius-xs)',
+              backgroundColor: 'var(--line)',
               overflow: 'hidden',
               marginBottom: 6,
             }}>
               <div style={{
                 height: '100%',
-                borderRadius: 3,
+                borderRadius: 'var(--radius-xs)',
                 width: `${Math.max(5, (45 - ambulanceRemaining) / 45 * 100)}%`,
                 background: ambulanceRemaining > 10
-                  ? 'linear-gradient(90deg, var(--accent-blue), var(--accent-cyan))'
-                  : 'linear-gradient(90deg, var(--warning-amber), var(--danger-red))',
+                  ? 'linear-gradient(90deg, var(--accent), var(--accent))'
+                  : 'linear-gradient(90deg, var(--warning), var(--danger))',
                 transition: 'width 1s linear',
               }} />
             </div>
-            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 'var(--fw-bold)', color: ambulanceRemaining > 10 ? 'var(--accent-blue)' : 'var(--danger-red)' }}>
+            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 'var(--fw-bold)', color: ambulanceRemaining > 10 ? 'var(--accent)' : 'var(--danger)' }}>
               {ambulanceRemaining}s
             </div>
-            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)' }}>预计到达时间</div>
+            <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)' }}>预计到达时间</div>
           </>
         )}
         {arrived && (
-          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--success-green)' }}>
+          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', color: 'var(--success)' }}>
             ✓ 任务完成
           </div>
         )}
@@ -100,8 +100,8 @@ export function ClosingPanel({
       <button
         style={styles.endCallBtn}
         onClick={onEndCall}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger-red)'; e.currentTarget.style.transform = 'scale(1.02)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger-red)'; e.currentTarget.style.transform = 'scale(1)' }}
+        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger)'; e.currentTarget.style.transform = 'scale(1.02)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--danger)'; e.currentTarget.style.transform = 'scale(1)' }}
       >
         <span>📞</span>
         <span>结束通话</span>

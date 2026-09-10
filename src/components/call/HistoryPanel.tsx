@@ -71,10 +71,10 @@ export function HistoryPanel({ entry, onClose }: Props) {
 
   const outcomeInfo = (() => {
     switch (entry.outcome) {
-      case 'success': return { label: '✓ 救治成功', color: 'var(--accent-green)' }
-      case 'failed': return { label: '✗ 救治失败', color: 'var(--danger-red)' }
-      case 'pending': return { label: '⋯ 救护车仍在途中', color: 'var(--accent-amber)' }
-      case 'no_dispatch': return { label: '未派车', color: 'var(--text-muted)' }
+      case 'success': return { label: '✓ 救治成功', color: 'var(--success)' }
+      case 'failed': return { label: '✗ 救治失败', color: 'var(--danger)' }
+      case 'pending': return { label: '⋯ 救护车仍在途中', color: 'var(--warning)' }
+      case 'no_dispatch': return { label: '未派车', color: 'var(--text-3)' }
     }
   })()
 
@@ -83,23 +83,23 @@ export function HistoryPanel({ entry, onClose }: Props) {
       {/* 标题条 */}
       <div style={styles.header}>
         <div style={styles.titleRow}>
-          <History size={14} color="var(--accent-gold)" strokeWidth={2.5} />
+          <History size={14} color="var(--warning)" strokeWidth={2.5} />
           <span style={styles.titleText}>历史任务</span>
           <button
             style={styles.closeBtn}
             onClick={onClose}
             title="回到当前通话"
           >
-            <X size={14} color="var(--text-secondary)" />
+            <X size={14} color="var(--text-2)" />
           </button>
         </div>
         <div style={styles.summary}>{entry.shortSummary}</div>
         <div style={styles.metaRow}>
           <span style={styles.metaItem}>
-            <Truck size={SIZE} color="var(--text-muted)" /> {entry.vehicleName ?? '—'}
+            <Truck size={SIZE} color="var(--text-3)" /> {entry.vehicleName ?? '—'}
           </span>
           {entry.triage && (
-            <span style={{ ...styles.metaItem, color: 'var(--accent-gold)' }}>
+            <span style={{ ...styles.metaItem, color: 'var(--warning)' }}>
               分诊: {TRIAGE_LABELS[entry.triage].split(' — ')[0]}
             </span>
           )}
@@ -109,7 +109,7 @@ export function HistoryPanel({ entry, onClose }: Props) {
         </div>
         {entry.score != null && (
           <div style={styles.scoreRow}>
-            <Star size={SIZE} color="var(--accent-amber)" strokeWidth={2.5} />
+            <Star size={SIZE} color="var(--warning)" strokeWidth={2.5} />
             <span style={styles.scoreLabel}>得分</span>
             <span style={styles.scoreValue}>{entry.score}/100</span>
           </div>
@@ -117,10 +117,10 @@ export function HistoryPanel({ entry, onClose }: Props) {
         {entry.addressResolved && (
           <div style={styles.metaRow}>
             <span style={styles.metaItem}>
-              <MapPin size={SIZE} color="var(--text-secondary)" /> {entry.addressResolved}
+              <MapPin size={SIZE} color="var(--text-2)" /> {entry.addressResolved}
             </span>
             <span style={styles.metaItem}>
-              <Clock size={SIZE} color="var(--text-secondary)" />
+              <Clock size={SIZE} color="var(--text-2)" />
               {fmtDuration(entry.endShiftTime - entry.startShiftTime)}
               {entry.dispatchTime != null && ` · 派车 ${entry.dispatchTime}s`}
             </span>
@@ -153,9 +153,9 @@ function DialogueRow({
   streamedChars: number
 }) {
   const styleBySpeaker: Record<DialogueLine['speaker'], CSSProperties> = {
-    operator: { color: 'var(--accent-blue)', borderLeft: '2px solid var(--accent-blue)' },
-    caller: { color: 'var(--text-primary)', borderLeft: '2px solid var(--accent-amber)' },
-    system: { color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.85 },
+    operator: { color: 'var(--accent)', borderLeft: '2px solid var(--accent)' },
+    caller: { color: 'var(--text)', borderLeft: '2px solid var(--warning)' },
+    system: { color: 'var(--text-2)', fontStyle: 'italic', opacity: 0.85 },
   }
   const speakerLabel: Record<DialogueLine['speaker'], string> = {
     operator: '接线员',
@@ -190,8 +190,8 @@ const styles: Record<string, CSSProperties> = {
   },
   header: {
     padding: '12px 14px 10px',
-    background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.04), transparent)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+    background: 'linear-gradient(180deg, color-mix(in srgb, var(--warning) 6%, transparent), transparent)',
+    borderBottom: '1px solid var(--line-soft)',
     flexShrink: 0,
   },
   titleRow: {
@@ -202,7 +202,7 @@ const styles: Record<string, CSSProperties> = {
   },
   titleText: {
     fontSize: 'var(--fs-small)',
-    color: 'var(--accent-gold)',
+    color: 'var(--warning)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 'var(--fw-bold)',
     letterSpacing: 1,
@@ -211,8 +211,8 @@ const styles: Record<string, CSSProperties> = {
   },
   closeBtn: {
     background: 'transparent',
-    border: '1px solid var(--border)',
-    borderRadius: 4,
+    border: '1px solid var(--line)',
+    borderRadius: 'var(--radius-sm)',
     cursor: 'pointer',
     padding: '2px 4px',
     display: 'flex',
@@ -221,7 +221,7 @@ const styles: Record<string, CSSProperties> = {
   },
   summary: {
     fontSize: 'var(--fs-body-sm)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     marginBottom: 6,
     fontFamily: 'var(--font-mono)',
   },
@@ -236,7 +236,7 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 4,
     fontSize: 'var(--fs-small)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     fontFamily: 'var(--font-mono)',
   },
   scoreRow: {
@@ -244,15 +244,15 @@ const styles: Record<string, CSSProperties> = {
     alignItems: 'center',
     gap: 6,
     padding: '4px 8px',
-    background: 'var(--warning-amber-bg)',
-    border: '1px solid var(--warning-amber-border)',
-    borderRadius: 4,
+    background: 'var(--warning-bg)',
+    border: '1px solid var(--warning-line)',
+    borderRadius: 'var(--radius-sm)',
     width: 'fit-content',
     marginTop: 6,
   },
   scoreLabel: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: 'var(--fw-bold)',
@@ -260,7 +260,7 @@ const styles: Record<string, CSSProperties> = {
   },
   scoreValue: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--accent-amber)',
+    color: 'var(--warning)',
     fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
@@ -275,13 +275,13 @@ const styles: Record<string, CSSProperties> = {
   },
   line: {
     padding: '4px 8px',
-    borderRadius: 4,
+    borderRadius: 'var(--radius-sm)',
     fontSize: 'var(--fs-body-sm)',
     lineHeight: 1.6,
   },
   speakerLabel: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     textTransform: 'uppercase',
     letterSpacing: 1,
     fontWeight: 'var(--fw-bold)',

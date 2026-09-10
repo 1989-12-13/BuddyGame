@@ -54,10 +54,10 @@ export type CalleeStressLevel = '镇定' | '紧张' | '恐慌' | '失控'
 
 /** 压力 → 文字 + 颜色映射 */
 export const STRESS_INFO: Record<CalleeStressLevel, { label: string; color: string; emoji: string; answerQuality: number }> = {
-  镇定: { label: '镇定',     color: '#16a34a', emoji: '○', answerQuality: 1.0 },
-  紧张: { label: '紧张',     color: '#d97706', emoji: '◐', answerQuality: 0.9 },
-  恐慌: { label: '恐慌',     color: '#ff8c00', emoji: '◑', answerQuality: 0.65 },
-  失控: { label: '失控',     color: '#ef4444', emoji: '●', answerQuality: 0.35 },
+  镇定: { label: '镇定',     color: 'var(--sev-1)', emoji: '○', answerQuality: 1.0 },
+  紧张: { label: '紧张',     color: 'var(--sev-3)', emoji: '◐', answerQuality: 0.9 },
+  恐慌: { label: '恐慌',     color: 'var(--sev-4)', emoji: '◑', answerQuality: 0.65 },
+  失控: { label: '失控',     color: 'var(--sev-5)', emoji: '●', answerQuality: 0.35 },
 }
 
 /** 由压力值推导等级 */

@@ -27,7 +27,7 @@ export function TerminalForm({
   onSetProtocol: (protocol: number) => void
 }) {
   const RequiredMark = () => (
-    <span style={{ color: 'var(--danger-red)', marginLeft: 2, fontWeight: 'var(--fw-bold)' }}>*</span>
+    <span style={{ color: 'var(--danger)', marginLeft: 2, fontWeight: 'var(--fw-bold)' }}>*</span>
   )
   return (
     <div className="terminal-record-form" style={styles.terminalForm}>
@@ -108,8 +108,8 @@ export function TerminalForm({
         value={terminal.conscious}
         trueLabel="有意识"
         falseLabel="无意识"
-        colorTrue="var(--accent-green)"
-        colorFalse="var(--danger-red)"
+        colorTrue="var(--success)"
+        colorFalse="var(--danger)"
         onToggle={onSetStatus}
       />
 
@@ -124,8 +124,8 @@ export function TerminalForm({
         value={terminal.breathing}
         trueLabel="正常呼吸"
         falseLabel="无呼吸/异常"
-        colorTrue="var(--accent-green)"
-        colorFalse="var(--danger-red)"
+        colorTrue="var(--success)"
+        colorFalse="var(--danger)"
         onToggle={onSetStatus}
       />
 
@@ -149,17 +149,17 @@ export function TerminalForm({
 
       {/* 协议号对照参考（折叠） */}
       <details style={{ margin: '-4px 0 8px 22px', fontSize: 'var(--fs-small)' }}>
-        <summary style={{ color: 'var(--text-muted)', cursor: 'pointer', userSelect: 'none' }}>
+        <summary style={{ color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none' }}>
           协议编号对照
         </summary>
         <div style={{
           marginTop: 4,
           padding: 6,
           backgroundColor: 'var(--bg-surface)',
-          borderRadius: 4,
+          borderRadius: 'var(--radius-sm)',
           maxHeight: 160,
           overflowY: 'auto',
-          color: 'var(--text-secondary)',
+          color: 'var(--text-2)',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '1px 12px',
@@ -167,7 +167,7 @@ export function TerminalForm({
         }}>
           {PROTOCOL_REF.map(([num, name]) => (
             <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
-              <span style={{ color: 'var(--accent-blue)', fontWeight: 'var(--fw-bold)', minWidth: 20 }}>{num}</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 'var(--fw-bold)', minWidth: 20 }}>{num}</span>
               <span>{name}</span>
             </div>
           ))}
@@ -188,7 +188,7 @@ export function TerminalForm({
           <span style={{
             fontSize: 'var(--fs-body-sm)',
             fontWeight: 'var(--fw-bold)',
-            color: terminal.triage === 'red' ? 'var(--danger-red)' : terminal.triage === 'yellow' ? 'var(--warning-amber)' : 'var(--success-green)',
+            color: terminal.triage === 'red' ? 'var(--danger)' : terminal.triage === 'yellow' ? 'var(--warning)' : 'var(--success)',
           }}>
             {TRIAGE_LABELS[terminal.triage]}
           </span>
@@ -197,10 +197,10 @@ export function TerminalForm({
       <FieldRow icon={<Hash size={15} />} label="子编码">
         <div style={{ display: 'flex', gap: 4 }}>
           {[
-            { n: 1, color: 'var(--danger-red)', label: '危重伤' },
-            { n: 2, color: 'var(--accent-orange)', label: '重伤' },
-            { n: 3, color: 'var(--accent-amber)', label: '轻伤' },
-            { n: 4, color: 'var(--accent-green)', label: '非紧急' },
+            { n: 1, color: 'var(--danger)', label: '危重伤' },
+            { n: 2, color: 'var(--sev-4)', label: '重伤' },
+            { n: 3, color: 'var(--warning)', label: '轻伤' },
+            { n: 4, color: 'var(--success)', label: '非紧急' },
           ].map(({ n, color, label }) => {
             const active = terminal.determinantSubcode === n
             return (
@@ -210,10 +210,10 @@ export function TerminalForm({
                 style={{
                   flex: 1,
                   padding: '6px 4px',
-                  borderRadius: 8,
-                  border: `1px solid ${active ? color : 'var(--border)'}`,
+                  borderRadius: 'var(--radius-lg)',
+                  border: `1px solid ${active ? color : 'var(--line)'}`,
                   backgroundColor: active ? `color-mix(in srgb, ${color} 9%, var(--bg-surface))` : 'var(--bg-surface)',
-                  color: active ? color : 'var(--text-secondary)',
+                  color: active ? color : 'var(--text-2)',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 4,

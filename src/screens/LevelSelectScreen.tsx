@@ -154,7 +154,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
                   onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleScenarioClick(s.id) } }}
                   style={{
                     ...styles.card,
-                    borderColor: hoveredId === s.id ? 'var(--accent-amber)' : 'var(--border)',
+                    borderColor: hoveredId === s.id ? 'var(--warning)' : 'var(--line)',
                     transform: hoveredId === s.id ? 'translateY(-2px)' : 'none',
                   }}
                   onMouseEnter={() => setHoveredId(s.id)}

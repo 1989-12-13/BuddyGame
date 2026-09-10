@@ -56,11 +56,11 @@ export function GuidancePanel({
             style={{
               padding: '6px 10px',
               margin: '3px 0',
-              backgroundColor: r === 'correct' ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
-              borderRadius: 6,
+              backgroundColor: r === 'correct' ? 'var(--success-bg)' : 'var(--danger-bg)',
+              borderRadius: 'var(--radius-md)',
               fontSize: 'var(--fs-body-sm)',
-              color: r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)',
-              borderLeft: `2px solid ${r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)'}`,
+              color: r === 'correct' ? 'var(--success)' : 'var(--danger)',
+              borderLeft: `2px solid ${r === 'correct' ? 'var(--success)' : 'var(--danger)'}`,
             }}
           >
             {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}
@@ -71,10 +71,10 @@ export function GuidancePanel({
             onClick={onEndGuidance}
             style={{
               padding: '10px 32px',
-              borderRadius: 6,
+              borderRadius: 'var(--radius-md)',
               border: 'none',
-              backgroundColor: 'var(--danger-red)',
-              color: '#fff',
+              backgroundColor: 'var(--danger)',
+              color: 'var(--on-danger)',
               fontSize: 'var(--fs-body)',
               fontWeight: 'var(--fw-bold)',
               cursor: 'pointer',
@@ -98,11 +98,11 @@ export function GuidancePanel({
       style={{
         padding: '6px 10px',
         margin: '3px 0',
-        backgroundColor: r === 'correct' ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
-        borderRadius: 6,
+        backgroundColor: r === 'correct' ? 'var(--success-bg)' : 'var(--danger-bg)',
+        borderRadius: 'var(--radius-md)',
         fontSize: 'var(--fs-body-sm)',
-        color: r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)',
-        borderLeft: `2px solid ${r === 'correct' ? 'var(--success-green)' : 'var(--danger-red)'}`,
+        color: r === 'correct' ? 'var(--success)' : 'var(--danger)',
+        borderLeft: `2px solid ${r === 'correct' ? 'var(--success)' : 'var(--danger)'}`,
       }}
     >
       {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}

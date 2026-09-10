@@ -27,17 +27,17 @@ function pillStyle(detail: { color?: string; muted?: boolean } = {}): CSSPropert
     gap: 6,
     padding: '3px 10px',
     borderRadius: 999,
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    background: detail.muted ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid var(--line)',
+    background: detail.muted ? 'var(--bg-raised)' : 'var(--bg-hover)',
     backdropFilter: 'blur(8px)',
     transition: 'all 0.3s ease',
     minHeight: 24,
-    fontSize: 12,
-    color: detail.muted ? 'var(--text-muted)' : 'var(--text-primary)',
+    fontSize: 'var(--fs-caption)',
+    color: detail.muted ? 'var(--text-3)' : 'var(--text)',
   }
 }
 
-function PillIcon({ children, color = 'var(--text-secondary)' }: { children: React.ReactNode; color?: string }) {
+function PillIcon({ children, color = 'var(--text-2)' }: { children: React.ReactNode; color?: string }) {
   return <span style={{ display: 'flex', color }}>{children}</span>
 }
 
@@ -69,10 +69,10 @@ function Field({
       transition={{ duration: 0.22, ease: 'easeOut' }}
       title={hint ?? label}
     >
-      <PillIcon color={color ?? '#8b949e'}>{icon}</PillIcon>
+      <PillIcon color={color ?? 'var(--text-2)'}>{icon}</PillIcon>
       <span style={{
-        fontSize: 10,
-        color: 'var(--text-muted)',
+        fontSize: 'var(--fs-micro)',
+        color: 'var(--text-3)',
         textTransform: 'uppercase',
         letterSpacing: 1,
         fontWeight: 700,
@@ -88,7 +88,7 @@ function Field({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 3 }}
             transition={{ duration: 0.18 }}
-            style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: color ?? 'var(--text-primary)' }}
+            style={{ fontWeight: 700, fontFamily: 'var(--font-mono)', color: color ?? 'var(--text)' }}
           >
             {value}
           </motion.span>
@@ -99,7 +99,7 @@ function Field({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}
+            style={{ fontStyle: 'italic', color: 'var(--text-3)' }}
           >
             —
           </motion.span>
@@ -137,10 +137,10 @@ export function CallInfoBar({ state, visible }: Props) {
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           style={{
             overflow: 'hidden',
-            backgroundColor: 'rgba(10, 14, 20, 0.4)',
-            backdropFilter: 'blur(8px) saturate(140%)',
-            WebkitBackdropFilter: 'blur(8px) saturate(140%)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+            backgroundColor: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+            WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
+            borderBottom: '1px solid var(--line-soft)',
           }}
         >
           <div style={{
@@ -152,14 +152,14 @@ export function CallInfoBar({ state, visible }: Props) {
           }}>
             {/* 通话计时 */}
             <motion.div
-              style={{ ...pillStyle(), borderColor: callTimeColor + '40' }}
-              animate={{ borderColor: callTimeColor + '40' }}
+              style={{ ...pillStyle(), borderColor: `color-mix(in srgb, ${callTimeColor} 25%, transparent)` }}
+              animate={{ borderColor: `color-mix(in srgb, ${callTimeColor} 25%, transparent)` }}
             >
               <PillIcon color={callTimeColor}>
                 <Clock size={SIZE} strokeWidth={2.5} />
               </PillIcon>
               <span style={lblStyle}>通话</span>
-              <span style={{ ...valStyle, color: callTimeColor, fontSize: 13 }}>{mm}:{ss}</span>
+              <span style={{ ...valStyle, color: callTimeColor, fontSize: 'var(--fs-body-sm)' }}>{mm}:{ss}</span>
             </motion.div>
 
             {/* 电话 */}
@@ -168,7 +168,7 @@ export function CallInfoBar({ state, visible }: Props) {
               label="电话"
               value={call.phoneNumber}
               revealed
-              color="var(--accent-blue)"
+              color="var(--accent)"
               hint={call.phoneNumber}
             />
 
@@ -178,7 +178,7 @@ export function CallInfoBar({ state, visible }: Props) {
               label="地址"
               value={addressValue}
               revealed={addressRevealed}
-              color="var(--accent-gold)"
+              color="var(--warning)"
               hint={addressValue ?? '尚未确认地址'}
             />
 
@@ -188,7 +188,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
                 label="体征"
                 value={`${Math.round(ps.stability)}% ${ps.died ? '· 死亡' : ''}`}
-                color={ps.died ? 'var(--text-muted)' : ps.stability < 30 ? 'var(--danger-red)' : ps.stability < 60 ? 'var(--accent-amber)' : 'var(--accent-green)'}
+                color={ps.died ? 'var(--text-3)' : ps.stability < 30 ? 'var(--danger)' : ps.stability < 60 ? 'var(--warning)' : 'var(--success)'}
                 revealed
               />
             )}
@@ -199,7 +199,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<Activity size={SIZE} strokeWidth={2.5} />}
                 label="状态"
                 value={`${state.terminal.conscious ? '有意识' : '无意识'}${state.terminal.breathing !== null ? (state.terminal.breathing ? '·呼吸正常' : '·呼吸异常') : ''}`}
-                color={state.terminal.conscious && state.terminal.breathing ? 'var(--accent-green)' : 'var(--danger-red)'}
+                color={state.terminal.conscious && state.terminal.breathing ? 'var(--success)' : 'var(--danger)'}
                 revealed
               />
             )}
@@ -210,7 +210,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
                 label="分诊"
                 value={triageValue.split(' — ')[0]}
-                color={state.terminal.triage === 'red' ? 'var(--danger-red)' : state.terminal.triage === 'yellow' ? 'var(--accent-amber)' : state.terminal.triage === 'green' ? 'var(--accent-green)' : 'var(--text-muted)'}
+                color={state.terminal.triage === 'red' ? 'var(--danger)' : state.terminal.triage === 'yellow' ? 'var(--warning)' : state.terminal.triage === 'green' ? 'var(--success)' : 'var(--text-3)'}
                 revealed
               />
             )}
@@ -221,7 +221,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 icon={<HeartPulse size={SIZE} strokeWidth={2.5} />}
               label="ETA"
               value={`${state.ambulanceRemaining}s`}
-              color="var(--danger-red)"
+              color="var(--danger)"
               revealed
               />
             )}
@@ -233,8 +233,8 @@ export function CallInfoBar({ state, visible }: Props) {
 }
 
 const lblStyle: CSSProperties = {
-  fontSize: 10,
-  color: 'var(--text-muted)',
+  fontSize: 'var(--fs-micro)',
+  color: 'var(--text-3)',
   textTransform: 'uppercase',
   letterSpacing: 1,
   fontWeight: 700,

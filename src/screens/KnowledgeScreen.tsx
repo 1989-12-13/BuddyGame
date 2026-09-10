@@ -144,11 +144,11 @@ export function KnowledgeScreen({ onBack }: Props) {
                   >
                     <div style={styles.cardTitle}>{s.mpdsCard.title}</div>
                     <div style={styles.cardBottom}>
-                      <span style={{ ...styles.protocolBadge, backgroundColor: `${info.color}15`, color: info.color }}>
+                      <span style={{ ...styles.protocolBadge, backgroundColor: `color-mix(in srgb, ${info.color} 10%, transparent)`, color: info.color }}>
                         #{s.mpdsCard.number}
                       </span>
                       <span style={styles.cardMiddle} />
-                      <span style={{ ...styles.detBadge, backgroundColor: info.color, color: '#fff' }}>
+                      <span style={{ ...styles.detBadge, backgroundColor: `color-mix(in srgb, ${info.color} 18%, transparent)`, color: info.color }}>
                         {s.mpdsCard.determinantCode}
                       </span>
                     </div>
@@ -204,7 +204,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 if (!ex) return null
                 return (
                   <DetailSection icon="▸" title="典型现场案例">
-                    <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginBottom: 4 }}>
+                    <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-3)', marginBottom: 4 }}>
                       ★ 粗体为游戏中本协议所采用的案例
                     </p>
                     <ul style={styles.list}>
@@ -212,7 +212,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                         <li key={i} style={{
                           ...styles.listItem,
                           fontWeight: i === ex.gameIndex ? 700 : 400,
-                          color: i === ex.gameIndex ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          color: i === ex.gameIndex ? 'var(--text)' : 'var(--text-2)',
                         }}>
                           {e}
                         </li>
@@ -250,7 +250,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                 const detail = GUIDANCE_DETAILS[selected.id]
                 return (
                 <DetailSection icon="♥" title={`急救指导案例`}>
-                  <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-muted)', marginBottom: 6 }}>
+                  <p style={{ ...styles.paragraph, fontSize: 'var(--fs-caption)', color: 'var(--text-3)', marginBottom: 6 }}>
                     ★ 以下为游戏中本协议所采用的急救方案及临床分析
                   </p>
                   <p style={{ ...styles.paragraph, fontWeight: 'var(--fw-semibold)', marginBottom: 4 }}>{selected.guidance.title}</p>
@@ -262,8 +262,8 @@ export function KnowledgeScreen({ onBack }: Props) {
                       const isDetailed = !!stepDetail
                       return (
                         <li key={i} style={{ marginBottom: 10, lineHeight: 1.7 }}>
-              <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body-sm)', color: 'var(--text-primary)' }}>{merged.prompt}</div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginTop: 2 }}>
+              <div style={{ fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-body-sm)', color: 'var(--text)' }}>{merged.prompt}</div>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', marginTop: 2 }}>
                             {merged.options.map((o: string, j: number) => {
                               const isCorrect = j === merged.correctIndex
                               return (
@@ -271,10 +271,10 @@ export function KnowledgeScreen({ onBack }: Props) {
                                   display: 'inline-block',
                                   padding: '1px 6px',
                                   margin: '1px 2px',
-                                  borderRadius: 3,
-                                  backgroundColor: isCorrect ? 'var(--success-green-bg)' : 'var(--bg-surface)',
-                                  border: `1px solid ${isCorrect ? 'var(--accent-green)' : 'var(--border)'}`,
-                                  color: isCorrect ? 'var(--accent-green)' : 'var(--text-secondary)',
+                                  borderRadius: 'var(--radius-xs)',
+                                  backgroundColor: isCorrect ? 'var(--success-bg)' : 'var(--bg-surface)',
+                                  border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--line)'}`,
+                                  color: isCorrect ? 'var(--success)' : 'var(--text-2)',
                                   fontWeight: isCorrect ? 'var(--fw-semibold)' : 'var(--fw-normal)',
                                   fontSize: 'var(--fs-caption)',
                                 }}>
@@ -285,13 +285,13 @@ export function KnowledgeScreen({ onBack }: Props) {
                           </div>
                           {isDetailed && (
                             <>
-                              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>
-                                <span style={{ fontWeight: 'var(--fw-bold)', color: 'var(--text-secondary)' }}>临床分析：</span>
+                              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', marginTop: 4, lineHeight: 1.6 }}>
+                                <span style={{ fontWeight: 'var(--fw-bold)', color: 'var(--text-2)' }}>临床分析：</span>
                                 {merged.explanation}
                               </div>
-                              <div style={{ marginTop: 4, paddingLeft: 8, borderLeft: '2px solid var(--border)' }}>
+                              <div style={{ marginTop: 4, paddingLeft: 8, borderLeft: '2px solid var(--line)' }}>
                                 {(merged.optionAnalysis as string[]).map((oa: string, j: number) => (
-                                  <div key={j} style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 1 }}>
+                                  <div key={j} style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', lineHeight: 1.5, marginTop: 1 }}>
                                     {j === merged.correctIndex ? '✓' : '✕'} {oa}
                                   </div>
                                 ))}

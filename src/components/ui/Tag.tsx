@@ -16,11 +16,11 @@ interface Props {
 }
 
 const COLOR_MAP: Record<TagColor, { bg: string; text: string; border: string }> = {
-  success: { bg: 'var(--success-green-bg)', text: 'var(--accent-green)', border: 'var(--accent-green)' },
-  warning: { bg: 'var(--warning-amber-bg)', text: 'var(--accent-amber)', border: 'var(--accent-amber)' },
-  danger:  { bg: 'var(--danger-red-bg)', text: 'var(--danger-red)', border: 'var(--danger-red)' },
-  info:    { bg: 'var(--info-cyan-bg)', text: 'var(--accent-blue)', border: 'var(--accent-blue)' },
-  default: { bg: 'var(--border-light)', text: 'var(--text-secondary)', border: 'var(--border)' },
+  success: { bg: 'var(--success-bg)', text: 'var(--success)', border: 'var(--success)' },
+  warning: { bg: 'var(--warning-bg)', text: 'var(--warning)', border: 'var(--warning)' },
+  danger:  { bg: 'var(--danger-bg)', text: 'var(--danger)', border: 'var(--danger)' },
+  info:    { bg: 'var(--info-bg)', text: 'var(--accent)', border: 'var(--accent)' },
+  default: { bg: 'var(--line-soft)', text: 'var(--text-2)', border: 'var(--line)' },
 }
 
 export function Tag({ children, color = 'default', customColor, style }: Props) {
@@ -31,7 +31,7 @@ export function Tag({ children, color = 'default', customColor, style }: Props) 
       alignItems: 'center',
       gap: 4,
       padding: '2px 8px',
-      borderRadius: 10,
+      borderRadius: 'var(--radius-xl)',
       fontSize: 'var(--fs-small)',
       fontWeight: 'var(--fw-bold)',
       fontFamily: 'var(--font-mono)',

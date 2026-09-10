@@ -121,7 +121,7 @@ export default function App() {
       <AudioProvider>
         <ErrorBoundary title="应用异常" description="游戏核心组件遇到了意外错误。请尝试刷新页面。">
           <DispatchCardProvider value={dispatchCard}>
-            <Suspense fallback={<div role="status" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: 'var(--bg)', color: 'var(--text-secondary)' }}>正在连接调度台…</div>}>
+            <Suspense fallback={<div role="status" style={{ minHeight: '100dvh', display: 'grid', placeItems: 'center', background: 'var(--bg)', color: 'var(--text-2)' }}>正在连接调度台…</div>}>
               {mainContent}
             </Suspense>
             {screen !== 'game' && screen !== 'title' && <SettingsPanel onNavigate={handleNavigate} />}

@@ -24,20 +24,20 @@ export function CallWaiting({
         marginBottom: 8,
         animation: 'call-incoming 1.2s ease-in-out infinite',
       }}>
-        <Phone size={64} color="var(--danger-red)" strokeWidth={1.8} />
+        <Phone size={64} color="var(--danger)" strokeWidth={1.8} />
       </div>
-      <h2 style={{ color: 'var(--text-primary)', margin: '0 0 4px', fontSize: 'var(--fs-title)' }}>
+      <h2 style={{ color: 'var(--text)', margin: '0 0 4px', fontSize: 'var(--fs-title)' }}>
         第 {callIndex + 1}/{totalCalls} 通来电
       </h2>
-      <p style={{ color: 'var(--danger-red)', fontWeight: 'var(--fw-bold)', margin: '0 0 8px', fontSize: 'var(--fs-body-sm)' }}>
+      <p style={{ color: 'var(--danger)', fontWeight: 'var(--fw-bold)', margin: '0 0 8px', fontSize: 'var(--fs-body-sm)' }}>
         线路接通中...
       </p>
       {lastScore !== undefined && (
-        <p style={{ color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)', margin: '0 0 12px' }}>
+        <p style={{ color: 'var(--success)', fontWeight: 'var(--fw-bold)', margin: '0 0 12px' }}>
           上一通得分：{lastScore}/100
         </p>
       )}
-      <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: 'var(--fs-caption)' }}>
+      <p style={{ color: 'var(--text-3)', marginBottom: 16, fontSize: 'var(--fs-caption)' }}>
         班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 累计 {totalScore}分
       </p>
       <button style={styles.answerBtn} onClick={onAnswer}>

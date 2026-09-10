@@ -151,8 +151,8 @@ export function JudgmentCard({
             width: 380,
             maxWidth: '90vw',
             backgroundColor: 'var(--bg-surface)',
-            borderRadius: 12,
-            border: '2px solid var(--accent-amber)',
+            borderRadius: 'var(--radius-2xl)',
+            border: '2px solid var(--warning)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             overflow: 'hidden',
           }}
@@ -165,16 +165,16 @@ export function JudgmentCard({
               alignItems: 'center',
               gap: 8,
               padding: '14px 16px',
-              borderBottom: '1px solid var(--border)',
+              borderBottom: '1px solid var(--line)',
             }}
           >
-            <span style={{ color: 'var(--accent-amber)', fontSize: 16 }}>◆</span>
+            <span style={{ color: 'var(--warning)', fontSize: 'var(--fs-subtitle)' }}>◆</span>
             <span
               style={{
                 flex: 1,
                 fontSize: 'var(--fs-body)',
                 fontWeight: 'var(--fw-bold)',
-                color: 'var(--text-primary)',
+                color: 'var(--text)',
               }}
             >
               {displayJudgment.question}
@@ -182,7 +182,7 @@ export function JudgmentCard({
             {isResolved && (
               <span
                 style={{
-                  color: choiceIsCorrect ? 'var(--accent-green)' : 'var(--danger-red)',
+                  color: choiceIsCorrect ? 'var(--success)' : 'var(--danger)',
                   fontSize: 'var(--fs-micro)',
                   fontWeight: 'var(--fw-bold)',
                 }}
@@ -198,14 +198,14 @@ export function JudgmentCard({
               const isChosen = isResolved && displayIdx === idx
               const isCorrectReveal = isResolved && opt.isCorrect
               let bgColor = 'var(--bg-surface)'
-              let borderColor = 'var(--border)'
+              let borderColor = 'var(--line)'
               if (isResolved) {
                 if (isChosen) {
-                  bgColor = opt.isCorrect ? 'var(--success-green-bg)' : 'var(--danger-red-bg)'
-                  borderColor = opt.isCorrect ? 'var(--accent-green)' : 'var(--danger-red)'
+                  bgColor = opt.isCorrect ? 'var(--success-bg)' : 'var(--danger-bg)'
+                  borderColor = opt.isCorrect ? 'var(--success)' : 'var(--danger)'
                 } else if (isCorrectReveal) {
-                  bgColor = 'var(--success-green-bg)'
-                  borderColor = 'var(--accent-green)'
+                  bgColor = 'var(--success-bg)'
+                  borderColor = 'var(--success)'
                 }
               }
 
@@ -218,14 +218,14 @@ export function JudgmentCard({
                     gap: 8,
                     padding: '10px 12px',
                     backgroundColor: bgColor,
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-lg)',
                     border: `1px solid ${borderColor}`,
                     cursor: isResolved || disabled ? 'default' : 'pointer',
                     opacity: isResolved && !isChosen && !isCorrectReveal ? 0.35 : 1,
                     transition: 'background-color 0.2s, border-color 0.2s, opacity 0.2s',
                     textAlign: 'left',
                     fontSize: 'var(--fs-body)',
-                    color: 'var(--text-primary)',
+                    color: 'var(--text)',
                     fontFamily: 'inherit',
                     lineHeight: 1.4,
                   }}
@@ -250,13 +250,13 @@ export function JudgmentCard({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      borderRadius: 4,
+                      borderRadius: 'var(--radius-sm)',
                       fontSize: 'var(--fs-micro)',
                       fontWeight: 'var(--fw-bold)',
                       backgroundColor: isChosen
-                        ? (opt.isCorrect ? 'var(--accent-green)' : 'var(--danger-red)')
+                        ? (opt.isCorrect ? 'var(--success)' : 'var(--danger)')
                         : 'var(--bg)',
-                      color: isChosen ? '#fff' : 'var(--text-muted)',
+                      color: isChosen ? 'var(--on-accent)' : 'var(--text-3)',
                     }}
                   >
                     {String.fromCharCode(65 + idx)}
@@ -266,8 +266,8 @@ export function JudgmentCard({
                       style={{
                         fontWeight: isChosen ? 'bold' : 'normal',
                         color: isChosen
-                          ? (opt.isCorrect && isResolved ? 'var(--accent-green)' : isResolved ? 'var(--danger-red)' : 'var(--accent-amber)')
-                          : 'var(--text-muted)',
+                          ? (opt.isCorrect && isResolved ? 'var(--success)' : isResolved ? 'var(--danger)' : 'var(--warning)')
+                          : 'var(--text-3)',
                       }}
                     >
                       {opt.label}
@@ -276,7 +276,7 @@ export function JudgmentCard({
                       <div
                         style={{
                           fontSize: 'var(--fs-micro)',
-                          color: 'var(--text-muted)',
+                          color: 'var(--text-3)',
                           marginTop: 2,
                         }}
                       >

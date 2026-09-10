@@ -1,174 +1,228 @@
 /* ============================================================
-   120 调度台 — 设计令牌 · 双主题（浅色 + 深色）
+   120 调度台 — 设计令牌中心
+   风格：写实 DOC / 应急指挥中心（参考《112 Operator》）
+   主色：深青绿（调度台色板）
+   双主题：dark（默认 · 夜间调度台） / light（日间调度台）
+   ------------------------------------------------------------
+   命名约定：
+     表面      --bg / --bg-surface / --bg-raised / --bg-hover / --bg-input / --bg-deep
+     文字      --text / --text-2 / --text-3 / --text-dim
+     边框      --line / --line-soft / --line-strong
+     主色      --accent / -strong / -dim / -bg / -line / --on-accent
+     语义      --success|--warning|--danger|--info （各带 -strong/-dim/-bg/-line）
+     分级      --sev-1 … --sev-5（最佳/最轻 → 最差/最重）
    ============================================================ */
 
-/* ===== 浅色主题（120 医疗配色·默认） ===== */
+/* ========== 深色主题（默认 · 夜间调度台） ========== */
 :root,
-[data-theme='light'] {
-  /* === 背景 === */
-  --bg: #eff6f9;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f8fafc;
-  --bg-hover: #f1f5f9;
-  --bg-input: #ffffff;
-
-  /* === 文字 === */
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --text-dim: #cbd5e1;
-
-  /* === 强调色 === */
-  --accent-cyan: #2563eb;
-  --accent-green: #16a34a;
-  --accent-amber: #d97706;
-  --accent-blue: #3b82f6;
-  --accent-gold: #ca8a04;
-
-  /* === 语义色 === */
-  --danger-red: #dc2626;
-  --danger-red-dim: #b91c1c;
-  --danger-red-bg: rgba(220, 38, 38, 0.08);
-  --danger-red-border: rgba(220, 38, 38, 0.25);
-
-  --success-green: #16a34a;
-  --success-green-dim: #15803d;
-  --success-green-bg: rgba(22, 163, 74, 0.08);
-  --success-green-border: rgba(22, 163, 74, 0.25);
-
-  --warning-amber: #d97706;
-  --warning-amber-bg: rgba(217, 119, 6, 0.08);
-  --warning-amber-border: rgba(217, 119, 6, 0.25);
-
-  --info-cyan: #2563eb;
-  --info-cyan-bg: rgba(37, 99, 235, 0.08);
-  --info-cyan-border: rgba(37, 99, 235, 0.25);
-
-  /* === 边框 === */
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --border-bright: #cbd5e1;
-
-  /* === 阴影 === */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
-  --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.15);
-  --shadow-glow-green: 0 0 20px rgba(22, 163, 74, 0.1);
-
-  /* === 地图 SVG === */
-  --map-grid: #cbd5e1;
-  --map-road: #94a3b8;
-
-  /* === 氛围层（玻化/扫描线/暗角） === */
-  --vignette-strength: 0.18;            /* 暗角强度，浅色主题保持低调 */
-  --bg-gradient-head: #eff6f9;          /* 顶部背景色 */
-  --bg-gradient-foot: #dce7ed;          /* 底部背景色（略深，营造深度） */
-  --glass-bg: rgba(255, 255, 255, 0.78);
-  --glass-bg-elevated: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(15, 23, 42, 0.08);
-  --glass-blur: 10px;
-}
-
-/* ===== 深色主题（调度台夜间模式） ===== */
 [data-theme='dark'] {
-  /* === 背景 === */
-  --bg: #0a0e14;
-  --bg-surface: #11151c;
-  --bg-elevated: #1a1f29;
-  --bg-hover: #222834;
-  --bg-input: #0d1117;
+  /* ---- 表面 Surface ---- */
+  --bg: #0e1a20;
+  --bg-surface: #16242c;
+  --bg-raised: #1e2f38;
+  --bg-hover: #263a44;
+  --bg-input: #102028;
+  --bg-deep: #0a141a; /* 地图 / 深井容器 */
 
-  /* === 文字 === */
-  --text-primary: #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted: #6e7681;
-  --text-dim: #484f58;
+  /* ---- 文字 Text ---- */
+  --text: #eef2ef;
+  --text-2: #a9bcb8;
+  --text-3: #7d938f;
+  --text-dim: #566b68;
 
-  /* === 强调色 === */
-  --accent-cyan: #0ea5e9;
-  --accent-green: #16a34a;
-  --accent-amber: #d97706;
-  --accent-blue: #3b82f6;
-  --accent-gold: #ca8a04;
+  /* ---- 边框 Line ---- */
+  --line: #2b3f47;
+  --line-soft: #22333b;
+  --line-strong: #3d555e;
 
-  /* === 语义色 === */
-  --danger-red: #dc2626;
-  --danger-red-dim: #b91c1c;
-  --danger-red-bg: rgba(220, 38, 38, 0.08);
-  --danger-red-border: rgba(220, 38, 38, 0.25);
+  /* ---- 主色 Accent · 深青绿 ---- */
+  --accent: #8bd4bc;
+  --accent-strong: #b3e8d6;
+  --accent-dim: #5aa88f;
+  --accent-bg: rgba(139, 212, 188, 0.12);
+  --accent-line: rgba(139, 212, 188, 0.34);
+  --on-accent: #0d2c24;
+  --on-danger: #3a1512;
 
-  --success-green: #16a34a;
-  --success-green-dim: #15803d;
-  --success-green-bg: rgba(22, 163, 74, 0.08);
-  --success-green-border: rgba(22, 163, 74, 0.25);
+  /* ---- 语义 · 成功 ---- */
+  --success: #5fd39a;
+  --success-strong: #8fe4bb;
+  --success-dim: #37996b;
+  --success-bg: rgba(95, 211, 154, 0.12);
+  --success-line: rgba(95, 211, 154, 0.32);
 
-  --warning-amber: #d97706;
-  --warning-amber-bg: rgba(217, 119, 6, 0.08);
-  --warning-amber-border: rgba(217, 119, 6, 0.25);
+  /* ---- 语义 · 警告（暖沙） ---- */
+  --warning: #e7bd82;
+  --warning-strong: #f2d5a8;
+  --warning-dim: #b08a4d;
+  --warning-bg: rgba(231, 189, 130, 0.12);
+  --warning-line: rgba(231, 189, 130, 0.32);
 
-  --info-cyan: #0ea5e9;
-  --info-cyan-bg: rgba(14, 165, 233, 0.08);
-  --info-cyan-border: rgba(14, 165, 233, 0.25);
+  /* ---- 语义 · 危险（柔红） ---- */
+  --danger: #ef8a80;
+  --danger-strong: #f7b3ab;
+  --danger-dim: #b85a52;
+  --danger-bg: rgba(239, 138, 128, 0.12);
+  --danger-line: rgba(239, 138, 128, 0.32);
 
-  /* === 边框 === */
-  --border: #2a323e;
-  --border-light: #1e252e;
-  --border-bright: #3a4452;
+  /* ---- 语义 · 信息（冷青蓝） ---- */
+  --info: #7cc4e0;
+  --info-strong: #a8dbf0;
+  --info-dim: #4c8fab;
+  --info-bg: rgba(124, 196, 224, 0.12);
+  --info-line: rgba(124, 196, 224, 0.32);
 
-  /* === 阴影 === */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.3);
-  --shadow-glow-green: 0 0 20px rgba(22, 163, 74, 0.15);
+  /* ---- 分级色阶（评级 / 情绪 / 稳定度 / MPDS 判定级通用） ---- */
+  --sev-1: #5fd39a;
+  --sev-2: #8bd4bc;
+  --sev-3: #e7bd82;
+  --sev-4: #ec9a5c;
+  --sev-5: #ef8a80;
 
-  /* === 地图 SVG === */
-  --map-grid: #1e252e;
-  --map-road: #2a323e;
+  /* ---- 阴影 ---- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+  --shadow-glow-accent: 0 0 20px rgba(139, 212, 188, 0.18);
+  --shadow-glow-danger: 0 0 20px rgba(239, 138, 128, 0.28);
 
-  /* === 氛围层（玻化/扫描线/暗角） === */
-  --vignette-strength: 0.55;            /* 暗角强度，夜间调度台模式更深 */
-  --bg-gradient-head: #0a0e14;          /* 顶部背景色 */
-  --bg-gradient-foot: #05080d;          /* 底部背景色（更深，营造深度） */
-  --glass-bg: rgba(17, 21, 28, 0.72);   /* 玻化面板底色（半透明） */
-  --glass-bg-elevated: rgba(26, 31, 41, 0.82);
-  --glass-border: rgba(255, 255, 255, 0.06);
+  /* ---- 地图 ---- */
+  --map-grid: #1e3340;
+  --map-road: #2b4450;
+
+  /* ---- 氛围层（玻化 / 扫描线） ---- */
+  --bg-gradient-head: #0e1a20;
+  --bg-gradient-foot: #060f14;
+  --glass-bg: rgba(22, 36, 44, 0.74);
+  --glass-line: rgba(255, 255, 255, 0.07);
   --glass-blur: 14px;
   --scanline-color: rgba(0, 0, 0, 0.22);
-  --scanline-opacity: 0.45;
-  --sweep-color: rgba(120, 200, 255, 0.025);
+  --scanline-opacity: 0.42;
+  --sweep-color: rgba(139, 212, 188, 0.03);
 }
 
-/* === 共用令牌（两主题一致） === */
+/* ========== 浅色主题（日间调度台） ========== */
+[data-theme='light'] {
+  /* ---- 表面 ---- */
+  --bg: #e8eeeb;
+  --bg-surface: #fbfbf6;
+  --bg-raised: #eef3ef;
+  --bg-hover: #e2ebe6;
+  --bg-input: #ffffff;
+  --bg-deep: #dfe7e2;
+
+  /* ---- 文字 ---- */
+  --text: #1e332e;
+  --text-2: #4d655f;
+  --text-3: #6d847e;
+  --text-dim: #9fb0aa;
+
+  /* ---- 边框 ---- */
+  --line: #c9d6d0;
+  --line-soft: #dde6e1;
+  --line-strong: #a9bdb5;
+
+  /* ---- 主色 Accent · 深青绿 ---- */
+  --accent: #247b65;
+  --accent-strong: #175847;
+  --accent-dim: #4f9d87;
+  --accent-bg: rgba(36, 123, 101, 0.1);
+  --accent-line: rgba(36, 123, 101, 0.28);
+  --on-accent: #ffffff;
+  --on-danger: #ffffff;
+
+  /* ---- 语义 · 成功 ---- */
+  --success: #1a8a52;
+  --success-strong: #136b3f;
+  --success-dim: #47a476;
+  --success-bg: rgba(26, 138, 82, 0.1);
+  --success-line: rgba(26, 138, 82, 0.26);
+
+  /* ---- 语义 · 警告 ---- */
+  --warning: #9a6a1e;
+  --warning-strong: #7a5214;
+  --warning-dim: #b98a3f;
+  --warning-bg: rgba(154, 106, 30, 0.1);
+  --warning-line: rgba(154, 106, 30, 0.26);
+
+  /* ---- 语义 · 危险 ---- */
+  --danger: #b0413a;
+  --danger-strong: #8f302a;
+  --danger-dim: #c76a63;
+  --danger-bg: rgba(176, 65, 58, 0.09);
+  --danger-line: rgba(176, 65, 58, 0.26);
+
+  /* ---- 语义 · 信息 ---- */
+  --info: #2a6f8f;
+  --info-strong: #1f556f;
+  --info-dim: #5b95b0;
+  --info-bg: rgba(42, 111, 143, 0.1);
+  --info-line: rgba(42, 111, 143, 0.26);
+
+  /* ---- 分级色阶 ---- */
+  --sev-1: #1a8a52;
+  --sev-2: #247b65;
+  --sev-3: #9a6a1e;
+  --sev-4: #b5621c;
+  --sev-5: #b0413a;
+
+  /* ---- 阴影 ---- */
+  --shadow-sm: 0 1px 2px rgba(34, 60, 55, 0.08);
+  --shadow-md: 0 6px 18px rgba(34, 60, 55, 0.12);
+  --shadow-lg: 0 12px 32px rgba(34, 60, 55, 0.16);
+  --shadow-glow-accent: 0 0 20px rgba(36, 123, 101, 0.16);
+  --shadow-glow-danger: 0 0 20px rgba(176, 65, 58, 0.18);
+
+  /* ---- 地图 ---- */
+  --map-grid: #c3d2cb;
+  --map-road: #a3b6ae;
+
+  /* ---- 氛围层 ---- */
+  --bg-gradient-head: #e8eeeb;
+  --bg-gradient-foot: #d6e0da;
+  --glass-bg: rgba(251, 251, 246, 0.82);
+  --glass-line: rgba(30, 51, 46, 0.09);
+  --glass-blur: 10px;
+  --scanline-color: transparent;
+  --scanline-opacity: 0;
+  --sweep-color: transparent;
+}
+
+/* ============================================================
+   共用令牌（与主题无关）
+   ============================================================ */
 :root {
+  /* === 间距 === */
+  --space-2xs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
 
-  /* === 字体族（三套）=== */
+  /* === 字体族 === */
   --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', 'Consolas', 'Roboto Mono', monospace;
 
   /* === 字号层级 === */
-  --fs-micro: 10px;      /* 极次要信息、角标 */
-  --fs-small: 11px;      /* 标签、辅助文字 */
-  --fs-caption: 12px;    /* 说明文字、徽章 */
-  --fs-body-sm: 13px;    /* 小正文、详情文字 */
-  --fs-body: 14px;       /* 正文 */
-  --fs-body-lg: 16px;    /* 大正文 */
-  --fs-subtitle: 17px;   /* 副标题 */
-  --fs-title: 20px;      /* 标题 */
-  --fs-heading: 24px;    /* 大标题 */
-  --fs-heading-lg: 28px; /* 页面大标题、大分数 */
+  --fs-micro: 10px; /* 极次要信息、角标 */
+  --fs-tiny: 10px; /* 兼容别名 */
+  --fs-small: 11px; /* 标签、辅助文字 */
+  --fs-caption: 12px; /* 说明文字、徽章 */
+  --fs-body-sm: 13px; /* 小正文、详情文字 */
+  --fs-body: 14px; /* 正文 */
+  --fs-body-lg: 15px; /* 大正文 */
+  --fs-subtitle: 16px; /* 副标题 */
+  --fs-title: 19px; /* 标题 */
+  --fs-heading: 23px; /* 大标题 */
+  --fs-heading-lg: 27px; /* 页面大标题、大分数 */
   --fs-heading-xl: 30px; /* 结束画面标题 */
-  --fs-hero: 42px;       /* 标题画面主标题 */
-  --fs-score: 48px;      /* 结束画面分数 */
+  --fs-hero: 40px; /* 标题画面主标题 */
+  --fs-score: 46px; /* 结束画面分数 */
 
-  /* === 字重语义化 === */
+  /* === 字重 === */
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
@@ -176,30 +230,36 @@
   --fw-extrabold: 800;
   --fw-black: 900;
 
-  /* === 圆角层级 === */
+  /* === 圆角 === */
+  --radius-xs: 3px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 10px;
   --radius-2xl: 12px;
-  --radius-3xl: 14px;
+  --radius-3xl: 16px;
   --radius-full: 9999px;
 
-  /* === 新增语义色（两主题一致） === */
-  --accent-cyan-bright: #00d4ff;  /* 天赋选择面板专用 */
-  --text-muted-alt: #b1bac4;      /* 终端/按钮辅助文字 */
-  --danger-soft: #ff6b6b;         /* 软危险色（扣分提示） */
-  --accent-orange: #ff8c00;       /* 来电者"恐慌"状态色 */
+  /* === 动效节奏 === */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+  /* === 关键尺寸 === */
   --hud-height: 48px;
   --resource-bar-height: 44px;
   --dialogue-min-height: 140px;
   --choice-button-height: 48px;
 
+  /* === 层级 === */
   --z-rain: 1;
   --z-bg: 2;
   --z-character: 10;
-  --z-hud: 50;
   --z-dialogue: 40;
+  --z-hud: 50;
   --z-overlay: 100;
+  --z-toast: 120;
 }

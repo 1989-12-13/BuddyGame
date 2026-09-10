@@ -179,13 +179,15 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   },
 ]
 
+// 路况配色用于 Leaflet 折线（SVG 属性，无法使用 CSS 变量），
+// 因此保留真实色值，取自设计令牌的深色档（sev 色阶）。
 const CONDITION_META: Record<RoadCondition, { label: string; factor: number; description: string; color: string }> = {
-  clear: { label: '畅通', factor: 0.65, description: '道路畅通，可保持急救优先速度', color: '#22c55e' },
-  busy: { label: '车流较大', factor: 0.90, description: '车流较大，需要鸣笛谨慎穿行', color: '#eab308' },
-  congested: { label: '拥堵', factor: 1.35, description: '车辆排队，通行效率明显下降', color: '#f97316' },
-  construction: { label: '维修施工', factor: 1.10, description: '市政维修占道，仅保留部分车道', color: '#fb923c' },
-  school_zone: { label: '学校特殊路段', factor: 1.05, description: '学生与行人密集，即使急救车辆也需观察通行', color: '#a78bfa' },
-  accident: { label: '事故占道', factor: 1.40, description: '前方事故占道，需要现场绕行', color: '#ef4444' },
+  clear: { label: '畅通', factor: 0.65, description: '道路畅通，可保持急救优先速度', color: '#5fd39a' },
+  busy: { label: '车流较大', factor: 0.90, description: '车流较大，需要鸣笛谨慎穿行', color: '#e7bd82' },
+  congested: { label: '拥堵', factor: 1.35, description: '车辆排队，通行效率明显下降', color: '#ec9a5c' },
+  construction: { label: '维修施工', factor: 1.10, description: '市政维修占道，仅保留部分车道', color: '#ec9a5c' },
+  school_zone: { label: '学校特殊路段', factor: 1.05, description: '学生与行人密集，即使急救车辆也需观察通行', color: '#7cc4e0' },
+  accident: { label: '事故占道', factor: 1.40, description: '前方事故占道，需要现场绕行', color: '#ef8a80' },
 }
 
 /** 同一条共享道路在所有候选路线中保持相同路况。 */

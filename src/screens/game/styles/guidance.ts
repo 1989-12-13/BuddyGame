@@ -16,9 +16,9 @@ export const guidanceOverlay: CSSProperties = {
 export const guidanceWindow: CSSProperties = {
   width: 420,
   maxHeight: '85vh',
-  backgroundColor: 'var(--bg-elevated)',
+  backgroundColor: 'var(--bg-raised)',
   borderRadius: 14,
-  border: '1px solid var(--danger-red-border)',
+  border: '1px solid var(--danger-line)',
   boxShadow: '0 0 0 1px rgba(220,38,38,0.15), var(--shadow-lg)',
   display: 'flex',
   flexDirection: 'column',
@@ -31,7 +31,7 @@ export const guidanceWindowHeader: CSSProperties = {
   alignItems: 'center',
   gap: 8,
   padding: '14px 18px',
-  borderBottom: '1px solid var(--danger-red-border)',
+  borderBottom: '1px solid var(--danger-line)',
   backgroundColor: 'rgba(220,38,38,0.06)',
 }
 
@@ -39,18 +39,18 @@ export const guidanceWindowHeader: CSSProperties = {
 export const guidancePanel: CSSProperties = {
   padding: '14px 16px',
   backgroundColor: 'var(--bg-surface)',
-  borderRadius: 10,
+  borderRadius: 'var(--radius-xl)',
   flex: 1,
   minHeight: 60,
   overflowY: 'auto',
-  border: '1px solid var(--border)',
+  border: '1px solid var(--line)',
   boxShadow: 'none',
 }
 
 export const guidanceTitle: CSSProperties = {
   fontSize: 'var(--fs-subtitle)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   display: 'flex',
   alignItems: 'center',
   gap: 10,
@@ -60,12 +60,12 @@ export const guidanceTitle: CSSProperties = {
 
 export const guidanceIntro: CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
-  color: 'var(--text-secondary)',
+  color: 'var(--text-2)',
   marginBottom: 10,
   padding: '10px 12px',
-  backgroundColor: 'var(--bg-elevated)',
-  borderRadius: 8,
-  borderLeft: '2px solid var(--accent-cyan)',
+  backgroundColor: 'var(--bg-raised)',
+  borderRadius: 'var(--radius-lg)',
+  borderLeft: '2px solid var(--accent)',
   lineHeight: 1.6,
 }
 
@@ -76,19 +76,19 @@ export const guidanceStep: CSSProperties = {
 export const guidancePrompt: CSSProperties = {
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   marginBottom: 6,
   padding: '6px 0',
 }
 
 export const guidanceOption: CSSProperties = {
   padding: '10px 14px',
-  border: '1.5px solid var(--border)',
-  borderRadius: 8,
-  backgroundColor: 'var(--bg-elevated)',
+  border: '1.5px solid var(--line)',
+  borderRadius: 'var(--radius-lg)',
+  backgroundColor: 'var(--bg-raised)',
   cursor: 'pointer',
   fontSize: 'var(--fs-body-sm)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   textAlign: 'left',
   transition: 'all 0.12s ease',
 }
@@ -110,7 +110,7 @@ export const closingStatusCard: CSSProperties = {
   maxWidth: 280,
   padding: '20px 16px',
   backgroundColor: 'var(--bg-surface)',
-  borderRadius: 12,
+  borderRadius: 'var(--radius-2xl)',
   textAlign: 'center',
   boxShadow: 'var(--shadow-md)',
 }
@@ -126,31 +126,31 @@ export const closingSummaryGrid: CSSProperties = {
 export const closingSummaryItem: CSSProperties = {
   padding: '10px 12px',
   backgroundColor: 'var(--bg-surface)',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-lg)',
   textAlign: 'center',
   boxShadow: 'var(--shadow-sm)',
 }
 
 export const closingSummaryLabel: CSSProperties = {
   fontSize: 'var(--fs-micro)',
-  color: 'var(--text-muted)',
+  color: 'var(--text-3)',
   marginBottom: 2,
 }
 
 export const closingSummaryValue: CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
 }
 
 export const endCallBtn: CSSProperties = {
   width: '100%',
   maxWidth: 280,
   padding: '10px 24px',
-  backgroundColor: 'var(--danger-red)',
-  color: '#fff',
+  backgroundColor: 'var(--danger)',
+  color: 'var(--on-danger)',
   border: 'none',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-lg)',
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',

@@ -89,16 +89,16 @@ function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
   })
 
   const pulseAnim = flash
-    ? { transform: 'scale(0.94)', boxShadow: '0 0 0 8px var(--success-green-bg)' }
-    : { transform: 'scale(1)', boxShadow: '0 0 0 4px var(--success-green-bg)' }
+    ? { transform: 'scale(0.94)', boxShadow: '0 0 0 8px var(--success-bg)' }
+    : { transform: 'scale(1)', boxShadow: '0 0 0 4px var(--success-bg)' }
 
   return (
     <div style={engineWrap}>
       <div style={readoutRow}>
-        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? 'var(--accent-green)' : 'var(--accent-amber)'} />
-        <Readout label="目标" value={String(s.targetBpm)} color="var(--text-muted)" />
-        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="var(--accent-blue)" />
-        <Readout label="按压" value={String(presses)} color="var(--text-primary)" />
+        <Readout label="BPM" value={String(bpm)} color={Math.abs(bpm - s.targetBpm) <= s.bpmTolerance ? 'var(--success)' : 'var(--warning)'} />
+        <Readout label="目标" value={String(s.targetBpm)} color="var(--text-3)" />
+        <Readout label="剩余" value={timeLeft.toFixed(1) + 's'} color="var(--accent)" />
+        <Readout label="按压" value={String(presses)} color="var(--text)" />
       </div>
 
       <div
@@ -112,8 +112,8 @@ function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
           width: 160,
           height: 160,
           borderRadius: '50%',
-          backgroundColor: 'var(--bg-elevated)',
-          border: '2px solid var(--accent-cyan)',
+          backgroundColor: 'var(--bg-raised)',
+          border: '2px solid var(--accent)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -123,11 +123,11 @@ function RhythmPressEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
           ...pulseAnim,
         }}
       >
-        <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--text-primary)', fontWeight: 'var(--fw-bold)', textAlign: 'center' }}>
+        <span style={{ fontSize: 'var(--fs-body-sm)', color: 'var(--text)', fontWeight: 'var(--fw-bold)', textAlign: 'center' }}>
           {done ? '完成' : '按空格\n或点击'}
         </span>
       </div>
-      <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)' }}>
+      <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-2)' }}>
         保持稳定的按压节奏，目标 {s.targetBpm} 次/分钟
       </div>
     </div>

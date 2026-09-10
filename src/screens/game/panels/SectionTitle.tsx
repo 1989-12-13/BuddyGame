@@ -19,8 +19,8 @@ export function SectionTitle({
       gap: 4,
       fontSize: 'var(--fs-caption)',
       fontWeight: 'var(--fw-bold)',
-      color: 'var(--text-secondary)',
-      borderBottom: inline ? 'none' : '1px solid var(--border)',
+      color: 'var(--text-2)',
+      borderBottom: inline ? 'none' : '1px solid var(--line)',
       padding: inline ? 0 : '6px 0 3px',
       marginBottom: inline ? 0 : 4,
       letterSpacing: 0.5,
@@ -28,7 +28,7 @@ export function SectionTitle({
     }}>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{icon} {text}</span>
       {required && (
-        <span style={{ color: 'var(--danger-red)', fontWeight: 'var(--fw-bold)' }}>*</span>
+        <span style={{ color: 'var(--danger)', fontWeight: 'var(--fw-bold)' }}>*</span>
       )}
     </div>
   )

@@ -1,67 +1,68 @@
 // ============================================================
 // 120调度台 — 语义化颜色常量
-// 替代散落在各组件中的硬编码颜色值
+// 统一指向 src/styles/tokens.css 的设计令牌（CSS 变量），
+// 随深浅主题自动切换；替代散落在各组件中的硬编码颜色值。
+//
+// 说明：值形如 'var(--success)'，适用于 DOM inline style / SVG style。
+// 若需真实色值（如 Leaflet pathOptions、Canvas），请改用
+// ThemeContext 的 colors（见 contexts/ThemeContext.tsx）。
 // ============================================================
 
 // -------------------- 语义色（功能映射） --------------------
 
 /** 成功/正确/稳定 */
-export const C_SUCCESS = '#16a34a'
+export const C_SUCCESS = 'var(--success)'
 /** 危险/错误/紧急 */
-export const C_DANGER = '#ef4444'
-/** 深红（心搏骤停/死亡） */
-export const C_DARK_DANGER = '#dc2626'
+export const C_DANGER = 'var(--danger)'
+/** 危急（心搏骤停/死亡） */
+export const C_DARK_DANGER = 'var(--danger-strong)'
 /** 警告/注意 */
-export const C_WARNING = '#d97706'
-/** 次要警告（黄色） */
-export const C_AMBER = '#f59e0b'
+export const C_WARNING = 'var(--warning)'
+/** 次要警告（黄） */
+export const C_AMBER = 'var(--warning)'
 /** 信息/指引 */
-export const C_INFO = '#3b82f6'
-/** 深度色（深蓝/重要） */
-export const C_DEEP_BLUE = '#2563eb'
+export const C_INFO = 'var(--info)'
+/** 强调信息（深色档） */
+export const C_DEEP_BLUE = 'var(--info-strong)'
 
 // -------------------- 场景色 --------------------
 
 /** CPR 按压色 */
-export const C_CPR_COMPRESS = '#dc2626'
+export const C_CPR_COMPRESS = 'var(--danger)'
 /** CPR 吹气色 */
-export const C_CPR_BREATH = '#16a34a'
+export const C_CPR_BREATH = 'var(--success)'
 /** CPR 过量色 */
-export const C_CPR_OVER = '#ef4444'
+export const C_CPR_OVER = 'var(--danger-strong)'
 /** CPR 节奏指示 */
-export const C_CPR_BEAT = '#38bdf8'
+export const C_CPR_BEAT = 'var(--info)'
 
-// -------------------- UI基础色 --------------------
+// -------------------- UI 基础色 --------------------
 
-/** 文本色（浅色模式） */
-export const C_TEXT_PRIMARY = '#1e293b'
-/** 次文本色 */
-export const C_TEXT_MUTED = '#64748b'
-/** 边框色 */
-export const C_BORDER = '#e2e8f0'
-/** 浅背景 */
-export const C_BG_SURFACE = '#f8fafc'
+export const C_TEXT_PRIMARY = 'var(--text)'
+export const C_TEXT_MUTED = 'var(--text-2)'
+export const C_BORDER = 'var(--line)'
+export const C_BG_SURFACE = 'var(--bg-surface)'
 
-// -------------------- 患者体征映射（按索引对应） --------------------
+// -------------------- 分级映射（统一走 sev 色阶） --------------------
 
-/** VitalSign → 颜色（stable/warning/critical/arrest） */
+/** VitalSign → 颜色（stable / warning / critical / arrest） */
 export const VITAL_SIGN_COLORS: Record<string, string> = {
-  stable: C_SUCCESS,
-  warning: C_AMBER,
-  critical: C_DANGER,
-  arrest: C_DARK_DANGER,
+  stable: 'var(--sev-1)',
+  warning: 'var(--sev-3)',
+  critical: 'var(--sev-4)',
+  arrest: 'var(--sev-5)',
 }
 
-/** HitQuality → 颜色（perfect/good/miss） */
+/** HitQuality → 颜色（perfect / good / miss） */
 export const HIT_QUALITY_COLORS: Record<string, string> = {
-  perfect: C_SUCCESS,
-  good: C_WARNING,
-  miss: C_DANGER,
+  perfect: 'var(--sev-1)',
+  good: 'var(--sev-3)',
+  miss: 'var(--sev-5)',
 }
 
-/** RhythmQuality → 颜色（good/ok/bad） */
+/** RhythmQuality → 颜色（good / ok / bad） */
 export const RHYTHM_QUALITY_COLORS: Record<string, string> = {
-  good: C_SUCCESS,
-  ok: C_WARNING,
-  bad: C_DANGER,
+  good: 'var(--sev-1)',
+  ok: 'var(--sev-3)',
+  bad: 'var(--sev-5)',
 }

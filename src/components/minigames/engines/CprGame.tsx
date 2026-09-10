@@ -239,8 +239,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
     : 0
 
   const pulseStyle = flash
-    ? { transform: 'scale(0.94)', boxShadow: '0 0 0 8px var(--success-green-bg)' }
-    : { transform: 'scale(1)', boxShadow: '0 0 0 4px var(--success-green-bg)' }
+    ? { transform: 'scale(0.94)', boxShadow: '0 0 0 8px var(--success-bg)' }
+    : { transform: 'scale(1)', boxShadow: '0 0 0 4px var(--success-bg)' }
 
   // 吹气进度显示：按住时用 rAF 动画值，松开后用最终比例
   const displayBlowFill = breathHolding
@@ -250,10 +250,10 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       : 0
 
   const blowColor = breathHolding
-    ? 'var(--accent-blue)'
+    ? 'var(--accent)'
     : breathRatio >= CPR_BLOW_IDEAL_MIN && breathRatio <= CPR_BLOW_OVER_THRESHOLD
-      ? 'var(--accent-green)'
-      : 'var(--danger-red)'
+      ? 'var(--success)'
+      : 'var(--danger)'
 
   const idealStart = CPR_BLOW_IDEAL_MIN / 1.5 * 100
   const idealEnd = CPR_BLOW_OVER_THRESHOLD / 1.5 * 100
@@ -277,15 +277,15 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       <div style={readoutRow}>
         <Readout label="BPM" value={String(Math.round(liveBpm))}
           color={Math.abs(liveBpm - CPR_TARGET_BPM) <= CPR_BPM_GOOD_THRESHOLD
-            ? 'var(--accent-green)' : 'var(--accent-amber)'} />
-        <Readout label="目标" value={String(CPR_TARGET_BPM)} color="var(--text-muted)" />
-        <Readout label="循环" value={cycleLabel} color="var(--accent-blue)" />
+            ? 'var(--success)' : 'var(--warning)'} />
+        <Readout label="目标" value={String(CPR_TARGET_BPM)} color="var(--text-3)" />
+        <Readout label="循环" value={cycleLabel} color="var(--accent)" />
         <Readout label={phase === 'compression' ? '按压' : '吹气'}
           value={phase === 'compression' ? String(compCount) : breathLabel}
-          color="var(--text-primary)" />
+          color="var(--text)" />
       </div>
 
-      <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)', fontWeight: 'var(--fw-bold)' }}>
+      <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', fontWeight: 'var(--fw-bold)' }}>
         {phaseText}
       </div>
 
@@ -303,16 +303,16 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           onBlur={() => { setBreathHolding(false); setBlowFill(0) }}
           style={{
             width: 160, height: 160, borderRadius: '50%',
-            backgroundColor: 'var(--bg-elevated)',
-            border: '2px solid var(--accent-cyan)',
+            backgroundColor: 'var(--bg-raised)',
+            border: '2px solid var(--accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', userSelect: 'none',
             transition: 'transform 0.09s ease, box-shadow 0.09s ease',
             ...(phase === 'compression' ? pulseStyle : {}),
-            background: phase === 'breath' ? 'var(--bg-elevated)' : undefined,
+            background: phase === 'breath' ? 'var(--bg-raised)' : undefined,
           }}
         >
-          <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', textAlign: 'center', lineHeight: 1.4, color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-bold)', textAlign: 'center', lineHeight: 1.4, color: 'var(--text-2)' }}>
             {phase === 'compression' ? '按空格\n或点击'
               : breathHolding ? '保持按住……' : '按住 →\n理想区松手'}
           </span>
@@ -322,21 +322,21 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       {phase === 'breath' && (
         <div style={{ width: 200, position: 'relative' }}>
           <div style={{
-            width: '100%', height: 12, borderRadius: 6,
-            backgroundColor: 'var(--border-light)', overflow: 'hidden', position: 'relative',
+            width: '100%', height: 12, borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--line-soft)', overflow: 'hidden', position: 'relative',
           }}>
             <div style={{
               position: 'absolute', left: idealStart + '%', width: (idealEnd - idealStart) + '%',
-              height: '100%', backgroundColor: 'var(--success-green-bg)', borderRadius: 2, opacity: 0.6,
+              height: '100%', backgroundColor: 'var(--success-bg)', borderRadius: 2, opacity: 0.6,
             }} />
             <div style={{
-              height: '100%', borderRadius: 6, width: displayBlowFill + '%',
+              height: '100%', borderRadius: 'var(--radius-md)', width: displayBlowFill + '%',
               backgroundColor: blowColor, transition: 'none',
             }} />
           </div>
           <div style={{
             display: 'flex', justifyContent: 'space-between',
-            fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', marginTop: 2,
+            fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginTop: 2,
           }}>
             <span>太短</span><span>理想</span><span>过量</span>
           </div>
@@ -348,8 +348,8 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           onClick={nextPhase}
           disabled={paused}
           style={{
-            padding: '8px 24px', borderRadius: 8, border: 'none',
-            backgroundColor: 'var(--accent-blue)', color: 'var(--desk-ink, #fff)',
+            padding: '8px 24px', borderRadius: 'var(--radius-lg)', border: 'none',
+            backgroundColor: 'var(--accent)', color: 'var(--on-accent, #fff)',
             fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', cursor: 'pointer',
           }}
         >
@@ -358,7 +358,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       )}
 
       {phase === 'done' && (
-        <div style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)' }}>
+        <div style={{ fontSize: 'var(--fs-body-lg)', color: 'var(--success)', fontWeight: 'var(--fw-bold)' }}>
           ✓ CPR 操作完成！
         </div>
       )}

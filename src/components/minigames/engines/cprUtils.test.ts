@@ -181,14 +181,14 @@ describe('颜色映射函数', () => {
     expect(rhythmQualityColor('good')).toBe(C_SUCCESS)
     expect(rhythmQualityColor('ok')).toBe(C_WARNING)
     expect(rhythmQualityColor('bad')).toBe(C_DANGER)
-    expect(rhythmQualityColor(null)).toBe('var(--text-muted)')
+    expect(rhythmQualityColor(null)).toBe('var(--text-3)')
   })
 
   it('hitQualityColor 映射正确', () => {
     expect(hitQualityColor('perfect')).toBe(C_SUCCESS)
     expect(hitQualityColor('good')).toBe(C_WARNING)
     expect(hitQualityColor('miss')).toBe(C_DANGER)
-    expect(hitQualityColor(null)).toBe('var(--text-muted)')
+    expect(hitQualityColor(null)).toBe('var(--text-3)')
     expect(hitQualityColor(null, '#fff')).toBe('#fff')
   })
 

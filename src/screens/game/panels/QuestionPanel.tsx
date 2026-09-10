@@ -59,7 +59,7 @@ export function QuestionPanel({
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
           📡 标准协议
-          {allFourStepsDone && <span style={{ color: 'var(--accent-green)', marginLeft: 6 }}>✓ 全部完成</span>}
+          {allFourStepsDone && <span style={{ color: 'var(--success)', marginLeft: 6 }}>✓ 全部完成</span>}
         </div>
 
         <div style={styles.protocolStepsList}>
@@ -72,14 +72,14 @@ export function QuestionPanel({
               <div key={ps.id} style={{
                 ...styles.protocolStepRow,
                 opacity: locked ? 0.45 : 1,
-                borderColor: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--border)',
-                backgroundColor: done ? 'var(--success-green-bg)' : isCurrent ? 'var(--warning-amber-bg)' : 'transparent',
+                borderColor: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--line)',
+                backgroundColor: done ? 'var(--success-bg)' : isCurrent ? 'var(--warning-bg)' : 'transparent',
               }}>
                 {/* 步骤编号 */}
                 <div style={{
                   ...styles.protocolStepNum,
-                  backgroundColor: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--border)',
-                  color: done ? '#fff' : isCurrent ? '#fff' : 'var(--text-secondary)',
+                  backgroundColor: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--line)',
+                  color: done ? 'var(--on-accent)' : isCurrent ? 'var(--on-accent)' : 'var(--text-2)',
                 }}>
                   {done ? '✓' : ps.step}
                 </div>
@@ -89,19 +89,19 @@ export function QuestionPanel({
                   <div style={{
                     fontSize: 'var(--fs-caption)',
                     fontWeight: done ? 'normal' : 'bold',
-                    color: done ? 'var(--accent-green)' : isCurrent ? 'var(--accent-amber)' : 'var(--text-secondary)',
+                    color: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--text-2)',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginTop: 1 }}>
                     {ps.qText}
                   </div>
                 </div>
 
                 {/* 操作按钮 */}
                 {done ? (
-                  <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--accent-green)', fontWeight: 'var(--fw-bold)', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--success)', fontWeight: 'var(--fw-bold)', whiteSpace: 'nowrap' }}>
                     ✓ 完成
                   </span>
                 ) : isCurrent ? (
@@ -117,7 +117,7 @@ export function QuestionPanel({
                     询问
                   </button>
                 ) : (
-                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>
                     🔒 等待
                   </span>
                 )}
@@ -145,7 +145,7 @@ export function QuestionPanel({
               />
             )}
             {landmarkDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--accent-green)', color: 'var(--accent-green)', backgroundColor: 'var(--success-green-bg)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--success)', color: 'var(--success)', backgroundColor: 'var(--success-bg)' }}>
                 ✓ 地址已精确
               </div>
             )}
@@ -163,7 +163,7 @@ export function QuestionPanel({
               />
             )}
             {contactDone && (
-              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--accent-green)', color: 'var(--accent-green)', backgroundColor: 'var(--success-green-bg)' }}>
+              <div style={{ ...styles.qBtnSmall, borderColor: 'var(--success)', color: 'var(--success)', backgroundColor: 'var(--success-bg)' }}>
                 ✓ 已记录
               </div>
             )}
@@ -188,7 +188,7 @@ export function QuestionPanel({
       {/* ====== 底部工具栏：压力指示器 + 安抚按钮（调度卡入口已迁移到左侧设置面板下方） ====== */}
       <div style={styles.bottomToolbar}>
         <div style={{ ...styles.stressBar, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-2)', whiteSpace: 'nowrap' }}>
             {si.emoji} {si.label}
           </span>
           <div style={styles.stressTrack}>

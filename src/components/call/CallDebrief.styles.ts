@@ -14,12 +14,12 @@ export const styles: Record<string, CSSProperties> = {
   card: {
     width: 'min(520px, calc(100vw - 24px))',
     maxHeight: '85vh',
-    backgroundColor: 'var(--bg-elevated)',
-    borderRadius: 10,
-    border: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-raised)',
+    borderRadius: 'var(--radius-xl)',
+    border: '1px solid var(--line)',
     padding: '20px 24px',
     overflowY: 'auto',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     display: 'flex',
     flexDirection: 'column',
     gap: 8,
@@ -27,7 +27,7 @@ export const styles: Record<string, CSSProperties> = {
   header: {
     fontSize: 'var(--fs-subtitle)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     textAlign: 'center',
     margin: 0,
   },
@@ -42,17 +42,17 @@ export const styles: Record<string, CSSProperties> = {
   totalScoreValue: {
     fontSize: 'var(--fs-heading-lg)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--accent-cyan)',
+    color: 'var(--accent)',
     fontFamily: 'var(--font-mono)',
   },
   totalScoreLabel: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     marginLeft: 4,
   },
   outcomeBox: {
     border: '1px solid',
-    borderRadius: 8,
+    borderRadius: 'var(--radius-lg)',
     padding: '12px 14px',
     display: 'flex',
     flexDirection: 'column' as const,
@@ -65,16 +65,16 @@ export const styles: Record<string, CSSProperties> = {
   outcomeTitle: {
     fontSize: 'var(--fs-body)',
     fontWeight: 'var(--fw-extrabold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
   },
   patientStatus: {
     fontSize: 'var(--fs-body-sm)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
   },
   consequence: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     lineHeight: 1.5,
   },
   breakdownRow: {
@@ -89,20 +89,20 @@ export const styles: Record<string, CSSProperties> = {
   },
   breakdownLabel: {
     fontSize: 'var(--fs-small)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     minWidth: 56,
     textAlign: 'right' as const,
   },
   breakdownBarTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: 'var(--border-light)',
-    borderRadius: 4,
+    backgroundColor: 'var(--line-soft)',
+    borderRadius: 'var(--radius-sm)',
     overflow: 'hidden',
   },
   breakdownBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 'var(--radius-sm)',
     transition: 'width 0.6s ease',
   },
   breakdownValue: {
@@ -114,12 +114,12 @@ export const styles: Record<string, CSSProperties> = {
   penaltyRow: {
     textAlign: 'center' as const,
     fontSize: 'var(--fs-caption)',
-    color: 'var(--danger-soft)',
+    color: 'var(--danger)',
     padding: '2px 0',
   },
   divider: {
     height: 1,
-    backgroundColor: 'var(--border-light)',
+    backgroundColor: 'var(--line-soft)',
     margin: '2px 0',
   },
   detailGrid: {
@@ -135,7 +135,7 @@ export const styles: Record<string, CSSProperties> = {
     padding: '2px 4px',
   },
   detailLabel: {
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     minWidth: 90,
   },
   detailValue: {
@@ -146,8 +146,8 @@ export const styles: Record<string, CSSProperties> = {
   sectionTitle: {
     fontSize: 'var(--fs-caption)',
     fontWeight: 'var(--fw-bold)',
-    color: '#d97706',
-    borderBottom: '1px solid var(--border)',
+    color: 'var(--warning)',
+    borderBottom: '1px solid var(--line)',
     paddingBottom: 3,
     marginTop: 4,
   },
@@ -158,13 +158,13 @@ export const styles: Record<string, CSSProperties> = {
   },
   judgmentRow: {
     padding: '6px 8px',
-    borderRadius: 6,
+    borderRadius: 'var(--radius-md)',
     border: '1px solid',
     backgroundColor: 'var(--bg-input)',
   },
   judgmentQuestion: {
     fontSize: 'var(--fs-small)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     marginBottom: 2,
   },
   judgmentChoices: {
@@ -176,12 +176,12 @@ export const styles: Record<string, CSSProperties> = {
     marginTop: 4,
     padding: '8px 10px',
     backgroundColor: 'var(--bg-input)',
-    borderRadius: 6,
-    border: '1px solid var(--border-light)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--line-soft)',
   },
   narrativeText: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     lineHeight: 1.6,
     fontStyle: 'italic' as const,
   },
@@ -190,16 +190,16 @@ export const styles: Record<string, CSSProperties> = {
   },
   reviewPoint: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     lineHeight: 1.5,
     padding: '3px 0 3px 14px',
   },
   nextBtn: {
     padding: '12px 24px',
-    backgroundColor: '#dc2626',
-    color: '#fff',
+    backgroundColor: 'var(--danger)',
+    color: 'var(--on-danger)',
     border: 'none',
-    borderRadius: 6,
+    borderRadius: 'var(--radius-md)',
     fontSize: 'var(--fs-body-lg)',
     fontWeight: 'var(--fw-bold)',
     cursor: 'pointer',

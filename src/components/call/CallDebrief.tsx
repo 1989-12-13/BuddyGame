@@ -28,10 +28,10 @@ const LEVEL_LABEL: Record<string, string> = {
 }
 
 const OUTCOME_STYLE: Record<DebriefEntry['outcomeTier'], { label: string; color: string; bg: string }> = {
-  good: { label: 'GOOD END', color: C_SUCCESS, bg: 'var(--success-green-bg)' },
-  normal: { label: 'NORMAL END', color: C_AMBER, bg: 'var(--warning-amber-bg)' },
-  bad: { label: 'BAD END', color: C_DANGER, bg: 'var(--danger-red-bg)' },
-  special: { label: 'SPECIAL END', color: C_INFO, bg: 'var(--info-cyan-bg)' },
+  good: { label: 'GOOD END', color: C_SUCCESS, bg: 'var(--success-bg)' },
+  normal: { label: 'NORMAL END', color: C_AMBER, bg: 'var(--warning-bg)' },
+  bad: { label: 'BAD END', color: C_DANGER, bg: 'var(--danger-bg)' },
+  special: { label: 'SPECIAL END', color: C_INFO, bg: 'var(--info-bg)' },
 }
 
 function triageLabel(t: string | null) {

@@ -47,7 +47,7 @@ export function SettingsPanel({ onNavigate }: Props) {
     padding: '10px 16px',
     border: 'none',
     background: 'none',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     fontSize: 'var(--fs-body)',
     cursor: 'pointer',
     textAlign: 'left',
@@ -67,12 +67,12 @@ export function SettingsPanel({ onNavigate }: Props) {
           width: 36,
           height: 36,
           fontSize: 'var(--fs-title)',
-          border: '1px solid var(--glass-border)',
-          borderRadius: 8,
+          border: '1px solid var(--glass-line)',
+          borderRadius: 'var(--radius-lg)',
           backgroundColor: 'var(--glass-bg)',
           backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
           WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-          color: 'var(--text-secondary)',
+          color: 'var(--text-2)',
           cursor: 'pointer',
           transition: 'all 0.2s',
           display: 'flex',
@@ -99,8 +99,8 @@ export function SettingsPanel({ onNavigate }: Props) {
             left: 0,
             width: 220,
             padding: '8px 0',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
+            border: '1px solid var(--line)',
+            borderRadius: 'var(--radius-xl)',
             backgroundColor: 'var(--bg-surface)',
             boxShadow: 'var(--shadow-lg)',
             display: 'flex',
@@ -125,7 +125,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             <Home size={16} /> 回到主菜单
           </button>
 
-          <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--border)' }} />
+          <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--line)' }} />
 
           {/* 音量调节 */}
           <div style={{ padding: '10px 16px' }}>
@@ -138,7 +138,7 @@ export function SettingsPanel({ onNavigate }: Props) {
               }}
             >
               <Volume2 size={16} />
-              <span style={{ color: 'var(--text-primary)', fontSize: 'var(--fs-body)' }}>
+              <span style={{ color: 'var(--text)', fontSize: 'var(--fs-body)' }}>
                 音量 {Math.round(volume * 100)}%
               </span>
             </div>
@@ -153,7 +153,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             />
           </div>
 
-          <div style={{ height: 1, margin: '4px 26px', backgroundColor: 'var(--border)' }} />
+          <div style={{ height: 1, margin: '4px 26px', backgroundColor: 'var(--line)' }} />
 
           {/* 主题切换 */}
           <button

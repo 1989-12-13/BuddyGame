@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 
 /** 问询区域 */
 export const questionArea: CSSProperties = {
-  borderTop: '1px solid var(--border)',
+  borderTop: '1px solid var(--line)',
   padding: '6px 10px',
   backgroundColor: 'var(--bg-surface)',
   flex: 1,
@@ -17,11 +17,11 @@ export const qSection: CSSProperties = {
 export const qSectionTitle: CSSProperties = {
   fontSize: 'var(--fs-caption)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-muted)',
+  color: 'var(--text-3)',
   marginBottom: 3,
   textTransform: 'uppercase',
   letterSpacing: 0.5,
-  borderBottom: '1px solid var(--border)',
+  borderBottom: '1px solid var(--line)',
   paddingBottom: 2,
 }
 
@@ -38,7 +38,7 @@ export const protocolStepRow: CSSProperties = {
   alignItems: 'center',
   gap: 10,
   padding: '8px 10px',
-  borderRadius: 6,
+  borderRadius: 'var(--radius-md)',
   border: '1px solid',
   transition: 'all 0.25s',
 }
@@ -58,10 +58,10 @@ export const protocolStepNum: CSSProperties = {
 
 export const protocolStepBtn: CSSProperties = {
   padding: '4px 12px',
-  borderRadius: 4,
+  borderRadius: 'var(--radius-sm)',
   border: 'none',
-  backgroundColor: 'var(--warning-amber)',
-  color: '#fff',
+  backgroundColor: 'var(--warning)',
+  color: 'var(--on-accent)',
   fontSize: 'var(--fs-small)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
@@ -73,7 +73,7 @@ export const protocolStepBtn: CSSProperties = {
 
 export const qBtnSmall: CSSProperties = {
   padding: '3px 8px',
-  borderRadius: 4,
+  borderRadius: 'var(--radius-sm)',
   border: '1px solid',
   fontSize: 'var(--fs-small)',
   lineHeight: '1.3',
@@ -88,7 +88,7 @@ export const qGrid: CSSProperties = {
 
 export const qBtn: CSSProperties = {
   padding: '5px 10px',
-  borderRadius: 4,
+  borderRadius: 'var(--radius-sm)',
   border: '1px solid',
   fontSize: 'var(--fs-body-sm)',
   transition: 'all 0.15s',
@@ -106,14 +106,14 @@ export const stressBar: CSSProperties = {
 export const stressTrack: CSSProperties = {
   flex: 1,
   height: 7,
-  backgroundColor: 'var(--border)',
-  borderRadius: 4,
+  backgroundColor: 'var(--line)',
+  borderRadius: 'var(--radius-sm)',
   overflow: 'hidden',
 }
 
 export const stressFill: CSSProperties = {
   height: '100%',
-  borderRadius: 4,
+  borderRadius: 'var(--radius-sm)',
   transition: 'width 0.5s ease, background-color 0.3s ease',
 }
 
@@ -124,16 +124,16 @@ export const bottomToolbar: CSSProperties = {
   justifyContent: 'space-between',
   gap: 10,
   padding: '6px 10px',
-  borderTop: '1px solid var(--border)',
+  borderTop: '1px solid var(--line)',
   backgroundColor: 'var(--bg-surface)',
 }
 
 export const terminalBtn: CSSProperties = {
   padding: '8px 16px',
-  borderRadius: 6,
+  borderRadius: 'var(--radius-md)',
   border: '2px solid',
   backgroundColor: 'transparent',
-  color: 'var(--text-muted-alt)',
+  color: 'var(--text-2)',
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
@@ -144,10 +144,10 @@ export const terminalBtn: CSSProperties = {
 
 export const calmBtn: CSSProperties = {
   padding: '4px 12px',
-  borderRadius: 4,
+  borderRadius: 'var(--radius-sm)',
   border: 'none',
-  backgroundColor: 'var(--accent-blue)',
-  color: '#fff',
+  backgroundColor: 'var(--accent)',
+  color: 'var(--on-accent)',
   fontSize: 'var(--fs-small)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',

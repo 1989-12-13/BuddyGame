@@ -58,10 +58,10 @@ export function TerminalModal({
               协议 {terminal.protocolNumber ?? '?'}
             </span>
             <div>
-              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text)' }}>
                 MPDS 调度终端
               </div>
-              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)' }}>
                 判定码：{terminal.determinant
                   ? `${terminal.protocolNumber ?? '?'}-${terminal.determinant[0]}-${terminal.determinantSubcode ?? '?'}`
                   : '未选择'}
@@ -123,13 +123,13 @@ export function TerminalModal({
             <div style={styles.dispatchSent}>
               <span style={{ fontSize: 'var(--fs-subtitle)' }}>▸</span>
               <div>
-                <div style={{ fontWeight: 'var(--fw-bold)', color: 'var(--success-green-dim)' }}>救护车已派出</div>
+                <div style={{ fontWeight: 'var(--fw-bold)', color: 'var(--success-dim)' }}>救护车已派出</div>
                 {ambulanceRemaining > 0 ? (
-                  <div style={{ color: 'var(--danger-red)', fontSize: 'var(--fs-caption)' }}>
+                  <div style={{ color: 'var(--danger)', fontSize: 'var(--fs-caption)' }}>
                     预计 {ambulanceRemaining} 秒后到达现场
                   </div>
                 ) : (
-                  <div style={{ color: 'var(--accent-green)', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
+                  <div style={{ color: 'var(--success)', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-bold)' }}>
                     救护车已到达现场！
                   </div>
                 )}

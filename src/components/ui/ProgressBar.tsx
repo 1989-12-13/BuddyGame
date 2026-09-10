@@ -23,7 +23,7 @@ interface Props {
 
 export function ProgressBar({
   value,
-  color = 'var(--danger-red)',
+  color = 'var(--danger)',
   trackColor,
   height = 8,
   rounded = true,
@@ -35,7 +35,7 @@ export function ProgressBar({
     <div style={{
       width: '100%',
       height,
-      backgroundColor: trackColor ?? 'var(--border)',
+      backgroundColor: trackColor ?? 'var(--line)',
       borderRadius: rounded ? height / 2 : 0,
       overflow: 'hidden',
       ...style,

@@ -50,19 +50,19 @@ export class ErrorBoundary extends Component<Props, State> {
           minHeight: 200,
           padding: 32,
           gap: 12,
-          color: 'var(--text-primary)',
+          color: 'var(--text)',
         }}>
           <span style={{ fontSize: 'var(--fs-hero)' }}>⚠️</span>
-          <h2 style={{ margin: 0, fontSize: 'var(--fs-title)', color: 'var(--danger-red)' }}>
+          <h2 style={{ margin: 0, fontSize: 'var(--fs-title)', color: 'var(--danger)' }}>
             {this.props.title ?? '页面发生异常'}
           </h2>
-          <p style={{ margin: 0, fontSize: 'var(--fs-body-sm)', color: 'var(--text-secondary)', maxWidth: 400, textAlign: 'center' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-body-sm)', color: 'var(--text-2)', maxWidth: 400, textAlign: 'center' }}>
             {this.props.description ?? '组件渲染过程中遇到意外错误。请尝试刷新页面或重试。'}
           </p>
           {process.env.NODE_ENV === 'development' && this.state.error && (
             <pre style={{
-              fontSize: 'var(--fs-small)', color: 'var(--danger-soft)', maxWidth: '100%', overflow: 'auto',
-              padding: 8, backgroundColor: 'var(--danger-red-bg)', borderRadius: 6,
+              fontSize: 'var(--fs-small)', color: 'var(--danger)', maxWidth: '100%', overflow: 'auto',
+              padding: 8, backgroundColor: 'var(--danger-bg)', borderRadius: 'var(--radius-md)',
             }}>
               {this.state.error.message}
             </pre>
@@ -70,8 +70,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <button
             onClick={this.handleRetry}
             style={{
-              padding: '8px 24px', backgroundColor: 'var(--danger-red)', color: '#fff',
-              border: 'none', borderRadius: 6, fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
+              padding: '8px 24px', backgroundColor: 'var(--danger)', color: 'var(--on-danger)',
+              border: 'none', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
               cursor: 'pointer', marginTop: 4,
             }}
           >

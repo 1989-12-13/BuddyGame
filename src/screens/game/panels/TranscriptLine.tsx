@@ -25,13 +25,13 @@ export function TranscriptLine({
     }}>
       <span style={{
         ...styles.transcriptSpeaker,
-        color: isCaller ? 'var(--danger-red)' : isOperator ? 'var(--accent-blue)' : 'var(--text-muted)',
+        color: isCaller ? 'var(--danger)' : isOperator ? 'var(--accent)' : 'var(--text-3)',
       }}>
         [{speakerLabel}]
       </span>
       <span style={{
         ...styles.transcriptText,
-        color: isCaller ? 'var(--danger-soft)' : 'var(--text-muted-alt)',
+        color: isCaller ? 'var(--danger)' : 'var(--text-2)',
         fontWeight: isCaller ? 'var(--fw-bold)' : 'var(--fw-medium)',
       }}>
         {text}

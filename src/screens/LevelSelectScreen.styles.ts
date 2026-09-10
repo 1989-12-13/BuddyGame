@@ -9,14 +9,14 @@ export const styles: Record<string, React.CSSProperties> = {
     backgroundColor: 'var(--bg)',
     display: 'flex',
     flexDirection: 'column',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
   },
   header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    borderBottom: '1px solid var(--border)',
+    borderBottom: '1px solid var(--line)',
   },
   backBtn: {
     padding: '6px 14px',
@@ -25,7 +25,7 @@ export const styles: Record<string, React.CSSProperties> = {
   title: {
     fontSize: 'var(--fs-title)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     margin: 0,
     letterSpacing: 2,
   },
@@ -46,7 +46,7 @@ export const styles: Record<string, React.CSSProperties> = {
     right: 8,
     background: 'none',
     border: 'none',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     cursor: 'pointer',
     fontSize: 'var(--fs-body)',
   },
@@ -58,8 +58,8 @@ export const styles: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     fontSize: 'var(--fs-small)',
   },
-  legendTitle: { color: 'var(--text-muted)', marginRight: 4 },
-  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: 'var(--text-secondary)' },
+  legendTitle: { color: 'var(--text-3)', marginRight: 4 },
+  legendItem: { display: 'flex', alignItems: 'center', gap: 2, color: 'var(--text-2)' },
   scrollArea: {
     flex: 1,
     overflowY: 'auto',
@@ -71,10 +71,10 @@ export const styles: Record<string, React.CSSProperties> = {
   categoryTitle: {
     fontSize: 'var(--fs-body)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     margin: '0 0 8px',
     paddingLeft: 10,
-    borderLeft: '3px solid var(--accent-amber)',
+    borderLeft: '3px solid var(--warning)',
   },
   grid: {
     display: 'grid',
@@ -83,15 +83,15 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     padding: '10px 12px',
-    backgroundColor: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
-    borderRadius: 8,
+    backgroundColor: 'var(--bg-raised)',
+    border: '1px solid var(--line)',
+    borderRadius: 'var(--radius-lg)',
     cursor: 'pointer',
     transition: 'all 0.15s',
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+    boxShadow: 'var(--shadow-sm)',
   },
   cardHeader: {
     display: 'flex',
@@ -100,7 +100,7 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   protocolNum: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--text-muted)',
+    color: 'var(--text-3)',
     fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
   },
@@ -108,7 +108,7 @@ export const styles: Record<string, React.CSSProperties> = {
   cardTitle: {
     fontSize: 'var(--fs-body)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
   },
   cardDesc: {
     fontSize: 'var(--fs-small)',

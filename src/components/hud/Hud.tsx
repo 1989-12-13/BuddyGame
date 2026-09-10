@@ -27,14 +27,14 @@ export function Hud({ state }: Props) {
     <div style={styles.container}>
       {/* 左侧：班次计时器 */}
       <div style={styles.group}>
-        <span style={iconEl('var(--text-secondary)')}><Clock size={SIZE} strokeWidth={2.5} /></span>
+        <span style={iconEl('var(--text-2)')}><Clock size={SIZE} strokeWidth={2.5} /></span>
         <span style={styles.label}>班次</span>
         <span style={styles.value}>{timeStr}</span>
       </div>
 
       {/* 通话编号 */}
       <div style={styles.group}>
-        <span style={iconEl('var(--text-secondary)')}><List size={SIZE} strokeWidth={2.5} /></span>
+        <span style={iconEl('var(--text-2)')}><List size={SIZE} strokeWidth={2.5} /></span>
         <span style={styles.label}>通话</span>
         <span style={styles.value}>
           {state.callIndex}/{state.totalCalls}
@@ -43,16 +43,16 @@ export function Hud({ state }: Props) {
 
       {/* 右侧：累计得分 */}
       <div style={{ ...styles.group, marginLeft: 'auto' }}>
-        <span style={iconEl('var(--accent-amber)')}><Star size={SIZE} strokeWidth={2.5} /></span>
+        <span style={iconEl('var(--warning)')}><Star size={SIZE} strokeWidth={2.5} /></span>
         <span style={styles.label}>得分</span>
-        <span style={{ ...styles.value, color: 'var(--accent-amber)' }}>{state.totalScore}</span>
+        <span style={{ ...styles.value, color: 'var(--warning)' }}>{state.totalScore}</span>
       </div>
 
       {/* 救护车 ETA */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--danger-red)')}><Star size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: 'var(--danger-red)', fontSize: 'var(--fs-body-sm)' }}>
+          <span style={iconEl('var(--danger)')}><Star size={SIZE} strokeWidth={2.5} /></span>
+          <span style={{ ...styles.value, color: 'var(--danger)', fontSize: 'var(--fs-body-sm)' }}>
             ETA {state.ambulanceRemaining}s
           </span>
         </div>
@@ -60,8 +60,8 @@ export function Hud({ state }: Props) {
 
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--accent-green)')}><Star size={SIZE} strokeWidth={2.5} /></span>
-          <span style={{ ...styles.value, color: 'var(--accent-green)', fontSize: 'var(--fs-body-sm)' }}>
+          <span style={iconEl('var(--success)')}><Star size={SIZE} strokeWidth={2.5} /></span>
+          <span style={{ ...styles.value, color: 'var(--success)', fontSize: 'var(--fs-body-sm)' }}>
             已到达
           </span>
         </div>
@@ -81,7 +81,7 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-    borderBottom: '1px solid var(--glass-border)',
+    borderBottom: '1px solid var(--glass-line)',
     boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
     flexShrink: 0,
     minHeight: 36,
@@ -100,7 +100,7 @@ const styles: Record<string, CSSProperties> = {
   },
   value: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     fontWeight: 'var(--fw-bold)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 0.5,

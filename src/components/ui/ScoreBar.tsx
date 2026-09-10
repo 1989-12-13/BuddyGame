@@ -16,19 +16,19 @@ interface Props {
   style?: CSSProperties
 }
 
-export function ScoreBar({ label, value, max, color = 'var(--accent-blue)', showValue = true, style }: Props) {
+export function ScoreBar({ label, value, max, color = 'var(--accent)', showValue = true, style }: Props) {
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...style }}>
-      <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-muted)', minWidth: 56, textAlign: 'right' }}>
+      <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', minWidth: 56, textAlign: 'right' }}>
         {label}
       </span>
       <div style={{
-        flex: 1, height: 8, backgroundColor: 'var(--border-light)',
-        borderRadius: 4, overflow: 'hidden',
+        flex: 1, height: 8, backgroundColor: 'var(--line-soft)',
+        borderRadius: 'var(--radius-sm)', overflow: 'hidden',
       }}>
         <div style={{
-          height: '100%', borderRadius: 4, backgroundColor: color,
+          height: '100%', borderRadius: 'var(--radius-sm)', backgroundColor: color,
           width: `${pct}%`, transition: 'width 0.6s ease',
         }} />
       </div>

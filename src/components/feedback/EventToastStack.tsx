@@ -18,10 +18,10 @@ interface Props {
 }
 
 const KIND_STYLE: Record<PatientEvent['kind'], { color: string; bg: string; Icon: typeof Info }> = {
-  good: { color: C_SUCCESS, bg: 'var(--success-green-bg)', Icon: CheckCircle2 },
-  warn: { color: C_WARNING, bg: 'var(--warning-amber-bg)', Icon: AlertTriangle },
-  bad:  { color: C_DARK_DANGER, bg: 'var(--danger-red-bg)', Icon: XCircle },
-  info: { color: C_DEEP_BLUE, bg: 'var(--info-cyan-bg)', Icon: Info },
+  good: { color: C_SUCCESS, bg: 'var(--success-bg)', Icon: CheckCircle2 },
+  warn: { color: C_WARNING, bg: 'var(--warning-bg)', Icon: AlertTriangle },
+  bad:  { color: C_DARK_DANGER, bg: 'var(--danger-bg)', Icon: XCircle },
+  info: { color: C_DEEP_BLUE, bg: 'var(--info-bg)', Icon: Info },
 }
 
 /** Toast 自动消失时长（毫秒） */
@@ -81,16 +81,16 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
         gap: 8,
         padding: '8px 10px',
         backgroundColor: style.bg,
-        border: `1px solid ${style.color}40`,
+        border: `1px solid color-mix(in srgb, ${style.color} 25%, transparent)`,
         borderLeft: `3px solid ${style.color}`,
-        borderRadius: 4,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        borderRadius: 'var(--radius-sm)',
+        boxShadow: 'var(--shadow-md)',
         fontSize: 'var(--fs-caption)',
-        color: 'var(--text-primary)',
+        color: 'var(--text)',
         pointerEvents: 'auto',
       }}
     >
-      <Icon size={14} color={style.color} />
+      <Icon size={14} style={{ color: style.color }} />
       <span style={{ flex: 1, lineHeight: 1.4 }}>{event.text}</span>
       <button
         onClick={() => onDismiss(event.id)}
@@ -99,7 +99,7 @@ function ToastItem({ event, onDismiss }: { event: PatientEvent; onDismiss: (id: 
           border: 'none',
           padding: 2,
           cursor: 'pointer',
-          color: 'var(--text-muted)',
+          color: 'var(--text-3)',
           display: 'flex',
           alignItems: 'center',
         }}

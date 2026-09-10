@@ -8,7 +8,7 @@ export const container: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: 'var(--bg)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   overflow: 'hidden',
 }
 
@@ -32,8 +32,8 @@ export const floatCard: CSSProperties = {
   justifyContent: 'center',
   gap: 4,
   backgroundColor: 'rgba(17, 21, 28, 0.88)',
-  border: '1px solid var(--border)',
-  borderRadius: 10,
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--radius-xl)',
   padding: '24px 32px',
   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
   backdropFilter: 'blur(6px)',
@@ -44,7 +44,7 @@ export const floatCard: CSSProperties = {
 export const splitBar: CSSProperties = {
   flex: 'none',
   height: 10,
-  backgroundColor: 'var(--border)',
+  backgroundColor: 'var(--line)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -67,7 +67,7 @@ export const splitBarDot: CSSProperties = {
   width: 4,
   height: 4,
   borderRadius: '50%',
-  backgroundColor: 'var(--text-muted)',
+  backgroundColor: 'var(--text-3)',
 }
 
 /** 等待接听 — 紧急调度台 */
@@ -85,10 +85,10 @@ export const answerBtn: CSSProperties = {
   padding: '14px 48px',
   fontSize: 'var(--fs-heading)',
   fontWeight: 'var(--fw-bold)',
-  backgroundColor: 'var(--danger-red)',
-  color: '#fff',
+  backgroundColor: 'var(--danger)',
+  color: 'var(--on-danger)',
   border: 'none',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-lg)',
   cursor: 'pointer',
   animation: 'pulse-alert 1.5s ease-in-out infinite',
   letterSpacing: 4,

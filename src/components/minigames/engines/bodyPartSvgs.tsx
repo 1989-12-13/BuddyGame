@@ -81,7 +81,7 @@ export function BodySvg({ bodyPart }: BodySvgProps) {
 
   return (
     <svg viewBox="0 0 100 100" width={180} height={160}
-      style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 10, border: '1px solid var(--border)' }}
+      style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--line)' }}
     >
       {WOUND_DEFS}
       {body}

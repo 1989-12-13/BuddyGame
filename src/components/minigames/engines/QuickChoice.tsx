@@ -13,13 +13,13 @@ import { createShuffleMap } from '../../../utils/shuffleUtils'
 const questionCard: React.CSSProperties = {
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   textAlign: 'left',
   padding: '12px 14px',
   lineHeight: 1.6,
-  backgroundColor: 'var(--bg-elevated)',
-  borderRadius: 10,
-  borderLeft: '3px solid var(--accent-blue)',
+  backgroundColor: 'var(--bg-raised)',
+  borderRadius: 'var(--radius-xl)',
+  borderLeft: '3px solid var(--accent)',
   width: '100%',
 }
 
@@ -29,7 +29,7 @@ const resultBox: React.CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
   fontWeight: 'var(--fw-bold)',
   padding: '8px 14px',
-  borderRadius: 8,
+  borderRadius: 'var(--radius-lg)',
   textAlign: 'center',
 }
 
@@ -69,17 +69,17 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
           const isThisCorrect = i === displayCorrectIndex
 
           let bg = 'var(--bg-surface)'
-          let border = 'var(--border)'
-          let color = 'var(--text-primary)'
+          let border = 'var(--line)'
+          let color = 'var(--text)'
 
           if (showResult && isSelected) {
             if (isThisCorrect) {
-              bg = 'var(--success-green-bg)'; border = 'var(--success-green)'; color = 'var(--success-green)'
+              bg = 'var(--success-bg)'; border = 'var(--success)'; color = 'var(--success)'
             } else {
-              bg = 'var(--danger-red-bg)'; border = 'var(--danger-red)'; color = 'var(--danger-red)'
+              bg = 'var(--danger-bg)'; border = 'var(--danger)'; color = 'var(--danger)'
             }
           } else if (showResult && isThisCorrect && !isCorrect) {
-            bg = 'var(--success-green-bg)'; border = 'var(--success-green)'; color = 'var(--success-green)'
+            bg = 'var(--success-bg)'; border = 'var(--success)'; color = 'var(--success)'
           }
 
           return (
@@ -89,7 +89,7 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
               disabled={showResult}
               style={{
                 padding: '10px 14px',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-lg)',
                 border: `1.5px solid ${border}`,
                 backgroundColor: bg,
                 color,
@@ -111,8 +111,8 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
                 width: 22,
                 height: 22,
                 borderRadius: '50%',
-                backgroundColor: isThisCorrect && showResult ? 'var(--success-green-bg)' : isSelected && showResult ? 'var(--danger-red-bg)' : 'var(--bg-elevated)',
-                color: isThisCorrect && showResult ? 'var(--success-green)' : isSelected && showResult ? 'var(--danger-red)' : 'var(--text-secondary)',
+                backgroundColor: isThisCorrect && showResult ? 'var(--success-bg)' : isSelected && showResult ? 'var(--danger-bg)' : 'var(--bg-raised)',
+                color: isThisCorrect && showResult ? 'var(--success)' : isSelected && showResult ? 'var(--danger)' : 'var(--text-2)',
                 fontSize: 'var(--fs-small)',
                 fontWeight: 'var(--fw-bold)',
                 flexShrink: 0,
@@ -129,8 +129,8 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
       {showResult && (
         <div style={{
           ...resultBox,
-          backgroundColor: isCorrect ? 'var(--success-green-bg)' : 'var(--danger-red-bg)',
-          color: isCorrect ? 'var(--success-green)' : 'var(--danger-red)',
+          backgroundColor: isCorrect ? 'var(--success-bg)' : 'var(--danger-bg)',
+          color: isCorrect ? 'var(--success)' : 'var(--danger)',
         }}>
           {isCorrect ? '✓ 回答正确！' : '✗ 答错了。绿色标注的是正确答案，记住下次要选这个哦！'}
         </div>
@@ -138,12 +138,12 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
 
       {/* 尝试进度 */}
       {!showResult && (
-        <div style={{ ...progressTrack, width: '100%', height: 4, borderRadius: 2, backgroundColor: 'var(--border)' }}>
+        <div style={{ ...progressTrack, width: '100%', height: 4, borderRadius: 2, backgroundColor: 'var(--line)' }}>
           <div style={{
             height: '100%',
             borderRadius: 2,
             width: `${Math.min(100, attempts * 40)}%`,
-            background: 'linear-gradient(90deg, var(--accent-blue), var(--accent-cyan))',
+            background: 'linear-gradient(90deg, var(--accent), var(--accent))',
             transition: 'width 0.3s',
           }} />
         </div>

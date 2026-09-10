@@ -31,9 +31,9 @@ export const styles: Record<string, CSSProperties> = {
 
 /** 问题层级配色 */
 export const TIER_STYLE: Record<string, { border: string; bg: string; badge: string; label: string }> = {
-  critical:  { border: 'var(--danger-red)', bg: 'var(--danger-red-bg)', badge: 'var(--danger-red)', label: '◆ 关键' },
-  important: { border: 'var(--warning-amber)', bg: 'var(--warning-amber-bg)', badge: 'var(--warning-amber)', label: '◆ 重要' },
-  detail:    { border: 'var(--success-green)', bg: 'var(--success-green-bg)', badge: 'var(--success-green)', label: '◆ 细节' },
+  critical:  { border: 'var(--danger)', bg: 'var(--danger-bg)', badge: 'var(--danger)', label: '◆ 关键' },
+  important: { border: 'var(--warning)', bg: 'var(--warning-bg)', badge: 'var(--warning)', label: '◆ 重要' },
+  detail:    { border: 'var(--success)', bg: 'var(--success-bg)', badge: 'var(--success)', label: '◆ 细节' },
 }
 
 /** 问题分类图标 */

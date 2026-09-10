@@ -37,8 +37,8 @@ class MiniGameErrorBoundary extends Component<{ children: React.ReactNode }, EBS
     if (this.state.hasError) {
       return (
         <div style={{
-          padding: 16, borderRadius: 8, backgroundColor: 'var(--danger-red-bg)',
-          border: '1px solid var(--danger-red)', fontSize: 'var(--fs-body-sm)', color: 'var(--danger-red)',
+          padding: 16, borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--danger-bg)',
+          border: '1px solid var(--danger)', fontSize: 'var(--fs-body-sm)', color: 'var(--danger)',
         }}>
           <strong>小游戏渲染异常</strong>
           <p style={{ fontSize: 'var(--fs-small)', marginTop: 4, opacity: 0.8 }}>{this.state.errorMsg}</p>
@@ -64,8 +64,8 @@ const ENGINE_MAP: Record<MiniGameKind, ComponentType<{ spec: MiniGameSpec; onCom
 }
 
 const SHELL: React.CSSProperties = {
-  border: '1px solid var(--border)',
-  borderRadius: 10,
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--radius-xl)',
   padding: '16px',
   backgroundColor: 'var(--bg-surface)',
   overflowY: 'auto',
@@ -75,7 +75,7 @@ const SHELL: React.CSSProperties = {
 const TITLE: React.CSSProperties = {
   fontSize: 'var(--fs-body-lg)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   display: 'flex',
   alignItems: 'center',
   gap: 8,
@@ -85,7 +85,7 @@ const TITLE: React.CSSProperties = {
 
 const INSTR: React.CSSProperties = {
   fontSize: 'var(--fs-caption)',
-  color: 'var(--text-secondary)',
+  color: 'var(--text-2)',
   marginBottom: 10,
   lineHeight: 1.5,
   paddingLeft: 2,
@@ -97,7 +97,7 @@ export function MiniGameHost({ spec, onComplete, paused }: Props) {
   return (
     <MiniGameErrorBoundary>
       <div className="minigame-shell" style={SHELL}>
-        <div className="minigame-title" style={TITLE}><Hand size={18} color="var(--accent-cyan)" />{spec.title}</div>
+        <div className="minigame-title" style={TITLE}><Hand size={18} color="var(--accent)" />{spec.title}</div>
         <div style={INSTR}>{spec.instruction}</div>
         {Engine && <Engine spec={spec} onComplete={onComplete} paused={paused} />}
       </div>

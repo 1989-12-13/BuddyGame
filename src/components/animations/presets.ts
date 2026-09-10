@@ -5,25 +5,25 @@
 
 import type { Variants } from 'motion/react'
 
-// -------------------- 基础时长 --------------------
+// -------------------- 基础时长（与 CSS 令牌 --dur-* 对齐） --------------------
 
-/** 即时反馈（按压脉冲、闪烁） */
-export const DUR_INSTANT = 0.08
-/** 快速过渡（Hover、选中态） */
-export const DUR_QUICK = 0.15
-/** 标准过渡（Toast 入场、评分显示） */
-export const DUR_NORMAL = 0.25
-/** 从容过渡（卡片展开、页面切换） */
-export const DUR_EASE = 0.35
-/** 重要过渡（结果展示、结算动画） */
-export const DUR_EMPHASIS = 0.5
+/** 即时反馈（按压脉冲、闪烁）—— 对齐 --dur-fast(120ms) */
+export const DUR_INSTANT = 0.12
+/** 快速过渡（Hover、选中态）—— 对齐 --dur-fast(120ms) */
+export const DUR_QUICK = 0.12
+/** 标准过渡（Toast 入场、评分显示）—— 对齐 --dur-base(200ms) */
+export const DUR_NORMAL = 0.2
+/** 从容过渡（卡片展开、页面切换）—— 对齐 --dur-slow(320ms) */
+export const DUR_EASE = 0.32
+/** 重要过渡（结果展示、结算动画）—— 对齐 --dur-slow(320ms) */
+export const DUR_EMPHASIS = 0.32
 
-// -------------------- 缓动曲线 --------------------
+// -------------------- 缓动曲线（统一到 --ease-out） --------------------
 
-/** 快速进出（按钮、弹窗） */
+/** 快速进出（按钮、弹窗）—— 同 --ease-out */
 export const EASE_OUT_FAST = [0.16, 1, 0.3, 1] as const
-/** 标准缓出（卡片入场） */
-export const EASE_OUT = [0.22, 1, 0.36, 1] as const
+/** 标准缓出（卡片入场）—— 同 --ease-out */
+export const EASE_OUT = [0.16, 1, 0.3, 1] as const
 /** 弹性缓出（强调反馈） */
 export const EASE_SPRING = { type: 'spring' as const, stiffness: 300, damping: 25 }
 

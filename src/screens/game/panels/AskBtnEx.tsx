@@ -22,9 +22,9 @@ export function AskBtnEx({
     <button
       style={{
         ...styles.qBtn,
-        backgroundColor: done ? 'var(--success-green-bg)' : disabled ? 'var(--bg-surface)' : (ts?.bg ?? 'var(--bg-elevated)'),
-        borderColor: done ? 'var(--accent-green)' : disabled ? 'var(--border)' : (ts?.border ?? 'var(--accent-blue)'),
-        color: done ? 'var(--accent-green)' : disabled ? 'var(--border-bright)' : 'var(--text-muted-alt)',
+        backgroundColor: done ? 'var(--success-bg)' : disabled ? 'var(--bg-surface)' : (ts?.bg ?? 'var(--bg-raised)'),
+        borderColor: done ? 'var(--success)' : disabled ? 'var(--line)' : (ts?.border ?? 'var(--accent)'),
+        color: done ? 'var(--success)' : disabled ? 'var(--line-strong)' : 'var(--text-2)',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled && !done ? 0.45 : 1,
         position: 'relative',

@@ -22,7 +22,7 @@ export function DeterminantSelector({
       {levels.map((l) => {
         const info = MPDS_DETERMINANT_INFO[l.key]
         const isActive = current === l.key
-        const color = l.key === 'ECHO' || l.key === 'DELTA' ? 'var(--danger-red)' : l.key === 'CHARLIE' ? 'var(--warning-amber)' : 'var(--success-green)'
+        const color = l.key === 'ECHO' || l.key === 'DELTA' ? 'var(--danger)' : l.key === 'CHARLIE' ? 'var(--warning)' : 'var(--success)'
         return (
           <button
             key={l.key}
@@ -31,10 +31,10 @@ export function DeterminantSelector({
             style={{
               flex: '1 0 auto',
               padding: '4px 6px',
-              borderRadius: 8,
-              border: `1px solid ${isActive ? color : 'var(--border)'}`,
+              borderRadius: 'var(--radius-lg)',
+              border: `1px solid ${isActive ? color : 'var(--line)'}`,
               backgroundColor: isActive ? `color-mix(in srgb, ${color} 9%, var(--bg-surface))` : 'var(--bg-surface)',
-              color: isActive ? color : 'var(--text-secondary)',
+              color: isActive ? color : 'var(--text-2)',
               display: 'flex',
               flexDirection: 'column',
               gap: 4,

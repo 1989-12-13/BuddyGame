@@ -55,7 +55,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
         {/* 左侧：身体部位图 + 伤口标记 */}
         <div style={colLeft}>
           <BodySvg bodyPart={s.bodyPart} />
-          <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-secondary)', textAlign: 'center' }}>
+          <div style={{ fontSize: 'var(--fs-small)', color: 'var(--text-2)', textAlign: 'center' }}>
             {s.woundDesc}
           </div>
         </div>
@@ -66,17 +66,17 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
           const isSelected = selected === i
           const isThisCorrect = i === displayCorrectIndex
           let bg = 'var(--bg-surface)'
-          let border = 'var(--border)'
-          let color = 'var(--text-primary)'
+          let border = 'var(--line)'
+          let color = 'var(--text)'
 
           if (showResult && isSelected) {
             if (isThisCorrect) {
-              bg = 'var(--success-green-bg)'; border = 'var(--accent-green)'; color = 'var(--accent-green)'
+              bg = 'var(--success-bg)'; border = 'var(--success)'; color = 'var(--success)'
             } else {
-              bg = 'var(--danger-red-bg)'; border = 'var(--danger-red)'; color = 'var(--danger-red)'
+              bg = 'var(--danger-bg)'; border = 'var(--danger)'; color = 'var(--danger)'
             }
           } else if (showResult && isThisCorrect && !isCorrect) {
-            bg = 'var(--success-green-bg)'; border = 'var(--accent-green)'; color = 'var(--accent-green)'
+            bg = 'var(--success-bg)'; border = 'var(--success)'; color = 'var(--success)'
           }
 
           return (
@@ -86,7 +86,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
               disabled={showResult}
               style={{
                 padding: '10px 16px',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-lg)',
                 border: `2px solid ${border}`,
                 backgroundColor: bg,
                 color,
@@ -112,7 +112,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
         <div style={{
           fontSize: 'var(--fs-body-sm)',
           fontWeight: 'var(--fw-bold)',
-          color: isCorrect ? 'var(--accent-green)' : 'var(--danger-red)',
+          color: isCorrect ? 'var(--success)' : 'var(--danger)',
           padding: '4px 0',
         }}>
           {isCorrect ? '✓ 正确！位置选对了' : '✗ 不对，正确答案已标出，请重试……'}

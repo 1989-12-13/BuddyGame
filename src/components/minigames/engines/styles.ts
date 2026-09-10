@@ -28,15 +28,15 @@ export function pressCircle(
     flashColor?: string
   } = {},
 ): React.CSSProperties {
-  const { size = 130, pulse = false, flashColor = '#ef4444' } = opts
+  const { size = 130, pulse = false, flashColor = 'var(--danger)' } = opts
   return {
     width: size,
     height: size,
     borderRadius: '50%',
     background: pulse
-      ? `radial-gradient(circle at 50% 50%, #fecaca, var(--bg-surface))`
-      : 'radial-gradient(circle at 50% 50%, var(--border-light), var(--bg-elevated))',
-    border: `4px solid ${pulse ? flashColor : 'var(--text-muted)'}`,
+      ? `radial-gradient(circle at 50% 50%, color-mix(in srgb, ${flashColor} 35%, var(--bg-surface)), var(--bg-surface))`
+      : 'radial-gradient(circle at 50% 50%, var(--line-soft), var(--bg-raised))',
+    border: `4px solid ${pulse ? flashColor : 'var(--text-3)'}`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -44,7 +44,7 @@ export function pressCircle(
     userSelect: 'none',
     transform: pulse ? 'scale(0.9)' : 'scale(1)',
     transition: 'transform 0.08s',
-    boxShadow: pulse ? `0 0 20px ${flashColor}4d` : 'none',
+    boxShadow: pulse ? `0 0 20px color-mix(in srgb, ${flashColor} 30%, transparent)` : 'none',
     position: 'relative',
   }
 }
@@ -53,13 +53,13 @@ export function pressCircle(
 export const progressTrack: React.CSSProperties = {
   width: 240,
   height: 6,
-  borderRadius: 3,
-  backgroundColor: 'var(--border-light)',
+  borderRadius: 'var(--radius-xs)',
+  backgroundColor: 'var(--line-soft)',
   overflow: 'hidden',
 }
 
 /** 进度条填充块 */
-export function progressFill(percent: number, color = 'var(--danger-red)'): React.CSSProperties {
+export function progressFill(percent: number, color = 'var(--danger)'): React.CSSProperties {
   return {
     width: `${Math.min(100, Math.max(0, percent))}%`,
     height: '100%',
@@ -97,7 +97,7 @@ export function feedbackText(color: string): React.CSSProperties {
 /** 完成状态文字 */
 export const doneText: React.CSSProperties = {
   fontSize: 'var(--fs-body)',
-  color: 'var(--success-green)',
+  color: 'var(--success)',
   fontWeight: 'var(--fw-bold)',
   padding: '10px 0',
 }
@@ -114,14 +114,14 @@ export const statusRow: React.CSSProperties = {
 export const statusLabel: React.CSSProperties = {
   fontSize: 'var(--fs-caption)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-muted)',
+  color: 'var(--text-3)',
   fontFamily: 'var(--font-mono)',
 }
 
 /** 按压提示（按钮内） */
 export const pressHint: React.CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
-  color: 'var(--text-secondary)',
+  color: 'var(--text-2)',
   fontWeight: 'var(--fw-bold)',
   textAlign: 'center',
   lineHeight: 1.3,
@@ -130,5 +130,5 @@ export const pressHint: React.CSSProperties = {
 /** 按压提示-高亮版 */
 export const pressHintActive: React.CSSProperties = {
   ...pressHint,
-  color: 'var(--danger-red)',
+  color: 'var(--danger)',
 }

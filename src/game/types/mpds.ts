@@ -8,11 +8,11 @@
 export type MpdsDeterminant = 'ECHO' | 'DELTA' | 'CHARLIE' | 'BRAVO' | 'ALPHA'
 
 export const MPDS_DETERMINANT_INFO: Record<MpdsDeterminant, { label: string; color: string; responseCode: string }> = {
-  ECHO:    { label: 'E — 即刻生命威胁',         color: '#dc2626', responseCode: '灯闪警笛' },
-  DELTA:   { label: 'D — 高危/潜在致命',         color: '#ef4444', responseCode: '灯闪警笛' },
-  CHARLIE: { label: 'C — 中危/需ALS评估',        color: '#d97706', responseCode: '安静接近' },
-  BRAVO:   { label: 'B — 低中危/BLS即可',        color: '#16a34a', responseCode: '安静接近' },
-  ALPHA:   { label: 'A — 低危/常规转运',         color: '#0ea5e9', responseCode: '安静接近' },
+  ECHO:    { label: 'E — 即刻生命威胁',         color: 'var(--sev-5)', responseCode: '灯闪警笛' },
+  DELTA:   { label: 'D — 高危/潜在致命',         color: 'var(--sev-4)', responseCode: '灯闪警笛' },
+  CHARLIE: { label: 'C — 中危/需ALS评估',        color: 'var(--sev-3)', responseCode: '安静接近' },
+  BRAVO:   { label: 'B — 低中危/BLS即可',        color: 'var(--sev-2)', responseCode: '安静接近' },
+  ALPHA:   { label: 'A — 低危/常规转运',         color: 'var(--sev-1)', responseCode: '安静接近' },
 }
 
 // -------------------- 分诊等级（颜色四色法 — 急救现场分诊） --------------------
@@ -27,10 +27,10 @@ export const TRIAGE_LABELS: Record<TriageLevel, string> = {
 }
 
 export const TRIAGE_COLORS: Record<TriageLevel, string> = {
-  red:    '#dc2626',
-  yellow: '#eab308',
-  green:  '#16a34a',
-  black:  '#6b7280',
+  red:    'var(--sev-5)',
+  yellow: 'var(--sev-3)',
+  green:  'var(--sev-1)',
+  black:  'var(--text-3)',
 }
 
 /** MPDS判定等级 ↔ 四色分诊的推荐映射 */

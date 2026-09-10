@@ -26,20 +26,20 @@ export function VitalSignsBar({ status }: Props) {
       alignItems: 'center',
       gap: 10,
       padding: '6px 12px',
-      backgroundColor: dead ? 'var(--danger-red-bg)' : 'var(--bg-elevated)',
+      backgroundColor: dead ? 'var(--danger-bg)' : 'var(--bg-raised)',
       borderBottom: `2px solid ${color}`,
       fontSize: 'var(--fs-caption)',
       fontFamily: 'var(--font-mono)',
     }}>
-      <Icon size={14} color={color} />
-      <span style={{ color: 'var(--text-secondary)', fontWeight: 'var(--fw-bold)', letterSpacing: 1 }}>患者体征</span>
+      <Icon size={14} style={{ color }} />
+      <span style={{ color: 'var(--text-2)', fontWeight: 'var(--fw-bold)', letterSpacing: 1 }}>患者体征</span>
 
       {/* 生命条 */}
       <div style={{
         flex: 1,
         height: 8,
-        backgroundColor: 'var(--border)',
-        borderRadius: 4,
+        backgroundColor: 'var(--line)',
+        borderRadius: 'var(--radius-sm)',
         overflow: 'hidden',
         position: 'relative',
       }}>
@@ -48,7 +48,7 @@ export function VitalSignsBar({ status }: Props) {
           height: '100%',
           backgroundColor: color,
           transition: 'width 0.3s linear, background-color 0.3s',
-          boxShadow: `0 0 6px ${color}80`,
+          boxShadow: `0 0 6px color-mix(in srgb, ${color} 50%, transparent)`,
         }} />
         {/* 档位刻度 */}
         {[VITAL_CRITICAL_THRESHOLD, VITAL_WARNING_THRESHOLD, VITAL_STABLE_THRESHOLD].map(t => (
@@ -57,7 +57,7 @@ export function VitalSignsBar({ status }: Props) {
             left: `${t}%`,
             top: 0, bottom: 0,
             width: 1,
-            backgroundColor: 'rgba(255,255,255,0.6)',
+            backgroundColor: 'var(--line-strong)',
           }} />
         ))}
       </div>
@@ -69,9 +69,9 @@ export function VitalSignsBar({ status }: Props) {
         color,
         fontWeight: 'var(--fw-bold)',
         padding: '2px 8px',
-        borderRadius: 3,
-        backgroundColor: `${color}15`,
-        border: `1px solid ${color}40`,
+        borderRadius: 'var(--radius-xs)',
+        backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
+        border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
         minWidth: 56,
         textAlign: 'center' as const,
       }}>

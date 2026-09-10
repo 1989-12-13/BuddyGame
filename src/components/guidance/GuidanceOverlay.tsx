@@ -41,14 +41,14 @@ export function GuidanceOverlay({ collapsed, onToggle, title, subtitle, children
           aria-label="展开急救指导"
         >
           <span style={styles.fabRing}>
-            <HeartPulse size={22} color="#ff5454" strokeWidth={2.5} />
+            <HeartPulse size={22} style={{ color: 'var(--danger)' }} strokeWidth={2.5} />
           </span>
           <span style={styles.fabText}>
             <span style={styles.fabTitle}>{title}</span>
             {subtitle && <span style={styles.fabSub}>{subtitle}</span>}
           </span>
           <span style={styles.fabHint}>
-            <ChevronDown size={14} color="var(--text-muted)" />
+            <ChevronDown size={14} color="var(--text-3)" />
           </span>
         </motion.button>
       ) : (
@@ -78,7 +78,7 @@ export function GuidanceOverlay({ collapsed, onToggle, title, subtitle, children
                   title="折叠为悬浮球（小游戏暂停）"
                   aria-label="折叠为悬浮球"
                 >
-                  <ChevronDown size={16} color="var(--text-muted)" />
+                  <ChevronDown size={16} color="var(--text-3)" />
                 </button>
               </header>
               <div style={styles.body}>{children}</div>
@@ -104,7 +104,7 @@ const styles: Record<string, CSSProperties> = {
     backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
-    border: '1px solid var(--danger-red)',
+    border: '1px solid var(--danger)',
     borderRadius: 30,
     boxShadow: '0 6px 24px rgba(255,59,59,0.3), 0 2px 8px rgba(0,0,0,0.5)',
     cursor: 'pointer',
@@ -119,8 +119,8 @@ const styles: Record<string, CSSProperties> = {
     width: 36,
     height: 36,
     borderRadius: '50%',
-    backgroundColor: 'rgba(255,59,59,0.12)',
-    border: '1px solid rgba(255,59,59,0.4)',
+    backgroundColor: 'var(--danger-bg)',
+    border: '1px solid var(--danger-line)',
     animation: 'pulse-live 1.4s ease-in-out infinite',
   },
   fabText: {
@@ -131,7 +131,7 @@ const styles: Record<string, CSSProperties> = {
   },
   fabTitle: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--text-primary)',
+    color: 'var(--text)',
     fontWeight: 'var(--fw-bold)',
     letterSpacing: 0.5,
     maxWidth: 200,
@@ -141,7 +141,7 @@ const styles: Record<string, CSSProperties> = {
   },
   fabSub: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--accent-amber)',
+    color: 'var(--warning)',
     fontWeight: 'var(--fw-bold)',
   },
   fabHint: {
@@ -177,13 +177,13 @@ const styles: Record<string, CSSProperties> = {
     width: 640,
     maxWidth: 'calc(100vw - 80px)',
     maxHeight: 'calc(100vh - 160px)',
-    backgroundColor: 'var(--glass-bg-elevated)',
+    backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(calc(var(--glass-blur) + 4px)) saturate(150%)',
     WebkitBackdropFilter: 'blur(calc(var(--glass-blur) + 4px)) saturate(150%)',
-    border: '1px solid var(--glass-border)',
-    borderTop: '2px solid #ff3b3b',
-    boxShadow: '0 24px 70px rgba(0,0,0,0.7), 0 0 40px rgba(255,59,59,0.05)',
-    borderRadius: 8,
+    border: '1px solid var(--glass-line)',
+    borderTop: '2px solid var(--danger)',
+    boxShadow: '0 24px 70px rgba(0,0,0,0.7), var(--shadow-glow-danger)',
+    borderRadius: 'var(--radius-lg)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
@@ -194,20 +194,20 @@ const styles: Record<string, CSSProperties> = {
     justifyContent: 'space-between',
     padding: '10px 14px',
     backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    borderBottom: '1px solid var(--glass-border)',
+    borderBottom: '1px solid var(--glass-line)',
     flexShrink: 0,
   },
   headerTitle: {
     fontSize: 'var(--fs-body)',
-    color: 'var(--danger-red)',
+    color: 'var(--danger)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 'var(--fw-bold)',
     letterSpacing: 1,
   },
   collapseBtn: {
     background: 'transparent',
-    border: '1px solid #2a323e',
-    borderRadius: 4,
+    border: '1px solid var(--line)',
+    borderRadius: 'var(--radius-sm)',
     cursor: 'pointer',
     padding: '4px 6px',
     display: 'flex',

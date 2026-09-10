@@ -32,7 +32,7 @@ export function PhoneHeader({
         <span style={styles.liveLabel}>LIVE</span>
         <span style={{
           ...styles.callTimer,
-          color: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
+          color: urgent ? 'var(--danger)' : 'var(--warning)',
           fontWeight: urgent ? 'var(--fw-black)' : 'var(--fw-bold)',
         }}>
           通话 {String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
@@ -42,8 +42,8 @@ export function PhoneHeader({
           {/* 目标派车计时徽章 */}
           <span style={{
             ...styles.targetBadge,
-            color: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
-            borderColor: urgent ? 'var(--danger-red)' : 'var(--accent-amber)',
+            color: urgent ? 'var(--danger)' : 'var(--warning)',
+            borderColor: urgent ? 'var(--danger)' : 'var(--warning)',
           }}>
             {urgent ? '⚠ 超时' : '目标 60秒派车'}
           </span>
@@ -55,10 +55,10 @@ export function PhoneHeader({
               title="打开调度卡"
               style={{
                 padding: '3px 12px',
-                borderRadius: 4,
-                border: '1px solid var(--border-bright)',
-                backgroundColor: 'var(--accent-blue-dim)',
-                color: 'var(--accent-blue)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--line-strong)',
+                backgroundColor: 'var(--accent-dim)',
+                color: 'var(--accent)',
                 fontSize: 'var(--fs-small)',
                 fontWeight: 'var(--fw-bold)',
                 cursor: 'pointer',
@@ -66,8 +66,8 @@ export function PhoneHeader({
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s',
               }}
-              onPointerEnter={e => { e.currentTarget.style.backgroundColor = 'var(--accent-blue)' }}
-              onPointerLeave={e => { e.currentTarget.style.backgroundColor = 'var(--accent-blue-dim)' }}
+              onPointerEnter={e => { e.currentTarget.style.backgroundColor = 'var(--accent)' }}
+              onPointerLeave={e => { e.currentTarget.style.backgroundColor = 'var(--accent-dim)' }}
             >
               ▣ 调度卡
             </button>
@@ -80,14 +80,14 @@ export function PhoneHeader({
               title="折叠通话面板"
               style={{
                 background: 'transparent',
-                border: '1px solid var(--border)',
-                borderRadius: 4,
+                border: '1px solid var(--line)',
+                borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 padding: '2px 4px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: 'var(--text-secondary)',
+                color: 'var(--text-2)',
               }}
             >
               <ChevronRight size={18} />
@@ -99,7 +99,7 @@ export function PhoneHeader({
       {/* 来电者情绪失控警告 */}
       {stressLevel === '失控' && (
         <div style={styles.callPhaseTag}>
-          <span style={{ color: 'var(--danger-red)' }}>来电者情绪失控</span>
+          <span style={{ color: 'var(--danger)' }}>来电者情绪失控</span>
         </div>
       )}
     </div>

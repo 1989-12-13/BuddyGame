@@ -5,7 +5,6 @@
 
 import { Truck, CheckCircle2, XCircle, MapPin, Building2 } from 'lucide-react'
 import type { RescueState } from '../../game/types'
-import { C_SUCCESS, C_DARK_DANGER, C_DEEP_BLUE } from '../../game/core/colors'
 
 interface Props {
   rescue: RescueState
@@ -20,9 +19,8 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
   const success = rescue.phase === 'success'
   const failed = rescue.phase === 'failed'
 
-  // 语义强调色随状态变化：边框/进度用 CSS 变量（双主题），图标用 colors.ts 语义常量（SVG stroke 兼容性）
-  const accentColor = success ? 'var(--accent-green)' : failed ? 'var(--danger-red)' : 'var(--accent-cyan)'
-  const accentSolid = success ? C_SUCCESS : failed ? C_DARK_DANGER : C_DEEP_BLUE
+  // 语义强调色随状态变化，统一走设计令牌（双主题自适应）
+  const accentColor = success ? 'var(--success)' : failed ? 'var(--danger)' : 'var(--accent)'
 
   return (
     <div style={{
@@ -31,14 +29,14 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
       backgroundColor: 'var(--bg-surface)',
       border: `1px solid ${accentColor}`,
       borderLeft: `4px solid ${accentColor}`,
-      borderRadius: 6,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      borderRadius: 'var(--radius-md)',
+      boxShadow: 'var(--shadow-sm)',
       fontSize: 'var(--fs-caption)',
     }}>
       {/* 顶部行：标题 + 状态徽章 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <Truck size={14} color={accentSolid} />
-        <strong style={{ color: 'var(--text-primary)' }}>
+        <Truck size={14} style={{ color: accentColor }} />
+        <strong style={{ color: 'var(--text)' }}>
           {rescue.vehicleName ?? '救护车'}
         </strong>
         <span style={{ marginLeft: 'auto', color: accentColor, fontWeight: 'var(--fw-bold)', fontSize: 'var(--fs-small)' }}>
@@ -51,12 +49,12 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
 
       {/* 路径进度条 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 2px' }}>
-        <Building2 size={12} color="var(--text-secondary)" />
+        <Building2 size={12} color="var(--text-2)" />
         <div style={{
           flex: 1,
           height: 6,
           backgroundColor: 'var(--bg-hover)',
-          borderRadius: 3,
+          borderRadius: 'var(--radius-xs)',
           position: 'relative',
           overflow: 'hidden',
         }}>
@@ -78,17 +76,17 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
             🚐
           </div>
         </div>
-        <MapPin size={12} color="var(--danger-red)" />
+        <MapPin size={12} color="var(--danger)" />
       </div>
 
       {/* 底部：成功率 / 失败原因 */}
       <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-small)' }}>
-        {success && <><CheckCircle2 size={11} color={accentSolid} /><span style={{ color: 'var(--accent-green)' }}>患者获救</span></>}
-        {failed && <><XCircle size={11} color={accentSolid} /><span style={{ color: 'var(--danger-red)' }}>{rescue.failureReason ?? '现场救治未成功'}</span></>}
-        {rescue.phase === 'enroute' && <span style={{ color: 'var(--text-secondary)' }}>正在赶往现场 · 患者仍在等待</span>}
-        {rescue.phase === 'arrived' && <span style={{ color: 'var(--text-secondary)' }}>院前急救进行中…</span>}
+        {success && <><CheckCircle2 size={11} style={{ color: accentColor }} /><span style={{ color: 'var(--success)' }}>患者获救</span></>}
+        {failed && <><XCircle size={11} style={{ color: accentColor }} /><span style={{ color: 'var(--danger)' }}>{rescue.failureReason ?? '现场救治未成功'}</span></>}
+        {rescue.phase === 'enroute' && <span style={{ color: 'var(--text-2)' }}>正在赶往现场 · 患者仍在等待</span>}
+        {rescue.phase === 'arrived' && <span style={{ color: 'var(--text-2)' }}>院前急救进行中…</span>}
         {rescue.successScore !== null && (
-          <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ marginLeft: 'auto', color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>
             概率 {Math.round((rescue.successScore ?? 0) * 100)}%
           </span>
         )}

@@ -345,19 +345,19 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 400,
     padding: '4px 10px',
     background: 'color-mix(in srgb, var(--bg) 70%, transparent)',
-    border: '1px solid var(--glass-border)',
-    borderRadius: 4,
+    border: '1px solid var(--glass-line)',
+    borderRadius: 'var(--radius-sm)',
   },
   cornerLabel: {
     fontSize: 'var(--fs-micro)',
-    color: 'var(--text-secondary)',
+    color: 'var(--text-2)',
     fontFamily: 'var(--font-mono)',
     letterSpacing: 2,
     fontWeight: 'var(--fw-bold)',
   },
   cornerSub: {
     fontSize: 'var(--fs-caption)',
-    color: 'var(--accent-amber)',
+    color: 'var(--warning)',
     fontFamily: 'var(--font-mono)',
     fontWeight: 'var(--fw-bold)',
   },
@@ -370,26 +370,26 @@ const MARKER_CSS = `
   width: 28px; height: 28px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  border: 2px solid var(--success-green);
+  border: 2px solid var(--success);
   background: color-mix(in srgb, var(--bg) 75%, transparent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success-green) 15%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 15%, transparent);
 }
 .cmap-station.busy {
-  border-color: var(--danger-red);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-red) 15%, transparent);
+  border-color: var(--danger);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 15%, transparent);
   animation: cmap-pulse 1.4s ease-in-out infinite;
 }
 .cmap-station.returning {
-  border-color: var(--accent-amber);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-amber) 15%, transparent);
+  border-color: var(--warning);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--warning) 15%, transparent);
 }
 .cmap-station-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
-  background: var(--success-green);
+  background: var(--success);
 }
-.cmap-station.busy .cmap-station-dot { background: var(--danger-red); }
-.cmap-station.returning .cmap-station-dot { background: var(--accent-amber); }
+.cmap-station.busy .cmap-station-dot { background: var(--danger); }
+.cmap-station.returning .cmap-station-dot { background: var(--warning); }
 
 .cmap-amb {
   font-size: 22px;
@@ -410,20 +410,20 @@ const MARKER_CSS = `
 .cmap-event-pulse {
   position: absolute; inset: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--danger-red) 30%, transparent);
-  border: 2px solid var(--danger-red);
+  background: color-mix(in srgb, var(--danger) 30%, transparent);
+  border: 2px solid var(--danger);
   animation: cmap-event-pulse 1.6s ease-in-out infinite;
 }
 .cmap-event-dot {
   width: 10px; height: 10px;
   border-radius: 50%;
-  background: var(--danger-red);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--danger-red) 80%, transparent);
+  background: var(--danger);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 80%, transparent);
   z-index: 1;
 }
 .cmap-event-dim .cmap-event-dot {
   width: 6px; height: 6px;
-  background: var(--text-muted);
+  background: var(--text-3);
   box-shadow: none;
   opacity: 0.6;
 }
@@ -441,8 +441,8 @@ const MARKER_CSS = `
 }
 
 @keyframes cmap-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger-red) 15%, transparent); }
-  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger-red) 5%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 15%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger) 5%, transparent); }
 }
 @keyframes cmap-amb-flash {
   from { transform: scale(1); }

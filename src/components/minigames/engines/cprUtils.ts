@@ -155,12 +155,12 @@ export function rhythmQualityColor(q: RhythmQuality | null): string {
     case 'good': return C_SUCCESS
     case 'ok': return C_WARNING
     case 'bad': return C_DANGER
-    default: return 'var(--text-muted)'
+    default: return 'var(--text-3)'
   }
 }
 
 /** 命中质量 → 颜色（可选默认色） */
-export function hitQualityColor(q: HitQuality | null, fallback = 'var(--text-muted)'): string {
+export function hitQualityColor(q: HitQuality | null, fallback = 'var(--text-3)'): string {
   switch (q) {
     case 'perfect': return C_SUCCESS
     case 'good': return C_WARNING

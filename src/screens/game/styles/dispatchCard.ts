@@ -9,8 +9,8 @@ export const modalOverlay: CSSProperties = {
   left: 0,
   width: 420,
   zIndex: Z_TERMINAL_MODAL,
-  backgroundColor: 'var(--bg-elevated)',
-  borderRight: '1px solid var(--border)',
+  backgroundColor: 'var(--bg-raised)',
+  borderRight: '1px solid var(--line)',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
@@ -20,11 +20,11 @@ export const modalOverlay: CSSProperties = {
 export const modalCard: CSSProperties = {
   width: '100%',
   height: '100%',
-  backgroundColor: 'var(--bg-elevated)',
+  backgroundColor: 'var(--bg-raised)',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  borderLeft: '2px solid var(--danger-red)',
+  borderLeft: '2px solid var(--danger)',
   boxShadow: 'none',
 }
 
@@ -34,7 +34,7 @@ export const modalHeader: CSSProperties = {
   justifyContent: 'space-between',
   padding: '12px 16px',
   backgroundColor: 'var(--bg-surface)',
-  borderBottom: '2px solid var(--danger-red)',
+  borderBottom: '2px solid var(--danger)',
 }
 
 export const modalHeaderLeft: CSSProperties = {
@@ -50,11 +50,11 @@ export const modalHeaderRight: CSSProperties = {
 }
 
 export const mpdsModalBadge: CSSProperties = {
-  backgroundColor: 'var(--border-light)',
-  border: '2px solid var(--accent-blue)',
-  borderRadius: 6,
+  backgroundColor: 'var(--line-soft)',
+  border: '2px solid var(--accent)',
+  borderRadius: 'var(--radius-md)',
   padding: '6px 12px',
-  color: 'var(--accent-blue)',
+  color: 'var(--accent)',
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-black)',
   fontFamily: 'var(--font-mono)',
@@ -63,9 +63,9 @@ export const mpdsModalBadge: CSSProperties = {
 export const modalCloseBtn: CSSProperties = {
   padding: '4px 10px',
   backgroundColor: 'transparent',
-  color: 'var(--text-muted)',
-  border: '1px solid var(--border-bright)',
-  borderRadius: 4,
+  color: 'var(--text-3)',
+  border: '1px solid var(--line-strong)',
+  borderRadius: 'var(--radius-sm)',
   cursor: 'pointer',
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
@@ -83,16 +83,16 @@ export const modalFooter: CSSProperties = {
   alignItems: 'center',
   gap: 8,
   padding: '10px 16px',
-  borderTop: '1px solid var(--border)',
+  borderTop: '1px solid var(--line)',
   backgroundColor: 'var(--bg-surface)',
 }
 
 export const modalDispatchBtn: CSSProperties = {
   padding: '10px 24px',
-  backgroundColor: 'var(--danger-red)',
-  color: '#fff',
+  backgroundColor: 'var(--danger)',
+  color: 'var(--on-danger)',
   border: 'none',
-  borderRadius: 6,
+  borderRadius: 'var(--radius-md)',
   fontSize: 'var(--fs-body-lg)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
@@ -100,18 +100,18 @@ export const modalDispatchBtn: CSSProperties = {
 }
 
 export const modalDispatchBtnDisabled: CSSProperties = {
-  backgroundColor: 'var(--bg-elevated)',
-  color: 'var(--text-muted)',
+  backgroundColor: 'var(--bg-raised)',
+  color: 'var(--text-3)',
   cursor: 'not-allowed',
   opacity: 0.55,
 }
 
 export const modalSaveBtn: CSSProperties = {
   padding: '8px 16px',
-  backgroundColor: 'var(--bg-elevated)',
-  color: 'var(--text-secondary)',
-  border: '1px solid var(--border)',
-  borderRadius: 6,
+  backgroundColor: 'var(--bg-raised)',
+  color: 'var(--text-2)',
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--radius-md)',
   fontSize: 'var(--fs-caption)',
   cursor: 'pointer',
 }
@@ -119,18 +119,18 @@ export const modalSaveBtn: CSSProperties = {
 export const modalEndCallBtn: CSSProperties = {
   padding: '8px 12px',
   backgroundColor: 'transparent',
-  color: 'var(--text-muted)',
-  border: '1px solid var(--border)',
-  borderRadius: 6,
+  color: 'var(--text-3)',
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--radius-md)',
   fontSize: 'var(--fs-small)',
   cursor: 'pointer',
 }
 
 export const modalWarning: CSSProperties = {
   padding: '6px 16px',
-  backgroundColor: 'var(--danger-red-bg)',
-  borderTop: '1px solid var(--danger-red)',
-  color: 'var(--danger-red)',
+  backgroundColor: 'var(--danger-bg)',
+  borderTop: '1px solid var(--danger)',
+  color: 'var(--danger)',
   fontSize: 'var(--fs-caption)',
   fontWeight: 'var(--fw-bold)',
   textAlign: 'center',
@@ -146,9 +146,9 @@ export const dispatchSent: CSSProperties = {
   alignItems: 'center',
   gap: 10,
   padding: '8px 12px',
-  backgroundColor: 'var(--bg-elevated)',
-  borderRadius: 6,
-  border: '1px solid var(--success-green-dim)',
+  backgroundColor: 'var(--bg-raised)',
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid var(--success-dim)',
   flex: 1,
 }
 
@@ -160,17 +160,17 @@ export const formLabel: CSSProperties = {
   display: 'block',
   fontSize: 'var(--fs-body-sm)',
   fontWeight: 'var(--fw-bold)',
-  color: 'var(--text-secondary)',
+  color: 'var(--text-2)',
   marginBottom: 4,
 }
 
 export const formInput: CSSProperties = {
   width: '100%',
   padding: '8px 10px',
-  borderRadius: 4,
-  border: '1px solid var(--border)',
-  backgroundColor: 'var(--bg-elevated)',
-  color: 'var(--text-primary)',
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--line)',
+  backgroundColor: 'var(--bg-raised)',
+  color: 'var(--text)',
   fontSize: 'var(--fs-body-sm)',
   fontFamily: 'var(--font-mono)',
   resize: 'vertical',

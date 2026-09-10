@@ -24,9 +24,9 @@ interface Point {
 }
 
 const RISK_COLOR: Record<RoutePlan['risk'], string> = {
-  low: '#22c55e',
-  medium: '#eab308',
-  high: '#ef4444',
+  low: 'var(--sev-1)',
+  medium: 'var(--sev-3)',
+  high: 'var(--sev-5)',
 }
 
 function nodeMap(routes: RoutePlan[]): Map<string, RoadNode> {
@@ -96,7 +96,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
       position: 'fixed',
       inset: 0,
       zIndex: 310,
-      backgroundColor: 'rgba(2, 6, 23, 0.72)',
+      backgroundColor: 'var(--glass-bg)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -113,8 +113,8 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           gridTemplateColumns: 'minmax(0, 1.65fr) minmax(280px, 0.8fr)',
           gridTemplateRows: 'auto minmax(0, 1fr)',
           overflow: 'hidden',
-          borderRadius: 12,
-          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-2xl)',
+          border: '1px solid var(--line)',
           backgroundColor: 'var(--bg-surface)',
           boxShadow: '0 24px 80px rgba(0,0,0,0.4)',
         }}
@@ -126,21 +126,21 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           justifyContent: 'space-between',
           gap: 16,
           padding: '13px 16px',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid var(--line)',
         }}>
           <div>
-            <div id="route-planner-title" style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' }}>
+            <div id="route-planner-title" style={{ fontSize: 'var(--fs-subtitle)', fontWeight: 800, color: 'var(--text)' }}>
               城市路网 · 节点式路线规划
             </div>
-            <div style={{ marginTop: 3, fontSize: 11, color: 'var(--text-muted)' }}>
+            <div style={{ marginTop: 3, fontSize: 'var(--fs-small)', color: 'var(--text-3)' }}>
               路网示意图 · 从上到下逐段选择，直至到达事件现场
             </div>
-            <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 10 }}>
-              <span style={{ color: 'var(--success-green)' }}>✓ 系统自动配车</span>
-              <span style={{ color: 'var(--text-muted)' }}>→</span>
-              <strong style={{ color: 'var(--accent-gold)' }}>2 逐节点选择</strong>
-              <span style={{ color: 'var(--text-muted)' }}>→</span>
-              <span style={{ color: completedRoute ? 'var(--success-green)' : 'var(--text-muted)' }}>3 确认派车</span>
+            <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 'var(--fs-micro)' }}>
+              <span style={{ color: 'var(--success)' }}>✓ 系统自动配车</span>
+              <span style={{ color: 'var(--text-3)' }}>→</span>
+              <strong style={{ color: 'var(--warning)' }}>2 逐节点选择</strong>
+              <span style={{ color: 'var(--text-3)' }}>→</span>
+              <span style={{ color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>3 确认派车</span>
             </div>
           </div>
           <button aria-label="关闭路线规划" onClick={onCancel} style={iconButtonStyle}>
@@ -148,10 +148,10 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           </button>
         </header>
 
-        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 14, borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 14, borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-              当前节点：<strong style={{ color: 'var(--text-primary)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong>
+            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)' }}>
+              当前节点：<strong style={{ color: 'var(--text)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong>
               {' · '}下一步可选 {availableNextNodes.length} 个节点
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -169,9 +169,9 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             flex: 1,
             minHeight: 520,
             overflow: 'hidden',
-            borderRadius: 10,
-            border: '1px solid var(--border)',
-            background: 'radial-gradient(circle at 50% 45%, var(--bg-elevated), var(--bg-deep))',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--line)',
+            background: 'radial-gradient(circle at 50% 45%, var(--bg-raised), var(--bg-deep))',
           }}>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
               {segments.map(segment => {
@@ -189,7 +189,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                     y1={from.y}
                     x2={to.x}
                     y2={to.y}
-                    stroke={isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--text-muted)'}
+                    stroke={isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-3)'}
                     strokeWidth={isSelected ? 1.4 : isNext ? 1.1 : 0.65}
                     opacity={visible ? (isSelected ? 1 : 0.72) : 0.14}
                     vectorEffect="non-scaling-stroke"
@@ -223,10 +223,10 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                     transform: 'translate(-50%, -50%)',
                     zIndex: 2,
                     padding: '2px 5px',
-                    borderRadius: 4,
-                    border: `1px solid ${isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--border)'}`,
+                    borderRadius: 'var(--radius-sm)',
+                    border: `1px solid ${isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--line)'}`,
                     backgroundColor: 'color-mix(in srgb, var(--bg-deep) 88%, transparent)',
-                    color: isSelected ? 'var(--accent-cyan)' : isNext ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                    color: isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-2)',
                     opacity: visible ? 1 : 0.22,
                     fontSize: 8,
                     fontWeight: 800,
@@ -262,13 +262,13 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                     width: 44,
                     height: 44,
                     borderRadius: '50%',
-                    border: `2px solid ${selected ? 'var(--accent-cyan)' : available ? 'var(--accent-gold)' : 'var(--border)'}`,
-                    backgroundColor: selected ? 'var(--accent-cyan)' : available ? 'var(--bg-surface)' : 'var(--bg-elevated)',
-                    color: selected ? 'var(--bg-deep)' : available ? 'var(--accent-gold)' : 'var(--text-muted)',
+                    border: `2px solid ${selected ? 'var(--accent)' : available ? 'var(--warning)' : 'var(--line)'}`,
+                    backgroundColor: selected ? 'var(--accent)' : available ? 'var(--bg-surface)' : 'var(--bg-raised)',
+                    color: selected ? 'var(--bg-deep)' : available ? 'var(--warning)' : 'var(--text-3)',
                     opacity: hiddenBranch ? 0.22 : disabled && !selected ? 0.48 : 1,
                     cursor: available ? 'pointer' : 'default',
                     zIndex: available || selected ? 3 : 2,
-                    boxShadow: available ? '0 0 0 5px color-mix(in srgb, var(--accent-gold) 15%, transparent)' : 'none',
+                    boxShadow: available ? '0 0 0 5px color-mix(in srgb, var(--warning) 15%, transparent)' : 'none',
                   }}
                 >
                   {node.kind === 'incident' ? <MapPin size={14} /> : node.kind === 'station' ? <Truck size={14} /> : <span style={{ fontSize: 9, fontWeight: 900 }}>●</span>}
@@ -288,7 +288,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                   transform: 'translateX(-50%)',
                   whiteSpace: 'nowrap',
                   pointerEvents: 'none',
-                  color: emphasized ? 'var(--text-primary)' : 'var(--text-muted)',
+                  color: emphasized ? 'var(--text)' : 'var(--text-3)',
                   opacity: emphasized ? 1 : 0.6,
                   fontSize: 9,
                   fontWeight: emphasized ? 700 : 500,
@@ -299,35 +299,35 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             })}
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 10 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, color: 'var(--text-3)', fontSize: 'var(--fs-micro)' }}>
             <span>路段文字：</span>
             {['畅通', '车流较大', '拥堵', '维修施工', '学校特殊路段', '事故占道'].map(label => (
-              <span key={label} style={{ padding: '2px 5px', borderRadius: 4, border: '1px solid var(--border)', backgroundColor: 'var(--bg-elevated)' }}>{label}</span>
+              <span key={label} style={{ padding: '2px 5px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', backgroundColor: 'var(--bg-raised)' }}>{label}</span>
             ))}
           </div>
         </div>
 
         <aside className="route-summary-panel" style={{ minHeight: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
           {priorityChannelActive && (
-            <div style={{ padding: '8px 10px', borderRadius: 7, color: 'var(--accent-gold)', backgroundColor: 'var(--accent-gold-dim)', fontSize: 11 }}>
+            <div style={{ padding: '8px 10px', borderRadius: 'var(--radius-md)', color: 'var(--warning)', backgroundColor: 'var(--warning-dim)', fontSize: 'var(--fs-small)' }}>
               优先通道已生效：所有路线 ETA -5 秒
             </div>
           )}
 
           {!activeRoute ? (
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>根据道路文字继续选择</div>
-              <div style={{ marginTop: 6, fontSize: 11, lineHeight: 1.7, color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 700, color: 'var(--text)' }}>根据道路文字继续选择</div>
+              <div style={{ marginTop: 6, fontSize: 'var(--fs-small)', lineHeight: 1.7, color: 'var(--text-3)' }}>
                 这张路网包含入口分叉、中段分叉和中心交汇点。相同道路由多条方案共享，途中需要多次权衡拥堵、维修施工和学校特殊路段。
               </div>
             </div>
           ) : (
             <>
-              <div style={{ padding: 12, borderRadius: 8, border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-elevated)' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>{activeRoute.label}</div>
-                <div style={{ marginTop: 5, fontSize: 11, lineHeight: 1.55, color: 'var(--text-muted)' }}>{activeRoute.summary}</div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 10, fontSize: 11 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent-cyan)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
+              <div style={{ padding: 12, borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text)' }}>{activeRoute.label}</div>
+                <div style={{ marginTop: 5, fontSize: 'var(--fs-small)', lineHeight: 1.55, color: 'var(--text-3)' }}>{activeRoute.summary}</div>
+                <div style={{ display: 'flex', gap: 12, marginTop: 10, fontSize: 'var(--fs-small)' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
                 </div>
               </div>
@@ -340,12 +340,12 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                   const fromLabel = nodes.get(segment.fromId)?.label ?? `节点 ${index + 1}`
                   const toLabel = nodes.get(segment.toId)?.label ?? `节点 ${index + 2}`
                   return (
-                    <div key={segment.id} style={{ padding: '7px 8px', borderRadius: 6, border: '1px solid var(--border)', opacity: traversed || current ? 1 : 0.58 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 10 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>{fromLabel} → {toLabel}</span>
-                        <strong style={{ padding: '1px 4px', borderRadius: 3, border: '1px solid var(--border)', color: 'var(--text-primary)' }}>{segment.conditionLabel}</strong>
+                    <div key={segment.id} style={{ padding: '7px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--line)', opacity: traversed || current ? 1 : 0.58 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 'var(--fs-micro)' }}>
+                        <span style={{ color: 'var(--text-2)' }}>{fromLabel} → {toLabel}</span>
+                        <strong style={{ padding: '1px 4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--line)', color: 'var(--text)' }}>{segment.conditionLabel}</strong>
                       </div>
-                      <div style={{ marginTop: 3, fontSize: 9, color: 'var(--text-muted)' }}>{segment.description}</div>
+                      <div style={{ marginTop: 3, fontSize: 9, color: 'var(--text-3)' }}>{segment.description}</div>
                     </div>
                   )
                 })}
@@ -354,7 +354,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           )}
 
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <div style={{ minHeight: 30, fontSize: 10, lineHeight: 1.5, color: completedRoute ? 'var(--success-green)' : 'var(--text-muted)' }}>
+            <div style={{ minHeight: 30, fontSize: 'var(--fs-micro)', lineHeight: 1.5, color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>
               {completedRoute ? `已到达事件现场，可确认 ${completedRoute.label}` : '必须沿相邻节点抵达事件现场后才能派车'}
             </div>
             <button
@@ -362,11 +362,11 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
               disabled={!completedRoute}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                width: '100%', padding: '10px 12px', borderRadius: 7,
-                border: '1px solid var(--danger-red)',
-                backgroundColor: completedRoute ? 'var(--danger-red)' : 'var(--bg-elevated)',
-                color: completedRoute ? '#fff' : 'var(--text-muted)',
-                fontSize: 12, fontWeight: 800, cursor: completedRoute ? 'pointer' : 'not-allowed',
+                width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--danger)',
+                backgroundColor: completedRoute ? 'var(--danger)' : 'var(--bg-raised)',
+                color: completedRoute ? 'var(--on-danger)' : 'var(--text-3)',
+                fontSize: 'var(--fs-caption)', fontWeight: 800, cursor: completedRoute ? 'pointer' : 'not-allowed',
               }}
             >
               <Navigation size={15} /> 确认路线并派车
@@ -384,9 +384,9 @@ const iconButtonStyle = {
   justifyContent: 'center',
   padding: 5,
   border: 'none',
-  borderRadius: 5,
+  borderRadius: 'var(--radius-sm)',
   background: 'transparent',
-  color: 'var(--text-muted)',
+  color: 'var(--text-3)',
   cursor: 'pointer',
 } as const
 
@@ -395,10 +395,10 @@ const smallButtonStyle = {
   alignItems: 'center',
   gap: 4,
   padding: '5px 7px',
-  borderRadius: 5,
-  border: '1px solid var(--border)',
-  backgroundColor: 'var(--bg-elevated)',
-  color: 'var(--text-secondary)',
-  fontSize: 10,
+  borderRadius: 'var(--radius-sm)',
+  border: '1px solid var(--line)',
+  backgroundColor: 'var(--bg-raised)',
+  color: 'var(--text-2)',
+  fontSize: 'var(--fs-micro)',
   cursor: 'pointer',
 } as const

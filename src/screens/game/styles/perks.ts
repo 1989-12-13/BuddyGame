@@ -14,7 +14,7 @@ export const perkScreen: CSSProperties = {
 
 export const perkHeader: CSSProperties = {
   fontSize: 'var(--fs-caption)',
-  color: 'var(--accent-cyan-bright)',
+  color: 'var(--accent-strong)',
   fontFamily: 'var(--font-mono)',
   letterSpacing: 2,
   fontWeight: 'var(--fw-extrabold)',
@@ -22,13 +22,13 @@ export const perkHeader: CSSProperties = {
 
 export const perkTitle: CSSProperties = {
   margin: 0,
-  color: 'var(--text-primary)',
+  color: 'var(--text)',
   fontSize: 'var(--fs-heading)',
 }
 
 export const perkSubtitle: CSSProperties = {
   margin: 0,
-  color: 'var(--text-muted)',
+  color: 'var(--text-3)',
   fontSize: 'var(--fs-body-sm)',
   maxWidth: 560,
   textAlign: 'center',
@@ -46,10 +46,10 @@ export const perkGrid: CSSProperties = {
 export const perkCard: CSSProperties = {
   minHeight: 150,
   padding: '14px 16px',
-  border: '1px solid var(--border)',
-  borderRadius: 8,
-  backgroundColor: 'var(--bg-elevated)',
-  color: 'var(--text-primary)',
+  border: '1px solid var(--line)',
+  borderRadius: 'var(--radius-lg)',
+  backgroundColor: 'var(--bg-raised)',
+  color: 'var(--text)',
   display: 'flex',
   flexDirection: 'column',
   gap: 8,
@@ -60,7 +60,7 @@ export const perkCard: CSSProperties = {
 
 export const perkCategory: CSSProperties = {
   fontSize: 'var(--fs-micro)',
-  color: 'var(--accent-cyan-bright)',
+  color: 'var(--accent-strong)',
   fontFamily: 'var(--font-mono)',
   letterSpacing: 1.2,
   fontWeight: 'var(--fw-extrabold)',
@@ -73,7 +73,7 @@ export const perkName: CSSProperties = {
 
 export const perkDesc: CSSProperties = {
   fontSize: 'var(--fs-caption)',
-  color: 'var(--text-secondary)',
+  color: 'var(--text-2)',
   lineHeight: 1.5,
   flex: 1,
 }
@@ -81,9 +81,9 @@ export const perkDesc: CSSProperties = {
 export const perkEffect: CSSProperties = {
   alignSelf: 'flex-start',
   padding: '4px 8px',
-  border: '1px solid var(--accent-cyan-bright)',
+  border: '1px solid var(--accent-strong)',
   borderRadius: 999,
-  color: 'var(--accent-cyan-bright)',
+  color: 'var(--accent-strong)',
   fontSize: 'var(--fs-small)',
   fontWeight: 'var(--fw-extrabold)',
 }

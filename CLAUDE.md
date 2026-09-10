@@ -194,8 +194,20 @@ interface MiniGameProps {
 ## 构建与样式
 
 - Vite 6，alias `@` → `src/`。
-- 无 UI 框架、无 CSS-in-JS。颜色 / 间距集中在 `src/styles/tokens.css`，动画在 `animations.css`。
+- 无 UI 框架、无 CSS-in-JS。**唯一色彩来源**为 `src/styles/tokens.css`（设计令牌），动画在 `animations.css`。
+- **视觉风格**：写实 DOC / 应急指挥中心，主色为深青绿调度台色板；双主题 `data-theme='dark'|'light'`（深色为默认）。
+- **设计令牌命名约定**：
+  - 表面 `--bg / --bg-surface / --bg-raised / --bg-hover / --bg-input / --bg-deep`
+  - 文字 `--text / --text-2 / --text-3 / --text-dim`
+  - 边框 `--line / --line-soft / --line-strong`
+  - 主色 `--accent / -strong / -dim / -bg / -line / --on-accent`（另有 `--on-danger`）
+  - 语义色 `--success | --warning | --danger | --info`（各带 `-strong / -dim / -bg / -line`）
+  - 分级色阶 `--sev-1 … --sev-5`（最佳/最轻 → 最差/最重，统一用于玩家评级 / 来电者情绪 / 患者稳定度 / MPDS 判定级）
+  - 动效 `--dur-fast|base|slow` + `--ease-out|in-out|spring`
+- **新样式一律使用令牌**，不要在 CSS / 内联样式中写死颜色。
+- JS 侧语义色见 `game/core/colors.ts`（值即 `var(--token)` 引用）。需要**真实色值**的场景（Leaflet pathOptions / Canvas）用 `contexts/ThemeContext.tsx` 的 `colors`（其值为 tokens.css 的 hex 镜像）。
 - 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`），是项目惯例。
+- 设计系统预览页：`npm run dev` 后访问 `http://localhost:5173/?preview=tokens`（`screens/DesignSystemPreview.tsx` + `styles/design-system-preview.css`）。
 
 ## 关键约定
 

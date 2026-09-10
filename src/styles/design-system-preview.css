@@ -1,0 +1,361 @@
+/* ============================================================
+   120 调度台 — 设计系统预览页布局
+   本文件不含任何颜色定义，颜色全部来自 tokens.css 的设计令牌，
+   预览页仅负责把令牌「可视化」出来。
+   访问方式：http://localhost:5173/?preview=tokens
+   ============================================================ */
+
+.dsg {
+  min-height: 100dvh;
+  background: var(--bg);
+  background-image: linear-gradient(180deg, var(--bg-gradient-head) 0%, var(--bg-gradient-foot) 100%);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dsg-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-xl) var(--space-3xl);
+}
+
+.dsg-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--line);
+}
+
+.dsg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.dsg-title {
+  font-size: var(--fs-heading-lg);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+  margin-top: var(--space-xs);
+}
+
+.dsg-desc {
+  color: var(--text-2);
+  font-size: var(--fs-body-sm);
+  margin-top: var(--space-xs);
+  max-width: 62ch;
+}
+
+.dsg-desc code {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+.dsg-head-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.dsg-section {
+  margin-top: var(--space-2xl);
+}
+
+.dsg-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.dsg-section-title {
+  font-size: var(--fs-subtitle);
+  font-weight: var(--fw-semibold);
+}
+
+.dsg-section-note {
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+}
+
+.dsg-grid {
+  display: grid;
+  gap: var(--space-sm);
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+}
+
+.dsg-swatch {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+.dsg-swatch-chip {
+  height: 62px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.dsg-swatch-meta {
+  padding: var(--space-sm) var(--space-md);
+}
+
+.dsg-swatch-name {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text);
+  word-break: break-all;
+}
+
+.dsg-swatch-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  margin-top: 3px;
+  word-break: break-all;
+}
+
+.dsg-swatch-label {
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+  margin-top: var(--space-xs);
+}
+
+.dsg-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+/* 按钮样例 */
+.dsg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: inherit;
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-medium);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}
+
+.dsg-btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.dsg-btn--primary:hover {
+  background: var(--accent-strong);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.dsg-btn--secondary {
+  background: var(--bg-raised);
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+.dsg-btn--secondary:hover {
+  background: var(--bg-hover);
+}
+
+.dsg-btn--danger {
+  background: var(--danger);
+  color: var(--on-danger);
+}
+.dsg-btn--danger:hover {
+  background: var(--danger-strong);
+  box-shadow: var(--shadow-glow-danger);
+}
+
+.dsg-btn--ghost {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent-line);
+}
+.dsg-btn--ghost:hover {
+  background: var(--accent-bg);
+}
+
+.dsg-btn--disabled,
+.dsg-btn:disabled {
+  background: var(--bg-hover);
+  color: var(--text-dim);
+  border-color: var(--line-soft);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 徽章 / 分诊标签 */
+.dsg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  padding: 3px var(--space-sm);
+  border-radius: var(--radius-full);
+  border: 1px solid;
+}
+
+/* 卡片 / 玻璃拟态 */
+.dsg-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dsg-glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-md);
+}
+
+/* 进度条 */
+.dsg-bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-hover);
+  overflow: hidden;
+}
+.dsg-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+/* 输入框 */
+.dsg-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--fs-body-sm);
+  color: var(--text);
+  background: var(--bg-input);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+}
+.dsg-input::placeholder {
+  color: var(--text-dim);
+}
+.dsg-input:focus {
+  outline: none;
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+/* 排版样例 */
+.dsg-type-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px dashed var(--line-soft);
+}
+.dsg-type-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+/* 色阶条 */
+.dsg-sev-bar {
+  display: flex;
+  height: 46px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.dsg-sev-cell {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+}
+
+/* 阴影样例 */
+.dsg-shadow-grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.dsg-shadow-box {
+  height: 76px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+}
+
+/* 间距刻度 */
+.dsg-space-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 3px 0;
+}
+.dsg-space-tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  width: 92px;
+  flex: none;
+}
+.dsg-space-block {
+  height: 12px;
+  background: var(--accent);
+  border-radius: var(--radius-xs);
+  opacity: 0.75;
+}
+
+/* 动效样例 */
+.dsg-anim-track {
+  position: relative;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+}
+.dsg-anim-dot {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  margin-top: -11px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+.dsg-anim-dot--slow {
+  background: var(--warning);
+}
+.dsg-anim-dot--spring {
+  background: var(--info);
+}

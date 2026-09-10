@@ -216,11 +216,11 @@ describe('vitalSignLabel', () => {
 // vitalSignColor
 // ============================================================
 describe('vitalSignColor', () => {
-  it('返回颜色 hex', () => {
-    expect(vitalSignColor('stable')).toBe('#16a34a')
-    expect(vitalSignColor('warning')).toBe('#f59e0b')
-    expect(vitalSignColor('critical')).toBe('#ef4444')
-    expect(vitalSignColor('arrest')).toBe('#dc2626')
+  it('返回设计令牌引用', () => {
+    expect(vitalSignColor('stable')).toBe('var(--sev-1)')
+    expect(vitalSignColor('warning')).toBe('var(--sev-3)')
+    expect(vitalSignColor('critical')).toBe('var(--sev-4)')
+    expect(vitalSignColor('arrest')).toBe('var(--sev-5)')
   })
 })
 

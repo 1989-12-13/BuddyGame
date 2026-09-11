@@ -1,5 +1,6 @@
 // ============================================================
 // 120调度台 — 班次评估/结局画面（暗色调度台主题 + 通话卡片）
+// 结构：评级徽章 → 标题 → 总分 → 接警记录 → 结局文案 → 重新值班
 // ============================================================
 
 import { formatPlayTime } from '../game/core/pacing'
@@ -54,36 +55,26 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
       <div style={ecgLineStyle(rating)} />
 
       <div style={styles.content}>
-        {/* Rating badge */}
         <div style={styles.badgeWrap}>
           <div style={badgeStyle(rating)}>
             {rating !== 'fail' ? <Trophy size={14} /> : <Activity size={14} />}{ending.badge}
           </div>
         </div>
 
-        {/* Title */}
         <h1 style={styles.title}>{ending.title}</h1>
         <p style={styles.subtitle}>{ending.subtitle}</p>
-        <p style={styles.description}>本班次有效体验：{formatPlayTime(activeSeconds)}<br />不包含暂停、复盘和车辆周转时间。</p>
 
-        <div style={styles.divider} />
-
-        {/* Total score */}
         <div style={scoreBoxStyle(rating)}>
           <span style={styles.scoreLabel}>操作评价</span>
           <span style={scoreValueStyle(rating)}>{totalScore}</span>
           <span style={styles.scoreMax}>/ {maxScore}</span>
         </div>
 
-        {/* Per-call cards */}
         {calls.length > 0 && (
-          <>
-            <div style={styles.divider} />
+          <div style={styles.callsPanel}>
             <div style={styles.callsHeader}>
               <span style={styles.callsHeaderText}>今晚接警记录</span>
-              <span style={savedSummaryStyle(solidCount, totalCalls)}>
-                稳健处理 {solidCount} / {totalCalls} 通
-              </span>
+              <span style={savedSummaryStyle(solidCount, totalCalls)}>稳健处理 {solidCount} / {totalCalls} 通</span>
             </div>
             <div style={styles.cardsGrid}>
               {calls.map((score, i) => {
@@ -107,17 +98,12 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
                 )
               })}
             </div>
-          </>
+          </div>
         )}
 
-        <div style={styles.divider} />
-
-        {/* Description / outcome narrative */}
         <p style={styles.description}>{ending.description}</p>
+        <p style={styles.footnote}>本班次有效体验 {formatPlayTime(activeSeconds)} · 不含暂停与复盘</p>
 
-        <div style={styles.divider} />
-
-        {/* Restart */}
         <button style={styles.restartBtn} onClick={handleRestart}>
           <RotateCcw size={14} style={{ marginRight: 'var(--space-4)', verticalAlign: 'text-bottom' }} />重新值班
         </button>

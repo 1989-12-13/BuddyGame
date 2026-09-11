@@ -1,12 +1,13 @@
 import { Phone, MapPin, HeartPulse, UserRound, Hash, ListChecks, FileText, Activity, ClipboardList } from 'lucide-react'
 import type { TerminalState, MpdsDeterminant } from '../../../game/types'
 import type { TerminalField } from '../../../game/core/actions'
-import { PROTOCOL_REF, TRIAGE_LABELS } from '../../../game/types'
+import { TRIAGE_LABELS } from '../../../game/types'
 import { styles } from '../styles'
 import { SectionTitle } from './SectionTitle'
 import { FieldRow } from './FieldRow'
 import { StatusToggle } from './StatusToggle'
 import { DeterminantSelector } from './DeterminantSelector'
+import { ProtocolPicker } from './ProtocolPicker'
 
 /** MPDS 标准调度登记卡 — 结构化病例录入（无自动提示，玩家自主判断）
  * 必填项：意识状态 / 呼吸状态 / MPDS 判定码（标 *）；其它字段（地址/电话/主诉/年龄/性别/备注/协议号/子编码）可选
@@ -24,7 +25,7 @@ export function TerminalForm({
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
   onSetDeterminantSubcode: (subcode: number) => void
-  onSetProtocol: (protocol: number) => void
+  onSetProtocol: (protocol: number | null) => void
 }) {
   const RequiredMark = () => (
     <span style={{ color: 'var(--danger)', marginLeft: 'var(--space-2)', fontWeight: 'var(--fw-bold)' }}>*</span>
@@ -132,47 +133,8 @@ export function TerminalForm({
       {/* ====== 协议号（可选） ====== */}
       <SectionTitle icon={<ListChecks size={15} />} text="MPDS 协议" />
       <FieldRow icon={<Hash size={15} />} label="协议编号">
-        <input
-          aria-label="协议编号"
-          type="number"
-          min={1}
-          max={33}
-          style={{ ...styles.formInput, height: 30, width: 80 }}
-          value={terminal.protocolNumber ?? ''}
-          onChange={(e) => {
-            const v = parseInt(e.target.value, 10)
-            if (v >= 1 && v <= 33) onSetProtocol(v)
-          }}
-          placeholder="?"
-        />
+        <ProtocolPicker value={terminal.protocolNumber} onChange={onSetProtocol} />
       </FieldRow>
-
-      {/* 协议号对照参考（折叠） */}
-      <details style={{ margin: '-4px 0 var(--space-8) var(--space-20)', fontSize: 'var(--fs-small)' }}>
-        <summary style={{ color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none' }}>
-          协议编号对照
-        </summary>
-        <div style={{
-          marginTop: 'var(--space-4)',
-          padding: 'var(--space-6)',
-          backgroundColor: 'var(--bg-surface)',
-          borderRadius: 'var(--radius-sm)',
-          maxHeight: 160,
-          overflowY: 'auto',
-          color: 'var(--text-2)',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 'var(--space-1) var(--space-12)',
-          fontSize: 'var(--fs-small)',
-        }}>
-          {PROTOCOL_REF.map(([num, name]) => (
-            <div key={num} style={{ display: 'flex', gap: 'var(--space-4)', padding: 'var(--space-1) 0' }}>
-              <span style={{ color: 'var(--accent)', fontWeight: 'var(--fw-bold)', minWidth: 20 }}>{num}</span>
-              <span>{name}</span>
-            </div>
-          ))}
-        </div>
-      </details>
 
       {/* ====== 判定码（必填） ====== */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>

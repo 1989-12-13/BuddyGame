@@ -254,4 +254,24 @@ describe('worldReducer', () => {
 
     expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(6)
   })
+
+  it('clears the transcript, dispatch record and task card when a call ends', () => {
+    const answered = beginCall()
+    const asked = worldReducer(answered, { type: 'ASK_QUESTION', questionId: 'step1_location' })
+    const ended = worldReducer(asked, { type: 'END_CALL' })
+
+    // 本通即时状态被清空，不会残留到下一通
+    expect(ended.currentCall).toBeNull()
+    expect(ended.dialogueLog).toEqual([])
+    expect(ended.pendingJudgments).toEqual([])
+    expect(ended.dispatchSent).toBe(false)
+    expect(ended.handoff.completed).toBe(false)
+    // 调度登记表被重置
+    expect(ended.terminal.address).toBe('')
+    expect(ended.terminal.conscious).toBeNull()
+    expect(ended.terminal.breathing).toBeNull()
+    // 本通完整对话已归档，仍可在「已完成记录」里回看
+    expect(ended.callHistory).toHaveLength(1)
+    expect(ended.callHistory[0].dialogueLog.length).toBeGreaterThan(0)
+  })
 })

@@ -42,7 +42,6 @@ export function GuidancePanel({
       <strong className={correct ? 'success-text' : 'danger-text'}>{correct ? <CheckCircle2 size={20} /> : <TriangleAlert size={20} />}{correct ? '操作已记录' : '这一步需要调整'}</strong>
       <p>{correct ? currentStep.feedback.correct : currentStep.feedback.incorrect}</p>
       <blockquote>{correct ? (currentStep.miniGame?.feedback.good ?? currentStep.feedback.callerCorrect) : (currentStep.miniGame?.feedback.bad ?? currentStep.feedback.callerIncorrect)}</blockquote>
-      <p className="helper">先核对来电者的反馈。继续后会停止上一段语音，通话计时保持进行。</p>
       <button className="primary" disabled={disabled} onClick={onContinue}>我已核对，继续指导<ArrowRight size={18} /></button>
     </section>
   }
@@ -118,7 +117,7 @@ export function GuidancePanel({
       {currentStep.miniGame ? (
         <>
           <p style={styles.guidancePrompt}>步骤{stepIndex + 1}：{currentStep.prompt}</p>
-          {!started ? <div className="minigame-brief"><p>{currentStep.miniGame.instruction}</p><button className="primary" disabled={disabled || paused} onClick={() => setStarted(true)}>开始本步操作<ArrowRight size={18} /></button><p className="helper">准备好后开始。救护车仍在行驶，游戏暂停按钮会同时暂停车辆和操作。</p></div> : <MiniGameHost
+          {!started ? <div className="minigame-brief"><p>{currentStep.miniGame.instruction}</p><button className="primary" disabled={disabled || paused} onClick={() => setStarted(true)}>开始本步操作<ArrowRight size={18} /></button></div> : <MiniGameHost
             spec={currentStep.miniGame}
             onComplete={(score, passed) => onCompleteMiniGame(stepIndex, score, passed)}
             paused={paused}

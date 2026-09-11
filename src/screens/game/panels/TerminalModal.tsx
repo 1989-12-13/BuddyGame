@@ -25,7 +25,7 @@ export function TerminalModal({
   onSetStatus: (field: 'conscious' | 'breathing', value: boolean) => void
   onSetDeterminant: (d: MpdsDeterminant) => void
   onSetDeterminantSubcode: (subcode: number) => void
-  onSetProtocol: (protocol: number) => void
+  onSetProtocol: (protocol: number | null) => void
   onDispatch: () => void
   onClose: () => void
   onEndCall: () => void

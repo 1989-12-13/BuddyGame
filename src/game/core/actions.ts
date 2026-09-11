@@ -22,7 +22,7 @@ export type GameAction =
   | { type: 'SET_PATIENT_STATUS'; field: 'conscious' | 'breathing'; value: boolean }
   | { type: 'SET_MPDS_DETERMINANT'; determinant: MpdsDeterminant }
   | { type: 'SET_DETERMINANT_SUBCODE'; subcode: number }
-  | { type: 'SET_PROTOCOL'; protocolNumber: number }
+  | { type: 'SET_PROTOCOL'; protocolNumber: number | null }
   | { type: 'SET_TRIAGE'; level: TriageLevel }
   | { type: 'DISPATCH'; callInstanceId?: number; vehicleId: string; route: RoutePlan; routeOptions?: RoutePlan[] }   // 系统车辆 + 玩家逐节点确认的完整路线
   | { type: 'REROUTE_AMBULANCE'; callInstanceId: number; routeId: string }

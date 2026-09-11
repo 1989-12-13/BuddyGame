@@ -132,9 +132,6 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             <div id="route-planner-title" style={{ fontSize: 'var(--fs-subtitle)', fontWeight: 800, color: 'var(--text)' }}>
               城市路网 · 节点式路线规划
             </div>
-            <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--fs-small)', color: 'var(--text-3)' }}>
-              路网示意图 · 从上到下逐段选择，直至到达事件现场
-            </div>
             <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginTop: 'var(--space-8)', fontSize: 'var(--fs-micro)' }}>
               <span style={{ color: 'var(--success)' }}>✓ 系统自动配车</span>
               <span style={{ color: 'var(--text-3)' }}>→</span>
@@ -315,12 +312,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           )}
 
           {!activeRoute ? (
-            <div>
-              <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 700, color: 'var(--text)' }}>根据道路文字继续选择</div>
-              <div style={{ marginTop: 'var(--space-6)', fontSize: 'var(--fs-small)', lineHeight: 1.7, color: 'var(--text-3)' }}>
-                这张路网包含入口分叉、中段分叉和中心交汇点。相同道路由多条方案共享，途中需要多次权衡拥堵、维修施工和学校特殊路段。
-              </div>
-            </div>
+            <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 700, color: 'var(--text)' }}>沿道路文字逐段选择</div>
           ) : (
             <>
               <div style={{ padding: 'var(--space-12)', borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>

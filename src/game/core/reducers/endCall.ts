@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { WorldState, DialogueLine, CallHistoryEntry } from '../../types'
-import { scoreCall } from '../worldState'
+import { scoreCall, createTerminalState } from '../worldState'
 import { isPrankVerified } from '../judgments'
 import { hasPerk, getPerkChoices } from '../perks'
 import { buildDebrief } from '../debrief'
@@ -219,6 +219,9 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
       }]
     : state.backgroundRescues
 
+  // 通话结束后清空全部「本通」瞬时状态：
+  // 通话实录（dialogueLog）与调度登记表（terminal）不再残留到下一通。
+  // 本通完整对话已快照进 callHistory，玩家仍可在「已完成记录」里回看。
   return {
     ...state,
     callIndex: nextCallIndex,
@@ -226,12 +229,30 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     currentCall: null,
     callerState: null,
     fleet: newFleet,
-    dispatchSent: false,  // HUD 不再显示当前通话 ETA
-    dispatchRecord: null,  // 清除当前通话派车记录
+    dispatchSent: false,
+    dispatchRecord: null,
+    ambulanceRemaining: -1,
+    terminal: createTerminalState(),
+    dialogueLog: [],
+    pendingJudgments: [],
+    patientStatus: null,
+    patientEvents: [],
+    rescue: { phase: 'idle', vehicleId: null, vehicleName: null, etaTotal: 0, arrivalShiftTime: null, outcome: null, successScore: null, failureReason: null },
+    handoff: { attempts: 0, selectedFactIds: [], firstAttemptCorrect: null, feedback: [], completed: false },
+    rerouteOptions: [],
+    pendingReroute: null,
+    rerouteUsed: false,
     guidanceActive: false,
+    guidanceStepIndex: 0,
+    guidanceResults: [],
+    guidanceMinigameScores: [],
+    calmCount: 0,
+    careChecks: {},
+    questionCost: 0,
+    triggeredEventIds: [],
+    actionEndsAt: state.shiftElapsed,
     totalScore: state.totalScore + total,
     callScores: nextCallScores,
-    dialogueLog: [...state.dialogueLog, summaryLine],
     screen: 'playing',
     shiftCompletePending: isShiftOver,
     lastDebrief,

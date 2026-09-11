@@ -49,3 +49,6 @@ export const Z_SETTINGS = 1000
 
 /** 知识库弹窗 */
 export const Z_KNOWLEDGE_MODAL = 1000
+
+/** 表单内的浮层（下拉列表等）— 需盖住面板内容，但不高于结算类弹窗 */
+export const Z_POPOVER = 700

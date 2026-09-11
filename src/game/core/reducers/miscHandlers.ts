@@ -60,7 +60,7 @@ export function handleSetDeterminantSubcode(state: WorldState, subcode: number):
   }
 }
 
-export function handleSetProtocol(state: WorldState, protocolNumber: number): WorldState {
+export function handleSetProtocol(state: WorldState, protocolNumber: number | null): WorldState {
   return {
     ...state,
     terminal: { ...state.terminal, protocolNumber },

@@ -237,6 +237,19 @@ export const styles: Record<string, CSSProperties> = {
     padding: '0 10px',
     fontFamily: 'var(--font-body)',
   },
+  callsPanel: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+  },
+  footnote: {
+    fontSize: 'var(--fs-caption)',
+    color: 'var(--text-3)',
+    margin: 0,
+    fontFamily: 'var(--font-mono)',
+  },
   restartBtn: {
     display: 'flex',
     alignItems: 'center',

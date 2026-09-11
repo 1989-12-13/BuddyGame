@@ -12,18 +12,18 @@ export const phonePanel: CSSProperties = {
 }
 
 export const phoneHeader: CSSProperties = {
-  padding: '8px 12px',
+  padding: 'var(--space-8) var(--space-12)',
   backgroundColor: 'var(--bg-surface)',
   borderBottom: '2px solid var(--danger)',
   display: 'flex',
   flexDirection: 'column',
-  gap: 4,
+  gap: 'var(--space-4)',
 }
 
 export const callLiveBar: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
+  gap: 'var(--space-8)',
 }
 
 export const liveDot: CSSProperties = {
@@ -51,7 +51,7 @@ export const callTimer: CSSProperties = {
 
 export const targetBadge: CSSProperties = {
   marginLeft: 'auto',
-  padding: '2px 8px',
+  padding: 'var(--space-2) var(--space-8)',
   borderRadius: 'var(--radius-xl)',
   border: '1px solid',
   fontSize: 'var(--fs-caption)',
@@ -62,7 +62,7 @@ export const targetBadge: CSSProperties = {
 export const phoneHeaderInfo: CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
   display: 'flex',
-  gap: 6,
+  gap: 'var(--space-6)',
   color: 'var(--text-2)',
   fontFamily: 'var(--font-mono)',
 }
@@ -77,10 +77,10 @@ export const callPhaseTag: CSSProperties = {
 export const dialogueArea: CSSProperties = {
   flex: 1,
   overflowY: 'auto',
-  padding: '10px 12px',
+  padding: 'var(--space-10) var(--space-12)',
   display: 'flex',
   flexDirection: 'column',
-  gap: 6,
+  gap: 'var(--space-6)',
   minHeight: 0,
   backgroundColor: 'var(--bg-surface)',
 }
@@ -89,14 +89,14 @@ export const transcript: CSSProperties = {
   fontSize: 'var(--fs-body)',
   lineHeight: 1.7,
   fontFamily: 'var(--font-mono)',
-  padding: '4px 0',
+  padding: 'var(--space-4) 0',
   borderBottom: '1px solid var(--line-soft)',
 }
 
 export const transcriptSpeaker: CSSProperties = {
   display: 'inline',
   fontWeight: 'var(--fw-bold)',
-  marginRight: 6,
+  marginRight: 'var(--space-6)',
   fontSize: 'var(--fs-body-sm)',
 }
 

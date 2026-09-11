@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 /** 问询区域 */
 export const questionArea: CSSProperties = {
   borderTop: '1px solid var(--line)',
-  padding: '6px 10px',
+  padding: 'var(--space-6) var(--space-10)',
   backgroundColor: 'var(--bg-surface)',
   flex: 1,
   minHeight: 60,
@@ -11,33 +11,33 @@ export const questionArea: CSSProperties = {
 }
 
 export const qSection: CSSProperties = {
-  marginBottom: 6,
+  marginBottom: 'var(--space-6)',
 }
 
 export const qSectionTitle: CSSProperties = {
   fontSize: 'var(--fs-caption)',
   fontWeight: 'var(--fw-bold)',
   color: 'var(--text-3)',
-  marginBottom: 3,
+  marginBottom: 'var(--space-2)',
   textTransform: 'uppercase',
   letterSpacing: 0.5,
   borderBottom: '1px solid var(--line)',
-  paddingBottom: 2,
+  paddingBottom: 'var(--space-2)',
 }
 
 /** 5步协议步骤列表 */
 export const protocolStepsList: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 4,
-  marginBottom: 4,
+  gap: 'var(--space-4)',
+  marginBottom: 'var(--space-4)',
 }
 
 export const protocolStepRow: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 10,
-  padding: '8px 10px',
+  gap: 'var(--space-10)',
+  padding: 'var(--space-8) var(--space-10)',
   borderRadius: 'var(--radius-md)',
   border: '1px solid',
   transition: 'all 0.25s',
@@ -57,7 +57,7 @@ export const protocolStepNum: CSSProperties = {
 }
 
 export const protocolStepBtn: CSSProperties = {
-  padding: '4px 12px',
+  padding: 'var(--space-4) var(--space-12)',
   borderRadius: 'var(--radius-sm)',
   border: 'none',
   backgroundColor: 'var(--warning)',
@@ -72,7 +72,7 @@ export const protocolStepBtn: CSSProperties = {
 }
 
 export const qBtnSmall: CSSProperties = {
-  padding: '3px 8px',
+  padding: 'var(--space-2) var(--space-8)',
   borderRadius: 'var(--radius-sm)',
   border: '1px solid',
   fontSize: 'var(--fs-small)',
@@ -83,11 +83,11 @@ export const qBtnSmall: CSSProperties = {
 export const qGrid: CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
-  gap: 4,
+  gap: 'var(--space-4)',
 }
 
 export const qBtn: CSSProperties = {
-  padding: '5px 10px',
+  padding: 'var(--space-4) var(--space-10)',
   borderRadius: 'var(--radius-sm)',
   border: '1px solid',
   fontSize: 'var(--fs-body-sm)',
@@ -99,8 +99,8 @@ export const qBtn: CSSProperties = {
 export const stressBar: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 6,
-  padding: '2px 0',
+  gap: 'var(--space-6)',
+  padding: 'var(--space-2) 0',
 }
 
 export const stressTrack: CSSProperties = {
@@ -122,14 +122,14 @@ export const bottomToolbar: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 10,
-  padding: '6px 10px',
+  gap: 'var(--space-10)',
+  padding: 'var(--space-6) var(--space-10)',
   borderTop: '1px solid var(--line)',
   backgroundColor: 'var(--bg-surface)',
 }
 
 export const terminalBtn: CSSProperties = {
-  padding: '8px 16px',
+  padding: 'var(--space-8) var(--space-16)',
   borderRadius: 'var(--radius-md)',
   border: '2px solid',
   backgroundColor: 'transparent',
@@ -143,7 +143,7 @@ export const terminalBtn: CSSProperties = {
 }
 
 export const calmBtn: CSSProperties = {
-  padding: '4px 12px',
+  padding: 'var(--space-4) var(--space-12)',
   borderRadius: 'var(--radius-sm)',
   border: 'none',
   backgroundColor: 'var(--accent)',

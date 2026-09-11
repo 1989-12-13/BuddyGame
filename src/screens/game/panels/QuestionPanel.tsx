@@ -59,7 +59,7 @@ export function QuestionPanel({
       <div style={styles.qSection}>
         <div style={styles.qSectionTitle}>
           📡 标准协议
-          {allFourStepsDone && <span style={{ color: 'var(--success)', marginLeft: 6 }}>✓ 全部完成</span>}
+          {allFourStepsDone && <span style={{ color: 'var(--success)', marginLeft: 'var(--space-6)'}}>✓ 全部完成</span>}
         </div>
 
         <div style={styles.protocolStepsList}>
@@ -94,7 +94,7 @@ export function QuestionPanel({
                   }}>
                     {ps.icon} {ps.label}
                   </div>
-                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginTop: 1 }}>
+                  <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginTop: 'var(--space-1)'}}>
                     {ps.qText}
                   </div>
                 </div>

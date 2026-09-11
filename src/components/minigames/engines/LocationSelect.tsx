@@ -13,7 +13,7 @@ import { createShuffleMap } from '../../../utils/shuffleUtils'
 
 const row: React.CSSProperties = {
   display: 'flex',
-  gap: 16,
+  gap: 'var(--space-16)',
   alignItems: 'flex-start',
   justifyContent: 'center',
   width: '100%',
@@ -23,7 +23,7 @@ const colLeft: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: 8,
+  gap: 'var(--space-8)',
   flexShrink: 0,
 }
 
@@ -61,7 +61,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
         </div>
 
         {/* 右侧：选项按钮 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', flex: 1, minWidth: 0 }}>
           {displayOptions.map((opt, i) => {
           const isSelected = selected === i
           const isThisCorrect = i === displayCorrectIndex
@@ -85,7 +85,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
               onClick={() => handleSelect(i)}
               disabled={showResult}
               style={{
-                padding: '10px 16px',
+                padding: 'var(--space-10) var(--space-16)',
                 borderRadius: 'var(--radius-lg)',
                 border: `2px solid ${border}`,
                 backgroundColor: bg,
@@ -113,7 +113,7 @@ function LocationSelectEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 
           fontSize: 'var(--fs-body-sm)',
           fontWeight: 'var(--fw-bold)',
           color: isCorrect ? 'var(--success)' : 'var(--danger)',
-          padding: '4px 0',
+          padding: 'var(--space-4) 0',
         }}>
           {isCorrect ? '✓ 正确！位置选对了' : '✗ 不对，正确答案已标出，请重试……'}
         </div>

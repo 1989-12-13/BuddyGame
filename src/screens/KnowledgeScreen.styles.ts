@@ -149,7 +149,7 @@ export const styles: Record<string, React.CSSProperties> = {
     position: 'fixed' as const,
     inset: 0,
     zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'var(--scrim-strong)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

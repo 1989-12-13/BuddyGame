@@ -22,7 +22,7 @@ export function badgeStyle(rating: string): CSSProperties {
     alignItems: 'center',
     gap: 4,
     padding: '4px 16px',
-    borderRadius: 'var(--radius-sm)',
+    borderRadius: 4,
     border: `1px solid ${ratingColor(rating)}`,
     backgroundColor: 'var(--bg-raised)',
     color: ratingColor(rating),
@@ -39,9 +39,9 @@ export function scoreBoxStyle(rating: string): CSSProperties {
     alignItems: 'baseline',
     gap: 8,
     padding: '12px 28px',
-    borderRadius: 'var(--radius-md)',
-    border: `1px solid color-mix(in srgb, ${ratingColor(rating)} 25%, transparent)`,
-    backgroundColor: `color-mix(in srgb, ${ratingColor(rating)} 8%, transparent)`,
+    borderRadius: 6,
+    border: `1px solid ${ratingColor(rating)}40`,
+    backgroundColor: `${ratingColor(rating)}10`,
   }
 }
 
@@ -52,7 +52,7 @@ export function scoreValueStyle(rating: string): CSSProperties {
     color: ratingColor(rating),
     lineHeight: 1,
     fontFamily: 'var(--font-mono)',
-    textShadow: `0 0 20px color-mix(in srgb, ${ratingColor(rating)} 25%, transparent)`,
+    textShadow: `0 0 20px ${ratingColor(rating)}40`,
   }
 }
 
@@ -70,9 +70,9 @@ export function callCardStyle(saved: boolean): CSSProperties {
   return {
     width: 78,
     padding: '8px 6px',
-    borderRadius: 'var(--radius-md)',
-    border: `1px solid ${saved ? 'var(--success-line)' : 'var(--danger-line)'}`,
-    backgroundColor: saved ? 'var(--success-bg)' : 'var(--danger-bg)',
+    borderRadius: 6,
+    border: `1px solid ${saved ? 'rgba(22, 163, 74, 0.2)' : 'rgba(220, 38, 38, 0.25)'}`,
+    backgroundColor: saved ? 'rgba(22, 163, 74, 0.05)' : 'rgba(220, 38, 38, 0.05)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -226,7 +226,7 @@ export const styles: Record<string, CSSProperties> = {
     width: '100%',
     height: 3,
     borderRadius: 2,
-    backgroundColor: 'var(--line)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     overflow: 'hidden',
     marginTop: 2,
   },
@@ -245,14 +245,14 @@ export const styles: Record<string, CSSProperties> = {
     padding: '12px 48px',
     fontSize: 'var(--fs-subtitle)',
     fontWeight: 'var(--fw-bold)',
-    color: 'var(--on-danger)',
+    color: '#fff',
     backgroundColor: C_DANGER,
     border: 'none',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: 6,
     cursor: 'pointer',
     letterSpacing: 2,
     fontFamily: 'var(--font-mono)',
-    boxShadow: 'var(--shadow-glow-danger)',
+    boxShadow: `0 0 16px ${C_DANGER}40`,
     transition: 'all 0.3s',
   },
 }

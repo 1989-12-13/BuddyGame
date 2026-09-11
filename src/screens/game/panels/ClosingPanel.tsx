@@ -24,13 +24,13 @@ export function ClosingPanel({
     <div style={styles.closingPanel}>
       {/* 状态卡片 */}
       <div style={styles.closingStatusCard}>
-        <div style={{ fontSize: 'var(--fs-score)', marginBottom: 8, filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
+        <div style={{ fontSize: 'var(--fs-score)', marginBottom: 'var(--space-8)', filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
           🚑
         </div>
-        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', marginBottom: 4 }}>
+        <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', marginBottom: 'var(--space-4)'}}>
           {arrived ? '救护车已到达现场' : '等待救护车到达'}
         </div>
-        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', marginBottom: 12 }}>
+        <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)', marginBottom: 'var(--space-12)'}}>
           {arrived ? '急救人员正在接手处理' : guidance ? '急救指导已完成' : '派车指令已发出'}
         </div>
         {!arrived && (
@@ -41,7 +41,7 @@ export function ClosingPanel({
               borderRadius: 'var(--radius-xs)',
               backgroundColor: 'var(--line)',
               overflow: 'hidden',
-              marginBottom: 6,
+              marginBottom: 'var(--space-6)',
             }}>
               <div style={{
                 height: '100%',

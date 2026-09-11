@@ -37,14 +37,14 @@ class MiniGameErrorBoundary extends Component<{ children: React.ReactNode }, EBS
     if (this.state.hasError) {
       return (
         <div style={{
-          padding: 16, borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--danger-bg)',
+          padding: 'var(--space-16)', borderRadius: 'var(--radius-lg)', backgroundColor: 'var(--danger-bg)',
           border: '1px solid var(--danger)', fontSize: 'var(--fs-body-sm)', color: 'var(--danger)',
         }}>
           <strong>小游戏渲染异常</strong>
-          <p style={{ fontSize: 'var(--fs-small)', marginTop: 4, opacity: 0.8 }}>{this.state.errorMsg}</p>
+          <p style={{ fontSize: 'var(--fs-small)', marginTop: 'var(--space-4)', opacity: 0.8 }}>{this.state.errorMsg}</p>
           <button
             onClick={() => this.setState({ hasError: false, errorMsg: '' })}
-            style={{ marginTop: 8, padding: '6px 14px', cursor: 'pointer' }}
+            style={{ marginTop: 'var(--space-8)', padding: 'var(--space-6) var(--space-14)', cursor: 'pointer' }}
           >重试</button>
         </div>
       )
@@ -66,7 +66,7 @@ const ENGINE_MAP: Record<MiniGameKind, ComponentType<{ spec: MiniGameSpec; onCom
 const SHELL: React.CSSProperties = {
   border: '1px solid var(--line)',
   borderRadius: 'var(--radius-xl)',
-  padding: '16px',
+  padding: 'var(--space-16)',
   backgroundColor: 'var(--bg-surface)',
   overflowY: 'auto',
   boxShadow: 'none',
@@ -78,17 +78,17 @@ const TITLE: React.CSSProperties = {
   color: 'var(--text)',
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
-  marginBottom: 8,
+  gap: 'var(--space-8)',
+  marginBottom: 'var(--space-8)',
   letterSpacing: 0.3,
 }
 
 const INSTR: React.CSSProperties = {
   fontSize: 'var(--fs-caption)',
   color: 'var(--text-2)',
-  marginBottom: 10,
+  marginBottom: 'var(--space-10)',
   lineHeight: 1.5,
-  paddingLeft: 2,
+  paddingLeft: 'var(--space-2)',
 }
 
 export function MiniGameHost({ spec, onComplete, paused }: Props) {

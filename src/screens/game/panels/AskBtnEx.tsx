@@ -32,8 +32,8 @@ export function AskBtnEx({
       onClick={onClick}
       disabled={disabled}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 3, justifyContent: 'center' }}>
-        {done ? <span>✓ </span> : icon ? <span style={{ marginRight: 2, display: 'flex' }}>{icon}</span> : null}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', justifyContent: 'center' }}>
+        {done ? <span>✓ </span> : icon ? <span style={{ marginRight: 'var(--space-2)', display: 'flex' }}>{icon}</span> : null}
         <span style={{ fontWeight: done ? 'var(--fw-normal)' : 'var(--fw-bold)', fontSize: 'var(--fs-small)' }}>{label}</span>
       </div>
     </button>

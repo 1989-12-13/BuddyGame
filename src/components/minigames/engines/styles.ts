@@ -53,7 +53,7 @@ export function pressCircle(
 export const progressTrack: React.CSSProperties = {
   width: 240,
   height: 6,
-  borderRadius: 'var(--radius-xs)',
+  borderRadius: 3,
   backgroundColor: 'var(--line-soft)',
   overflow: 'hidden',
 }

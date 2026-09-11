@@ -54,8 +54,8 @@ export function GuidancePanel({
           <div
             key={i}
             style={{
-              padding: '6px 10px',
-              margin: '3px 0',
+              padding: 'var(--space-6) var(--space-10)',
+              margin: 'var(--space-2) 0',
               backgroundColor: r === 'correct' ? 'var(--success-bg)' : 'var(--danger-bg)',
               borderRadius: 'var(--radius-md)',
               fontSize: 'var(--fs-body-sm)',
@@ -66,11 +66,11 @@ export function GuidancePanel({
             {r === 'correct' ? '✓' : '✕'} 步骤{i + 1}：{guidance.steps[i].prompt}
           </div>
         ))}
-        <div style={{ textAlign: 'center', marginTop: 20 }}>
+        <div style={{ textAlign: 'center', marginTop: 'var(--space-20)'}}>
           <button
             onClick={onEndGuidance}
             style={{
-              padding: '10px 32px',
+              padding: 'var(--space-10) var(--space-32)',
               borderRadius: 'var(--radius-md)',
               border: 'none',
               backgroundColor: 'var(--danger)',
@@ -96,8 +96,8 @@ export function GuidancePanel({
     <div
       key={i}
       style={{
-        padding: '6px 10px',
-        margin: '3px 0',
+        padding: 'var(--space-6) var(--space-10)',
+        margin: 'var(--space-2) 0',
         backgroundColor: r === 'correct' ? 'var(--success-bg)' : 'var(--danger-bg)',
         borderRadius: 'var(--radius-md)',
         fontSize: 'var(--fs-body-sm)',
@@ -129,7 +129,7 @@ export function GuidancePanel({
           <p style={styles.guidancePrompt}>
             步骤{stepIndex + 1}：{currentStep.prompt}
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
             {displayOptions.map((opt, i) => (
               <button
                 key={i}

@@ -18,7 +18,7 @@ export function DeterminantSelector({
   ]
 
   return (
-    <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-4)', flexWrap: 'wrap' }}>
       {levels.map((l) => {
         const info = MPDS_DETERMINANT_INFO[l.key]
         const isActive = current === l.key
@@ -30,14 +30,14 @@ export function DeterminantSelector({
             aria-pressed={isActive}
             style={{
               flex: '1 0 auto',
-              padding: '4px 6px',
+              padding: 'var(--space-4) var(--space-6)',
               borderRadius: 'var(--radius-lg)',
               border: `1px solid ${isActive ? color : 'var(--line)'}`,
               backgroundColor: isActive ? `color-mix(in srgb, ${color} 9%, var(--bg-surface))` : 'var(--bg-surface)',
               color: isActive ? color : 'var(--text-2)',
               display: 'flex',
               flexDirection: 'column',
-              gap: 4,
+              gap: 'var(--space-4)',
               fontSize: 'var(--fs-small)',
               fontWeight: isActive ? 'var(--fw-bold)' : 'var(--fw-normal)',
               cursor: 'pointer',

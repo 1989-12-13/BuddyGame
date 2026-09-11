@@ -19,7 +19,7 @@ interface Props {
 export function ScoreBar({ label, value, max, color = 'var(--accent)', showValue = true, style }: Props) {
   const pct = Math.min((value / max) * 100, 100)
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, ...style }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)', ...style }}>
       <span style={{ fontSize: 'var(--fs-small)', color: 'var(--text-3)', minWidth: 56, textAlign: 'right' }}>
         {label}
       </span>

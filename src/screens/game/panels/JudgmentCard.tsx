@@ -132,7 +132,7 @@ export function JudgmentCard({
           position: 'fixed',
           inset: 0,
           zIndex: Z_JUDGMENT_OVERLAY,
-          backgroundColor: 'rgba(0,0,0,0.45)',
+          backgroundColor: 'var(--scrim)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

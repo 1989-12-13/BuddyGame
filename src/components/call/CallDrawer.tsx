@@ -121,9 +121,9 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 10,
+    gap: 'var(--space-10)',
     width: '100%',
-    padding: '12px 4px',
+    padding: 'var(--space-12) var(--space-4)',
   },
   liveDot: {
     width: 8,
@@ -145,8 +145,8 @@ const styles: Record<string, CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
+    gap: 'var(--space-6)',
+    marginTop: 'var(--space-4)',
   },
   expandIcon: {
     marginTop: 'auto',

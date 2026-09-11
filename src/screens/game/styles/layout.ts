@@ -30,11 +30,11 @@ export const floatCard: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: 4,
-  backgroundColor: 'rgba(17, 21, 28, 0.88)',
+  gap: 'var(--space-4)',
+  backgroundColor: 'var(--glass-bg)',
   border: '1px solid var(--line)',
   borderRadius: 'var(--radius-xl)',
-  padding: '24px 32px',
+  padding: 'var(--space-24) var(--space-32)',
   boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
   backdropFilter: 'blur(6px)',
   zIndex: Z_FLOAT_CARD,
@@ -58,7 +58,7 @@ export const splitBar: CSSProperties = {
 
 export const splitBarHandle: CSSProperties = {
   display: 'flex',
-  gap: 4,
+  gap: 'var(--space-4)',
   alignItems: 'center',
   pointerEvents: 'none',
 }
@@ -77,12 +77,12 @@ export const centerMessage: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: 4,
+  gap: 'var(--space-4)',
   backgroundColor: 'var(--bg-surface)',
 }
 
 export const answerBtn: CSSProperties = {
-  padding: '14px 48px',
+  padding: 'var(--space-14) var(--space-48)',
   fontSize: 'var(--fs-heading)',
   fontWeight: 'var(--fw-bold)',
   backgroundColor: 'var(--danger)',

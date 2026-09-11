@@ -97,7 +97,7 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
                         <span style={styles.callCardMax}>/100</span>
                       </div>
                       <div style={callCardStatusStyle(saved)}>
-                        {saved ? <><ShieldCheck size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />操作稳健</> : <><ShieldAlert size={10} style={{ marginRight: 1, verticalAlign: 'text-bottom' }} />建议复盘</>}
+                        {saved ? <><ShieldCheck size={10} style={{ marginRight: 'var(--space-1)', verticalAlign: 'text-bottom' }} />操作稳健</> : <><ShieldAlert size={10} style={{ marginRight: 'var(--space-1)', verticalAlign: 'text-bottom' }} />建议复盘</>}
                       </div>
                     </div>
                     <div style={styles.callCardBar}>
@@ -119,7 +119,7 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
 
         {/* Restart */}
         <button style={styles.restartBtn} onClick={handleRestart}>
-          <RotateCcw size={14} style={{ marginRight: 4, verticalAlign: 'text-bottom' }} />重新值班
+          <RotateCcw size={14} style={{ marginRight: 'var(--space-4)', verticalAlign: 'text-bottom' }} />重新值班
         </button>
       </div>
     </div>

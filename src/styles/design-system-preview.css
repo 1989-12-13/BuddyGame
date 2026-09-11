@@ -19,16 +19,16 @@
 .dsg-shell {
   max-width: 1180px;
   margin: 0 auto;
-  padding: var(--space-xl) var(--space-xl) var(--space-3xl);
+  padding: var(--space-24) var(--space-24) var(--space-48);
 }
 
 .dsg-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-lg);
+  gap: var(--space-16);
   flex-wrap: wrap;
-  padding-bottom: var(--space-lg);
+  padding-bottom: var(--space-16);
   border-bottom: 1px solid var(--line);
 }
 
@@ -44,13 +44,13 @@
   font-size: var(--fs-heading-lg);
   font-weight: var(--fw-semibold);
   letter-spacing: -0.01em;
-  margin-top: var(--space-xs);
+  margin-top: var(--space-4);
 }
 
 .dsg-desc {
   color: var(--text-2);
   font-size: var(--fs-body-sm);
-  margin-top: var(--space-xs);
+  margin-top: var(--space-4);
   max-width: 62ch;
 }
 
@@ -61,19 +61,19 @@
 
 .dsg-head-actions {
   display: flex;
-  gap: var(--space-sm);
+  gap: var(--space-8);
   align-items: center;
 }
 
 .dsg-section {
-  margin-top: var(--space-2xl);
+  margin-top: var(--space-32);
 }
 
 .dsg-section-head {
   display: flex;
   align-items: baseline;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
 }
 
 .dsg-section-title {
@@ -88,7 +88,7 @@
 
 .dsg-grid {
   display: grid;
-  gap: var(--space-sm);
+  gap: var(--space-8);
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
 }
 
@@ -105,7 +105,7 @@
 }
 
 .dsg-swatch-meta {
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-8) var(--space-12);
 }
 
 .dsg-swatch-name {
@@ -119,20 +119,20 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   color: var(--text-3);
-  margin-top: 3px;
+  margin-top:var(--space-2);
   word-break: break-all;
 }
 
 .dsg-swatch-label {
   font-size: var(--fs-caption);
   color: var(--text-2);
-  margin-top: var(--space-xs);
+  margin-top: var(--space-4);
 }
 
 .dsg-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-sm);
+  gap: var(--space-8);
   align-items: center;
 }
 
@@ -140,11 +140,11 @@
 .dsg-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-8);
   font-family: inherit;
   font-size: var(--fs-body-sm);
   font-weight: var(--fw-medium);
-  padding: var(--space-sm) var(--space-lg);
+  padding: var(--space-8) var(--space-16);
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
@@ -200,11 +200,11 @@
 .dsg-pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semibold);
-  padding: 3px var(--space-sm);
+  padding: 3px var(--space-8);
   border-radius: var(--radius-full);
   border: 1px solid;
 }
@@ -214,7 +214,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  padding: var(--space-16);
   box-shadow: var(--shadow-sm);
 }
 
@@ -222,7 +222,7 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-line);
   border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  padding: var(--space-16);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   box-shadow: var(--shadow-md);
@@ -250,7 +250,7 @@
   background: var(--bg-input);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-8) var(--space-12);
   transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 .dsg-input::placeholder {
@@ -267,8 +267,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-lg);
-  padding: var(--space-sm) 0;
+  gap: var(--space-16);
+  padding: var(--space-8) 0;
   border-bottom: 1px dashed var(--line-soft);
 }
 .dsg-type-tag {
@@ -291,7 +291,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: var(--space-xs);
+  padding-bottom: var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
 }
@@ -299,7 +299,7 @@
 /* 阴影样例 */
 .dsg-shadow-grid {
   display: grid;
-  gap: var(--space-lg);
+  gap: var(--space-16);
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 .dsg-shadow-box {
@@ -317,8 +317,8 @@
 .dsg-space-row {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: 3px 0;
+  gap: var(--space-12);
+  padding:var(--space-2) 0 ;
 }
 .dsg-space-tag {
   font-family: var(--font-mono);

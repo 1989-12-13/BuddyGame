@@ -5,7 +5,7 @@ export const guidanceOverlay: CSSProperties = {
   position: 'fixed',
   inset: 0,
   zIndex: 900,
-  backgroundColor: 'rgba(0,0,0,0.55)',
+  backgroundColor: 'var(--scrim)',
   backdropFilter: 'blur(3px)',
   display: 'flex',
   alignItems: 'center',
@@ -17,9 +17,9 @@ export const guidanceWindow: CSSProperties = {
   width: 420,
   maxHeight: '85vh',
   backgroundColor: 'var(--bg-raised)',
-  borderRadius: 14,
+  borderRadius: 'var(--radius-2xl)',
   border: '1px solid var(--danger-line)',
-  boxShadow: '0 0 0 1px rgba(220,38,38,0.15), var(--shadow-lg)',
+  boxShadow: '0 0 0 1px var(--danger-line), var(--shadow-lg)',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
@@ -32,7 +32,7 @@ export const guidanceWindowHeader: CSSProperties = {
   gap: 8,
   padding: '14px 18px',
   borderBottom: '1px solid var(--danger-line)',
-  backgroundColor: 'rgba(220,38,38,0.06)',
+  backgroundColor: 'var(--danger-bg)',
 }
 
 /** 指导面板 */

@@ -25,14 +25,14 @@ export function StatusToggle({
   onToggle: (field: 'conscious' | 'breathing', val: boolean) => void
 }) {
   return (
-    <div role="group" aria-label={ariaLabel} style={{ marginBottom: 6 }}>
+    <div role="group" aria-label={ariaLabel} style={{ marginBottom: 'var(--space-6)'}}>
       {label && <div style={styles.formLabel}>{label}</div>}
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
         <button
           aria-pressed={value === true}
           style={{
             flex: 1,
-            padding: '4px 8px',
+            padding: 'var(--space-4) var(--space-8)',
             borderRadius: 'var(--radius-sm)',
             border: `1px solid ${value === true ? colorTrue : 'var(--line)'}`,
             backgroundColor: value === true ? 'var(--success-bg)' : 'var(--bg-surface)',
@@ -50,7 +50,7 @@ export function StatusToggle({
           aria-pressed={value === false}
           style={{
             flex: 1,
-            padding: '4px 8px',
+            padding: 'var(--space-4) var(--space-8)',
             borderRadius: 'var(--radius-sm)',
             border: `1px solid ${value === false ? colorFalse : 'var(--line)'}`,
             backgroundColor: value === false ? 'var(--danger-bg)' : 'var(--bg-surface)',

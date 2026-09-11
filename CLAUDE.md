@@ -203,8 +203,13 @@ interface MiniGameProps {
   - 主色 `--accent / -strong / -dim / -bg / -line / --on-accent`（另有 `--on-danger`）
   - 语义色 `--success | --warning | --danger | --info`（各带 `-strong / -dim / -bg / -line`）
   - 分级色阶 `--sev-1 … --sev-5`（最佳/最轻 → 最差/最重，统一用于玩家评级 / 来电者情绪 / 患者稳定度 / MPDS 判定级）
-  - 动效 `--dur-fast|base|slow` + `--ease-out|in-out|spring`
-- **新样式一律使用令牌**，不要在 CSS / 内联样式中写死颜色。
+  - **间距** `--space-<数值>`（数值命名，4pt 基准网格）：`1 2 4 6 8 10 12 14 16 18 20 24 28 32 40 48`。所有 `padding / margin / gap` 一律引用令牌，非刻度值就近吸附。`0 / auto / 百分比 / clamp()` 保持原样。
+  - **字号** `--fs-micro|small|caption|body-sm|body|body-lg|subtitle|title|heading|heading-lg|heading-xl|hero|score`
+  - **圆角** `--radius-xs|sm|md|lg|xl|2xl|3xl|full`
+  - **遮罩** `--scrim-weak | --scrim | --scrim-strong`（模态 backdrop、浮层压暗；浅色主题下更轻薄）
+  - **动效** `--dur-fast|base|slow` + `--ease-out|in-out|spring`（`animations/presets.ts` 的 `DUR_*` 与之对齐）
+- **新样式一律使用令牌**：颜色 / 间距 / 字号 / 圆角都不要在 CSS 或内联样式中写死。`box-shadow` 内的黑色透明值属标准做法，可保留。
+- **允许保留真实色值的例外**（须加注释说明）：① Leaflet / Canvas 无法解析 CSS 变量的场景（`game/core/routing.ts`、`contexts/ThemeContext.tsx`）；② 固定深色插画图形（`screens/DispatchTitle.tsx`、`minigames/engines/bodyPartSvgs.tsx`、`components/map/OfflineMap.tsx`、`dispatch-title.css` 的插画卡片）。
 - JS 侧语义色见 `game/core/colors.ts`（值即 `var(--token)` 引用）。需要**真实色值**的场景（Leaflet pathOptions / Canvas）用 `contexts/ThemeContext.tsx` 的 `colors`（其值为 tokens.css 的 hex 镜像）。
 - 内联 `React.CSSProperties` 用于组件局部样式（如 `MiniGameHost.tsx`），是项目惯例。
 - 设计系统预览页：`npm run dev` 后访问 `http://localhost:5173/?preview=tokens`（`screens/DesignSystemPreview.tsx` + `styles/design-system-preview.css`）。

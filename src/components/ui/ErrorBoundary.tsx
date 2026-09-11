@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<Props, State> {
           {process.env.NODE_ENV === 'development' && this.state.error && (
             <pre style={{
               fontSize: 'var(--fs-small)', color: 'var(--danger)', maxWidth: '100%', overflow: 'auto',
-              padding: 8, backgroundColor: 'var(--danger-bg)', borderRadius: 'var(--radius-md)',
+              padding: 8, backgroundColor: 'var(--danger-bg)', borderRadius: 6,
             }}>
               {this.state.error.message}
             </pre>
@@ -71,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
             onClick={this.handleRetry}
             style={{
               padding: '8px 24px', backgroundColor: 'var(--danger)', color: 'var(--on-danger)',
-              border: 'none', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
+              border: 'none', borderRadius: 6, fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)',
               cursor: 'pointer', marginTop: 4,
             }}
           >

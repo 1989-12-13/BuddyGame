@@ -76,8 +76,8 @@ const styles: Record<string, CSSProperties> = {
   container: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
-    padding: '6px 16px',
+    gap: 'var(--space-16)',
+    padding: 'var(--space-6) var(--space-16)',
     backgroundColor: 'var(--glass-bg)',
     backdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
     WebkitBackdropFilter: 'blur(var(--glass-blur)) saturate(140%)',
@@ -91,7 +91,7 @@ const styles: Record<string, CSSProperties> = {
   group: {
     display: 'flex',
     alignItems: 'center',
-    gap: 6,
+    gap: 'var(--space-6)',
   },
   label: {
     fontSize: 'var(--fs-small)',

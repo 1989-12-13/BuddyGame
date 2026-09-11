@@ -271,7 +271,7 @@ export function KnowledgeScreen({ onBack }: Props) {
                                   display: 'inline-block',
                                   padding: '1px 6px',
                                   margin: '1px 2px',
-                                  borderRadius: 'var(--radius-xs)',
+                                  borderRadius: 3,
                                   backgroundColor: isCorrect ? 'var(--success-bg)' : 'var(--bg-surface)',
                                   border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--line)'}`,
                                   color: isCorrect ? 'var(--success)' : 'var(--text-2)',

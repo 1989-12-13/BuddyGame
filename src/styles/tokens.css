@@ -86,6 +86,11 @@
   --shadow-glow-accent: 0 0 20px rgba(139, 212, 188, 0.18);
   --shadow-glow-danger: 0 0 20px rgba(239, 138, 128, 0.28);
 
+  /* ---- 遮罩 / 蒙层（模态 backdrop、浮层压暗） ---- */
+  --scrim-weak: rgba(0, 0, 0, 0.35);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --scrim-strong: rgba(0, 0, 0, 0.75);
+
   /* ---- 地图 ---- */
   --map-grid: #1e3340;
   --map-road: #2b4450;
@@ -173,6 +178,11 @@
   --shadow-glow-accent: 0 0 20px rgba(36, 123, 101, 0.16);
   --shadow-glow-danger: 0 0 20px rgba(176, 65, 58, 0.18);
 
+  /* ---- 遮罩 / 蒙层（浅色主题下更轻薄） ---- */
+  --scrim-weak: rgba(15, 23, 42, 0.16);
+  --scrim: rgba(15, 23, 42, 0.32);
+  --scrim-strong: rgba(15, 23, 42, 0.5);
+
   /* ---- 地图 ---- */
   --map-grid: #c3d2cb;
   --map-road: #a3b6ae;
@@ -192,15 +202,25 @@
    共用令牌（与主题无关）
    ============================================================ */
 :root {
-  /* === 间距 === */
-  --space-2xs: 2px;
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 24px;
-  --space-2xl: 32px;
-  --space-3xl: 48px;
+  /* === 间距（4pt 基准网格 + 实用档，数值命名）===
+     取值：1 2 4 6 8 10 12 14 16 18 20 24 28 32 40 48
+     用法：padding / margin / gap 一律引用令牌，不再写死 px */
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
 
   /* === 字体族 === */
   --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', sans-serif;

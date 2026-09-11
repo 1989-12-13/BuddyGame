@@ -39,7 +39,7 @@ export function VitalSignsBar({ status }: Props) {
         flex: 1,
         height: 8,
         backgroundColor: 'var(--line)',
-        borderRadius: 'var(--radius-sm)',
+        borderRadius: 4,
         overflow: 'hidden',
         position: 'relative',
       }}>
@@ -69,7 +69,7 @@ export function VitalSignsBar({ status }: Props) {
         color,
         fontWeight: 'var(--fw-bold)',
         padding: '2px 8px',
-        borderRadius: 'var(--radius-xs)',
+        borderRadius: 3,
         backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
         border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
         minWidth: 56,

@@ -5,7 +5,7 @@ export const styles: Record<string, CSSProperties> = {
     position: 'fixed',
     inset: 0,
     zIndex: 1000,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'var(--scrim-strong)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

@@ -322,7 +322,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
       {phase === 'breath' && (
         <div style={{ width: 200, position: 'relative' }}>
           <div style={{
-            width: '100%', height: 12, borderRadius: 'var(--radius-md)',
+            width: '100%', height: 12, borderRadius: 6,
             backgroundColor: 'var(--line-soft)', overflow: 'hidden', position: 'relative',
           }}>
             <div style={{
@@ -330,7 +330,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
               height: '100%', backgroundColor: 'var(--success-bg)', borderRadius: 2, opacity: 0.6,
             }} />
             <div style={{
-              height: '100%', borderRadius: 'var(--radius-md)', width: displayBlowFill + '%',
+              height: '100%', borderRadius: 6, width: displayBlowFill + '%',
               backgroundColor: blowColor, transition: 'none',
             }} />
           </div>
@@ -348,7 +348,7 @@ export function CprGame({ spec, onComplete, paused }: MiniGameProps) {
           onClick={nextPhase}
           disabled={paused}
           style={{
-            padding: '8px 24px', borderRadius: 'var(--radius-lg)', border: 'none',
+            padding: '8px 24px', borderRadius: 8, border: 'none',
             backgroundColor: 'var(--accent)', color: 'var(--on-accent, #fff)',
             fontSize: 'var(--fs-body)', fontWeight: 'var(--fw-bold)', cursor: 'pointer',
           }}

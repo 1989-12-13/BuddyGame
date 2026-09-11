@@ -134,7 +134,7 @@ export function LevelSelectScreen({ onStart, onBack }: Props) {
         <span style={styles.legendTitle}>小游戏类型：</span>
         {Object.entries(TAGS).map(([emoji, label]) => (
           <span key={emoji} style={styles.legendItem}>
-            <span style={{ marginRight: 2 }}>{emoji}</span>
+            <span style={{ marginRight: 'var(--space-2)'}}>{emoji}</span>
             <span style={{ fontSize: 'var(--fs-small)' }}>{label}</span>
           </span>
         ))}

@@ -43,8 +43,8 @@ export function SettingsPanel({ onNavigate }: Props) {
   const menuItemBase: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    padding: '10px 16px',
+    gap: 'var(--space-10)',
+    padding: 'var(--space-10) var(--space-16)',
     border: 'none',
     background: 'none',
     color: 'var(--text)',
@@ -57,7 +57,7 @@ export function SettingsPanel({ onNavigate }: Props) {
   return (
     <div
       ref={panelRef}
-      style={{ position: 'fixed', top: 85, left: 16, zIndex: Z_SETTINGS, display: 'flex', flexDirection: 'column', gap: 10 }}
+      style={{ position: 'fixed', top: 85, left: 16, zIndex: Z_SETTINGS, display: 'flex', flexDirection: 'column', gap: 'var(--space-10)'}}
     >
       {/* 齿轮按钮 */}
       <button
@@ -98,7 +98,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             top: 44,
             left: 0,
             width: 220,
-            padding: '8px 0',
+            padding: 'var(--space-8) 0',
             border: '1px solid var(--line)',
             borderRadius: 'var(--radius-xl)',
             backgroundColor: 'var(--bg-surface)',
@@ -125,16 +125,16 @@ export function SettingsPanel({ onNavigate }: Props) {
             <Home size={16} /> 回到主菜单
           </button>
 
-          <div style={{ height: 1, margin: '4px 16px', backgroundColor: 'var(--line)' }} />
+          <div style={{ height: 1, margin: 'var(--space-4) var(--space-16)', backgroundColor: 'var(--line)' }} />
 
           {/* 音量调节 */}
-          <div style={{ padding: '10px 16px' }}>
+          <div style={{ padding: 'var(--space-10) var(--space-16)' }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                marginBottom: 8,
+                gap: 'var(--space-10)',
+                marginBottom: 'var(--space-8)',
               }}
             >
               <Volume2 size={16} />
@@ -153,7 +153,7 @@ export function SettingsPanel({ onNavigate }: Props) {
             />
           </div>
 
-          <div style={{ height: 1, margin: '4px 26px', backgroundColor: 'var(--line)' }} />
+          <div style={{ height: 1, margin: 'var(--space-4) var(--space-24)', backgroundColor: 'var(--line)' }} />
 
           {/* 主题切换 */}
           <button

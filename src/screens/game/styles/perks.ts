@@ -7,8 +7,8 @@ export const perkScreen: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: 12,
-  padding: 24,
+  gap: 'var(--space-12)',
+  padding: 'var(--space-24)',
   backgroundColor: 'var(--bg-surface)',
 }
 
@@ -38,21 +38,21 @@ export const perkSubtitle: CSSProperties = {
 export const perkGrid: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-  gap: 12,
+  gap: 'var(--space-12)',
   width: 'min(720px, 100%)',
-  marginTop: 8,
+  marginTop: 'var(--space-8)',
 }
 
 export const perkCard: CSSProperties = {
   minHeight: 150,
-  padding: '14px 16px',
+  padding: 'var(--space-14) var(--space-16)',
   border: '1px solid var(--line)',
   borderRadius: 'var(--radius-lg)',
   backgroundColor: 'var(--bg-raised)',
   color: 'var(--text)',
   display: 'flex',
   flexDirection: 'column',
-  gap: 8,
+  gap: 'var(--space-8)',
   textAlign: 'left',
   cursor: 'pointer',
   fontFamily: 'inherit',
@@ -80,7 +80,7 @@ export const perkDesc: CSSProperties = {
 
 export const perkEffect: CSSProperties = {
   alignSelf: 'flex-start',
-  padding: '4px 8px',
+  padding: 'var(--space-4) var(--space-8)',
   border: '1px solid var(--accent-strong)',
   borderRadius: 999,
   color: 'var(--accent-strong)',

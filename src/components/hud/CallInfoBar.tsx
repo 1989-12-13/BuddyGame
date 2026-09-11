@@ -32,7 +32,7 @@ function pillStyle(detail: { color?: string; muted?: boolean } = {}): CSSPropert
     backdropFilter: 'blur(8px)',
     transition: 'all 0.3s ease',
     minHeight: 24,
-    fontSize: 'var(--fs-caption)',
+    fontSize: 12,
     color: detail.muted ? 'var(--text-3)' : 'var(--text)',
   }
 }
@@ -71,7 +71,7 @@ function Field({
     >
       <PillIcon color={color ?? 'var(--text-2)'}>{icon}</PillIcon>
       <span style={{
-        fontSize: 'var(--fs-micro)',
+        fontSize: 10,
         color: 'var(--text-3)',
         textTransform: 'uppercase',
         letterSpacing: 1,
@@ -159,7 +159,7 @@ export function CallInfoBar({ state, visible }: Props) {
                 <Clock size={SIZE} strokeWidth={2.5} />
               </PillIcon>
               <span style={lblStyle}>通话</span>
-              <span style={{ ...valStyle, color: callTimeColor, fontSize: 'var(--fs-body-sm)' }}>{mm}:{ss}</span>
+              <span style={{ ...valStyle, color: callTimeColor, fontSize: 13 }}>{mm}:{ss}</span>
             </motion.div>
 
             {/* 电话 */}
@@ -233,7 +233,7 @@ export function CallInfoBar({ state, visible }: Props) {
 }
 
 const lblStyle: CSSProperties = {
-  fontSize: 'var(--fs-micro)',
+  fontSize: 10,
   color: 'var(--text-3)',
   textTransform: 'uppercase',
   letterSpacing: 1,

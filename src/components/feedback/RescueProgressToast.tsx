@@ -29,7 +29,7 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
       backgroundColor: 'var(--bg-surface)',
       border: `1px solid ${accentColor}`,
       borderLeft: `4px solid ${accentColor}`,
-      borderRadius: 'var(--radius-md)',
+      borderRadius: 6,
       boxShadow: 'var(--shadow-sm)',
       fontSize: 'var(--fs-caption)',
     }}>
@@ -54,7 +54,7 @@ export function RescueProgressToast({ rescue, ambulanceRemaining }: Props) {
           flex: 1,
           height: 6,
           backgroundColor: 'var(--bg-hover)',
-          borderRadius: 'var(--radius-xs)',
+          borderRadius: 3,
           position: 'relative',
           overflow: 'hidden',
         }}>

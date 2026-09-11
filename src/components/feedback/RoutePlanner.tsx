@@ -100,7 +100,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 16,
+      padding: 'var(--space-16)',
     }}>
       <section
         role={embedded ? "region" : "dialog"}
@@ -124,18 +124,18 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 16,
-          padding: '13px 16px',
+          gap: 'var(--space-16)',
+          padding: 'var(--space-12) var(--space-16)',
           borderBottom: '1px solid var(--line)',
         }}>
           <div>
             <div id="route-planner-title" style={{ fontSize: 'var(--fs-subtitle)', fontWeight: 800, color: 'var(--text)' }}>
               城市路网 · 节点式路线规划
             </div>
-            <div style={{ marginTop: 3, fontSize: 'var(--fs-small)', color: 'var(--text-3)' }}>
+            <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--fs-small)', color: 'var(--text-3)' }}>
               路网示意图 · 从上到下逐段选择，直至到达事件现场
             </div>
-            <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 8, fontSize: 'var(--fs-micro)' }}>
+            <div data-testid="route-planning-steps" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginTop: 'var(--space-8)', fontSize: 'var(--fs-micro)' }}>
               <span style={{ color: 'var(--success)' }}>✓ 系统自动配车</span>
               <span style={{ color: 'var(--text-3)' }}>→</span>
               <strong style={{ color: 'var(--warning)' }}>2 逐节点选择</strong>
@@ -148,13 +148,13 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           </button>
         </header>
 
-        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 14, borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 'var(--space-14)', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 'var(--space-10)'}}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-10)'}}>
             <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)' }}>
               当前节点：<strong style={{ color: 'var(--text)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong>
               {' · '}下一步可选 {availableNextNodes.length} 个节点
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
               <button onClick={undo} disabled={selectedNodeIds.length <= 1} style={smallButtonStyle}>
                 <Undo2 size={13} /> 撤回
               </button>
@@ -222,7 +222,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                     top: `${y}%`,
                     transform: 'translate(-50%, -50%)',
                     zIndex: 2,
-                    padding: '2px 5px',
+                    padding: 'var(--space-2) var(--space-4)',
                     borderRadius: 'var(--radius-sm)',
                     border: `1px solid ${isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--line)'}`,
                     backgroundColor: 'color-mix(in srgb, var(--bg-deep) 88%, transparent)',
@@ -299,17 +299,17 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             })}
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, color: 'var(--text-3)', fontSize: 'var(--fs-micro)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-6)', color: 'var(--text-3)', fontSize: 'var(--fs-micro)' }}>
             <span>路段文字：</span>
             {['畅通', '车流较大', '拥堵', '维修施工', '学校特殊路段', '事故占道'].map(label => (
-              <span key={label} style={{ padding: '2px 5px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', backgroundColor: 'var(--bg-raised)' }}>{label}</span>
+              <span key={label} style={{ padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', backgroundColor: 'var(--bg-raised)' }}>{label}</span>
             ))}
           </div>
         </div>
 
-        <aside className="route-summary-panel" style={{ minHeight: 0, padding: 14, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+        <aside className="route-summary-panel" style={{ minHeight: 0, padding: 'var(--space-14)', display: 'flex', flexDirection: 'column', gap: 'var(--space-12)', overflowY: 'auto' }}>
           {priorityChannelActive && (
-            <div style={{ padding: '8px 10px', borderRadius: 'var(--radius-md)', color: 'var(--warning)', backgroundColor: 'var(--warning-dim)', fontSize: 'var(--fs-small)' }}>
+            <div style={{ padding: 'var(--space-8) var(--space-10)', borderRadius: 'var(--radius-md)', color: 'var(--warning)', backgroundColor: 'var(--warning-dim)', fontSize: 'var(--fs-small)' }}>
               优先通道已生效：所有路线 ETA -5 秒
             </div>
           )}
@@ -317,22 +317,22 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           {!activeRoute ? (
             <div>
               <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 700, color: 'var(--text)' }}>根据道路文字继续选择</div>
-              <div style={{ marginTop: 6, fontSize: 'var(--fs-small)', lineHeight: 1.7, color: 'var(--text-3)' }}>
+              <div style={{ marginTop: 'var(--space-6)', fontSize: 'var(--fs-small)', lineHeight: 1.7, color: 'var(--text-3)' }}>
                 这张路网包含入口分叉、中段分叉和中心交汇点。相同道路由多条方案共享，途中需要多次权衡拥堵、维修施工和学校特殊路段。
               </div>
             </div>
           ) : (
             <>
-              <div style={{ padding: 12, borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>
+              <div style={{ padding: 'var(--space-12)', borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>
                 <div style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text)' }}>{activeRoute.label}</div>
-                <div style={{ marginTop: 5, fontSize: 'var(--fs-small)', lineHeight: 1.55, color: 'var(--text-3)' }}>{activeRoute.summary}</div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 10, fontSize: 'var(--fs-small)' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
+                <div style={{ marginTop: 'var(--space-4)', fontSize: 'var(--fs-small)', lineHeight: 1.55, color: 'var(--text-3)' }}>{activeRoute.summary}</div>
+                <div style={{ display: 'flex', gap: 'var(--space-12)', marginTop: 'var(--space-10)', fontSize: 'var(--fs-small)' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
                 {activeRoute.segments.map((segment, index) => {
                   const fromIndex = selectedNodeIds.indexOf(segment.fromId)
                   const traversed = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
@@ -340,12 +340,12 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                   const fromLabel = nodes.get(segment.fromId)?.label ?? `节点 ${index + 1}`
                   const toLabel = nodes.get(segment.toId)?.label ?? `节点 ${index + 2}`
                   return (
-                    <div key={segment.id} style={{ padding: '7px 8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--line)', opacity: traversed || current ? 1 : 0.58 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 'var(--fs-micro)' }}>
+                    <div key={segment.id} style={{ padding: 'var(--space-6) var(--space-8)', borderRadius: 'var(--radius-md)', border: '1px solid var(--line)', opacity: traversed || current ? 1 : 0.58 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-6)', fontSize: 'var(--fs-micro)' }}>
                         <span style={{ color: 'var(--text-2)' }}>{fromLabel} → {toLabel}</span>
-                        <strong style={{ padding: '1px 4px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--line)', color: 'var(--text)' }}>{segment.conditionLabel}</strong>
+                        <strong style={{ padding: 'var(--space-1) var(--space-4)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--line)', color: 'var(--text)' }}>{segment.conditionLabel}</strong>
                       </div>
-                      <div style={{ marginTop: 3, fontSize: 9, color: 'var(--text-3)' }}>{segment.description}</div>
+                      <div style={{ marginTop: 'var(--space-2)', fontSize: 9, color: 'var(--text-3)' }}>{segment.description}</div>
                     </div>
                   )
                 })}
@@ -353,7 +353,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             </>
           )}
 
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
             <div style={{ minHeight: 30, fontSize: 'var(--fs-micro)', lineHeight: 1.5, color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>
               {completedRoute ? `已到达事件现场，可确认 ${completedRoute.label}` : '必须沿相邻节点抵达事件现场后才能派车'}
             </div>
@@ -361,8 +361,8 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
               onClick={() => completedRoute && onConfirm(completedRoute)}
               disabled={!completedRoute}
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                width: '100%', padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-6)',
+                width: '100%', padding: 'var(--space-10) var(--space-12)', borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--danger)',
                 backgroundColor: completedRoute ? 'var(--danger)' : 'var(--bg-raised)',
                 color: completedRoute ? 'var(--on-danger)' : 'var(--text-3)',
@@ -382,7 +382,7 @@ const iconButtonStyle = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: 5,
+  padding: 'var(--space-4)',
   border: 'none',
   borderRadius: 'var(--radius-sm)',
   background: 'transparent',
@@ -393,8 +393,8 @@ const iconButtonStyle = {
 const smallButtonStyle = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 4,
-  padding: '5px 7px',
+  gap: 'var(--space-4)',
+  padding: 'var(--space-4) var(--space-6)',
   borderRadius: 'var(--radius-sm)',
   border: '1px solid var(--line)',
   backgroundColor: 'var(--bg-raised)',

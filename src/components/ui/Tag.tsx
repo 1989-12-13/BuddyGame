@@ -29,8 +29,8 @@ export function Tag({ children, color = 'default', customColor, style }: Props) 
     <span style={{
       display: 'inline-flex',
       alignItems: 'center',
-      gap: 4,
-      padding: '2px 8px',
+      gap: 'var(--space-4)',
+      padding: 'var(--space-2) var(--space-8)',
       borderRadius: 'var(--radius-xl)',
       fontSize: 'var(--fs-small)',
       fontWeight: 'var(--fw-bold)',

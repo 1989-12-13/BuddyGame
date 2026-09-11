@@ -28,11 +28,11 @@ export function JudgmentSection({ judgments }: Props) {
               </span>
               {!j.isCorrect && (
                 <>
-                  <span style={{ color: 'var(--text-3)', fontSize: 'var(--fs-small)', marginLeft: 8 }}>
+                  <span style={{ color: 'var(--text-3)', fontSize: 'var(--fs-small)', marginLeft: 'var(--space-8)'}}>
                     ✓ 正确：{j.correctAnswer}
                   </span>
                   {j.reason && (
-                    <div style={{ color: 'var(--warning)', fontSize: 'var(--fs-micro)', marginTop: 2, fontStyle: 'italic' }}>
+                    <div style={{ color: 'var(--warning)', fontSize: 'var(--fs-micro)', marginTop: 'var(--space-2)', fontStyle: 'italic' }}>
                       ℹ {j.reason}
                     </div>
                   )}

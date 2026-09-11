@@ -38,7 +38,7 @@ export function PhoneHeader({
           通话 {String(mm).padStart(2, '0')}:{String(ss).padStart(2, '0')}
         </span>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 'var(--space-6)'}}>
           {/* 目标派车计时徽章 */}
           <span style={{
             ...styles.targetBadge,
@@ -54,7 +54,7 @@ export function PhoneHeader({
               onClick={dispatchCard.open}
               title="打开调度卡"
               style={{
-                padding: '3px 12px',
+                padding: 'var(--space-2) var(--space-12)',
                 borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--line-strong)',
                 backgroundColor: 'var(--accent-dim)',
@@ -83,7 +83,7 @@ export function PhoneHeader({
                 border: '1px solid var(--line)',
                 borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
-                padding: '2px 4px',
+                padding: 'var(--space-2) var(--space-4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

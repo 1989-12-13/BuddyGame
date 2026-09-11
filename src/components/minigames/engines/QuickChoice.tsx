@@ -15,7 +15,7 @@ const questionCard: React.CSSProperties = {
   fontWeight: 'var(--fw-bold)',
   color: 'var(--text)',
   textAlign: 'left',
-  padding: '12px 14px',
+  padding: 'var(--space-12) var(--space-14)',
   lineHeight: 1.6,
   backgroundColor: 'var(--bg-raised)',
   borderRadius: 'var(--radius-xl)',
@@ -28,7 +28,7 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E', 'F']
 const resultBox: React.CSSProperties = {
   fontSize: 'var(--fs-body-sm)',
   fontWeight: 'var(--fw-bold)',
-  padding: '8px 14px',
+  padding: 'var(--space-8) var(--space-14)',
   borderRadius: 'var(--radius-lg)',
   textAlign: 'center',
 }
@@ -63,7 +63,7 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
       </div>
 
       {/* 选项 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)', width: '100%' }}>
         {displayOptions.map((opt, i) => {
           const isSelected = selected === i
           const isThisCorrect = i === displayCorrectIndex
@@ -88,7 +88,7 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
               onClick={() => handleSelect(i)}
               disabled={showResult}
               style={{
-                padding: '10px 14px',
+                padding: 'var(--space-10) var(--space-14)',
                 borderRadius: 'var(--radius-lg)',
                 border: `1.5px solid ${border}`,
                 backgroundColor: bg,
@@ -99,7 +99,7 @@ function QuickChoiceEngine({ spec, onComplete, paused }: Omit<MiniGameProps, 'sp
                 textAlign: 'left',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
+                gap: 'var(--space-10)',
                 opacity: showResult && !isSelected && !isThisCorrect ? 0.35 : 1,
               }}
 

@@ -11,8 +11,8 @@ export function FieldRow({
   children: React.ReactNode
 }) {
   return (
-    <div style={{ marginBottom: 6 }}>
-      <label style={{ ...styles.formLabel, display: 'flex', alignItems: 'center', gap: 6 }}>
+    <div style={{ marginBottom: 'var(--space-6)'}}>
+      <label style={{ ...styles.formLabel, display: 'flex', alignItems: 'center', gap: 'var(--space-6)'}}>
         {icon} {label}
       </label>
       {children}

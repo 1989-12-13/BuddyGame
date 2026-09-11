@@ -27,7 +27,7 @@ export function TerminalForm({
   onSetProtocol: (protocol: number) => void
 }) {
   const RequiredMark = () => (
-    <span style={{ color: 'var(--danger)', marginLeft: 2, fontWeight: 'var(--fw-bold)' }}>*</span>
+    <span style={{ color: 'var(--danger)', marginLeft: 'var(--space-2)', fontWeight: 'var(--fw-bold)' }}>*</span>
   )
   return (
     <div className="terminal-record-form" style={styles.terminalForm}>
@@ -69,7 +69,7 @@ export function TerminalForm({
       </FieldRow>
 
       {/* 患者基本信息（可选） */}
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
         <div style={{ flex: 1 }}>
           <FieldRow icon={<UserRound size={15} />} label="年龄">
             <input
@@ -98,7 +98,7 @@ export function TerminalForm({
       <SectionTitle icon={<Activity size={15} />} text="关键问题" required />
 
       {/* 意识状态（必填） */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
         <span style={{ ...styles.formLabel, marginBottom: 0 }}>意识状态</span>
         <RequiredMark />
       </div>
@@ -114,7 +114,7 @@ export function TerminalForm({
       />
 
       {/* 呼吸状态（必填） */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
         <span style={{ ...styles.formLabel, marginBottom: 0 }}>呼吸状态</span>
         <RequiredMark />
       </div>
@@ -148,13 +148,13 @@ export function TerminalForm({
       </FieldRow>
 
       {/* 协议号对照参考（折叠） */}
-      <details style={{ margin: '-4px 0 8px 22px', fontSize: 'var(--fs-small)' }}>
+      <details style={{ margin: '-4px 0 var(--space-8) var(--space-20)', fontSize: 'var(--fs-small)' }}>
         <summary style={{ color: 'var(--text-3)', cursor: 'pointer', userSelect: 'none' }}>
           协议编号对照
         </summary>
         <div style={{
-          marginTop: 4,
-          padding: 6,
+          marginTop: 'var(--space-4)',
+          padding: 'var(--space-6)',
           backgroundColor: 'var(--bg-surface)',
           borderRadius: 'var(--radius-sm)',
           maxHeight: 160,
@@ -162,11 +162,11 @@ export function TerminalForm({
           color: 'var(--text-2)',
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '1px 12px',
+          gap: 'var(--space-1) var(--space-12)',
           fontSize: 'var(--fs-small)',
         }}>
           {PROTOCOL_REF.map(([num, name]) => (
-            <div key={num} style={{ display: 'flex', gap: 4, padding: '1px 0' }}>
+            <div key={num} style={{ display: 'flex', gap: 'var(--space-4)', padding: 'var(--space-1) 0' }}>
               <span style={{ color: 'var(--accent)', fontWeight: 'var(--fw-bold)', minWidth: 20 }}>{num}</span>
               <span>{name}</span>
             </div>
@@ -175,7 +175,7 @@ export function TerminalForm({
       </details>
 
       {/* ====== 判定码（必填） ====== */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
         <SectionTitle icon={<ClipboardList size={15} />} text="MPDS 判定码" inline />
         <RequiredMark />
       </div>
@@ -195,7 +195,7 @@ export function TerminalForm({
         </FieldRow>
       )}
       <FieldRow icon={<Hash size={15} />} label="子编码">
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 'var(--space-4)'}}>
           {[
             { n: 1, color: 'var(--danger)', label: '危重伤' },
             { n: 2, color: 'var(--sev-4)', label: '重伤' },
@@ -209,14 +209,14 @@ export function TerminalForm({
                 aria-pressed={active}
                 style={{
                   flex: 1,
-                  padding: '6px 4px',
+                  padding: 'var(--space-6) var(--space-4)',
                   borderRadius: 'var(--radius-lg)',
                   border: `1px solid ${active ? color : 'var(--line)'}`,
                   backgroundColor: active ? `color-mix(in srgb, ${color} 9%, var(--bg-surface))` : 'var(--bg-surface)',
                   color: active ? color : 'var(--text-2)',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 4,
+                  gap: 'var(--space-4)',
                   fontSize: 'var(--fs-small)',
                   fontWeight: active ? 'var(--fw-bold)' : 'var(--fw-normal)',
                   cursor: 'pointer',

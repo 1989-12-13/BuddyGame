@@ -52,7 +52,7 @@ export const modalHeaderRight: CSSProperties = {
 export const mpdsModalBadge: CSSProperties = {
   backgroundColor: 'var(--line-soft)',
   border: '2px solid var(--accent)',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 6,
   padding: '6px 12px',
   color: 'var(--accent)',
   fontSize: 'var(--fs-body)',
@@ -65,7 +65,7 @@ export const modalCloseBtn: CSSProperties = {
   backgroundColor: 'transparent',
   color: 'var(--text-3)',
   border: '1px solid var(--line-strong)',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 4,
   cursor: 'pointer',
   fontSize: 'var(--fs-body)',
   fontWeight: 'var(--fw-bold)',
@@ -92,7 +92,7 @@ export const modalDispatchBtn: CSSProperties = {
   backgroundColor: 'var(--danger)',
   color: 'var(--on-danger)',
   border: 'none',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 6,
   fontSize: 'var(--fs-body-lg)',
   fontWeight: 'var(--fw-bold)',
   cursor: 'pointer',
@@ -111,7 +111,7 @@ export const modalSaveBtn: CSSProperties = {
   backgroundColor: 'var(--bg-raised)',
   color: 'var(--text-2)',
   border: '1px solid var(--line)',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 6,
   fontSize: 'var(--fs-caption)',
   cursor: 'pointer',
 }
@@ -121,7 +121,7 @@ export const modalEndCallBtn: CSSProperties = {
   backgroundColor: 'transparent',
   color: 'var(--text-3)',
   border: '1px solid var(--line)',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 6,
   fontSize: 'var(--fs-small)',
   cursor: 'pointer',
 }
@@ -147,7 +147,7 @@ export const dispatchSent: CSSProperties = {
   gap: 10,
   padding: '8px 12px',
   backgroundColor: 'var(--bg-raised)',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 6,
   border: '1px solid var(--success-dim)',
   flex: 1,
 }
@@ -167,7 +167,7 @@ export const formLabel: CSSProperties = {
 export const formInput: CSSProperties = {
   width: '100%',
   padding: '8px 10px',
-  borderRadius: 'var(--radius-sm)',
+  borderRadius: 4,
   border: '1px solid var(--line)',
   backgroundColor: 'var(--bg-raised)',
   color: 'var(--text)',

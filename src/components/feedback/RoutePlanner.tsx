@@ -316,8 +316,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           ) : (
             <>
               <div style={{ padding: 'var(--space-12)', borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>
-                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text)' }}>{activeRoute.label}</div>
-                <div style={{ marginTop: 'var(--space-4)', fontSize: 'var(--fs-small)', lineHeight: 1.55, color: 'var(--text-3)' }}>{activeRoute.summary}</div>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text)' }}>当前选定路线</div>
                 <div style={{ display: 'flex', gap: 'var(--space-12)', marginTop: 'var(--space-10)', fontSize: 'var(--fs-small)' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
@@ -347,7 +346,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
 
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
             <div style={{ minHeight: 30, fontSize: 'var(--fs-micro)', lineHeight: 1.5, color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>
-              {completedRoute ? `已到达事件现场，可确认 ${completedRoute.label}` : '必须沿相邻节点抵达事件现场后才能派车'}
+              {completedRoute ? '已到达事件现场，可以确认派车' : '必须沿相邻节点抵达事件现场后才能派车'}
             </div>
             <button
               onClick={() => completedRoute && onConfirm(completedRoute)}

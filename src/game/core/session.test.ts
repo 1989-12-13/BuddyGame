@@ -182,7 +182,7 @@ describe('workbench state boundaries', () => {
   it('completes all five campaign calls with independent results and no deadlock', () => {
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
     for (let index = 0; index < CAMPAIGN_IDS.length; index++) {
-      while (state.fleet.vehicles[0].status !== 'available') state = worldReducer(state, { type: 'ADVANCE_TURNAROUND' })
+      for (let i = 0; i < 600 && state.fleet.vehicles[0].status !== 'available'; i++) state = worldReducer(state, { type: 'TICK' })
       state = worldReducer(state, { type: 'ANSWER_CALL' })
       expect(state.currentCall!.id).toBe(CAMPAIGN_IDS[index])
       const call = state.currentCall!

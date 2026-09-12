@@ -25,6 +25,13 @@ export const TONE_INITIAL_STRESS: Record<string, number> = {
 export const CALM_STRESS_DROP_BASE = 20
 /** 安抚一次降低的压力（技能加成） */
 export const CALM_STRESS_DROP_PERK = 30
+/**
+ * 安抚效果随次数线性递减（每次少降这么多）。
+ * 旧实现是 20/(1+次数)，第 3 次就只剩 6.7，导致「安抚换准确信息」在数值上不成立。
+ */
+export const CALM_STRESS_DROP_DECAY = 4
+/** 安抚效果下限：保留一个可用值，避免收益崩塌到「安抚无用」 */
+export const CALM_STRESS_DROP_FLOOR = 8
 /** 安抚一次的时间成本（基础值） */
 export const CALM_TIME_COST_BASE = 2
 /** 安抚一次的时间成本（技能加成） */

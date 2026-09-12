@@ -42,12 +42,6 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
   if ('callInstanceId' in action && action.callInstanceId !== undefined && action.callInstanceId !== state.callInstanceId) return state
   if (isWorldPaused(state) && !['DISMISS_DEBRIEF', 'CHOOSE_PERK', 'BACK_TO_TITLE', 'START_SHIFT'].includes(action.type)) return state
   if (isActionBusy(state) && ['ASK_QUESTION', 'CALM_CALLER', 'DISPATCH'].includes(action.type)) return state
-  if (action.type === 'ADVANCE_TURNAROUND') {
-    if (state.currentCall) return state
-    let next = state
-    for (let i = 0; i < 15; i++) next = handleTick(next)
-    return next
-  }
   switch (action.type) {
     case 'CARE_CHECK':
       return handleCareCheck(state, action.checkId, action.selectedIndex)
@@ -55,10 +49,14 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleStartShift(state, action.forceScenarios)
 
     case 'ANSWER_CALL':
-      return handleAnswerCall(state)
+      return handleAnswerCall(state, action.scenario)
 
     case 'ASK_QUESTION': {
-      const next = handleAskQuestion(state, action.questionId)
+      const next = handleAskQuestion(state, action.questionId, {
+        spokenLine: action.spokenLine,
+        stressDelta: action.stressDelta,
+        extraTime: action.extraTime,
+      })
       return next === state ? state : applyCallEvents(next, 'after_question', action.questionId)
     }
 

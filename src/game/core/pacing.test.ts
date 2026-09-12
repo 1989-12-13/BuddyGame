@@ -16,7 +16,7 @@ describe('campaign care pacing', () => {
   it('supports a 15+ minute scripted care run without counting pause, debrief or turnaround', () => {
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
     for (const id of CAMPAIGN_IDS) {
-      for (let i = 0; i < 100 && state.fleet.vehicles[0].status !== 'available'; i++) state = worldReducer(state, { type: 'ADVANCE_TURNAROUND' })
+      for (let i = 0; i < 600 && state.fleet.vehicles[0].status !== 'available'; i++) state = ticks(state, 1)
       expect(state.fleet.vehicles[0].status).toBe('available')
       state = worldReducer(state, { type: 'ANSWER_CALL' })
       expect(state.currentCall!.id).toBe(id)

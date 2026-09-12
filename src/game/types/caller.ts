@@ -68,5 +68,18 @@ export function stressToLevel(stress: number): CalleeStressLevel {
   return '失控'
 }
 
+/**
+ * 说话特质 — 决定「同一句信息」在不同来电者嘴里怎么说。
+ * 只影响措辞与语气，不改变信息本身（信息质量仍由情绪与问法决定）。
+ */
+export interface CallerVoice {
+  /** 0 沉默寡言 / 1 一般 / 2 话痨 */
+  verbosity: 0 | 1 | 2
+  /** 0 情绪化 / 1 一般 / 2 理性 */
+  rationality: 0 | 1 | 2
+  /** 0 缺医疗常识 / 1 一般 / 2 有医疗背景 */
+  medicalLiteracy: 0 | 1 | 2
+}
+
 // 前向引用：InfoQuality 定义在 scenario 模块
 import type { InfoQuality } from './scenario'

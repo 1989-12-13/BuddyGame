@@ -296,7 +296,7 @@ export function buildDebrief(
       outcomeTier: state.rescue.outcome === 'success' ? 'good' as const : state.rescue.outcome === 'failed' || state.patientStatus?.died ? 'bad' as const : 'normal' as const,
       outcomeTitle: state.rescue.outcome === 'success' ? '现场交接已完成' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '救援未成功，回顾处置过程' : dispatchRecord ? '已派车，通话提前结束' : '尚未派车，通话已结束',
       patientStatus: state.rescue.outcome === 'success' ? '模拟救援完成；院后结果不在本次记录内。' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '模拟救援未成功，操作评价独立保留。' : '现场最终结果尚未确认。',
-      outcomeNarrative: `本次${dispatchRecord ? `在接听后 ${dispatchRecord.dispatchTime} 秒派出救护车，采用${dispatchRecord.routeLabel ?? '所选路线'}` : '未形成派车记录'}。${guidanceTotal ? `急救指导完成 ${completedGuidance}/${guidanceTotal} 步，其中 ${rawGuidanceCorrect} 步操作到位。` : ''}${state.rescue.failureReason ? `记录中的影响因素：${state.rescue.failureReason}。` : ''}`,
+      outcomeNarrative: `本次${dispatchRecord ? `在接听后 ${dispatchRecord.dispatchTime} 秒派出救护车，采用所选路线` : '未形成派车记录'}。${guidanceTotal ? `急救指导完成 ${completedGuidance}/${guidanceTotal} 步，其中 ${rawGuidanceCorrect} 步操作到位。` : ''}${state.rescue.failureReason ? `记录中的影响因素：${state.rescue.failureReason}。` : ''}`,
     } : {}),
     reviewPoints,
     isPrankHandledCorrectly: prankHandledCorrectly,

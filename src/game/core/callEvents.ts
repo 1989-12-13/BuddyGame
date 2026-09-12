@@ -14,11 +14,23 @@ export function applyCallEvents(state: WorldState, trigger: CallEvent['trigger']
     if (!eligible) continue
     const caller = next.callerState!
     const stress = event.type === 'caller_panic' ? Math.min(100, caller.stress + 10) : caller.stress
+    const dialogueIndex = next.dialogueLog.length
     next = {
       ...next,
       triggeredEventIds: [...next.triggeredEventIds, event.id],
       callerState: { ...caller, stress, stressLevel: stressToLevel(stress) },
       dialogueLog: [...next.dialogueLog, { speaker: 'caller', text: event.dialogue, timestamp: next.shiftElapsed }],
+      // 改口事件 → 追加一张重新判断卡，让冲突信息必须被处理
+      pendingJudgments: event.correction
+        ? [...next.pendingJudgments, {
+            id: `judge_event_${event.id}`,
+            questionId: event.id,
+            dialogueIndex,
+            question: event.correction.question,
+            options: event.correction.options,
+            chosenOptionIndex: null,
+          }]
+        : next.pendingJudgments,
     }
   }
   return next

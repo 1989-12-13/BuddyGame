@@ -24,7 +24,6 @@ export interface DispatchRecord {
   /** 具体路径 ID；同一种策略可包含多条不同节点组合。 */
   routeId?: string
   routeStrategy?: RouteStrategy
-  routeLabel?: string
   routeRisk?: 'low' | 'medium' | 'high'
 }
 

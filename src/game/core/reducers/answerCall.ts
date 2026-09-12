@@ -3,20 +3,20 @@
 // 接听电话：初始化通话状态
 // ============================================================
 
-import type { WorldState, DialogueLine } from '../../types'
+import type { WorldState, DialogueLine, EmergencyScenario } from '../../types'
 import { createCallerState, createTerminalState, createPatientStatus } from '../worldState'
 import { getScenario } from '../../events/templates'
 import { getCaller } from '../../npc/personas'
 import { toneToInitialStress } from './helpers'
 import { CARE_WINDOWS } from '../pacing'
 
-export function handleAnswerCall(state: WorldState): WorldState {
+export function handleAnswerCall(state: WorldState, scenarioOverride?: EmergencyScenario): WorldState {
   if (state.callIndex >= state.totalCalls || state.currentCall || state.lastDebrief || state.pendingPerkChoices.length) return state
 
   const scenarioId = state.scenarioQueue[state.callIndex]
   if (!scenarioId) return state
 
-  const scenario = getScenario(scenarioId)
+  const scenario = scenarioOverride ?? getScenario(scenarioId)
   const callerProfile = getCaller(scenario.callerId)
   const initialStress = toneToInitialStress(callerProfile.tone)
   const callerState = createCallerState(scenario.callerId, initialStress)
@@ -34,7 +34,8 @@ export function handleAnswerCall(state: WorldState): WorldState {
   }
 
   const terminal = createTerminalState()
-  const patientStatus = scenario.isPrank ? null : createPatientStatus(scenario.correctTriage)
+  // 恶作剧与核实通话都不拥有患者
+  const patientStatus = scenario.isPrank || scenario.isVerification ? null : createPatientStatus(scenario.correctTriage)
   if (patientStatus && CARE_WINDOWS[scenarioId]) patientStatus.decayRate *= 0.4
 
   return {

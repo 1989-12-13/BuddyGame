@@ -187,8 +187,16 @@ export interface CallEvent {
   id: string
   trigger: 'after_dispatch' | 'after_question' | 'time_elapsed'
   triggerValue?: string    // question id 或 秒数
-  type: 'caller_speaks' | 'line_cut' | 'caller_panic' | 'new_symptom'
+  type: 'caller_speaks' | 'line_cut' | 'caller_panic' | 'new_symptom' | 'caller_correction'
   dialogue: string
+  /**
+   * 来电者改口/补充，与已知信息冲突时的重新判断卡。
+   * 交叉信息的核心：新信息可能与旧信息矛盾，玩家必须决定信哪一个、是否重新确认。
+   */
+  correction?: {
+    question: string
+    options: JudgmentOption[]
+  }
 }
 
 // -------------------- 急救场景（一通电话） --------------------
@@ -210,6 +218,11 @@ export interface EmergencyScenario {
   phoneNumber: string
   baseStation: string          // 模糊的基站定位
   isPrank: boolean
+  /**
+   * 交叉核实通话：同一事故的第二位来电者。
+   * 不拥有患者、不派车、不指导，只用于比对冲突信息。
+   */
+  isVerification?: boolean
   correctTriage: TriageLevel
 
   /** MPDS协议卡片 */

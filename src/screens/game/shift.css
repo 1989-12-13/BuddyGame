@@ -1,0 +1,140 @@
+/* ============================================================
+   并发值班 — 线路墙与班次布局
+   所有颜色/间距/字号一律引用设计令牌（见 styles/tokens.css）
+   ============================================================ */
+
+.shift-shell { --rack-w: 248px; position: relative; }
+
+.line-rack {
+  position: fixed; inset: 0 auto 0 0; width: var(--rack-w); z-index: 60;
+  display: flex; flex-direction: column; gap: var(--space-10);
+  padding: var(--space-16) var(--space-12);
+  background: var(--bg-deep); border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+
+.lr-head { display: flex; align-items: center; justify-content: space-between; }
+.lr-clock { font-size: var(--fs-body); font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+
+.lr-status {
+  display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-12);
+  padding: var(--space-8) var(--space-10);
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  font-size: var(--fs-caption); color: var(--text-2);
+}
+.lr-status span { display: inline-flex; align-items: center; gap: var(--space-4); }
+.lr-status b { color: var(--text); }
+.lr-bad, .lr-bad b { color: var(--danger); }
+.lr-warn, .lr-warn b { color: var(--warning); }
+
+.lr-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+
+.lr-item {
+  border: 1px solid var(--line); border-radius: var(--radius-xl);
+  background: var(--bg-surface); overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.lr-item.is-focused { border-color: var(--accent); }
+.lr-item.lr-ringing { border-color: var(--warning); animation: lr-pulse 1.2s var(--ease-in-out) infinite; }
+.lr-item.lr-done { opacity: .6; }
+
+.lr-body {
+  display: flex; flex-direction: column; align-items: stretch; gap: var(--space-4);
+  width: 100%; min-height: 0; padding: var(--space-10) var(--space-12);
+  background: transparent; border: 0; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.lr-body:disabled { cursor: default; opacity: .6; }
+
+.lr-top { display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-caption); color: var(--text-2); }
+.lr-phase { display: inline-flex; align-items: center; gap: var(--space-4); }
+.lr-remain { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--warning); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.lr-title { font-size: var(--fs-body); line-height: 1.4; }
+.lr-caller { font-size: var(--fs-caption); color: var(--text-2); }
+
+/* 交叉核实面板 */
+.verify-panel {
+  position: fixed; right: var(--space-24); bottom: var(--space-24); z-index: 70;
+  width: min(520px, 60vw);
+  display: flex; flex-direction: column; gap: var(--space-12);
+  padding: var(--space-16);
+  border: 1px solid var(--warning-line);
+  border-radius: var(--radius-2xl);
+  background: var(--bg-surface);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .38);
+}
+.verify-panel header { display: flex; align-items: center; gap: var(--space-10); }
+.verify-panel header svg { color: var(--warning); flex: none; }
+.verify-panel h3 { font-size: var(--fs-subtitle); color: var(--text); margin-top: var(--space-2); }
+
+.verify-compare { display: flex; flex-direction: column; gap: var(--space-8); }
+.verify-side {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-10) var(--space-12);
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--bg-raised);
+}
+.verify-side.is-conflict { border-color: var(--warning-line); background: var(--warning-bg); }
+.verify-tag { font-size: var(--fs-micro); font-weight: 700; color: var(--text-3); letter-spacing: 1px; }
+.verify-side.is-conflict .verify-tag { color: var(--warning); }
+.verify-side p { font-size: var(--fs-body); line-height: 1.6; color: var(--text); }
+
+.verify-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-8); }
+
+@media (max-width: 1100px) {
+  .verify-panel { left: var(--space-12); right: var(--space-12); bottom: var(--space-12); width: auto; }
+}
+
+/* 在途事件待决策：并发下最容易被漏掉的状态 */
+.lr-item.needs-decision { border-color: var(--warning); }
+.lr-link {
+  display: inline-flex; align-items: center; gap: var(--space-4);
+  font-size: var(--fs-micro); font-weight: 700; color: var(--info);
+}
+.lr-flag {
+  display: inline-flex; align-items: center; gap: var(--space-4);
+  font-size: var(--fs-micro); font-weight: 700; color: var(--warning);
+}
+
+.lr-hint { font-size: var(--fs-caption); color: var(--text-3); line-height: 1.6; }
+.lr-reject {
+  display: flex; align-items: center; gap: var(--space-6);
+  padding: var(--space-8) var(--space-10); border-radius: var(--radius-lg);
+  background: var(--danger-bg); border: 1px solid var(--danger-line);
+  color: var(--danger); font-size: var(--fs-caption);
+}
+
+.lr-pause {
+  margin-top: auto; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6);
+  min-height: 44px; padding: var(--space-8) var(--space-12);
+  background: var(--bg-raised); color: var(--text); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); font: inherit; cursor: pointer;
+}
+.lr-pause:hover { background: var(--bg-hover); }
+
+@keyframes lr-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warning) 55%, transparent); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+.shift-stage { padding-left: var(--rack-w); }
+
+.shift-idle {
+  min-height: 100dvh; display: grid; place-content: center; justify-items: center;
+  gap: var(--space-10); padding: var(--space-24); text-align: center; color: var(--text-2);
+}
+.shift-idle svg { color: var(--accent); }
+.shift-idle h2 { font-size: var(--fs-heading); color: var(--text); }
+
+@media (max-width: 1100px) {
+  .shift-shell { --rack-w: 0px; }
+  .line-rack {
+    position: static; width: auto; inset: auto; z-index: auto;
+    flex-direction: column; border-right: 0; border-bottom: 1px solid var(--line);
+    max-height: 42dvh;
+  }
+  .lr-list { flex-direction: row; overflow-x: auto; padding-bottom: var(--space-4); }
+  .lr-item { min-width: 176px; }
+  .shift-stage { padding-left: 0; }
+}

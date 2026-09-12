@@ -2,7 +2,7 @@
 // 120调度台 — Game Actions
 // ============================================================
 
-import type { TriageLevel, MpdsDeterminant, FragmentTargetField } from '../types'
+import type { TriageLevel, MpdsDeterminant, FragmentTargetField, EmergencyScenario } from '../types'
 import type { RoguePerkId } from './perks'
 import type { RoutePlan } from './routing'
 
@@ -11,11 +11,20 @@ export type TerminalField = 'address' | 'contact' | 'chiefComplaint' | 'patientA
 export type GameAction =
   | { type: 'PAUSE'; reason: import('./session').PauseReason }
   | { type: 'RESUME'; reason?: import('./session').PauseReason }
-  | { type: 'ADVANCE_TURNAROUND' }
   | { type: 'CARE_CHECK'; callInstanceId: number; checkId: string; selectedIndex: number }
   | { type: 'START_SHIFT'; forceScenarios?: string[] }
-  | { type: 'ANSWER_CALL' }
-  | { type: 'ASK_QUESTION'; questionId: string }
+  /** scenario 用于交叉核实通话：直接注入派生场景，绕过场景队列 */
+  | { type: 'ANSWER_CALL'; scenario?: EmergencyScenario }
+  | {
+      type: 'ASK_QUESTION'
+      questionId: string
+      /** 对话回合：玩家实际说出口的那句话（覆盖默认措辞） */
+      spokenLine?: string
+      /** 对话回合：措辞带来的额外情绪影响（正=加压，负=安抚） */
+      stressDelta?: number
+      /** 对话回合：措辞带来的额外耗时（秒，可为负） */
+      extraTime?: number
+    }
   | { type: 'CALM_CALLER' }                                          // 安抚来电者情绪
   | { type: 'MAKE_JUDGMENT'; judgmentId: string; chosenOptionIndex: number }  // 临床判断选择题
   | { type: 'UPDATE_TERMINAL'; field: TerminalField | FragmentTargetField; value: string }

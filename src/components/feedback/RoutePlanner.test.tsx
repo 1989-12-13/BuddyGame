@@ -31,7 +31,7 @@ describe('RoutePlanner node workflow', () => {
       fireEvent.click(nodeButton)
     }
 
-    expect(screen.getByText(`已到达事件现场，可确认 ${chosenRoute.label}`)).toBeInTheDocument()
+    expect(screen.getByText('已到达事件现场，可以确认派车')).toBeInTheDocument()
     expect(confirmButton).toBeEnabled()
     fireEvent.click(confirmButton)
     expect(onConfirm).toHaveBeenCalledWith(chosenRoute)

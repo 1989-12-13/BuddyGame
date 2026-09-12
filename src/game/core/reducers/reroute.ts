@@ -12,7 +12,6 @@ export function handleReroute(state: WorldState, routeId: string): WorldState {
   const keepCurrent = routeId === prompt.currentRouteId
   const remaining = keepCurrent ? currentVehicle.eta : Math.max(1, selectedRoute.totalEta - elapsed)
   const updatedRoute = keepCurrent ? currentVehicle.mission.route : selectedRoute
-  const routeLabel = updatedRoute?.label ?? state.dispatchRecord?.routeLabel
 
   return {
     ...state,
@@ -25,7 +24,6 @@ export function handleReroute(state: WorldState, routeId: string): WorldState {
       ambulanceETA: elapsed + remaining,
       routeId: updatedRoute?.id,
       routeStrategy: updatedRoute?.strategy,
-      routeLabel,
       routeRisk: updatedRoute?.risk,
     } : null,
     fleet: {
@@ -43,7 +41,7 @@ export function handleReroute(state: WorldState, routeId: string): WorldState {
     },
     dialogueLog: [...state.dialogueLog, {
       speaker: 'system',
-      text: keepCurrent ? `【保持当前路线：${routeLabel ?? '原路线'}】` : `【已改道：${routeLabel ?? '备选路线'} · 剩余约 ${remaining} 秒】`,
+      text: keepCurrent ? '【保持当前路线】' : `【已改道 · 剩余约 ${remaining} 秒】`,
       timestamp: state.shiftElapsed,
     }],
   }

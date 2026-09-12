@@ -1,6 +1,7 @@
-﻿import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
+﻿import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { Activity, ArrowRight, BookOpen, CheckCircle2, ClipboardList, Headphones, Map, Pause, Phone, Play, Settings, ShieldCheck, Volume2, X, Ambulance } from 'lucide-react'
-import type { EndingDef } from '../../game/types'
+import type { EndingDef, WorldState } from '../../game/types'
+import type { GameAction } from '../../game/core/actions'
 import type { DispatchCardControl } from '../../contexts/DispatchCardContext'
 import { worldReducer } from '../../game/core/worldReducer'
 import { createInitialState } from '../../game/core/worldState'
@@ -30,16 +31,25 @@ import { Dialog } from '../../components/ui/Dialog'
 import { ROGUE_PERKS } from '../../game/core/perks'
 import './workbench.css'
 
-interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void }
+/** 并发模式注入：状态与动作由班次层提供 */
+interface ControlledProps { state: WorldState; dispatch: (action: GameAction) => void; paused?: boolean }
+interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void; controlled?: ControlledProps }
 type Tab = 'call' | 'map' | 'task'
 type Modal = 'settings' | 'help' | 'exit' | 'end' | null
 const PHASES = ['接听', '问询', '路线', '指导', '交接']
 
-export function GameScreen({ onNavigate, scenarioId }: Props) {
-  const [state, dispatch] = useReducer(worldReducer, scenarioId, id => {
+export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
+  const [internalState, internalDispatch] = useReducer(worldReducer, scenarioId, id => {
     if (id === '__resume__') { const saved = loadCheckpoint(); if (saved) return saved }
     return handleStartShift(createInitialState(), id && !id.startsWith('__') ? [id] : id === '__random__' ? undefined : CAMPAIGN_IDS)
   })
+  // 并发模式下由班次层驱动：本组件只渲染聚焦线路，不自行计时/存档/跳转
+  const embedded = controlled !== undefined
+  const state = controlled?.state ?? internalState
+  // dispatch 保持稳定引用：内部走 useReducer，并发模式走班次层注入
+  const dispatchRef = useRef<(action: GameAction) => void>(internalDispatch)
+  dispatchRef.current = controlled?.dispatch ?? internalDispatch
+  const dispatch = useCallback((action: GameAction) => dispatchRef.current(action), [])
   const [tab, setTab] = useState<Tab>('map')
   const [modal, setModal] = useState<Modal>(null)
   const [plan, setPlan] = useState<DispatchPlan | null>(null)
@@ -50,7 +60,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const [taskPulse, setTaskPulse] = useState(false)
   const audio = useAudio()
   const { theme, toggle } = useTheme()
-  const paused = isWorldPaused(state)
+  const paused = isWorldPaused(state) || Boolean(controlled?.paused)
   const call = state.currentCall
   const chapter = CAMPAIGN.find(c => c.id === (call?.id ?? state.scenarioQueue[state.callIndex]))
   const dispatchReady = Boolean(state.terminal.address.trim() && state.terminal.conscious !== null && state.terminal.breathing !== null && state.terminal.determinant && state.terminal.triage)
@@ -62,20 +72,21 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
   const latestPaused = useRef(paused)
   latestPaused.current = paused
   useEffect(() => {
-    if (state.screen !== 'playing' || paused) return
+    if (embedded || state.screen !== 'playing' || paused) return
     const timer = window.setInterval(() => dispatch({ type: 'TICK' }), 1000)
     return () => window.clearInterval(timer)
-  }, [state.screen, paused])
+  }, [embedded, state.screen, paused, dispatch])
   useEffect(() => {
+    if (embedded) return
     const onHidden = () => { if (document.hidden) dispatch({ type: 'PAUSE', reason: 'background' }) }
     document.addEventListener('visibilitychange', onHidden)
     onHidden()
     return () => document.removeEventListener('visibilitychange', onHidden)
-  }, [])
+  }, [embedded, dispatch])
   useEffect(() => {
     audio.tts.setPaused(paused)
     if (!paused && deferredMiniGame.current) { dispatch({ type: 'COMPLETE_MINIGAME', ...deferredMiniGame.current }); deferredMiniGame.current = null }
-  }, [paused, audio.tts])
+  }, [paused, audio.tts, dispatch])
   useEffect(() => {
     audio.tts.stop(); lastSpoken.current = 0; deferredMiniGame.current = null; setPlan(null); setAudioFailed(false)
     return () => audio.tts.stop()
@@ -87,10 +98,11 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
     lines.forEach((line, i) => { if (line.speaker === 'caller') void audio.tts.enqueue(`${state.callInstanceId}-${i}-${line.timestamp}`, { text: line.text, kind: 'caller', emotion: stressToEmotion(state.callerState?.stress ?? 40) }).catch(() => setAudioFailed(true)) })
   }, [state.dialogueLog, state.callInstanceId, state.callerState?.stress, audio.tts])
   // Deliberately persist only at safe boundaries, never every timer tick.
-  useEffect(() => { setSaveFailed(!saveCheckpoint(state)) }, [state.callIndex, state.scenarioQueue, state.perks, state.rescueNotifications.length]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (embedded) return; setSaveFailed(!saveCheckpoint(state)) }, [embedded, state.callIndex, state.scenarioQueue, state.perks, state.rescueNotifications.length]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (state.screen === 'ending') onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores, state.activePlaySeconds)
-  }, [state.screen, state.totalScore, state.totalCalls, state.callScores, state.activePlaySeconds, onNavigate])
+    if (embedded || state.screen !== 'ending') return
+    onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores, state.activePlaySeconds)
+  }, [embedded, state.screen, state.totalScore, state.totalCalls, state.callScores, state.activePlaySeconds, onNavigate])
   const openModal = (value: Modal) => { dispatch({ type: 'PAUSE', reason: value === 'settings' ? 'settings' : value === 'help' ? 'help' : 'confirm' }); setModal(value) }
   const closeModal = () => { dispatch({ type: 'RESUME', reason: modal === 'settings' ? 'settings' : modal === 'help' ? 'help' : 'confirm' }); setModal(null) }
   const endCall = () => { setPlan(null); audio.tts.stop(); dispatch({ type: 'END_CALL' }) }
@@ -140,7 +152,7 @@ export function GameScreen({ onNavigate, scenarioId }: Props) {
       <aside className="desk-panel transcript-panel"><Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} /><QuestionDock state={state} dispatch={dispatch} /><NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} /></aside>
       <section className="desk-panel workspace-panel">
         <div className="workspace-heading"><div><span className="eyebrow">{chapter ? `CHAPTER ${chapter.chapter}` : 'FREE SHIFT'} · 当前 {PHASES[step]}</span><h1>{chapter?.title ?? call?.title ?? '城市正在等待你的声音'}</h1></div><div className="workspace-actions">{call && !state.rescue.outcome && !state.patientStatus?.died && <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}<button className="task-toggle" onClick={() => setTaskOpen(v => !v)} aria-pressed={taskOpen}><ClipboardList size={16} />{taskOpen ? '收起登记表' : '调度登记表'}</button></div></div>
-        {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">准备接听 · 第 {state.callIndex + 1} 通</span><h2>{chapter?.focus ?? '让帮助抵达需要的地方'}</h2><p>{chapter?.note ?? '这一次，留意电话里的细节，做出你的判断。'}</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p><button className="secondary" onClick={() => dispatch({ type: 'ADVANCE_TURNAROUND' })}>加速车辆周转 · 15 秒</button></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
+        {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">准备接听 · 第 {state.callIndex + 1} 通</span><h2>{chapter?.focus ?? '让帮助抵达需要的地方'}</h2><p>{chapter?.note ?? '这一次，留意电话里的细节，做出你的判断。'}</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
             {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, routeOptions: plan.routes, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.pendingReroute ? <ReroutePanel state={state} dispatch={dispatch} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
               <CityMap state={state} />

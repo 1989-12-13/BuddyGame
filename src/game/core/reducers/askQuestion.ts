@@ -8,6 +8,8 @@ import { stressToLevel, PROTOCOL_REF } from '../../types'
 import { rng } from '../random'
 import { hasPerk } from '../perks'
 import { getCaller } from '../../npc/personas'
+import { getVoice } from '../../npc/voices'
+import { voiceAnswer } from '../callerVoice'
 import {
   pickNarrativeAnswer,
   generateLocationNarrative,
@@ -19,12 +21,21 @@ import {
 import { getPronoun } from '../../content/pronouns'
 import { createEventSink } from './helpers'
 
-export function handleAskQuestion(state: WorldState, questionId: string): WorldState {
+/** 对话回合带来的修饰：措辞、情绪代价、时间代价 */
+export interface TurnModifiers {
+  spokenLine?: string
+  stressDelta?: number
+  extraTime?: number
+}
+
+export function handleAskQuestion(state: WorldState, questionId: string, turn?: TurnModifiers): WorldState {
   const call = state.currentCall
   const cs = state.callerState
   // 清晰答案只问一次；模糊答案在安抚后允许再确认一次。
   if (!call || !cs) return state
   if (state.callPhase !== 'questioning' && state.callPhase !== 'connected') return state
+  const callerProfile = getCaller(call.callerId)
+  const voice = getVoice(call.callerId)
   const attemptCount = cs.questionAttempts[questionId] ?? 0
   const previousQuality = cs.questionQuality[questionId]
   const previousStress = cs.questionStress[questionId] ?? cs.stress
@@ -90,12 +101,11 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   else if (questionId === 'step2_event') {
     stressEffect = -8
     newDialogue.push({ speaker: 'operator', text: '好的，请告诉我具体发生了什么事？', timestamp: now })
-    const caller = getCaller(call.callerId)
     const nq = generateEventNarrative(
       call.fourElements.condition.chiefComplaint,
       call.fourElements.condition.gender,
       newStress,
-      caller.relationship,
+      callerProfile.relationship,
     )
     newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
     newRevealed.chiefComplaint = nq.quality !== 'vague'
@@ -278,7 +288,7 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
   newQuestionAttempts[questionId] = attemptCount + 1
   newQuestionQuality[questionId] = answerQuality
   const questionPenalty = Math.max(0, cs.questionCount - 4) * 3
-  newStress = Math.max(0, Math.min(100, newStress + stressEffect + questionPenalty))
+  newStress = Math.max(0, Math.min(100, newStress + stressEffect + questionPenalty + (turn?.stressDelta ?? 0)))
   newQuestionStress[questionId] = newStress
   const newStressLevel = stressToLevel(newStress)
 
@@ -302,9 +312,13 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
 
   const updatedRevealed = { ...newRevealed, address: newAddress }
   const baseQuestionTimeCost = getQuestionTimeCost(questionId, call)
-  const questionTimeCost = hasPerk(state.perks, 'rapid_intake') && cs.questionCount === 0
+  // 对话回合：用玩家选定的措辞替换默认问话
+  if (turn?.spokenLine && newDialogue[0]?.speaker === 'operator') {
+    newDialogue[0] = { ...newDialogue[0], text: turn.spokenLine }
+  }
+  const questionTimeCost = Math.max(0, (hasPerk(state.perks, 'rapid_intake') && cs.questionCount === 0
     ? 0
-    : baseQuestionTimeCost
+    : baseQuestionTimeCost) + (turn?.extraTime ?? 0))
 
   return {
     ...state,
@@ -327,6 +341,9 @@ export function handleAskQuestion(state: WorldState, questionId: string): WorldS
       stressLevel: newStressLevel,
       questionCount: cs.questionCount + 1,
     },
-    dialogueLog: [...state.dialogueLog, ...newDialogue],
+    // 说话特质层：同一句信息，按来电者特质重写措辞（只在此处合成一次）
+    dialogueLog: [...state.dialogueLog, ...newDialogue.map(line => line.speaker === 'caller'
+      ? { ...line, text: voiceAnswer(line.text, voice, { stressLevel: newStressLevel, relation: callerProfile.relationship }) }
+      : line)],
   }
 }

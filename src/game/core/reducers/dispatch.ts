@@ -44,7 +44,7 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
 
   const systemLine: DialogueLine = {
     speaker: 'system',
-    text: `【▸ 救护车已派出 — 路线: ${route.label} | 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
+    text: `【▸ 救护车已派出 | 分诊: ${triage === 'red' ? '红色（濒危）' : triage === 'yellow' ? '黄色（危重）' : triage === 'green' ? '绿色（轻伤）' : '黑色'} | 预计到达: ${eta}秒 | 派车耗时: ${dispatchTime}秒】`,
     timestamp: state.shiftElapsed,
   }
 
@@ -59,7 +59,6 @@ export function handleDispatch(state: WorldState, vehicleId: string, selectedRou
     dispatchedAt: state.shiftElapsed,
     routeId: route.id,
     routeStrategy: route.strategy,
-    routeLabel: route.label,
     routeRisk: route.risk,
   }
   // 派车超时即时反馈

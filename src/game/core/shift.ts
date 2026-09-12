@@ -1,0 +1,635 @@
+// ============================================================
+// 120调度台 — 班次协调器（并发多线值班）
+// ============================================================
+// 设计基线：docs/并发值班玩法设计方案.md
+//
+// 架构选择「组合」而非「拆分」：
+// 每条电话线路持有一个自包含的 WorldState，由现有 worldReducer 驱动，
+// 因此现有 reducer / 单通测试完全不受影响。班次层只负责：
+//   1. 共享时钟与暂停
+//   2. 来电到达与响铃超时
+//   3. 线路聚焦（玩家一次只处理一条线）
+//   4. 车辆资源约束（跨线路共享，不再每通一车）
+//   5. 线路生命周期（idle → ringing → active → done）
+// ============================================================
+
+import type { WorldState } from '../types'
+import { stressToLevel } from '../types'
+import type { GameAction } from './actions'
+import type { PauseReason } from './session'
+import { worldReducer } from './worldReducer'
+import { createInitialState } from './worldState'
+import { buildConflictReport, buildVerificationCall, type ConflictReport } from './supplementCall'
+import { SCENARIOS } from '../events/templates'
+
+export type LinePhase = 'idle' | 'ringing' | 'active' | 'done'
+
+/** primary = 事故初报；supplement = 同一事故的第二位来电者（核实通话） */
+export type LineRole = 'primary' | 'supplement'
+
+/** 交叉核实的当前状态（仅 supplement 线路） */
+export interface VerificationState {
+  primaryLineId: string
+  report: ConflictReport
+  probed: boolean
+  resolution: 'adopt' | 'reject' | null
+}
+
+/**
+ * 已完成的通话快照。
+ * 必须跨线路累积：线路会被复用，复用时 START_SHIFT 会重置该线路的
+ * totalScore / callScores / activePlaySeconds，直接读线路会丢掉前面的成绩。
+ */
+export interface ShiftCompletedCall {
+  lineId: string
+  scenarioId: string
+  score: number
+  activeSeconds: number
+}
+
+/** 一次事故：可能对应一条或两条线路 */
+export interface ShiftIncident {
+  id: string
+  scenarioId: string
+  primaryLineId: string
+  supplementLineId: string | null
+  /** 计划派出第二位来电者的时刻（班次时钟） */
+  supplementAt: number
+  resolved: boolean
+  /**
+   * 交叉核实的处置结果。
+   * 必须记在事故上：承载它的线路会被释放复用，届时 line.verification 会被清空。
+   */
+  resolution: 'adopt' | 'reject' | null
+}
+
+export interface ShiftLine {
+  id: string
+  phase: LinePhase
+  role: LineRole
+  incidentId: string | null
+  /** 仅 supplement 线路：交叉核实状态 */
+  verification: VerificationState | null
+  /** 本线分配到的场景 id（ringing / active 时有值） */
+  scenarioId: string | null
+  /** 响铃已持续秒数（仅 ringing 有意义） */
+  ringingFor: number
+  /** 占用的车辆槽位；已派车且救援未结算时有值 */
+  vehicleId: string | null
+  /** 该线路的通话运行时（复用现有世界状态机） */
+  world: WorldState
+}
+
+export interface ShiftConfig {
+  lineCount: number
+  vehicleCount: number
+  /** 事件队列（场景 id，按到达顺序） */
+  queue: string[]
+  /** 响铃超时秒数：超时未接 → 记入未接来电并释放线路 */
+  ringTimeout: number
+  /** 两次来电到达之间的最小间隔秒数 */
+  arrivalGap: number
+}
+
+export interface ShiftState {
+  clock: number
+  config: ShiftConfig
+  lines: ShiftLine[]
+  /** 本班次发生过的事故（一次事故可能对应两条线路） */
+  incidents: ShiftIncident[]
+  /** 已完成的通话（跨线路累积，不随线路复用而丢失） */
+  completed: ShiftCompletedCall[]
+  focusedLineId: string | null
+  /** 事件队列已消费到的位置 */
+  queueIndex: number
+  /** 到达冷却剩余秒数 */
+  arrivalCooldown: number
+  /** 未接来电（结算用） */
+  missed: string[]
+  /** 班次级暂停原因（暂停时所有线路冻结） */
+  pauseReasons: PauseReason[]
+  /** 最近一次被拒绝的动作原因（用于 UI 反馈） */
+  lastRejection: string | null
+}
+
+/** 默认班次配置：3 条线路 / 2 辆车（见设计方案 §0.2） */
+export const DEFAULT_SHIFT_CONFIG: Omit<ShiftConfig, 'queue'> = {
+  lineCount: 3,
+  vehicleCount: 2,
+  ringTimeout: 22,
+  arrivalGap: 3,
+}
+
+/** 接听后多久可能引来第二位来电者（仍需已派车） */
+export const SUPPLEMENT_DELAY = 25
+
+function createLine(index: number): ShiftLine {
+  return {
+    id: `line-${index + 1}`,
+    phase: 'idle',
+    role: 'primary',
+    incidentId: null,
+    verification: null,
+    scenarioId: null,
+    ringingFor: 0,
+    vehicleId: null,
+    world: createInitialState(),
+  }
+}
+
+export function createShiftState(config: ShiftConfig): ShiftState {
+  return {
+    clock: 0,
+    config,
+    lines: Array.from({ length: config.lineCount }, (_, i) => createLine(i)),
+    incidents: [],
+    completed: [],
+    focusedLineId: null,
+    queueIndex: 0,
+    arrivalCooldown: 0,
+    missed: [],
+    pauseReasons: [],
+    lastRejection: null,
+  }
+}
+
+// -------------------- 派生查询 --------------------
+
+export function focusedLine(shift: ShiftState): ShiftLine | null {
+  return shift.lines.find(line => line.id === shift.focusedLineId) ?? null
+}
+
+export function findLine(shift: ShiftState, lineId: string): ShiftLine | null {
+  return shift.lines.find(line => line.id === lineId) ?? null
+}
+
+export function isShiftPaused(shift: ShiftState): boolean {
+  return shift.pauseReasons.length > 0
+}
+
+/**
+ * 该线路是否有等待玩家决策的在途事件。
+ * 并发下这类事件最容易漏掉 —— 玩家正在处理别的线路时，
+ * 这一条会在后台悄悄堆积，线路墙需要把它标出来。
+ */
+export function lineNeedsDecision(line: ShiftLine): boolean {
+  return line.phase === 'active' && Boolean(line.world.pendingReroute)
+}
+
+/** 有多少条线路在等你决策 */
+export function pendingDecisionCount(shift: ShiftState): number {
+  return shift.lines.filter(lineNeedsDecision).length
+}
+
+/** 车辆是否外出未归：已派车，且救援（通话中或后台）尚未结算 */
+export function isVehicleOut(line: ShiftLine): boolean {
+  if (!line.vehicleId) return false
+  // 通话结束后救援会迁移到 backgroundRescues，且 rescue 被重置为 idle
+  if (line.world.backgroundRescues.some(rescue => !rescue.outcome)) return true
+  // 通话仍在进行中：以当前救援闭环为准
+  if (line.world.currentCall && !line.world.rescue.outcome) return true
+  return false
+}
+
+/** 已被占用（在途）的车辆数 — 救援结算后释放 */
+export function busyVehicleCount(shift: ShiftState): number {
+  return shift.lines.filter(isVehicleOut).length
+}
+
+export function availableVehicleCount(shift: ShiftState): number {
+  return Math.max(0, shift.config.vehicleCount - busyVehicleCount(shift))
+}
+
+/** 班次是否收束：队列已空 + 无响铃/通话中线路 */
+export function isShiftComplete(shift: ShiftState): boolean {
+  if (shift.queueIndex < shift.config.queue.length) return false
+  return shift.lines.every(line => line.phase === 'idle' || line.phase === 'done')
+}
+
+export function ringingLines(shift: ShiftState): ShiftLine[] {
+  return shift.lines.filter(line => line.phase === 'ringing')
+}
+
+export interface ShiftCallSummary {
+  scenarioId: string
+  title: string
+  score: number
+}
+
+export interface ShiftIncidentSummary {
+  scenarioId: string
+  title: string
+  /** 第二位来电者的处置结果；null = 没有等到第二通 */
+  resolution: 'adopt' | 'reject' | null
+}
+
+export interface ShiftSummary {
+  totalScore: number
+  /** 逐通得分（未接来电按 0 分计入，让它出现在结算里） */
+  callScores: number[]
+  activeSeconds: number
+  missedCount: number
+  incidentCount: number
+  /** 已完成的通话（带场景名，供结算逐通展示） */
+  calls: ShiftCallSummary[]
+  /** 未接来电 */
+  missed: ShiftCallSummary[]
+  /** 发生过的事故及其交叉核实结论 */
+  incidents: ShiftIncidentSummary[]
+  /** 跨线路的叙事总结 */
+  narrative: string
+}
+
+function scenarioTitle(id: string): string {
+  return SCENARIOS[id]?.title ?? id
+}
+
+/** 班次收束后的汇总，直接喂给既有的 EndingScreen */
+export function summarizeShift(shift: ShiftState): ShiftSummary {
+  const calls: ShiftCallSummary[] = shift.completed.map(call => ({
+    scenarioId: call.scenarioId,
+    title: scenarioTitle(call.scenarioId),
+    score: call.score,
+  }))
+  const missed: ShiftCallSummary[] = shift.missed.map(id => ({
+    scenarioId: id,
+    title: scenarioTitle(id),
+    score: 0,
+  }))
+  const incidents: ShiftIncidentSummary[] = shift.incidents.map(incident => ({
+    scenarioId: incident.scenarioId,
+    title: scenarioTitle(incident.scenarioId),
+    resolution: incident.resolution,
+  }))
+
+  const reviewed = incidents.filter(incident => incident.resolution !== null)
+  const adopted = reviewed.filter(incident => incident.resolution === 'adopt').length
+  const rejected = reviewed.filter(incident => incident.resolution === 'reject').length
+
+  const parts: string[] = []
+  if (calls.length > 0) parts.push(`接住 ${calls.length} 通`)
+  if (missed.length > 0) parts.push(`漏接 ${missed.length} 通`)
+  if (reviewed.length > 0) {
+    parts.push(`${reviewed.length} 起事故收到第二位来电者，采纳最新观察 ${adopted} 次、维持初报 ${rejected} 次`)
+  }
+
+  return {
+    totalScore: calls.reduce((sum, call) => sum + call.score, 0),
+    callScores: [...calls.map(call => call.score), ...missed.map(() => 0)],
+    activeSeconds: shift.completed.reduce((sum, call) => sum + call.activeSeconds, 0),
+    missedCount: missed.length,
+    incidentCount: incidents.length,
+    calls,
+    missed,
+    incidents,
+    narrative: parts.length > 0 ? `你今晚${parts.join('，')}。` : '这个班次没有留下记录。',
+  }
+}
+
+// -------------------- 线路操作 --------------------
+
+export function focusLine(shift: ShiftState, lineId: string): ShiftState {
+  const line = findLine(shift, lineId)
+  if (!line || line.phase === 'idle') return shift
+  return { ...shift, focusedLineId: lineId, lastRejection: null }
+}
+
+/** 接听某条响铃线路：把该线场景装载进它自己的 WorldState 并接听 */
+export function answerLine(shift: ShiftState, lineId: string): ShiftState {
+  const line = findLine(shift, lineId)
+  if (!line || line.phase !== 'ringing' || !line.scenarioId) return shift
+
+  const scenarioId = line.scenarioId
+  let world = worldReducer(line.world, { type: 'START_SHIFT', forceScenarios: [scenarioId] })
+  // 让线路内时钟与班次共享时钟对齐
+  world = { ...world, shiftElapsed: shift.clock }
+
+  // 第二位来电者：注入派生的核实场景（不拥有患者、不派车）
+  const incident = line.incidentId ? shift.incidents.find(i => i.id === line.incidentId) ?? null : null
+  const primaryScenario = incident
+    ? findLine(shift, incident.primaryLineId)?.world.currentCall ?? null
+    : null
+  const verificationCall = line.role === 'supplement' && primaryScenario
+    ? buildVerificationCall(primaryScenario)
+    : null
+
+  world = verificationCall
+    ? worldReducer(world, { type: 'ANSWER_CALL', scenario: verificationCall })
+    : worldReducer(world, { type: 'ANSWER_CALL' })
+  if (!world.currentCall) return shift
+
+  const verification: VerificationState | null = verificationCall && primaryScenario && incident
+    ? { primaryLineId: incident.primaryLineId, report: buildConflictReport(primaryScenario), probed: false, resolution: null }
+    : null
+
+  // 初报接听即建立事故记录；第二位来电者安排在派车之后
+  const startsIncident = line.role === 'primary'
+  const newIncidentId = `incident-${line.id}-${shift.clock}`
+
+  return {
+    ...shift,
+    focusedLineId: lineId,
+    lastRejection: null,
+    incidents: startsIncident
+      ? [...shift.incidents, {
+          id: newIncidentId,
+          scenarioId,
+          primaryLineId: line.id,
+          supplementLineId: null,
+          supplementAt: shift.clock + SUPPLEMENT_DELAY,
+          resolved: false,
+          resolution: null,
+        }]
+      : shift.incidents,
+    lines: shift.lines.map(l => (l.id === lineId
+      ? {
+          ...l,
+          phase: 'active' as const,
+          scenarioId,
+          ringingFor: 0,
+          world,
+          verification,
+          incidentId: l.incidentId ?? (startsIncident ? newIncidentId : null),
+        }
+      : l)),
+  }
+}
+
+function replaceLine(shift: ShiftState, lineId: string, next: ShiftLine): ShiftState {
+  return { ...shift, lines: shift.lines.map(l => (l.id === lineId ? next : l)) }
+}
+
+/** 交叉核实的三种处置 */
+export type VerificationChoice = 'adopt' | 'reject' | 'probe'
+
+/**
+ * 处置第二位来电者带来的冲突信息。
+ * - adopt：采纳最新观察，登记表以此为准
+ * - reject：维持初报，标记为需现场复核
+ * - probe：再追问一次（每通只允许一次），仍然无法确定就回到二选一
+ */
+export function resolveVerification(shift: ShiftState, lineId: string, choice: VerificationChoice): ShiftState {
+  const line = findLine(shift, lineId)
+  if (!line || !line.verification || line.verification.resolution) return shift
+
+  const now = shift.clock
+  const report = line.verification.report
+
+  if (choice === 'probe' && !line.verification.probed) {
+    const world: WorldState = {
+      ...line.world,
+      dialogueLog: [...line.world.dialogueLog,
+        { speaker: 'operator', text: '你确定吗？请再仔细看一眼他胸口有没有起伏。', timestamp: now },
+        { speaker: 'caller', text: '我又看了一遍……我确定，和前面说的不一样。你们快过来自己看吧！', timestamp: now },
+      ],
+    }
+    return replaceLine(shift, lineId, {
+      ...line,
+      world,
+      verification: { ...line.verification, probed: true },
+    })
+  }
+
+  const resolution = choice === 'reject' ? 'reject' : 'adopt'
+  const world: WorldState = {
+    ...line.world,
+    dialogueLog: [...line.world.dialogueLog,
+      { speaker: 'operator', text: resolution === 'adopt' ? '好，我按你现在说的记下来。' : '我先按前面的记录处理，请在现场再确认一次。', timestamp: now },
+      { speaker: 'system', text: resolution === 'adopt' ? '【已采纳第二位来电者的观察 · 登记表以最新观察为准】' : '【已维持初报 · 该冲突标记为需现场复核】', timestamp: now },
+    ],
+    terminal: {
+      ...line.world.terminal,
+      conditionNote: resolution === 'adopt'
+        ? `交叉核实：呼吸描述采用「${report.supplement}」`
+        : `交叉核实：维持初报「${report.primary}」，需现场复核`,
+    },
+  }
+
+  return {
+    ...replaceLine(shift, lineId, {
+      ...line,
+      phase: 'done',
+      world,
+      verification: { ...line.verification, resolution },
+    }),
+    incidents: shift.incidents.map(i => (i.id === line.incidentId
+      ? { ...i, resolved: true, resolution }
+      : i)),
+  }
+}
+
+/**
+ * 班次层动作路由：
+ * - PAUSE / RESUME / FOCUS_LINE / ANSWER_LINE / HOLD_LINE 由班次层处理
+ * - 其余动作路由到「聚焦线路」自己的 worldReducer
+ */
+export type ShiftAction =
+  | GameAction
+  | { type: 'FOCUS_LINE'; lineId: string }
+  | { type: 'ANSWER_LINE'; lineId: string }
+  | { type: 'HOLD_LINE' }
+  | { type: 'RESOLVE_VERIFICATION'; lineId: string; choice: VerificationChoice }
+
+export function shiftReducer(shift: ShiftState, action: ShiftAction): ShiftState {
+  // 班次级暂停：冻结所有线路
+  if (action.type === 'PAUSE') {
+    return shift.pauseReasons.includes(action.reason)
+      ? shift
+      : { ...shift, pauseReasons: [...shift.pauseReasons, action.reason] }
+  }
+  if (action.type === 'RESUME') {
+    return {
+      ...shift,
+      pauseReasons: action.reason
+        ? shift.pauseReasons.filter(r => r !== action.reason)
+        : shift.pauseReasons.filter(r => !['manual', 'background'].includes(r)),
+    }
+  }
+
+  // 班次时钟：一次 TICK 推进所有线路，而不是只推聚焦线路
+  if (action.type === 'TICK') return tickShift(shift)
+
+  switch (action.type) {
+    case 'FOCUS_LINE':
+      return focusLine(shift, action.lineId)
+    case 'ANSWER_LINE':
+      return answerLine(shift, action.lineId)
+    case 'HOLD_LINE':
+      return { ...shift, focusedLineId: null }
+    case 'RESOLVE_VERIFICATION':
+      return resolveVerification(shift, action.lineId, action.choice)
+    default:
+      break
+  }
+
+  if (isShiftPaused(shift)) return shift
+
+  const line = focusedLine(shift)
+  if (!line || line.phase !== 'active') return shift
+
+  // 派车需要占用一辆共享车辆；无可用车辆则拒绝
+  if (action.type === 'DISPATCH') {
+    if (line.vehicleId) return shift
+    if (availableVehicleCount(shift) <= 0) {
+      return { ...shift, lastRejection: '没有可用救护车 · 请先等待在途车辆完成' }
+    }
+  }
+
+  const nextWorld = worldReducer(line.world, action as GameAction)
+  if (nextWorld === line.world) return shift
+
+  const dispatchedNow = action.type === 'DISPATCH' && !line.vehicleId
+  const nextLine: ShiftLine = {
+    ...line,
+    world: nextWorld,
+    vehicleId: dispatchedNow ? action.vehicleId : line.vehicleId,
+  }
+  return replaceLine(shift, line.id, nextLine)
+}
+
+// -------------------- 时钟推进 --------------------
+
+/** 冷落焦虑：非聚焦线路的来电者压力缓慢上升（设计方案 §6.6 思考成本） */
+export function raiseCallerStress(world: WorldState, delta: number): WorldState {
+  if (!world.callerState) return world
+  const stress = Math.max(0, Math.min(100, world.callerState.stress + delta))
+  return {
+    ...world,
+    callerState: { ...world.callerState, stress, stressLevel: stressToLevel(stress) },
+  }
+}
+
+function advanceLine(line: ShiftLine, focused: boolean): ShiftLine {
+  if (line.phase === 'ringing') {
+    return { ...line, ringingFor: line.ringingFor + 1 }
+  }
+  if (line.phase === 'idle') return line
+
+  // active 与 done 都要继续走世界时钟：在途车辆与后台救援必须走完
+  const world = worldReducer(line.world, { type: 'TICK' })
+
+  if (line.phase === 'active') {
+    // 通话收束：结算完成，且复盘浮层已关闭（否则玩家看不到复盘）
+    const callFinished = world.totalCalls > 0 && world.callIndex >= world.totalCalls && !world.currentCall
+    const finished = world.screen === 'ending'
+      || (callFinished && !world.lastDebrief && world.pendingPerkChoices.length === 0)
+    if (finished) return { ...line, phase: 'done', world }
+    return { ...line, world: focused ? world : raiseCallerStress(world, 0.15) }
+  }
+
+  // done：等在途车辆回收（后台救援结算）后释放线路，供下一通来电复用
+  const rescuePending = world.backgroundRescues.some(rescue => !rescue.outcome)
+  if (rescuePending) return { ...line, world }
+  return {
+    ...line,
+    phase: 'idle',
+    role: 'primary',
+    incidentId: null,
+    verification: null,
+    scenarioId: null,
+    vehicleId: null,
+    ringingFor: 0,
+  }
+}
+
+export function tickShift(shift: ShiftState): ShiftState {
+  if (isShiftPaused(shift)) return shift
+
+  const clock = shift.clock + 1
+  let working: ShiftState = {
+    ...shift,
+    clock,
+    arrivalCooldown: Math.max(0, shift.arrivalCooldown - 1),
+    lastRejection: null,
+  }
+
+  // 1) 来电到达：有空闲线路、队列未空、冷却结束
+  if (working.queueIndex < working.config.queue.length && working.arrivalCooldown === 0) {
+    const free = working.lines.find(line => line.phase === 'idle')
+    if (free) {
+      const scenarioId = working.config.queue[working.queueIndex]
+      working = {
+        ...working,
+        queueIndex: working.queueIndex + 1,
+        arrivalCooldown: working.config.arrivalGap,
+        lines: working.lines.map(line => (line.id === free.id
+          ? { ...line, phase: 'ringing' as const, scenarioId, ringingFor: 0 }
+          : line)),
+      }
+    }
+  }
+
+  // 1.5) 交叉核实：已派车的事故会引来第二位来电者，占用另一条空闲线路
+  const freeLine = working.lines.find(line => line.phase === 'idle')
+  if (freeLine) {
+    const incident = working.incidents.find(i =>
+      !i.supplementLineId && !i.resolved && working.clock >= i.supplementAt)
+    const primary = incident ? findLine(working, incident.primaryLineId) : null
+    const dispatched = primary ? (primary.world.dispatchSent || isVehicleOut(primary)) : false
+    const primaryLive = primary ? (primary.phase === 'active' || primary.phase === 'done') : false
+
+    if (incident && primary && dispatched && primaryLive) {
+      working = {
+        ...working,
+        incidents: working.incidents.map(i => (i.id === incident.id ? { ...i, supplementLineId: freeLine.id } : i)),
+        lines: working.lines.map(line => (line.id === freeLine.id
+          ? {
+              ...line,
+              phase: 'ringing' as const,
+              role: 'supplement' as const,
+              incidentId: incident.id,
+              scenarioId: incident.scenarioId,
+              ringingFor: 0,
+            }
+          : line)),
+      }
+    }
+  }
+
+  // 2) 逐线推进（聚焦线不涨情绪，其余线路被冷落）
+  working = {
+    ...working,
+    lines: working.lines.map(line => advanceLine(line, line.id === working.focusedLineId)),
+  }
+
+  // 线路刚刚结束 → 把成绩快照进班次层，避免线路复用后被重置
+  const justFinished = working.lines.filter((line, index) =>
+    line.phase === 'done' && shift.lines[index].phase !== 'done')
+  if (justFinished.length > 0) {
+    working = {
+      ...working,
+      completed: [...working.completed, ...justFinished.map(line => ({
+        lineId: line.id,
+        scenarioId: line.scenarioId ?? line.world.currentCall?.id ?? 'unknown',
+        score: line.world.callScores[line.world.callScores.length - 1] ?? line.world.totalScore,
+        activeSeconds: line.world.activePlaySeconds,
+      }))],
+    }
+  }
+
+  // 聚焦线路被释放后清空焦点，避免停在一个已经结束的线路上
+  if (working.focusedLineId) {
+    const focused = working.lines.find(line => line.id === working.focusedLineId)
+    if (focused && focused.phase === 'idle') working = { ...working, focusedLineId: null }
+  }
+
+  // 3) 响铃超时 → 未接来电：释放线路，让后续来电可以进来
+  const timedOut = working.lines.filter(l => l.phase === 'ringing' && l.ringingFor >= working.config.ringTimeout)
+  if (timedOut.length > 0) {
+    const timeoutIds = new Set(timedOut.map(l => l.id))
+    const missedIds = timedOut
+      .map(l => l.scenarioId)
+      .filter((id): id is string => Boolean(id))
+    working = {
+      ...working,
+      missed: [...working.missed, ...missedIds],
+      arrivalCooldown: 0,
+      focusedLineId: timeoutIds.has(working.focusedLineId ?? '') ? null : working.focusedLineId,
+      lines: working.lines.map(l => (timeoutIds.has(l.id)
+        ? { ...l, phase: 'idle' as const, scenarioId: null, ringingFor: 0 }
+        : l)),
+    }
+  }
+
+  return working
+}

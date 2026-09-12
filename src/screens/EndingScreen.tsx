@@ -6,6 +6,7 @@
 import { formatPlayTime } from '../game/core/pacing'
 import { useEffect } from 'react'
 import type { EndingDef } from '../game/types'
+import type { ShiftSummary } from '../game/core/shift'
 import { Activity, RotateCcw, Trophy, ShieldCheck, ShieldAlert } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 import {
@@ -27,10 +28,12 @@ interface Props {
   totalScore: number
   activeSeconds?: number
   callScores?: number[]
+  /** 并发值班专有：未接来电、同一事故的交叉核实结论 */
+  shiftDetail?: ShiftSummary
   onRestart: () => void
 }
 
-export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0, onRestart }: Props) {
+export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0, shiftDetail, onRestart }: Props) {
   const audio = useAudio()
 
   useEffect(() => {
@@ -49,6 +52,15 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
   const averageScore = totalScore / totalCalls
 
   const rating = averageScore >= 70 ? 'gold' : averageScore >= 50 ? 'silver' : averageScore >= 30 ? 'bronze' : 'fail'
+
+  const reviewedIncidents = shiftDetail?.incidents.filter(item => item.resolution) ?? []
+  /** 逐通卡片上的场景名：前段是已完成的通话，后段是未接来电 */
+  const cardLabel = (index: number): string | null => {
+    if (!shiftDetail) return null
+    if (index < shiftDetail.calls.length) return shiftDetail.calls[index].title
+    const missed = shiftDetail.missed[index - shiftDetail.calls.length]
+    return missed ? `未接 · ${missed.title}` : null
+  }
 
   return (
     <div style={styles.container}>
@@ -83,6 +95,7 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
                   <div key={i} style={callCardStyle(saved)} className="animate-card-reveal">
                     <div style={styles.callCardNum}>{String(i + 1).padStart(2, '0')}</div>
                     <div style={styles.callCardInfo}>
+                      {cardLabel(i) && <div style={cardLabelStyle}>{cardLabel(i)}</div>}
                       <div style={callCardScoreStyle(saved)}>
                         {score}
                         <span style={styles.callCardMax}>/100</span>
@@ -101,6 +114,36 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
           </div>
         )}
 
+        {shiftDetail && (shiftDetail.missed.length > 0 || reviewedIncidents.length > 0) && (
+          <div style={styles.callsPanel}>
+            <div style={styles.callsHeader}>
+              <span style={styles.callsHeaderText}>跨线路回顾</span>
+              {shiftDetail.missed.length > 0 && (
+                <span style={missedSummaryStyle}>漏接 {shiftDetail.missed.length} 通</span>
+              )}
+            </div>
+
+            <p style={shiftNarrativeStyle}>{shiftDetail.narrative}</p>
+
+            {shiftDetail.missed.length > 0 && (
+              <div style={chipRowStyle}>
+                {shiftDetail.missed.map((item, index) => (
+                  <span key={`missed-${item.scenarioId}-${index}`} style={missedChipStyle}>未接 · {item.title}</span>
+                ))}
+              </div>
+            )}
+
+            {reviewedIncidents.map((item, index) => (
+              <div key={`incident-${item.scenarioId}-${index}`} style={incidentRowStyle}>
+                <span style={incidentTitleStyle}>{item.title}</span>
+                <span style={resolutionChipStyle(item.resolution === 'adopt')}>
+                  {item.resolution === 'adopt' ? '第二位来电者 · 采纳最新观察' : '第二位来电者 · 维持初报'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <p style={styles.description}>{ending.description}</p>
         <p style={styles.footnote}>本班次有效体验 {formatPlayTime(activeSeconds)} · 不含暂停与复盘</p>
 
@@ -111,3 +154,47 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
     </div>
   )
 }
+
+// ---------- 并发值班 · 跨线路回顾（颜色/间距/字号均取设计令牌） ----------
+
+const shiftNarrativeStyle = {
+  fontSize: 'var(--fs-body-sm)', lineHeight: 1.7, color: 'var(--text-2)',
+  margin: 'var(--space-8) 0 0',
+} as const
+
+const missedSummaryStyle = {
+  fontSize: 'var(--fs-caption)', color: 'var(--danger)',
+} as const
+
+const chipRowStyle = {
+  display: 'flex', flexWrap: 'wrap', gap: 'var(--space-6)', marginTop: 'var(--space-10)',
+} as const
+
+const missedChipStyle = {
+  padding: 'var(--space-2) var(--space-8)', borderRadius: 'var(--radius-full)',
+  border: '1px solid var(--danger-line)', background: 'var(--danger-bg)',
+  color: 'var(--danger)', fontSize: 'var(--fs-micro)',
+} as const
+
+const incidentRowStyle = {
+  display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between',
+  gap: 'var(--space-8)', marginTop: 'var(--space-8)',
+  padding: 'var(--space-8) var(--space-10)',
+  border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)', background: 'var(--bg-raised)',
+} as const
+
+const incidentTitleStyle = {
+  fontSize: 'var(--fs-small)', color: 'var(--text)',
+} as const
+
+const resolutionChipStyle = (adopted: boolean) => ({
+  padding: 'var(--space-2) var(--space-8)', borderRadius: 'var(--radius-full)',
+  border: `1px solid ${adopted ? 'var(--success-line)' : 'var(--warning-line)'}`,
+  background: adopted ? 'var(--success-bg)' : 'var(--warning-bg)',
+  color: adopted ? 'var(--success)' : 'var(--warning)',
+  fontSize: 'var(--fs-micro)',
+})
+
+const cardLabelStyle = {
+  fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginBottom: 'var(--space-2)',
+} as const

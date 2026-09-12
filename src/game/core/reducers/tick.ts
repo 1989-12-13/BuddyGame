@@ -65,7 +65,8 @@ export function handleTick(state: WorldState): WorldState {
       ...newRescue,
       etaTotal: Math.max(1, newRescue.etaTotal + trafficUpdate.deltaSeconds),
     }
-    if (state.currentCall?.id === 'stroke' && !state.rerouteUsed && afterRescueVehicle.mission?.route) {
+    // 在途事件对所有已派车事件生效（原先只对脑卒中场景生效）
+    if (!state.rerouteUsed && afterRescueVehicle.mission?.route) {
       const currentRoute = afterRescueVehicle.mission.route
       const alternative = [...state.rerouteOptions]
         .filter(route => route.id !== currentRoute.id)

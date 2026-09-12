@@ -7,7 +7,14 @@ import type { WorldState, DialogueLine } from '../../types'
 import { stressToLevel } from '../../types'
 import { rngInt } from '../random'
 import { hasPerk } from '../perks'
-import { CALM_STRESS_DROP_BASE, CALM_STRESS_DROP_PERK, CALM_TIME_COST_BASE, CALM_TIME_COST_PERK } from '../constants'
+import {
+  CALM_STRESS_DROP_BASE,
+  CALM_STRESS_DROP_PERK,
+  CALM_STRESS_DROP_DECAY,
+  CALM_STRESS_DROP_FLOOR,
+  CALM_TIME_COST_BASE,
+  CALM_TIME_COST_PERK,
+} from '../constants'
 
 export function handleCalmCaller(state: WorldState): WorldState {
   if (!state.currentCall || !state.callerState) return state
@@ -16,7 +23,9 @@ export function handleCalmCaller(state: WorldState): WorldState {
   const cs = state.callerState
   const now = state.shiftElapsed
   const hasCalmScript = hasPerk(state.perks, 'calm_script')
-  const stressDrop = Math.max(3, Math.round((hasCalmScript ? CALM_STRESS_DROP_PERK : CALM_STRESS_DROP_BASE) / (1 + state.calmCount)))
+  const baseDrop = hasCalmScript ? CALM_STRESS_DROP_PERK : CALM_STRESS_DROP_BASE
+  // 线性递减 + 下限：20 / 16 / 12 / 8 / 8 …
+  const stressDrop = Math.max(CALM_STRESS_DROP_FLOOR, baseDrop - state.calmCount * CALM_STRESS_DROP_DECAY)
   const calmCost = hasCalmScript ? CALM_TIME_COST_PERK : CALM_TIME_COST_BASE
   const newStress = Math.max(0, cs.stress - stressDrop)
   const newStressLevel = stressToLevel(newStress)

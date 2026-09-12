@@ -17,8 +17,8 @@ export function buildHandoffFacts(state: WorldState): { facts: HandoffFact[]; re
   if (state.guidanceResults.some(result => result !== null)) {
     const completed = state.guidanceResults.filter(result => result !== null).length
     facts.push({ id: 'guidance', label: `电话指导：已记录 ${completed} 个步骤及反馈`, required: true })
-  } else if (state.dispatchRecord?.routeLabel) {
-    facts.push({ id: 'route', label: `到达路线：${state.dispatchRecord.routeLabel}`, required: true })
+  } else if (state.dispatchRecord) {
+    facts.push({ id: 'route', label: '到达路线：已按选定路线抵达现场', required: true })
   }
   facts.push(state.terminal.contact.trim()
     ? { id: 'contact', label: `联系电话：${state.terminal.contact}`, required: false }

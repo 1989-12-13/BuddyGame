@@ -106,6 +106,30 @@ export const fallsElderlyCard: EmergencyScenario = {
       type: 'new_symptom',
       dialogue: '她说疼得越来越厉害了，一直在冒冷汗，但人还是清醒的。我能给她吃止痛药吗？',
     },
+    {
+      id: 'falls_consciousness_correction',
+      trigger: 'time_elapsed',
+      triggerValue: '45',
+      type: 'caller_correction',
+      dialogue: '等一下……等一下！我刚才叫他，他没应我了！刚才还答应得好好的，怎么突然就……他是不是不行了？！',
+      correction: {
+        question: '来电者改口：患者从「有反应」变成「叫不应」。你如何处置？',
+        options: [
+          {
+            label: '按最新观察更新为无反应，并重新确认呼吸',
+            sublabel: '最新的现场观察优先，但呼吸仍需再核实一次',
+            fills: [{ field: 'conscious', value: false }],
+            isCorrect: true,
+          },
+          {
+            label: '维持「有反应」的判断，等专业人员到场再评估',
+            sublabel: '忽略最新观察会让后续处置建立在过时信息上',
+            fills: [],
+            isCorrect: false,
+          },
+        ],
+      },
+    },
   ],
 
   outcomeNarrative: {

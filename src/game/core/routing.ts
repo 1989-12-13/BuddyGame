@@ -46,8 +46,6 @@ export interface ScheduledTrafficUpdate {
 export interface RoutePlan {
   id: string
   strategy: RouteStrategy
-  label: string
-  summary: string
   risk: RouteRisk
   nodes: RoadNode[]
   segments: RoadSegment[]
@@ -82,8 +80,6 @@ interface RoadNodeTemplate {
 interface RouteTemplate {
   id: string
   strategy: RouteStrategy
-  label: string
-  summary: string
   risk: RouteRisk
   etaBias: number
   path: string[]
@@ -104,12 +100,12 @@ const ROAD_NODE_TEMPLATES: RoadNodeTemplate[] = [
   { id: 'route-scene', label: '事件现场', kind: 'incident', progress: 1, lane: 0 },
 ]
 
+// 路线只保留路况事实（节点组合 + 逐段路况），不再给出策略命名或优劣摘要，
+// 由玩家自己读路况文字判断走哪条。
 const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'express-flyover-maintenance',
     strategy: 'express',
-    label: '高架抢时线（经维修点）',
-    summary: '先走高架，再穿过维修路段；距离短，但施工变化风险较高',
     risk: 'high',
     etaBias: 0.9,
     path: ['route-start', 'north-gate', 'flyover-entry', 'central-junction', 'maintenance-zone', 'riverside-junction', 'route-scene'],
@@ -117,8 +113,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'express-flyover-hospital',
     strategy: 'express',
-    label: '高架抢时线（经医院）',
-    summary: '利用高架避开地面车流，再经医院联络道接近现场',
     risk: 'medium',
     etaBias: 0.94,
     path: ['route-start', 'north-gate', 'flyover-entry', 'central-junction', 'hospital-link', 'riverside-junction', 'route-scene'],
@@ -126,8 +120,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'balanced-school-maintenance',
     strategy: 'balanced',
-    label: '学校均衡线（经维修点）',
-    summary: '学校路段需减速观察，之后可从维修点方向绕行',
     risk: 'medium',
     etaBias: 0.99,
     path: ['route-start', 'north-gate', 'school-crossing', 'central-junction', 'maintenance-zone', 'riverside-junction', 'route-scene'],
@@ -135,8 +127,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'balanced-school-hospital',
     strategy: 'balanced',
-    label: '学校均衡线（经医院）',
-    summary: '避开核心商圈拥堵，经过学校和医院两个特殊路段',
     risk: 'medium',
     etaBias: 1.01,
     path: ['route-start', 'north-gate', 'school-crossing', 'central-junction', 'hospital-link', 'riverside-junction', 'route-scene'],
@@ -144,8 +134,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'balanced-market-maintenance',
     strategy: 'balanced',
-    label: '商圈穿行线（经维修点）',
-    summary: '穿过市场拥堵区后转入维修路段，路线直接但延误概率较高',
     risk: 'high',
     etaBias: 1.03,
     path: ['route-start', 'west-gate', 'market-crossing', 'central-junction', 'maintenance-zone', 'riverside-junction', 'route-scene'],
@@ -153,8 +141,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'balanced-market-hospital',
     strategy: 'balanced',
-    label: '商圈穿行线（经医院）',
-    summary: '先通过拥堵商圈，再选择相对稳定的医院联络道',
     risk: 'medium',
     etaBias: 1.05,
     path: ['route-start', 'west-gate', 'market-crossing', 'central-junction', 'hospital-link', 'riverside-junction', 'route-scene'],
@@ -162,8 +148,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'stable-clinic-maintenance',
     strategy: 'stable',
-    label: '社区稳妥线（经维修点）',
-    summary: '绕开学校与市场，后段需评估维修占道的影响',
     risk: 'medium',
     etaBias: 1.1,
     path: ['route-start', 'west-gate', 'community-clinic', 'central-junction', 'maintenance-zone', 'riverside-junction', 'route-scene'],
@@ -171,8 +155,6 @@ const ROUTE_TEMPLATES: RouteTemplate[] = [
   {
     id: 'stable-clinic-hospital',
     strategy: 'stable',
-    label: '社区稳妥线（经医院）',
-    summary: '全程避开高风险商圈，路程稍长但通行状态更稳定',
     risk: 'low',
     etaBias: 1.14,
     path: ['route-start', 'west-gate', 'community-clinic', 'central-junction', 'hospital-link', 'riverside-junction', 'route-scene'],
@@ -335,8 +317,6 @@ export function buildRouteOptions(input: BuildRouteOptionsInput): RoutePlan[] {
     return {
       id: template.id,
       strategy: template.strategy,
-      label: template.label,
-      summary: template.summary,
       risk: template.risk,
       nodes,
       segments,

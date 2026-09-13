@@ -3,55 +3,6 @@
    颜色 / 间距 / 字号一律引用设计令牌（styles/tokens.css）
    ============================================================ */
 
-/* ---------- 信息状态条：让「情绪 → 信息质量」可见 ---------- */
-
-.fact-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-14);
-  border-bottom: 1px solid var(--line-soft);
-}
-.fact-strip-label { font-size: var(--fs-micro); color: var(--text-3); letter-spacing: 1px; }
-
-.fact-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-8);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--line);
-  background: var(--bg-raised);
-  font-size: var(--fs-micro);
-  color: var(--text-2);
-}
-.fact-chip b { font-weight: 700; }
-
-.fact-clear { border-color: var(--success-line); background: var(--success-bg); }
-.fact-clear b { color: var(--success); }
-.fact-partial { border-color: var(--warning-line); background: var(--warning-bg); }
-.fact-partial b { color: var(--warning); }
-.fact-vague { border-color: var(--danger-line); background: var(--danger-bg); }
-.fact-vague b { color: var(--danger); }
-.fact-unknown { opacity: .7; }
-
-/* ---------- 因果提示 ---------- */
-
-.turn-notice {
-  margin: 0;
-  padding: var(--space-8) var(--space-14);
-  font-size: var(--fs-small);
-  line-height: 1.6;
-  color: var(--text-2);
-  border-bottom: 1px solid var(--line-soft);
-}
-.turn-notice.is-degraded {
-  color: var(--danger);
-  background: var(--danger-bg);
-  border-bottom-color: var(--danger-line);
-}
-
 /* ---------- 选项列表 ---------- */
 
 .turn-options {

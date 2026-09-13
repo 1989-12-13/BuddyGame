@@ -9,7 +9,7 @@ export { STRESS_INFO, stressToLevel } from './caller'
 
 // -------------------- MPDS 判定等级 / 分诊 / 终端 --------------------
 export type { MpdsDeterminant, TerminalState, TriageLevel } from './mpds'
-export { MPDS_DETERMINANT_INFO, TRIAGE_LABELS, TRIAGE_COLORS, determinantToTriage, determinantToHotCold, PROTOCOL_REF } from './mpds'
+export { MPDS_DETERMINANT_INFO, TRIAGE_LABELS, TRIAGE_COLORS, determinantFromCode, subcodeFromCode, PROTOCOL_REF } from './mpds'
 
 // -------------------- 场景 / 问询 / 指导 / 小游戏 --------------------
 export type {
@@ -52,14 +52,12 @@ export type {
   PatientEvent,
   RescuePhase,
   RescueState,
-  RescueStatus,
   BackgroundRescue,
   RescueNotification,
   ReroutePrompt,
   HandoffState,
   GameScreen,
   WorldState,
-  CallHistoryEntry,
   DialogueLine,
   EndingDef,
 } from './world'

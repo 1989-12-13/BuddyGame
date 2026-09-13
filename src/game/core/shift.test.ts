@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  COLLAPSE_MISSED_STREAK,
   DEFAULT_SHIFT_CONFIG,
+  HEAT_GAIN_FAST_ANSWER,
+  HEAT_PEAK,
+  PEAK_CALLS_TO_SURVIVE,
   answerLine,
+  arrivalGapFor,
   availableVehicleCount,
   busyVehicleCount,
   createShiftState,
@@ -9,6 +14,7 @@ import {
   isShiftComplete,
   isVehicleOut,
   lineNeedsDecision,
+  maxRingingFor,
   pendingDecisionCount,
   raiseCallerStress,
   shiftReducer,
@@ -19,14 +25,19 @@ import {
   type ShiftState,
 } from './shift'
 import { createCallerState, createInitialState } from './worldState'
-import { getScenario } from '../events/templates'
+import { SCENARIO_IDS, getScenario } from '../events/templates'
 
 function config(overrides: Partial<ShiftConfig> = {}): ShiftConfig {
   return {
     ...DEFAULT_SHIFT_CONFIG,
-    queue: ['falls_elderly', 'chest_pain', 'hemorrhage'],
+    deck: ['falls_elderly', 'chest_pain', 'hemorrhage'],
     ...overrides,
   }
+}
+
+/** 让多条线路能够同时响铃（并发是随热度解锁的） */
+function withConcurrency(shift: ShiftState, heat = 100): ShiftState {
+  return { ...shift, heat, arrivalCooldown: 0 }
 }
 
 /** 连续推进 N 秒 */
@@ -45,9 +56,11 @@ describe('班次协调器 · 初始化', () => {
     expect(shift.clock).toBe(0)
   })
 
-  it('空队列时班次直接视为收束', () => {
-    const shift = createShiftState(config({ queue: [] }))
-    expect(isShiftComplete(shift)).toBe(true)
+  it('初始状态尚未收班：收班由热度模型判定，与队列长度无关', () => {
+    const shift = createShiftState(config())
+    expect(shift.ending).toBeNull()
+    expect(shift.moment).toBe('opening')
+    expect(isShiftComplete(shift)).toBe(false)
   })
 })
 
@@ -60,22 +73,30 @@ describe('班次协调器 · 来电到达与响铃', () => {
     expect(shift.arrivalCooldown).toBeGreaterThan(0)
   })
 
-  it('到达受冷却间隔约束，不会同一秒涌入', () => {
-    const shift = tick(createShiftState(config()), 1)
-    expect(shift.lines.filter(line => line.phase === 'ringing')).toHaveLength(1)
-    expect(shift.queueIndex).toBe(1)
+  it('热度处于地板时只允许一条线路同时响铃（并发随热度解锁）', () => {
+    const shift = tick(createShiftState(config()), 30)
+    expect(shift.heat).toBe(0)
+    expect(shift.lines.filter(line => line.phase === 'ringing').length).toBeLessThanOrEqual(1)
   })
 
-  it('冷却结束后才播放下一起来电', () => {
-    const shift = tick(createShiftState(config({ arrivalGap: 3 })), 4)
+  it('热度升高后允许多条线路同时响铃', () => {
+    let shift = tick(createShiftState(config()), 1)
+    shift = withConcurrency(shift)
+    shift = tick(shift, 1)
     expect(shift.lines.filter(line => line.phase === 'ringing')).toHaveLength(2)
   })
 
   it('响铃超时记为未接来电并释放线路', () => {
-    const shift = tick(createShiftState(config({ queue: ['falls_elderly'], ringTimeout: 5 })), 5)
+    const shift = tick(createShiftState(config({ deck: ['falls_elderly'], ringTimeout: 5 })), 5)
     expect(shift.lines[0].phase).toBe('idle')
     expect(shift.lines[0].scenarioId).toBeNull()
     expect(shift.missed).toEqual(['falls_elderly'])
+  })
+
+  it('牌堆用尽后自动重洗：班次不会因为「发完牌」而结束', () => {
+    const shift = tick(createShiftState(config({ deck: [] })), 1)
+    expect(shift.lines.filter(line => line.phase === 'ringing')).toHaveLength(1)
+    expect(shift.deck.length).toBe(SCENARIO_IDS.length - 1)
   })
 })
 
@@ -96,7 +117,9 @@ describe('班次协调器 · 接听与聚焦', () => {
   })
 
   it('可在线路之间切换聚焦，HOLD 清除聚焦', () => {
-    let shift = tick(createShiftState(config()), 4)
+    let shift = tick(createShiftState(config()), 1)
+    shift = withConcurrency(shift)
+    shift = tick(shift, 1)
     shift = focusLine(shift, 'line-2')
     expect(shift.focusedLineId).toBe('line-2')
     shift = shiftReducer(shift, { type: 'HOLD_LINE' })
@@ -119,7 +142,9 @@ describe('班次协调器 · 时钟与冷落焦虑', () => {
   })
 
   it('非聚焦线路的来电者压力上升，聚焦线路不涨', () => {
-    let shift = tick(createShiftState(config()), 4)
+    let shift = tick(createShiftState(config()), 1)
+    shift = withConcurrency(shift)
+    shift = tick(shift, 1)
     shift = answerLine(shift, 'line-1')
     shift = answerLine(shift, 'line-2') // 第二次接听会把焦点切到 line-2
     expect(shift.focusedLineId).toBe('line-2')
@@ -184,7 +209,7 @@ describe('班次协调器 · 车辆资源约束', () => {
 
 describe('班次协调器 · 线路释放与车辆回收', () => {
   it('在途车辆计入占用，后台救援结算后释放', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const mission = { id: 'r1', vehicleId: 'ambulance', outcome: null }
     const busyLine = {
       ...base.lines[0],
@@ -203,7 +228,7 @@ describe('班次协调器 · 线路释放与车辆回收', () => {
   })
 
   it('已结束且无在途救援的线路会释放为空闲，供下一通来电复用', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const line: ShiftLine = {
       ...base.lines[0],
       phase: 'done',
@@ -221,7 +246,7 @@ describe('班次协调器 · 线路释放与车辆回收', () => {
 
 describe('班次协调器 · 在途事件可见性', () => {
   it('有待决策在途事件的线路会被标记出来', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const line = {
       ...base.lines[0],
       phase: 'active',
@@ -237,7 +262,7 @@ describe('班次协调器 · 在途事件可见性', () => {
   })
 
   it('空闲线路不会被标记为待决策', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     expect(pendingDecisionCount(base)).toBe(0)
     expect(lineNeedsDecision({ ...base.lines[0], phase: 'done' })).toBe(false)
   })
@@ -245,7 +270,7 @@ describe('班次协调器 · 在途事件可见性', () => {
 
 describe('班次协调器 · 收束结算', () => {
   it('汇总带场景名、未接来电与交叉核实结论', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const shift: ShiftState = {
       ...base,
       missed: ['chest_pain'],
@@ -267,7 +292,7 @@ describe('班次协调器 · 收束结算', () => {
   })
 
   it('跨线路累积成绩，未接来电按 0 分计入', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const shift: ShiftState = {
       ...base,
       missed: ['chest_pain'],
@@ -285,7 +310,7 @@ describe('班次协调器 · 收束结算', () => {
   })
 
   it('线路结束时自动快照成绩，线路复用不会把分丢掉', () => {
-    const base = createShiftState(config({ queue: [] }))
+    const base = createShiftState(config({ deck: [] }))
     const ending: ShiftLine = {
       ...base.lines[0],
       phase: 'active',
@@ -312,16 +337,19 @@ describe('班次协调器 · 收束结算', () => {
 
 describe('班次协调器 · TICK 路由', () => {
   it('shiftReducer 的 TICK 推进全部线路，而非仅聚焦线路', () => {
-    let shift = tick(createShiftState(config()), 4)
+    let shift = tick(createShiftState(config()), 1)
+    shift = withConcurrency(shift)
+    shift = tick(shift, 1)
     shift = answerLine(shift, 'line-1')
     shift = answerLine(shift, 'line-2')
     const focusedClock = shift.lines[1].world.shiftElapsed
     const backgroundClock = shift.lines[0].world.shiftElapsed
+    const clockBefore = shift.clock
 
     shift = shiftReducer(shift, { type: 'TICK' })
     expect(shift.lines[1].world.shiftElapsed).toBe(focusedClock + 1)
     expect(shift.lines[0].world.shiftElapsed).toBe(backgroundClock + 1)
-    expect(shift.clock).toBe(5)
+    expect(shift.clock).toBe(clockBefore + 1)
   })
 })
 
@@ -339,5 +367,166 @@ describe('班次协调器 · 暂停', () => {
     shift = shiftReducer(shift, { type: 'PAUSE', reason: 'manual' })
     shift = shiftReducer(shift, { type: 'RESUME', reason: 'manual' })
     expect(tick(shift, 1).clock).toBe(shift.clock + 1)
+  })
+})
+
+// ============================================================
+// 热度模型 —— 替代「固定通数」
+// ============================================================
+
+/** 造一条「这通已经打完」的线路，用于驱动收班判定 */
+function finishingLine(base: ShiftState, overrides: {
+  score?: number
+  died?: boolean
+  scenarioId?: string
+} = {}): ShiftLine {
+  const { score = 90, died = false, scenarioId = 'falls_elderly' } = overrides
+  return {
+    ...base.lines[0],
+    phase: 'active',
+    scenarioId,
+    world: {
+      ...createInitialState(),
+      screen: 'playing',
+      totalCalls: 1,
+      callIndex: 1,
+      currentCall: null,
+      callScores: [score],
+      totalScore: score,
+      activePlaySeconds: 30,
+      patientStatus: {
+        stability: died ? 0 : 80,
+        vitalSign: died ? 'arrest' : 'stable',
+        decayRate: 0,
+        initialStability: 80,
+        died,
+      },
+    },
+  }
+}
+
+describe('班次协调器 · 热度派生强度', () => {
+  it('热度越高，来电间隔越短', () => {
+    expect(arrivalGapFor(0)).toBeGreaterThan(arrivalGapFor(100))
+  })
+
+  it('热度越高，同时响铃上限越高', () => {
+    expect(maxRingingFor(0)).toBe(1)
+    expect(maxRingingFor(100)).toBe(3)
+    expect(maxRingingFor(0)).toBeLessThan(maxRingingFor(100))
+  })
+})
+
+describe('班次协调器 · 表现 → 热度', () => {
+  it('迅速接听推高热度，并清掉连续漏接', () => {
+    let shift = tick(createShiftState(config()), 2)
+    const before = shift.heat
+    shift = answerLine(shift, 'line-1')
+    expect(shift.heat).toBe(before + HEAT_GAIN_FAST_ANSWER)
+    expect(shift.missedStreak).toBe(0)
+  })
+
+  it('拖很久才接听没有提速奖励', () => {
+    let shift = tick(createShiftState(config({ ringTimeout: 60 })), 30)
+    shift = answerLine(shift, 'line-1')
+    expect(shift.heat).toBe(0)
+  })
+
+  it('漏接压低热度并累积连续漏接', () => {
+    const shift = tick(createShiftState(config({ deck: ['falls_elderly'], ringTimeout: 3 })), 3)
+    expect(shift.missedStreak).toBe(1)
+    expect(shift.heat).toBe(0) // 已在地板，不再往下
+  })
+
+  it('高分通话推高热度', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = { ...base, heat: 40, lines: [finishingLine(base), base.lines[1], base.lines[2]] }
+    expect(tickShift(shift).heat).toBeGreaterThan(40)
+  })
+})
+
+describe('班次协调器 · 三种收班', () => {
+  it('连续漏接达阈值 → 崩盘收班，且线路立即移交', () => {
+    const shift = tick(createShiftState(config({ ringTimeout: 2 })), 30)
+    expect(shift.missedStreak).toBeGreaterThanOrEqual(COLLAPSE_MISSED_STREAK)
+    expect(shift.ending).toBe('collapse')
+    expect(shift.moment).toBe('ended')
+    expect(shift.lines.every(line => line.phase === 'idle' || line.phase === 'done')).toBe(true)
+    expect(isShiftComplete(shift)).toBe(true)
+  })
+
+  it('患者死亡 → 崩盘收班', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = {
+      ...base,
+      heat: 60,
+      lines: [finishingLine(base, { died: true, scenarioId: 'cardiac_arrest' }), base.lines[1], base.lines[2]],
+    }
+    const next = tickShift(shift)
+    expect(next.deaths).toBe(1)
+    expect(next.ending).toBe('collapse')
+  })
+
+  it('撑过峰值段 → 圆满收班', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = {
+      ...base,
+      heat: HEAT_PEAK,
+      moment: 'peak',
+      peakSurvived: PEAK_CALLS_TO_SURVIVE - 1,
+      lines: [finishingLine(base), base.lines[1], base.lines[2]],
+    }
+    expect(tickShift(shift).ending).toBe('perfect')
+  })
+
+  it('峰值段没撑够就不会收班', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = {
+      ...base,
+      heat: HEAT_PEAK,
+      moment: 'peak',
+      peakSurvived: 0,
+      lines: [finishingLine(base), base.lines[1], base.lines[2]],
+    }
+    expect(tickShift(shift).ending).toBeNull()
+  })
+
+  it('热度长期低迷且已处理过足够通话 → 平稳收班', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = {
+      ...base,
+      heat: 0,
+      moment: 'rising',
+      completed: [
+        { lineId: 'line-1', scenarioId: 'falls_elderly', score: 10, activeSeconds: 10 },
+        { lineId: 'line-2', scenarioId: 'chest_pain', score: 10, activeSeconds: 10 },
+        { lineId: 'line-3', scenarioId: 'hemorrhage', score: 10, activeSeconds: 10 },
+      ],
+    }
+    const next = tickShift(shift)
+    expect(next.ending).toBe('fade')
+    expect(next.moment).toBe('ended')
+  })
+
+  it('通话数不足时即使热度低迷也不收班（避免开场就草草收班）', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = { ...base, heat: 0, moment: 'rising' }
+    expect(tickShift(shift).ending).toBeNull()
+  })
+
+  it('收班后不再产生新来电', () => {
+    const base = createShiftState(config())
+    const ended: ShiftState = { ...base, ending: 'fade', moment: 'ended' }
+    const next = tick(ended, 20)
+    expect(next.lines.every(line => line.phase === 'idle')).toBe(true)
+  })
+
+  it('收班叙事随收班方式变化，崩盘时是「被换下来」', () => {
+    const base = createShiftState(config())
+    const collapse = summarizeShift({ ...base, ending: 'collapse' })
+    const perfect = summarizeShift({ ...base, ending: 'perfect' })
+    expect(collapse.endingNarrative).toContain('组长')
+    expect(perfect.endingNarrative).not.toBe(collapse.endingNarrative)
+    expect(summarizeShift(base).endingNarrative).toBeNull()
   })
 })

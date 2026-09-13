@@ -15,13 +15,4 @@ describe('标题页入口', () => {
 
     expect(onStart).toHaveBeenCalledWith('__shift__')
   })
-
-  it('「经典五通」保留原有线性流程', () => {
-    const onStart = vi.fn()
-    render(<TitleScreen onStart={onStart} />)
-
-    fireEvent.click(screen.getByText('经典五通'))
-
-    expect(onStart).toHaveBeenCalledWith()
-  })
 })

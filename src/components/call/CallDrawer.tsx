@@ -20,8 +20,6 @@ interface Props {
   title: string
   /** 是否在通话中（控制折叠态指示灯颜色） */
   active: boolean
-  /** 历史任务徽章（如"历史任务"），覆盖 active 颜色提示 */
-  historyBadge?: string
 }
 
 const DRAWER_W_OPEN = 600

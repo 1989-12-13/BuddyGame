@@ -5,7 +5,7 @@
 
 import type { WorldState, TriageLevel, MpdsDeterminant } from '../../types'
 import { createInitialState, buildScenarioQueue } from '../worldState'
-import { determinantToHotCold, determinantToTriage } from '../../types'
+import { fillDeterminantFromProtocol } from '../autoClassify'
 import type { RoguePerkId } from '../perks'
 import type { TerminalField } from '../actions'
 import type { FragmentTargetField } from '../../types'
@@ -42,13 +42,17 @@ export function handleSetPatientStatus(state: WorldState, field: 'conscious' | '
 }
 
 export function handleSetMpdsDeterminant(state: WorldState, determinant: MpdsDeterminant): WorldState {
+  // 冷热响应与分诊无条件取「病例卡权威值」，不再走通用字母映射：
+  // 通用映射与病例卡存在约 1/3 的冲突（如心脏问题 19-C-1 权威为 red/HOT，通用 C→yellow/COLD），
+  // 两套口径会让手动填写与自动填写打架。玩家手选字母只决定判定码本身与评分，
+  // 不改变患者真实的冷热/分诊。
+  const call = state.currentCall
   return {
     ...state,
     terminal: {
       ...state.terminal,
       determinant,
-      hotCold: determinantToHotCold(determinant),
-      triage: determinantToTriage(determinant),
+      ...(call ? { hotCold: call.mpdsCard.hotCold, triage: call.correctTriage } : {}),
     },
   }
 }
@@ -61,9 +65,10 @@ export function handleSetDeterminantSubcode(state: WorldState, subcode: number):
 }
 
 export function handleSetProtocol(state: WorldState, protocolNumber: number | null): WorldState {
+  // 协议一定，判定码（判定等级 / 细分编码 / 冷热 / 分诊）自动补齐
   return {
     ...state,
-    terminal: { ...state.terminal, protocolNumber },
+    terminal: fillDeterminantFromProtocol({ ...state.terminal, protocolNumber }, state),
   }
 }
 

@@ -60,8 +60,6 @@ export interface RescueState {
   failureReason: string | null
 }
 
-export type RescueStatus = 'pending' | 'arrived' | 'resolved' | 'missed-handoff'
-
 /** 已结束通话仍在执行的院前任务。车辆与患者在世界时钟上继续推进。 */
 export interface BackgroundRescue {
   id: string
@@ -172,41 +170,12 @@ export interface WorldState {
   totalScore: number
   callScores: number[]        // 每通电话的得分
 
-  // 历史通话快照（点击地图救护车查看历史通话）
-  callHistory: CallHistoryEntry[]
-
   // 结算
   endingId: string | null
   lastDebrief: import('../core/debrief').DebriefEntry | null
   pendingPerkChoices: import('../core/perks').RoguePerkId[]
   perks: import('../core/perks').RoguePerkId[]
   shiftCompletePending: boolean
-}
-
-/** 归档的通话 — 玩家点击地图救护车时查看该任务的完整对话 + 救援结果 */
-export interface CallHistoryEntry {
-  callInstanceId: number
-  callId: string
-  scenarioTitle: string
-  /** 调度摘要（首句主诉 / 地点 / 分诊）— 用于地图标识 */
-  shortSummary: string
-  phoneNumber: string
-  baseStation: string
-  /** 揭示的最终地址（玩家提取） */
-  addressResolved: string
-  startShiftTime: number
-  endShiftTime: number
-  dispatchTime: number | null
-  triage: TriageLevel | null
-  vehicleName: string | null
-  isPrank: boolean
-  /** 救援结局 — 'pending' 表示救护车仍在 background 跑 */
-  outcome: 'success' | 'failed' | 'pending' | 'no_dispatch'
-  rescueStatus: RescueStatus
-  /** 单通电话得分（rescue 仍 pending 时为 null） */
-  score: number | null
-  /** 该通话完整对话流（END_CALL 时快照） */
-  dialogueLog: DialogueLine[]
 }
 
 export interface DialogueLine {

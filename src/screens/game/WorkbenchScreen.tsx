@@ -31,8 +31,16 @@ import { Dialog } from '../../components/ui/Dialog'
 import { ROGUE_PERKS } from '../../game/core/perks'
 import './workbench.css'
 
-/** 并发模式注入：状态与动作由班次层提供 */
-interface ControlledProps { state: WorldState; dispatch: (action: GameAction) => void; paused?: boolean }
+/** 并发模式注入：状态、动作与插槽由班次层提供 */
+interface ControlledProps {
+  state: WorldState
+  dispatch: (action: GameAction) => void
+  paused?: boolean
+  /** 当前没有聚焦线路：接听入口在线路列表里，不显示「接听来电」按钮 */
+  awaitingLine?: boolean
+  /** 班次层塞进工作台的区块：线路列表进通话栏，状态条进顶栏下方 */
+  slots?: { statusBar?: ReactNode; lineBoard?: ReactNode }
+}
 interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void; controlled?: ControlledProps }
 type Tab = 'call' | 'map' | 'task'
 type Modal = 'settings' | 'help' | 'exit' | 'end' | null
@@ -41,7 +49,7 @@ const PHASES = ['接听', '问询', '路线', '指导', '交接']
 export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const [internalState, internalDispatch] = useReducer(worldReducer, scenarioId, id => {
     if (id === '__resume__') { const saved = loadCheckpoint(); if (saved) return saved }
-    return handleStartShift(createInitialState(), id && !id.startsWith('__') ? [id] : id === '__random__' ? undefined : CAMPAIGN_IDS)
+    return handleStartShift(createInitialState(), id && !id.startsWith('__') ? [id] : CAMPAIGN_IDS)
   })
   // 并发模式下由班次层驱动：本组件只渲染聚焦线路，不自行计时/存档/跳转
   const embedded = controlled !== undefined
@@ -50,13 +58,13 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const dispatchRef = useRef<(action: GameAction) => void>(internalDispatch)
   dispatchRef.current = controlled?.dispatch ?? internalDispatch
   const dispatch = useCallback((action: GameAction) => dispatchRef.current(action), [])
-  const [tab, setTab] = useState<Tab>('map')
+  // 默认落在「通话」：对话流是核心内容，工作区与登记表按需切过去
+  const [tab, setTab] = useState<Tab>(embedded ? 'call' : 'map')
   const [modal, setModal] = useState<Modal>(null)
   const [plan, setPlan] = useState<DispatchPlan | null>(null)
   const [saveFailed, setSaveFailed] = useState(false)
   const [audioFailed, setAudioFailed] = useState(false)
   const [tutorialSeen, setTutorialSeen] = useState(() => readStorage('dispatch120-tutorial') === 'done')
-  const [taskOpen, setTaskOpen] = useState(true)
   const [taskPulse, setTaskPulse] = useState(false)
   const audio = useAudio()
   const { theme, toggle } = useTheme()
@@ -103,6 +111,18 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
     if (embedded || state.screen !== 'ending') return
     onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores, state.activePlaySeconds)
   }, [embedded, state.screen, state.totalScore, state.totalCalls, state.callScores, state.activePlaySeconds, onNavigate])
+  /**
+   * 工作区出现「必须处理的事」时自动带玩家过去，处理完自动回到通话台。
+   * 默认单视图之后，指导窗口 / 改道 / 交接都住在工作区里，
+   * 不这样带一下它们就变成了「藏起来的东西」。
+   */
+  const workspaceDemand = Boolean(plan || state.pendingReroute || showGuidanceWindow || state.rescue.outcome || state.patientStatus?.died)
+  const hadWorkspaceDemand = useRef(false)
+  useEffect(() => {
+    if (workspaceDemand) setTab('map')
+    else if (hadWorkspaceDemand.current) setTab('call')
+    hadWorkspaceDemand.current = workspaceDemand
+  }, [workspaceDemand])
   const openModal = (value: Modal) => { dispatch({ type: 'PAUSE', reason: value === 'settings' ? 'settings' : value === 'help' ? 'help' : 'confirm' }); setModal(value) }
   const closeModal = () => { dispatch({ type: 'RESUME', reason: modal === 'settings' ? 'settings' : modal === 'help' ? 'help' : 'confirm' }); setModal(null) }
   const endCall = () => { setPlan(null); audio.tts.stop(); dispatch({ type: 'END_CALL' }) }
@@ -113,7 +133,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   }
   const openRoute = () => { const next = buildDispatchPlan(state); if (next) { setPlan(next); setTab('map') } }
   const goToTaskCard = () => {
-    setTaskOpen(true); setTab('task'); setTaskPulse(true)
+    setTab('task'); setTaskPulse(true)
     window.setTimeout(() => setTaskPulse(false), 1400)
     window.requestAnimationFrame(() => {
       document.querySelector<HTMLElement>('.task-panel textarea, .task-panel input, .task-panel button')?.focus()
@@ -139,20 +159,34 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       <nav className="phase-track" aria-label="通话流程">{PHASES.map((label, i) => <span key={label} className={i === step ? 'active' : i < step ? 'complete' : ''}><b>{i < step ? <CheckCircle2 size={13} /> : `0${i + 1}`}</b>{label}</span>)}</nav>
       <div className="header-controls">
         <span className="header-status"><span className="live-dot" />{paused ? '已暂停' : call ? '通话中' : '等待来电'}</span>
-        <span className="shift-count">{Math.min(state.callIndex + 1, state.totalCalls)} <small>/ {state.totalCalls}</small></span>
+        {/* 并发模式下线路内世界只有单通（totalCalls=1），此处会显示误导性的 1/1，交给线路墙显示班次进度 */}
+        {!embedded && <span className="shift-count">{Math.min(state.callIndex + 1, state.totalCalls)} <small>/ {state.totalCalls}</small></span>}
         <button className="icon-button" onClick={() => dispatch({ type: 'PAUSE', reason: 'manual' })} aria-label="暂停值班"><Pause size={19} /></button>
         <button className="icon-button" onClick={() => openModal('help')} aria-label="操作帮助"><BookOpen size={19} /></button>
         <button className="icon-button" onClick={() => openModal('settings')} aria-label="设置"><Settings size={19} /></button>
       </div>
     </header>
+    {/* 状态带：班次时钟 / 车辆 + 患者体征合成同一条，避免两行占高度 */}
+    <div className="status-strip">
+      {controlled?.slots?.statusBar}
+      {call && <PatientVitals state={state} />}
+    </div>
     {state.rescueNotifications.length > 0 && <section className="rescue-notices" aria-label="后台救援结果">{state.rescueNotifications.map(notification => <div key={notification.id} className={notification.kind}><Ambulance size={18} /><span>{notification.text}</span><button className="icon-button" aria-label="关闭救援结果" onClick={() => dispatch({ type: 'DISMISS_RESCUE_NOTIFICATION', notificationId: notification.id })}><X size={16} /></button></div>)}</section>}
-    {call && <PatientVitals state={state} />}
-    <nav className="mobile-tabs" aria-label="工作区切换">{([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}</nav>
-    <main className={`desk-grid tab-${tab} ${taskOpen ? 'task-open' : 'task-closed'} ${taskPulse ? 'task-pulse' : ''}`} inert={paused}>
-      <aside className="desk-panel transcript-panel"><Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} /><QuestionDock state={state} dispatch={dispatch} /><NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} /></aside>
+    <nav className="view-tabs" aria-label="工作区切换">{([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}</nav>
+    <main className={`desk-grid tab-${tab} ${taskPulse ? 'task-pulse' : ''}`} inert={paused}>
+      {/* 通话台：线路条 → 对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉 */}
+      <aside className="desk-panel transcript-panel">
+        {controlled?.slots?.lineBoard}
+        <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} />
+        {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
+        <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
+        <QuestionDock state={state} dispatch={dispatch} />
+      </aside>
       <section className="desk-panel workspace-panel">
-        <div className="workspace-heading"><div><span className="eyebrow">{chapter ? `CHAPTER ${chapter.chapter}` : 'FREE SHIFT'} · 当前 {PHASES[step]}</span><h1>{chapter?.title ?? call?.title ?? '城市正在等待你的声音'}</h1></div><div className="workspace-actions">{call && !state.rescue.outcome && !state.patientStatus?.died && <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}<button className="task-toggle" onClick={() => setTaskOpen(v => !v)} aria-pressed={taskOpen}><ClipboardList size={16} />{taskOpen ? '收起登记表' : '调度登记表'}</button></div></div>
-        {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">准备接听 · 第 {state.callIndex + 1} 通</span><h2>{chapter?.focus ?? '让帮助抵达需要的地方'}</h2><p>{chapter?.note ?? '这一次，留意电话里的细节，做出你的判断。'}</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
+        <div className="workspace-heading"><div><span className="eyebrow">{chapter ? `CHAPTER ${chapter.chapter}` : 'FREE SHIFT'} · 当前 {PHASES[step]}</span><h1>{chapter?.title ?? call?.title ?? '城市正在等待你的声音'}</h1></div><div className="workspace-actions">{call && !state.rescue.outcome && !state.patientStatus?.died && <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}</div></div>
+        {/* 「下一步」原本占着通话栏，现在挪到工作区：它的按钮本来就把你送进这里规划路线 */}
+        <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
+        {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>{chapter?.focus ?? '让帮助抵达需要的地方'}</h2><p>{chapter?.note ?? '这一次，留意电话里的细节，做出你的判断。'}</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
             {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, routeOptions: plan.routes, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.pendingReroute ? <ReroutePanel state={state} dispatch={dispatch} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
               <CityMap state={state} />
@@ -164,7 +198,6 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       </section>
       <aside className="desk-panel task-panel">{call ? <TaskCard state={state} dispatch={dispatch} onRoute={openRoute} /> : <div className="task-idle" inert><TaskCard state={state} dispatch={dispatch} onRoute={openRoute} idle /></div>}</aside>
     </main>
-    <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
     {overlay}
   </div>
 }

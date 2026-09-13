@@ -1,12 +1,28 @@
 import { ArrowRight, Check, Navigation } from 'lucide-react'
 import type { WorldState } from '../../game/types'
+import { isCollecting, nextStepChecks } from './nextStepChecks'
+
+/** 常驻在「来电实录」栏里的完成度读数 */
+export function NextStepChecks({ state }: { state: WorldState }) {
+  if (!isCollecting(state)) return null
+
+  return (
+    <ul className="next-step-checks" aria-label="登记完成度">
+      {nextStepChecks(state).map(item => (
+        <li key={item.key} className={item.done ? 'done' : ''}>
+          {item.done ? <Check size={12} /> : <span className="next-dot" aria-hidden="true" />}
+          {item.label}
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 /**
- * 左栏「下一步」操作区。
- * 放在通话栏固定的位置，玩家无需到处寻找推进入口：
- *  - 地点确认后出现（问询的关键产出），此后「下一步」始终在这一个位置
- *  - 还有未确认项 → 「核对登记表」把玩家直接带进右栏
+ * 工作区「下一步」操作区：
+ *  - 四项未齐 → 「核对登记表」把玩家带进任务单
  *  - 四项全部就绪 → 「规划救援路线」直接进入派车
+ * 明细清单常驻在通话台顶部，这里只保留结论与入口。
  */
 export function NextStepDock({
   state,
@@ -17,14 +33,9 @@ export function NextStepDock({
   onGoToTask: () => void
   onPlanRoute: () => void
 }) {
-  if (!state.currentCall || state.dispatchSent || state.rescue.outcome || state.patientStatus?.died) return null
+  if (!isCollecting(state)) return null
 
-  const checks = [
-    { key: 'address', label: '地点', done: Boolean(state.terminal.address.trim()) },
-    { key: 'conscious', label: '意识', done: state.terminal.conscious !== null },
-    { key: 'breathing', label: '呼吸', done: state.terminal.breathing !== null },
-    { key: 'determinant', label: '判定码', done: Boolean(state.terminal.determinant && state.terminal.triage) },
-  ]
+  const checks = nextStepChecks(state)
   if (!checks[0].done) return null
 
   const allReady = checks.every(item => item.done)
@@ -36,14 +47,6 @@ export function NextStepDock({
         <span className="eyebrow">下一步</span>
         <span className="next-step-count">{checks.filter(item => item.done).length} / {checks.length} 已确认</span>
       </div>
-      <ul className="next-step-checks">
-        {checks.map(item => (
-          <li key={item.key} className={item.done ? 'done' : ''}>
-            {item.done ? <Check size={13} /> : <span className="next-dot" aria-hidden="true" />}
-            {item.label}
-          </li>
-        ))}
-      </ul>
       {allReady
         ? <button className="primary wide" disabled={!vehicleReady} title={vehicleReady ? undefined : '救护车正在周转'} onClick={onPlanRoute}>
             <Navigation size={17} /> 规划救援路线 <ArrowRight size={17} />

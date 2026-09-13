@@ -33,20 +33,22 @@ export const TRIAGE_COLORS: Record<TriageLevel, string> = {
   black:  'var(--text-3)',
 }
 
-/** MPDS判定等级 ↔ 四色分诊的推荐映射 */
-export function determinantToTriage(d: MpdsDeterminant): TriageLevel {
-  const map: Record<MpdsDeterminant, TriageLevel> = {
-    ECHO:    'red',
-    DELTA:   'red',
-    CHARLIE: 'yellow',
-    BRAVO:   'green',
-    ALPHA:   'green',
+/**
+ * 从判定码字符串（如 "17-C-2"）推导判定等级。
+ * 非标准码（如恶作剧的 "Ω"）返回 null。
+ */
+export function determinantFromCode(code: string): MpdsDeterminant | null {
+  const letter = code.split('-')[1]?.toUpperCase()
+  const map: Record<string, MpdsDeterminant> = {
+    E: 'ECHO', D: 'DELTA', C: 'CHARLIE', B: 'BRAVO', A: 'ALPHA',
   }
-  return map[d]
+  return letter ? (map[letter] ?? null) : null
 }
 
-export function determinantToHotCold(d: MpdsDeterminant): 'HOT' | 'COLD' {
-  return d === 'ECHO' || d === 'DELTA' ? 'HOT' : 'COLD'
+/** 从判定码字符串（如 "17-C-2"）取末位细分编码；缺失返回 null */
+export function subcodeFromCode(code: string): number | null {
+  const value = Number.parseInt(code.split('-')[2] ?? '', 10)
+  return Number.isInteger(value) ? value : null
 }
 
 /** MPDS 协议编号与名称对照表（33个标准协议） */

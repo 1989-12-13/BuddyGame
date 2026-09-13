@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import type { JudgmentPrompt, WorldState } from '../types'
-import { determinantToHotCold } from '../types'
 import { createInitialState } from './worldState'
 import { worldReducer } from './worldReducer'
 import { buildDispatchPlan } from './dispatchPlanning'
@@ -112,46 +111,30 @@ describe('worldReducer', () => {
     expect(rejected.dispatchRecord).toBeNull()
   })
 
-  it('derives HOT or COLD response mode from the player determinant', () => {
-    const answered = beginCall()
+  it('冷热/分诊始终取病例卡权威值，不随手选判定码漂移', () => {
+    const answered = beginCall() // 心脏骤停卡 9-E-1 → 权威 HOT / red
     const alpha = worldReducer(answered, {
       type: 'SET_MPDS_DETERMINANT',
       determinant: 'ALPHA',
     })
 
-    expect(determinantToHotCold(alpha.terminal.determinant!)).toBe('COLD')
+    expect(alpha.terminal.determinant).toBe('ALPHA')
+    expect(alpha.terminal.hotCold).toBe('HOT')
+    expect(alpha.terminal.triage).toBe('red')
   })
 
-  it('deducts points for an incorrect MPDS determinant', () => {
-    const answered = beginCall()
+  it('协议选错 → 判定分只剩自动补齐的保底 2 分', () => {
+    const answered = beginCall() // 心脏骤停卡 9-E-1，正确协议 9
 
-    const correctClassified = worldReducer(answered, {
-      type: 'SET_MPDS_DETERMINANT',
-      determinant: 'ECHO',
-    })
-    const correctTriaged = worldReducer(correctClassified, {
-      type: 'SET_TRIAGE',
-      level: 'red',
-    })
-    const correctEnded = worldReducer(
-      dispatchWithPlannedRoute(correctTriaged),
-      { type: 'END_CALL' },
-    )
+    // 选对协议：判定字母/子码自动补齐，协议主分 +3
+    const correct = worldReducer(answered, { type: 'SET_PROTOCOL', protocolNumber: 9 })
+    const correctEnded = worldReducer(dispatchWithPlannedRoute(correct), { type: 'END_CALL' })
 
-    const wrongDeterminant = worldReducer(answered, {
-      type: 'SET_MPDS_DETERMINANT',
-      determinant: 'ALPHA',
-    })
-    const correctedTriage = worldReducer(wrongDeterminant, {
-      type: 'SET_TRIAGE',
-      level: 'red',
-    })
-    const wrongEnded = worldReducer(
-      dispatchWithPlannedRoute(correctedTriage),
-      { type: 'END_CALL' },
-    )
+    // 选错协议：字母/子码仍被自动补对（+1+1），拿不到协议主分（+3）
+    const wrong = worldReducer(answered, { type: 'SET_PROTOCOL', protocolNumber: 27 })
+    const wrongEnded = worldReducer(dispatchWithPlannedRoute(wrong), { type: 'END_CALL' })
 
-    expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(5)
+    expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(3)
   })
 
   it('deducts points for an incorrect clinical judgment', () => {
@@ -270,8 +253,5 @@ describe('worldReducer', () => {
     expect(ended.terminal.address).toBe('')
     expect(ended.terminal.conscious).toBeNull()
     expect(ended.terminal.breathing).toBeNull()
-    // 本通完整对话已归档，仍可在「已完成记录」里回看
-    expect(ended.callHistory).toHaveLength(1)
-    expect(ended.callHistory[0].dialogueLog.length).toBeGreaterThan(0)
   })
 })

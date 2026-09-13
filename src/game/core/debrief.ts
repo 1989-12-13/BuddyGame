@@ -3,6 +3,7 @@
 // ============================================================
 
 import type { WorldState, TriageLevel, JudgmentPrompt, MpdsDeterminant, EmergencyScenario } from '../types'
+import { determinantFromCode } from '../types'
 import { hasPerk } from './perks'
 import { isPrankVerified } from './judgments'
 
@@ -52,15 +53,6 @@ export interface DebriefEntry {
   reviewPoints: string[]
   outcomeNarrative: string
   isPrankHandledCorrectly: boolean | null
-}
-
-/** 从判定码字符串推导预期 MpdsDeterminant */
-function determinantFromCode(code: string): MpdsDeterminant | null {
-  const letter = code.split('-')[1]?.toUpperCase()
-  const map: Record<string, MpdsDeterminant> = {
-    E: 'ECHO', D: 'DELTA', C: 'CHARLIE', B: 'BRAVO', A: 'ALPHA',
-  }
-  return letter ? (map[letter] ?? null) : null
 }
 
 function buildOutcome(

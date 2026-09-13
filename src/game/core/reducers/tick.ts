@@ -19,7 +19,6 @@ export function handleTick(state: WorldState): WorldState {
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
   let newRescue = state.rescue
-  let newCallHistory = state.callHistory
   let newRescueNotifications = state.rescueNotifications
   let newPendingReroute = state.pendingReroute
 
@@ -182,9 +181,6 @@ export function handleTick(state: WorldState): WorldState {
       perks: mission.perks,
     })
     patientStatus = resolution.patientStatus
-    newCallHistory = newCallHistory.map(entry => entry.callInstanceId === mission.callInstanceId
-      ? { ...entry, outcome: resolution.outcome }
-      : entry)
     const notificationId = `rescue-result-${mission.callInstanceId}`
     if (!newRescueNotifications.some(notification => notification.id === notificationId)) {
       newRescueNotifications = [...newRescueNotifications, {
@@ -218,7 +214,6 @@ export function handleTick(state: WorldState): WorldState {
     backgroundRescues: newBackgroundRescues,
     rescueNotifications: newRescueNotifications,
     pendingReroute: newPendingReroute,
-    callHistory: newCallHistory,
     fleet: afterFleet,
     dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
       ? [...state.dialogueLog, ...newDialogue]

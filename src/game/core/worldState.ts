@@ -80,16 +80,27 @@ export function createTerminalState(): TerminalState {
 
 
 
-/** 获取本班次的场景队列（随机打乱顺序） */
-export function buildScenarioQueue(): string[] {
-  // 每个班次5通电话，从所有场景中随机选5个
+/** 经典（单通话）模式每班的来电数：并发值班会传入自己的班次长度 */
+export const DEFAULT_QUEUE_LENGTH = 5
+
+/**
+ * 获取本班次的场景队列（随机打乱顺序）。
+ *
+ * 仅服务于经典（单通话线性）模式：那里每班固定 5 通。
+ * 并发值班不使用它——班次长度改由热度模型决定，场景从牌堆逐张抽取、发完自动重洗
+ * （见 `core/shift.ts#drawScenario`）。
+ * @param count 本班来电数量，上限为可用场景数。
+ */
+export function buildScenarioQueue(count: number = DEFAULT_QUEUE_LENGTH): string[] {
+  // 从所有场景中随机抽取 count 个
   const prankId = 'prank_call'
-  // 分离恶作剧场景和普通场景
+  // 分离恶作剧场景和普通场景（恶作剧只按概率插入，不参与基础池）
   const normalScenarios = SCENARIO_IDS.filter(id => id !== prankId)
   const shuffled = shuffleArray(normalScenarios)
-  // 选4个普通场景 + 20%概率加入恶作剧
-  const selected = shuffled.slice(0, 5)
-  if (selected.length >= 5 && rng() < 0.2) {
+  // 抽取普通场景 + 20%概率加入恶作剧
+  const length = Math.min(Math.max(0, count), normalScenarios.length)
+  const selected = shuffled.slice(0, length)
+  if (selected.length > 0 && rng() < 0.2) {
     selected[rngInt(selected.length)] = prankId
   }
   // 确保恶作剧不出现为首通或末通
@@ -146,7 +157,6 @@ export function createInitialState(): WorldState {
     eventSeq: 0,
     totalScore: 0,
     callScores: [],
-    callHistory: [],
     endingId: null,
     lastDebrief: null,
     pendingPerkChoices: [],
@@ -347,15 +357,17 @@ export function scoreCall(
   }
 
   // 4. 协议/判定码正确度分（0-5）
+  // 协议确定后判定等级与细分编码由 autoClassify 自动补齐（字母/子码基本恒定正确），
+  // 玩家真正需要判断的是「协议编号选得对不对」，因此主分押在协议上：
+  // 协议正确 +3、判定字母正确 +1、细分编码正确 +1。
   let decision = 0
-  if (chosenProtocol && chosenProtocol === correctProtocol) decision += 2
+  if (chosenProtocol && chosenProtocol === correctProtocol) decision += 3
   if (chosenDeterminant && correctDeterminant) {
     const parts = correctDeterminant.split('-')
     const correctLetter = parts[1] ?? ''
     const correctSub = parts[2] ? parseInt(parts[2], 10) : 0
-    if (chosenDeterminant[0] === correctLetter) decision += 2
+    if (chosenDeterminant[0] === correctLetter) decision += 1
     if (chosenSubcode && correctSub && chosenSubcode === correctSub) decision += 1
-    if (!chosenProtocol && !chosenSubcode && chosenDeterminant[0] === correctLetter) decision = 5
   }
   decision = Math.min(5, decision)
 

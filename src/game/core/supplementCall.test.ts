@@ -15,7 +15,7 @@ import {
 } from './shift'
 
 function config(overrides: Partial<ShiftConfig> = {}): ShiftConfig {
-  return { ...DEFAULT_SHIFT_CONFIG, queue: [], ...overrides }
+  return { ...DEFAULT_SHIFT_CONFIG, deck: [], ...overrides }
 }
 
 const SCENARIO = getScenario('falls_elderly')

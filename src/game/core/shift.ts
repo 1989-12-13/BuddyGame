@@ -20,7 +20,8 @@ import type { PauseReason } from './session'
 import { worldReducer } from './worldReducer'
 import { createInitialState } from './worldState'
 import { buildConflictReport, buildVerificationCall, type ConflictReport } from './supplementCall'
-import { SCENARIOS } from '../events/templates'
+import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
+import { shuffle } from './random'
 
 export type LinePhase = 'idle' | 'ringing' | 'active' | 'done'
 
@@ -83,13 +84,25 @@ export interface ShiftLine {
 export interface ShiftConfig {
   lineCount: number
   vehicleCount: number
-  /** 事件队列（场景 id，按到达顺序） */
-  queue: string[]
   /** 响铃超时秒数：超时未接 → 记入未接来电并释放线路 */
   ringTimeout: number
-  /** 两次来电到达之间的最小间隔秒数 */
-  arrivalGap: number
+  /**
+   * 初始场景牌堆 —— 仅用于测试与确定性回放，缺省时运行时随机发牌。
+   * 注意：牌堆不是「班次长度」。发完会自动重洗，班次何时结束由热度模型决定。
+   */
+  deck?: string[]
 }
+
+/** 班次段落：开场 → 爬升 → 峰值 → 结束 */
+export type ShiftMoment = 'opening' | 'rising' | 'peak' | 'ended'
+
+/**
+ * 收班方式 —— 全部由表现驱动，没有任何「今晚几通」的预设。
+ * - perfect：撑过峰值段 → 交班
+ * - collapse：患者死亡 / 连续漏接达阈值 → 被换下来
+ * - fade：热度长期低迷 → 平静收班
+ */
+export type ShiftEnding = 'perfect' | 'collapse' | 'fade'
 
 export interface ShiftState {
   clock: number
@@ -100,24 +113,99 @@ export interface ShiftState {
   /** 已完成的通话（跨线路累积，不随线路复用而丢失） */
   completed: ShiftCompletedCall[]
   focusedLineId: string | null
-  /** 事件队列已消费到的位置 */
-  queueIndex: number
+  /** 剩余场景牌堆；发完自动重洗，因此班次没有固定通数 */
+  deck: string[]
   /** 到达冷却剩余秒数 */
   arrivalCooldown: number
   /** 未接来电（结算用） */
   missed: string[]
+  /** 连续漏接次数；成功接听即清零 */
+  missedStreak: number
+  /** 已确认死亡的患者数 */
+  deaths: number
+  /** 当前热度 0–100：表现好则升、表现差则降，决定来电密度与并发上限 */
+  heat: number
+  /** 当前段落 */
+  moment: ShiftMoment
+  /** 峰值段已撑过的通话数 */
+  peakSurvived: number
+  /** 已收班的原因；非 null 表示不再产生新来电 */
+  ending: ShiftEnding | null
   /** 班次级暂停原因（暂停时所有线路冻结） */
   pauseReasons: PauseReason[]
   /** 最近一次被拒绝的动作原因（用于 UI 反馈） */
   lastRejection: string | null
 }
 
-/** 默认班次配置：3 条线路 / 2 辆车（见设计方案 §0.2） */
-export const DEFAULT_SHIFT_CONFIG: Omit<ShiftConfig, 'queue'> = {
+/** 默认班次配置：3 条线路 / 2 辆车（见设计方案 §0.2）。班次长度由热度模型决定，不在此配置。 */
+export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
   lineCount: 3,
   vehicleCount: 2,
   ringTimeout: 22,
-  arrivalGap: 3,
+}
+
+// ============================================================
+// 热度模型 —— 替代「固定通数」
+// ============================================================
+// 约定：没有任何地方写「今晚几通」或「班次多久」。
+// 长度是热度的上升 / 衰减速率标定出来的自然结果。
+
+/** 达到该热度即进入峰值段 */
+export const HEAT_PEAK = 85
+/** 峰值段需要撑过的通话数：撑过即圆满交班 */
+export const PEAK_CALLS_TO_SURVIVE = 2
+/** 热度地板：跌破它（且已处理过足够通话）→ 平静收班 */
+export const HEAT_FLOOR = 12
+/** 平静收班前至少处理过的通话数，避免开场就草草收班 */
+export const FADE_MIN_CALLS = 3
+
+/** 崩盘阈值：任一达成即被换下来 */
+export const COLLAPSE_DEATHS = 1
+export const COLLAPSE_MISSED_STREAK = 3
+
+/** 来电间隔（秒）：热度越低越稀疏 —— 「上强度」的第一条腿：更密 */
+const ARRIVAL_GAP_COLD = 7
+const ARRIVAL_GAP_HOT = 1
+/** 同时响铃的线路上限 —— 「上强度」的第二条腿：更多并发 */
+const MAX_RINGING_COLD = 1
+const MAX_RINGING_HOT = 3
+
+/** 响铃后多少秒内接听算「迅速接听」 */
+export const FAST_ANSWER_SECONDS = 8
+
+/** 表现 → 热度 增量 */
+export const HEAT_GAIN_FAST_ANSWER = 8
+export const HEAT_GAIN_CALL_GOOD = 16
+export const HEAT_GAIN_CALL_OK = 6
+export const HEAT_LOSS_CALL_POOR = -8
+export const HEAT_LOSS_MISSED = -14
+export const HEAT_LOSS_DEATH = -30
+/** 没有任何在途任务时，热度自然回落（夜渐深） */
+const HEAT_IDLE_DECAY = 0.1
+/** 高分通话的判定线 */
+const GOOD_CALL_SCORE = 70
+
+function clampHeat(value: number): number {
+  return Math.max(0, Math.min(100, value))
+}
+
+/** 热度 → 两次来电之间的最小间隔（秒） */
+export function arrivalGapFor(heat: number): number {
+  const t = clampHeat(heat) / 100
+  return Math.round(ARRIVAL_GAP_COLD + (ARRIVAL_GAP_HOT - ARRIVAL_GAP_COLD) * t)
+}
+
+/** 热度 → 同时响铃的线路上限（并发强度） */
+export function maxRingingFor(heat: number): number {
+  const t = clampHeat(heat) / 100
+  return Math.max(1, Math.round(MAX_RINGING_COLD + (MAX_RINGING_HOT - MAX_RINGING_COLD) * t))
+}
+
+/** 收班叙事（崩溃时是「被换下来」，不是冷冰冰的结算） */
+export const ENDING_NARRATIVE: Record<ShiftEnding, string> = {
+  perfect: '最忙的那一段你顶住了。组长拍拍你的肩：接下来的交给下一班。',
+  collapse: '组长把手按在你的肩膀上：「先下来，喝口水。」耳机被摘下的那一刻，线路还在响。',
+  fade: '后半夜的线路安静下来。你把登记表收好，等下一次响铃。',
 }
 
 /** 接听后多久可能引来第二位来电者（仍需已派车） */
@@ -145,12 +233,28 @@ export function createShiftState(config: ShiftConfig): ShiftState {
     incidents: [],
     completed: [],
     focusedLineId: null,
-    queueIndex: 0,
+    deck: [...(config.deck ?? [])],
     arrivalCooldown: 0,
     missed: [],
+    missedStreak: 0,
+    deaths: 0,
+    heat: 0,
+    moment: 'opening',
+    peakSurvived: 0,
+    ending: null,
     pauseReasons: [],
     lastRejection: null,
   }
+}
+
+/**
+ * 发一张牌。
+ * 牌堆用尽就用全部场景重洗 —— 这正是「没有固定通数」的落点：
+ * 班次能接到多少通，由热度模型和玩家表现决定，而不是由牌堆长度决定。
+ */
+export function drawScenario(deck: string[]): { scenarioId: string; deck: string[] } {
+  const source = deck.length > 0 ? deck : shuffle([...SCENARIO_IDS])
+  return { scenarioId: source[0], deck: source.slice(1) }
 }
 
 // -------------------- 派生查询 --------------------
@@ -200,9 +304,12 @@ export function availableVehicleCount(shift: ShiftState): number {
   return Math.max(0, shift.config.vehicleCount - busyVehicleCount(shift))
 }
 
-/** 班次是否收束：队列已空 + 无响铃/通话中线路 */
+/**
+ * 班次是否收束。
+ * 判据不再是「队列排空」，而是「热度模型已判定收班，且所有线路都安静下来」。
+ */
 export function isShiftComplete(shift: ShiftState): boolean {
-  if (shift.queueIndex < shift.config.queue.length) return false
+  if (!shift.ending) return false
   return shift.lines.every(line => line.phase === 'idle' || line.phase === 'done')
 }
 
@@ -236,6 +343,10 @@ export interface ShiftSummary {
   missed: ShiftCallSummary[]
   /** 发生过的事故及其交叉核实结论 */
   incidents: ShiftIncidentSummary[]
+  /** 收班方式（热度模型判定）；null = 玩家主动结束 */
+  ending: ShiftEnding | null
+  /** 收班叙事 */
+  endingNarrative: string | null
   /** 跨线路的叙事总结 */
   narrative: string
 }
@@ -282,7 +393,12 @@ export function summarizeShift(shift: ShiftState): ShiftSummary {
     calls,
     missed,
     incidents,
-    narrative: parts.length > 0 ? `你今晚${parts.join('，')}。` : '这个班次没有留下记录。',
+    ending: shift.ending,
+    endingNarrative: shift.ending ? ENDING_NARRATIVE[shift.ending] : null,
+    narrative: [
+      shift.ending ? ENDING_NARRATIVE[shift.ending] : null,
+      parts.length > 0 ? `你今晚${parts.join('，')}。` : '这个班次没有留下记录。',
+    ].filter(Boolean).join(' '),
   }
 }
 
@@ -326,10 +442,15 @@ export function answerLine(shift: ShiftState, lineId: string): ShiftState {
   const startsIncident = line.role === 'primary'
   const newIncidentId = `incident-${line.id}-${shift.clock}`
 
+  // 迅速接听 → 热度上升；接听本身也清掉「连续漏接」
+  const fastAnswer = line.ringingFor <= FAST_ANSWER_SECONDS
+
   return {
     ...shift,
     focusedLineId: lineId,
     lastRejection: null,
+    missedStreak: 0,
+    heat: clampHeat(shift.heat + (fastAnswer ? HEAT_GAIN_FAST_ANSWER : 0)),
     incidents: startsIncident
       ? [...shift.incidents, {
           id: newIncidentId,
@@ -499,6 +620,12 @@ export function raiseCallerStress(world: WorldState, delta: number): WorldState 
   }
 }
 
+/** 该线路是否出现过患者死亡（当前通话或后台任务中的任一患者） */
+function lineHasDeath(line: ShiftLine): boolean {
+  if (line.world.patientStatus?.died) return true
+  return line.world.backgroundRescues.some(rescue => rescue.patientStatus.died)
+}
+
 function advanceLine(line: ShiftLine, focused: boolean): ShiftLine {
   if (line.phase === 'ringing') {
     return { ...line, ringingFor: line.ringingFor + 1 }
@@ -543,15 +670,16 @@ export function tickShift(shift: ShiftState): ShiftState {
     lastRejection: null,
   }
 
-  // 1) 来电到达：有空闲线路、队列未空、冷却结束
-  if (working.queueIndex < working.config.queue.length && working.arrivalCooldown === 0) {
+  // 1) 来电到达：由热度决定「多密」与「多并发」——这是上强度的两条腿
+  if (!working.ending && working.arrivalCooldown === 0) {
+    const ringing = working.lines.filter(line => line.phase === 'ringing').length
     const free = working.lines.find(line => line.phase === 'idle')
-    if (free) {
-      const scenarioId = working.config.queue[working.queueIndex]
+    if (free && ringing < maxRingingFor(working.heat)) {
+      const { scenarioId, deck } = drawScenario(working.deck)
       working = {
         ...working,
-        queueIndex: working.queueIndex + 1,
-        arrivalCooldown: working.config.arrivalGap,
+        deck,
+        arrivalCooldown: arrivalGapFor(working.heat),
         lines: working.lines.map(line => (line.id === free.id
           ? { ...line, phase: 'ringing' as const, scenarioId, ringingFor: 0 }
           : line)),
@@ -560,7 +688,7 @@ export function tickShift(shift: ShiftState): ShiftState {
   }
 
   // 1.5) 交叉核实：已派车的事故会引来第二位来电者，占用另一条空闲线路
-  const freeLine = working.lines.find(line => line.phase === 'idle')
+  const freeLine = working.ending ? null : working.lines.find(line => line.phase === 'idle')
   if (freeLine) {
     const incident = working.incidents.find(i =>
       !i.supplementLineId && !i.resolved && working.clock >= i.supplementAt)
@@ -592,18 +720,35 @@ export function tickShift(shift: ShiftState): ShiftState {
     lines: working.lines.map(line => advanceLine(line, line.id === working.focusedLineId)),
   }
 
-  // 线路刚刚结束 → 把成绩快照进班次层，避免线路复用后被重置
+  // 线路刚刚结束 → 快照成绩 + 结算热度（避免线路复用后成绩被重置）
   const justFinished = working.lines.filter((line, index) =>
     line.phase === 'done' && shift.lines[index].phase !== 'done')
   if (justFinished.length > 0) {
-    working = {
-      ...working,
-      completed: [...working.completed, ...justFinished.map(line => ({
+    let heat = working.heat
+    let deaths = working.deaths
+    const snapshots = justFinished.map(line => {
+      const score = line.world.callScores[line.world.callScores.length - 1] ?? line.world.totalScore
+      if (lineHasDeath(line)) {
+        heat += HEAT_LOSS_DEATH
+        deaths += 1
+      }
+      heat += score >= GOOD_CALL_SCORE ? HEAT_GAIN_CALL_GOOD
+        : score > 0 ? HEAT_GAIN_CALL_OK
+          : HEAT_LOSS_CALL_POOR
+      return {
         lineId: line.id,
         scenarioId: line.scenarioId ?? line.world.currentCall?.id ?? 'unknown',
-        score: line.world.callScores[line.world.callScores.length - 1] ?? line.world.totalScore,
+        score,
         activeSeconds: line.world.activePlaySeconds,
-      }))],
+      }
+    })
+    working = {
+      ...working,
+      completed: [...working.completed, ...snapshots],
+      heat: clampHeat(heat),
+      deaths,
+      // 峰值段撑过的通话数：撑够 PEAK_CALLS_TO_SURVIVE 就圆满交班
+      peakSurvived: working.peakSurvived + (working.moment === 'peak' ? justFinished.length : 0),
     }
   }
 
@@ -623,11 +768,47 @@ export function tickShift(shift: ShiftState): ShiftState {
     working = {
       ...working,
       missed: [...working.missed, ...missedIds],
+      missedStreak: working.missedStreak + timedOut.length,
+      heat: clampHeat(working.heat + HEAT_LOSS_MISSED * timedOut.length),
       arrivalCooldown: 0,
       focusedLineId: timeoutIds.has(working.focusedLineId ?? '') ? null : working.focusedLineId,
       lines: working.lines.map(l => (timeoutIds.has(l.id)
         ? { ...l, phase: 'idle' as const, scenarioId: null, ringingFor: 0 }
         : l)),
+    }
+  }
+
+  // 4) 空闲衰减：手上没有任何在途任务时，热度自然回落（夜渐深）
+  if (!working.ending && !working.lines.some(l => l.phase === 'ringing' || l.phase === 'active')) {
+    working = { ...working, heat: clampHeat(working.heat - HEAT_IDLE_DECAY) }
+  }
+
+  // 5) 段落推进：开场 → 爬升 → 峰值
+  if (!working.ending) {
+    if (working.heat >= HEAT_PEAK) working = { ...working, moment: 'peak' }
+    else if (working.moment === 'opening' && working.completed.length > 0) working = { ...working, moment: 'rising' }
+  }
+
+  // 6) 收班判定 —— 全部由表现驱动，没有任何「今晚几通」的预设。
+  //    优先级：崩盘 > 圆满 > 平稳
+  if (!working.ending) {
+    if (working.deaths >= COLLAPSE_DEATHS || working.missedStreak >= COLLAPSE_MISSED_STREAK) {
+      working = { ...working, ending: 'collapse', moment: 'ended' }
+    } else if (working.peakSurvived >= PEAK_CALLS_TO_SURVIVE) {
+      working = { ...working, ending: 'perfect', moment: 'ended' }
+    } else if (working.heat <= HEAT_FLOOR && working.completed.length >= FADE_MIN_CALLS) {
+      working = { ...working, ending: 'fade', moment: 'ended' }
+    }
+  }
+
+  // 7) 崩盘 = 当场被换下来：手里的活立刻移交，不让你再收拾残局
+  if (working.ending === 'collapse') {
+    working = {
+      ...working,
+      focusedLineId: null,
+      lines: working.lines.map(line => (line.phase === 'active' || line.phase === 'ringing'
+        ? { ...line, phase: 'idle' as const, scenarioId: null, ringingFor: 0 }
+        : line)),
     }
   }
 

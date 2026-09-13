@@ -114,14 +114,11 @@ describe('workbench state boundaries', () => {
     state = dispatch(ready(worldReducer(state, { type: 'ANSWER_CALL' })))
     state = worldReducer(state, { type: 'END_CALL', perkChoices: ['rapid_intake'] })
     expect(state.backgroundRescues).toHaveLength(1)
-    expect(state.callHistory[0].rescueStatus).toBe('missed-handoff')
-    expect(state.callHistory[0].outcome).toBe('pending')
     state = worldReducer(state, { type: 'DISMISS_DEBRIEF' })
     state = worldReducer(state, { type: 'CHOOSE_PERK', perkId: 'rapid_intake' })
     const scoreCount = state.callScores.length
     for (let i = 0; i < 600 && !state.backgroundRescues[0].outcome; i++) state = worldReducer(state, { type: 'TICK' })
     expect(state.backgroundRescues[0].outcome).not.toBeNull()
-    expect(state.callHistory[0].outcome).not.toBe('pending')
     expect(state.rescueNotifications).toHaveLength(1)
     expect(state.callScores).toHaveLength(scoreCount)
     for (let i = 0; i < 10; i++) state = worldReducer(state, { type: 'TICK' })
@@ -168,7 +165,7 @@ describe('workbench state boundaries', () => {
     localStorage.setItem('dispatch120-checkpoint-v1', '{broken')
     expect(loadCheckpoint()).toBeNull()
   })
-  it('restores a pending background rescue with its vehicle and history', () => {
+  it('restores a pending background rescue with its vehicle', () => {
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['falls_elderly', 'stroke'] })
     state = dispatch(ready(worldReducer(state, { type: 'ANSWER_CALL' })))
     state = worldReducer(state, { type: 'END_CALL', perkChoices: ['rapid_intake'] })
@@ -176,7 +173,6 @@ describe('workbench state boundaries', () => {
     const restored = loadCheckpoint()!
     expect(restored.backgroundRescues).toHaveLength(1)
     expect(restored.fleet.vehicles[0].status).toBe('en_route')
-    expect(restored.callHistory[0].outcome).toBe('pending')
     expect(restored.currentCall).toBeNull()
   })
   it('completes all five campaign calls with independent results and no deadlock', () => {
@@ -203,6 +199,5 @@ describe('workbench state boundaries', () => {
       if (state.pendingPerkChoices.length) state = worldReducer(state, { type: 'CHOOSE_PERK', perkId: state.pendingPerkChoices[0] })
     }
     expect(state.screen).toBe('ending')
-    expect(state.callHistory).toHaveLength(5)
   })
 })

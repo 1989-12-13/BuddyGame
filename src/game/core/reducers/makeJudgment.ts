@@ -5,6 +5,7 @@
 // ============================================================
 
 import type { WorldState } from '../../types'
+import { fillDeterminantFromProtocol } from '../autoClassify'
 import { createEventSink, sinkEvent, judgmentCorrectAnswer } from './helpers'
 
 export function handleMakeJudgment(
@@ -35,6 +36,8 @@ export function handleMakeJudgment(
         newTerminal = { ...newTerminal, [fill.field]: fill.value }
       }
     }
+    // 协议编号定了 → 判定码自动补齐，问询结束即可直接派车
+    newTerminal = fillDeterminantFromProtocol(newTerminal, state)
   }
 
   const sink = createEventSink(state)

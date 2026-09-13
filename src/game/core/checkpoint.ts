@@ -18,7 +18,6 @@ export function saveCheckpoint(state: WorldState): boolean {
     callInstanceId: state.callInstanceId,
     fleet: state.fleet,
     backgroundRescues: state.backgroundRescues,
-    callHistory: state.callHistory,
     rescueNotifications: state.rescueNotifications,
   }))
 }
@@ -34,7 +33,6 @@ export function loadCheckpoint(): WorldState | null {
     const initial = createInitialState()
     const restoreBackground = saved.version === 2
       && Array.isArray(saved.backgroundRescues)
-      && Array.isArray(saved.callHistory)
       && Array.isArray(saved.rescueNotifications)
       && saved.fleet?.vehicles?.length === 1
     return {
@@ -54,7 +52,6 @@ export function loadCheckpoint(): WorldState | null {
         callInstanceId: Number.isInteger(saved.callInstanceId) ? saved.callInstanceId : 0,
         fleet: saved.fleet,
         backgroundRescues: saved.backgroundRescues,
-        callHistory: saved.callHistory,
         rescueNotifications: saved.rescueNotifications,
         shiftCompletePending: saved.index >= saved.queue.length,
       } : {}),

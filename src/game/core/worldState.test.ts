@@ -21,6 +21,7 @@ import {
   scoreCall,
 } from './worldState'
 import { __setRng, __resetRng } from './random'
+import { SCENARIO_IDS } from '../events/templates'
 
 beforeEach(() => __resetRng())
 
@@ -123,6 +124,21 @@ describe('buildScenarioQueue', () => {
   it('总是返回 5 个场景', () => {
     const queue = buildScenarioQueue()
     expect(queue).toHaveLength(5)
+  })
+
+  it('可按参数生成长度更大的队列（并发值班）', () => {
+    const queue = buildScenarioQueue(10)
+    expect(queue).toHaveLength(10)
+    expect(new Set(queue).size).toBe(10)
+  })
+
+  it('请求数量超过可用场景时，止于可用场景数', () => {
+    // 恶作剧只按概率插入，不参与基础池
+    expect(buildScenarioQueue(999)).toHaveLength(SCENARIO_IDS.length - 1)
+  })
+
+  it('请求数量为 0 时返回空队列', () => {
+    expect(buildScenarioQueue(0)).toEqual([])
   })
 
   it('序列不含空值', () => {
@@ -501,10 +517,21 @@ describe('scoreCall', () => {
     expect(s.guidance).toBe(6)
   })
 
-  it('协议正确 +2，判定字母正确 +2，子码正确 +1 = 5', () => {
+  it('协议正确 +3，判定字母正确 +1，子码正确 +1 = 5', () => {
     // correctDeterminant 格式: '协议号-判定字母-子码'，如 '6-E-1'
     const s = scoreCall(30, 'full', true, true, true, 'red', 'red', 0, 0, 0, 0, 6, 6, 'ECHO', '6-E-1', 1)
     expect(s.decision).toBe(5)
+  })
+
+  it('协议选错但字母/子码自动补齐正确 → 判定分保底 2', () => {
+    // 自动填写总是把判定码补对，协议错就拿不到主分
+    const s = scoreCall(30, 'full', true, true, true, 'red', 'red', 0, 0, 0, 0, 27, 6, 'ECHO', '6-E-1', 1)
+    expect(s.decision).toBe(2)
+  })
+
+  it('协议正确但判定字母被手动改错 → 只保留子码 1 分', () => {
+    const s = scoreCall(30, 'full', true, true, true, 'red', 'red', 0, 0, 0, 0, 6, 6, 'ALPHA', '6-E-1', 1)
+    expect(s.decision).toBe(4)
   })
 
   it('total = speed + info + triage + decision + guidance', () => {

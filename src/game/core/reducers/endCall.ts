@@ -3,7 +3,7 @@
 // 结束当前通话，计算得分，归档
 // ============================================================
 
-import type { WorldState, DialogueLine, CallHistoryEntry } from '../../types'
+import type { WorldState, DialogueLine } from '../../types'
 import { scoreCall, createTerminalState } from '../worldState'
 import { isPrankVerified } from '../judgments'
 import { hasPerk, getPerkChoices } from '../perks'
@@ -164,36 +164,6 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   // 车辆不在此处复位 — 由 advanceFleet 自然推进 on_scene→returning→available
   const newFleet = state.fleet
 
-  // 归档：把当前通话快照推入 callHistory，玩家可在地图点击救护车查看历史对话
-  const archivedOutcome: CallHistoryEntry['outcome'] =
-    call.isPrank
-      ? (didDispatch ? 'failed' : 'success')
-      : !didDispatch
-        ? 'no_dispatch'
-        : state.rescue.outcome ?? 'pending'
-  const shortSummary = call.openingLine.length > 16
-    ? call.openingLine.slice(0, 16) + '…'
-    : call.openingLine
-  const historyEntry: CallHistoryEntry = {
-    callInstanceId: state.callInstanceId,
-    callId: call.id,
-    scenarioTitle: call.title,
-    shortSummary,
-    phoneNumber: call.phoneNumber,
-    baseStation: call.baseStation,
-    addressResolved: state.terminal.address,
-    startShiftTime: state.callStartTime,
-    endShiftTime: state.shiftElapsed,
-    dispatchTime: dispatchRecord?.dispatchTime ?? null,
-    triage: dispatchRecord?.triage ?? null,
-    vehicleName: state.rescue.vehicleName,
-    isPrank: call.isPrank,
-    outcome: archivedOutcome,
-    rescueStatus: didDispatch && !state.handoff.completed ? 'missed-handoff' : 'resolved',
-    score: total,
-    dialogueLog: [...state.dialogueLog, summaryLine],
-  }
-
   const shouldContinueInBackground = !!(
     dispatchRecord
     && state.patientStatus
@@ -221,7 +191,6 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
 
   // 通话结束后清空全部「本通」瞬时状态：
   // 通话实录（dialogueLog）与调度登记表（terminal）不再残留到下一通。
-  // 本通完整对话已快照进 callHistory，玩家仍可在「已完成记录」里回看。
   return {
     ...state,
     callIndex: nextCallIndex,
@@ -257,7 +226,6 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
     shiftCompletePending: isShiftOver,
     lastDebrief,
     pendingPerkChoices: isShiftOver ? [] : (perkChoices ?? getPerkChoices(state.perks, 3)),
-    callHistory: [historyEntry, ...state.callHistory],
     backgroundRescues,
   }
 }

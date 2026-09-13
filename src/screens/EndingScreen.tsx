@@ -82,6 +82,22 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
           <span style={styles.scoreMax}>/ {maxScore}</span>
         </div>
 
+        {/* 收班叙事：班次为什么结束，比分数更能说明这一晚发生了什么 */}
+        {shiftDetail?.endingNarrative && (
+          <p style={{
+            margin: '0 0 var(--space-16)',
+            padding: 'var(--space-12) var(--space-16)',
+            border: '1px solid var(--line)',
+            borderLeft: '3px solid var(--warning)',
+            borderRadius: 'var(--radius-lg)',
+            background: 'var(--bg-raised)',
+            color: 'var(--text-2)',
+            fontSize: 'var(--fs-body-sm)',
+            lineHeight: 1.7,
+            textAlign: 'left',
+          }}>{shiftDetail.endingNarrative}</p>
+        )}
+
         {calls.length > 0 && (
           <div style={styles.callsPanel}>
             <div style={styles.callsHeader}>

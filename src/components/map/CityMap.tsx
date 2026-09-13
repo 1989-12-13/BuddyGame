@@ -23,8 +23,6 @@ import {
 
 interface Props {
   state: WorldState
-  /** 点击地图上的救护车 → 拉出该任务历史对话 */
-  onAmbulanceClick?: (vehicleId: string, callId: string) => void
 }
 
 // -------------------- 辅助：lat/lng 线性插值 --------------------
@@ -67,7 +65,7 @@ function FitBounds({ points }: { points: LatLng[] }) {
 }
 
 // -------------------- 主组件 --------------------
-export function CityMap({ state, onAmbulanceClick }: Props) {
+export function CityMap({ state }: Props) {
   const { theme, colors } = useTheme()
   const [mapFailed, setMapFailed] = useState(false)
   const [mapLoaded, setMapLoaded] = useState(false)
@@ -271,14 +269,10 @@ export function CityMap({ state, onAmbulanceClick }: Props) {
                   position={[cur.lat, cur.lng]}
                   icon={ambulanceIconFor(v.status, dim)}
                   zIndexOffset={isCurrentRescue ? 200 : 100}
-                  eventHandlers={{
-                    click: () => onAmbulanceClick?.(v.id, m.callId),
-                  }}
                 >
                   <Tooltip direction="top" offset={[0, -10]} opacity={0.95} permanent={isCurrentRescue}>
                     {v.name}
                     {v.status === 'on_scene' ? ' · 救治中' : v.status === 'returning' ? ' · 返程中' : ' · 出击中'}
-                    {dim ? '（历史任务）' : ''}
                     {isCurrentRescue && state.rescue.phase === 'success' ? ' · 救治成功' : ''}
                     {isCurrentRescue && state.rescue.phase === 'failed' ? ' · 救治失败' : ''}
                   </Tooltip>

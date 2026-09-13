@@ -4,7 +4,7 @@
 // ============================================================
 
 // -------------------- 来电者 --------------------
-export type { CallerId, CallerProfile, CallerTone, CallerVoice, CallerState, CalleeStressLevel } from './caller'
+export type { CallerId, CallerProfile, CallerTone, CallerVoice, CallerPersonality, CallerState, CalleeStressLevel } from './caller'
 export { STRESS_INFO, stressToLevel } from './caller'
 
 // -------------------- MPDS 判定等级 / 分诊 / 终端 --------------------

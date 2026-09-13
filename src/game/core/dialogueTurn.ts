@@ -41,15 +41,106 @@ export const PROTOCOL_ORDER = [
 
 type ProtocolId = (typeof PROTOCOL_ORDER)[number]
 
-/** 每个话题的两种说法：放慢（耗时间、降情绪） vs 加快（省时间、升情绪） */
-const PHRASING: Record<ProtocolId, { label: string; gentle: string; press: string }> = {
-  step1_location: { label: '事发地址', gentle: '别急，先告诉我准确地址，我马上派车。', press: '地址，快说地址。' },
-  step2_event:    { label: '发生了什么', gentle: '慢慢说，具体发生了什么？', press: '直接说，到底怎么回事？' },
-  step3_age:      { label: '患者年龄', gentle: '他大概多大年纪？', press: '多大年纪？快说。' },
-  step4_vitals:   { label: '意识与呼吸', gentle: '他现在有反应吗？还有呼吸吗？', press: '他还有意识吗？有没有呼吸？快！' },
-  ask_landmark:   { label: '明显地标', gentle: '旁边有什么明显的店铺或标志物吗？', press: '有没有明显地标？快点说。' },
-  ask_contact:    { label: '回拨电话', gentle: '方便留一个能打通的电话吗？', press: '你的电话是多少？快。' },
-  ask_purpose:    { label: '求助诉求', gentle: '您现在最需要我们做什么？', press: '你们到底要我做什么？' },
+/** 语气档位：温和 = 承接 + 共情 + 明确指令；催促 = 短促祈使，急诊节奏 */
+type PhrasingPair = { gentle: string; press: string }
+
+/** 一句话的后半段主体（不含承接前缀），按话题组织 */
+const TOPIC_MAIN: Record<ProtocolId, PhrasingPair> = {
+  step1_location: {
+    gentle: '咱先把位置说清楚，我好派车——具体在哪个小区、哪条路？',
+    press: '位置，快说——在哪儿？',
+  },
+  step2_event: {
+    gentle: '你慢慢说，具体是怎么发生的？',
+    press: '直接说，怎么回事？',
+  },
+  step3_age: {
+    gentle: '患者大概多大年纪？',
+    press: '多大年纪？快。',
+  },
+  step4_vitals: {
+    gentle: '他有反应吗？还在喘气吗？你听我口令，慢慢确认。',
+    press: '还清醒吗？有没有呼吸？快！',
+  },
+  ask_landmark: {
+    gentle: '旁边有什么显眼的店或者牌子吗？找见那个我就能定位。',
+    press: '有没有明显地标？快。',
+  },
+  ask_contact: {
+    gentle: '留一个随时能打通的电话给我，号码我记一下。',
+    press: '你电话多少？快。',
+  },
+  ask_purpose: {
+    gentle: '你现在最需要我们做什么？你告诉我，一步步来。',
+    press: '你们现在到底要我做什么？',
+  },
+}
+
+/** 重问时（没听清/被噪音盖过）的收尾引导：温和道歉式，催促带轻微不耐 */
+const RETRY_MAIN: Record<ProtocolId, PhrasingPair> = {
+  step1_location: {
+    gentle: '刚才那半句我没听全，咱俩把地址再对一遍——你具体在哪儿？',
+    press: '地址再报一遍，我这边等着派车，快。',
+  },
+  step2_event: {
+    gentle: '刚才有点吵，我没听清，你再说一遍当时的情况？',
+    press: '再说一遍，到底怎么回事？',
+  },
+  step3_age: {
+    gentle: '岁数我刚才没记上，再说一次？',
+    press: '岁数，再说一遍。',
+  },
+  step4_vitals: {
+    gentle: '我刚才没听清，他有反应吗？有呼吸吗？慢慢说。',
+    press: '再说一次，还有没有呼吸？',
+  },
+  ask_landmark: {
+    gentle: '刚才那句我没太听清，旁边有什么标志物，再说一遍？',
+    press: '标志物，再说一遍，快点。',
+  },
+  ask_contact: {
+    gentle: '号码我刚才没记全，麻烦再报一遍？',
+    press: '号码再报一遍，快。',
+  },
+  ask_purpose: {
+    gentle: '你刚才说的我没完全听懂，重新说一遍，你最需要什么？',
+    press: '再说一遍，你们要什么？',
+  },
+}
+
+/** 从来电者这边（对话流末尾）取最近一句话，压缩成可承接的引子 */
+function lastCallerQuote(state: WorldState): string | null {
+  for (let i = state.dialogueLog.length - 1; i >= 0; i--) {
+    const line = state.dialogueLog[i]
+    if (line.speaker !== 'caller') continue
+    const t = line.text.replace(/\s+/g, '').trim()
+    if (!t) continue
+    const cleaned = t.replace(/[！!？?。，,；;：:]$/g, '')
+    if (cleaned.length <= 16) return cleaned || null
+    return `${cleaned.slice(0, 16)}…`
+  }
+  return null
+}
+
+/**
+ * 承接型问话：同一话题给出「放慢 / 加快」两种说法。
+ * 好处：有引用就先把来电者刚说的话接回来（"嗯，我听到你说……"），
+ * 让每一问都像在接上一句，而不是话筒里突然冒出的固定模板。
+ */
+export function phraseFor(id: ProtocolId, quote: string | null, retry: boolean): PhrasingPair {
+  const pair = (retry ? RETRY_MAIN : TOPIC_MAIN)[id]
+  if (!quote) return pair
+
+  const hook = retry
+    ? ''
+    : `你刚才说「${quote}」——`
+
+  return {
+    gentle: retry
+      ? `明白，${pair.gentle}`
+      : `${hook}${pair.gentle}`,
+    press: `${hook}${pair.press}`,
+  }
 }
 
 /** 当前协议该问哪一步（第一个还没问过的） */
@@ -69,21 +160,29 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
   const options: TurnOption[] = []
   const next = nextProtocolId(state)
 
-  // 1) 推进型 —— 同一话题的两种说法，构成「效率 vs 情绪」的取舍
+  // 1) 推进型 —— 同一话题的两种说法，构成「效率 vs 情绪 vs 配合度」的取舍
   if (next) {
-    const phrasing = PHRASING[next]
+    const quote = lastCallerQuote(state)
+    const retry = attempts(next) > 0
+    const phrasing = phraseFor(next, quote, retry)
+
+    const impatient = retry && cs.cooperation < 50
     options.push({
       id: `advance-gentle-${next}`,
       kind: 'advance',
       line: phrasing.gentle,
-      hint: '放慢节奏 · 情绪下降 · 多花 1 秒',
+      hint: retry
+        ? '放慢安抚 · 再问一次 · 对方耐心下降'
+        : '放慢节奏 · 情绪下降 · 更容易配合 · 多花 1 秒',
       action: { type: 'ASK_QUESTION', questionId: next, spokenLine: phrasing.gentle, stressDelta: -5, extraTime: 1 },
     })
     options.push({
       id: `advance-press-${next}`,
       kind: 'advance',
       line: phrasing.press,
-      hint: '加快节奏 · 情绪上升 · 少花 1 秒',
+      hint: impatient
+        ? '催促 · 对方已不耐烦，小心答得更敷衍'
+        : '加快节奏 · 情绪上升 · 配合度下降 · 少花 1 秒',
       action: { type: 'ASK_QUESTION', questionId: next, spokenLine: phrasing.press, stressDelta: 6, extraTime: -1 },
     })
   }
@@ -104,17 +203,20 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
     wasAsked(id)
     && cs.questionQuality[id] !== 'clear'
     && attempts(id) < 2
-    && cs.stress < (cs.questionStress[id] ?? cs.stress))
+    && cs.stress < (cs.questionStress[id] ?? cs.stress)
+    && cs.cooperation >= 35)
   if (shaky) {
+    const retryPhrasing = phraseFor(shaky, null, true)
+    const confirmLine = retryPhrasing.gentle
     options.push({
       id: `confirm-${shaky}`,
       kind: 'confirm',
-      line: `刚才那句我没听清，我们再说一遍：${PHRASING[shaky].label}。`,
+      line: confirmLine,
       hint: '情绪已回落 · 现在复核能问到更准的信息',
       action: {
         type: 'ASK_QUESTION',
         questionId: shaky,
-        spokenLine: `刚才那句我没听清，我们再说一遍：${PHRASING[shaky].label}。`,
+        spokenLine: confirmLine,
         stressDelta: -2,
         extraTime: 1,
       },
@@ -123,15 +225,16 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
 
   // 4) 捷径型 —— 跳过当前步骤，直奔最关键的意识与呼吸
   if (next && next !== 'step4_vitals' && !wasAsked('step4_vitals')) {
+    const pressLine = phraseFor('step4_vitals', lastCallerQuote(state), false).press
     options.push({
       id: 'shortcut-vitals',
       kind: 'shortcut',
-      line: PHRASING.step4_vitals.press,
-      hint: '跳过当前步骤 · 情绪越高越容易问不清',
+      line: pressLine,
+      hint: '跳过当前步骤 · 越急切，对方答得越乱',
       action: {
         type: 'ASK_QUESTION',
         questionId: 'step4_vitals',
-        spokenLine: PHRASING.step4_vitals.press,
+        spokenLine: pressLine,
         stressDelta: 8,
         extraTime: 0,
       },

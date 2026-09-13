@@ -182,6 +182,8 @@ export interface DialogueLine {
   speaker: 'caller' | 'operator' | 'system'
   text: string
   timestamp: number           // shiftElapsed 时间戳
+  /** 情绪标签——赋能 galgame 式回合节拍与情绪可视化（可选） */
+  emotion?: 'calm' | 'anxious' | 'panicked' | 'broken'
 }
 
 // -------------------- 结局 --------------------

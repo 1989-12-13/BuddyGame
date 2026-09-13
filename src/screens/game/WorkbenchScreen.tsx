@@ -14,6 +14,7 @@ import { readStorage, writeStorage } from '../../utils/storage'
 import { detectEnding } from '../../game/endings/endings'
 import { useAudio } from '../../audio/AudioContext'
 import { stressToEmotion } from '../../audio/ttsEmotion'
+import { useStreamingQueue } from './hooks/useStreamingQueue'
 import { useTheme } from '../../contexts/ThemeContext'
 import { CityMap } from '../../components/map/CityMap'
 import { RoutePlanner } from '../../components/feedback/RoutePlanner'
@@ -67,6 +68,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const [tutorialSeen, setTutorialSeen] = useState(() => readStorage('dispatch120-tutorial') === 'done')
   const [taskPulse, setTaskPulse] = useState(false)
   const audio = useAudio()
+  const { streamIdx, streamPos, pendingSet } = useStreamingQueue(state)
   const { theme, toggle } = useTheme()
   const paused = isWorldPaused(state) || Boolean(controlled?.paused)
   const call = state.currentCall
@@ -177,7 +179,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       {/* 通话台：线路条 → 对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉 */}
       <aside className="desk-panel transcript-panel">
         {controlled?.slots?.lineBoard}
-        <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} />
+        <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} streamIdx={streamIdx} streamPos={streamPos} pendingSet={pendingSet.current} />
         {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
         <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
         <QuestionDock state={state} dispatch={dispatch} />

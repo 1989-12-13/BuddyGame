@@ -3,13 +3,13 @@
 // 叙述式问询：来电者絮叨回答，玩家需从混乱中摘取关键信息
 // ============================================================
 
-import type { WorldState, DialogueLine, InfoQuality, JudgmentPrompt } from '../../types'
+import type { WorldState, DialogueLine, InfoQuality, JudgmentPrompt, CallerVoice } from '../../types'
 import { stressToLevel, PROTOCOL_REF } from '../../types'
 import { rng } from '../random'
 import { hasPerk } from '../perks'
 import { getCaller } from '../../npc/personas'
 import { getVoice } from '../../npc/voices'
-import { voiceAnswer } from '../callerVoice'
+import { voiceAnswerLines, type VoiceContext } from '../callerVoice'
 import {
   pickNarrativeAnswer,
   generateLocationNarrative,
@@ -17,9 +17,46 @@ import {
   generateAgeNarrative,
   generateVitalsNarrative,
   getQuestionTimeCost,
+  splitSentences,
 } from './narrative'
 import { getPronoun } from '../../content/pronouns'
 import { createEventSink } from './helpers'
+
+/** 把一组短句展开成逐条 caller 对话行（timestamp 递增，模拟一句一句说） */
+function pushCallerLines(newDialogue: DialogueLine[], lines: string[], now: number): number {
+  const start = newDialogue.length
+  lines.forEach((text, i) => newDialogue.push({ speaker: 'caller', text, timestamp: now + i }))
+  return start
+}
+
+/** 对一段连续 caller 回答做整块声音合成：头尾点缀只加一次，不耐烦前缀加在首句 */
+function synthesizeCallerBlock(
+  lines: DialogueLine[],
+  voice: CallerVoice,
+  ctx: VoiceContext,
+  isRetry: boolean,
+  cooperation: number,
+): DialogueLine[] {
+  const out: DialogueLine[] = []
+  let block: DialogueLine[] = []
+  const flush = () => {
+    if (!block.length) return
+    const texts = voiceAnswerLines(block.map(b => b.text), voice, ctx)
+    const annoyed = isRetry && cooperation < 60 && rng() < 0.75
+    block.forEach((b, i) => {
+      let t = texts[i] ?? b.text
+      if (i === 0 && annoyed) t = `我不是刚说过了嘛——${t}`
+      out.push({ ...b, text: t })
+    })
+    block = []
+  }
+  for (const line of lines) {
+    if (line.speaker === 'caller') block.push(line)
+    else { flush(); out.push(line) }
+  }
+  flush()
+  return out
+}
 
 /** 对话回合带来的修饰：措辞、情绪代价、时间代价 */
 export interface TurnModifiers {
@@ -71,7 +108,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
       call.fourElements.address.vague,
       newStress,
     )
-    newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
+    pushCallerLines(newDialogue, nq.lines, now)
     newAddress = nq.quality === 'clear' ? 'partial' : 'vague'
     answerQuality = nq.quality
     newInfoQuality['address'] = nq.quality
@@ -89,7 +126,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
       call.fourElements.address.partial,
       call.fourElements.address.vague,
     )
-    newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
+    pushCallerLines(newDialogue, nq.lines, now)
     newAddress = nq.quality === 'clear' ? 'full' : (nq.quality === 'partial' ? 'partial' : newRevealed.address)
     answerQuality = nq.quality
     newInfoQuality['address'] = nq.quality
@@ -106,8 +143,9 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
       call.fourElements.condition.gender,
       newStress,
       callerProfile.relationship,
+      voice,
     )
-    newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
+    pushCallerLines(newDialogue, nq.lines, now)
     newRevealed.chiefComplaint = nq.quality !== 'vague'
     answerQuality = nq.quality
     newInfoQuality['chiefComplaint'] = nq.quality
@@ -152,8 +190,8 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
     stressEffect = -4
     newDialogue.push({ speaker: 'operator', text: '患者多大年龄了？', timestamp: now })
     const age = call.fourElements.condition.age
-    const ageText = generateAgeNarrative(age, newStress)
-    newDialogue.push({ speaker: 'caller', text: ageText, timestamp: now })
+    const ageLines = generateAgeNarrative(age, newStress)
+    pushCallerLines(newDialogue, ageLines, now)
     newRevealed.age = newStress < 75
     newInfoQuality['age'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
     answerQuality = newInfoQuality['age']
@@ -170,8 +208,8 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
     newDialogue.push({ speaker: 'operator', text: `患者清醒吗？${pronoun}还有呼吸吗？`, timestamp: now })
     const consciousness = call.fourElements.condition.consciousness
     const breathing = call.fourElements.condition.breathing
-    const vitalsText = generateVitalsNarrative(consciousness, breathing, newStress)
-    newDialogue.push({ speaker: 'caller', text: vitalsText, timestamp: now })
+    const vitalsLines = generateVitalsNarrative(consciousness, breathing, newStress)
+    pushCallerLines(newDialogue, vitalsLines, now)
     newRevealed.consciousness = newStress < 75
     newRevealed.breathing = newStress < 75
     newInfoQuality['consciousness'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
@@ -212,7 +250,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
       newStress >= 50 ? { text: contactAnswer, quality: 'partial', distorted: true } :
       newStress >= 25 ? { text: contactAnswer, quality: 'partial', distorted: false } :
       { text: call.fourElements.contact, quality: 'clear', distorted: false }
-    newDialogue.push({ speaker: 'caller', text: cq.text, timestamp: now })
+    pushCallerLines(newDialogue, splitSentences(cq.text), now)
     newRevealed.contact = cq.quality !== 'vague'
     newInfoQuality['contact'] = cq.quality
     answerQuality = cq.quality
@@ -224,7 +262,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   else if (questionId === 'ask_purpose') {
     stressEffect = -1
     newDialogue.push({ speaker: 'operator', text: '您现在最需要我们帮您做什么？', timestamp: now })
-    newDialogue.push({ speaker: 'caller', text: call.fourElements.purpose, timestamp: now })
+    pushCallerLines(newDialogue, splitSentences(call.fourElements.purpose), now)
     newRevealed.purpose = true
     newInfoQuality['purpose'] = newStress >= 50 ? 'partial' : 'clear'
     answerQuality = newInfoQuality['purpose']
@@ -239,10 +277,10 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
 
     newDialogue.push({ speaker: 'operator', text: mpdsQ.questionText, timestamp: now })
 
-    // 使用叙述式回答，基于情绪选择版本
+    // 使用叙述式回答，基于情绪选择版本（句子流逐句入队）
     const nq = pickNarrativeAnswer(newStress, mpdsQ.answer, mpdsQ.ramblingAnswer, mpdsQ.panickedAnswer)
     answerQuality = nq.quality
-    newDialogue.push({ speaker: 'caller', text: nq.text, timestamp: now })
+    pushCallerLines(newDialogue, nq.lines, now)
 
     // 为每个揭示的字段标记信息质量（仅用于评分计算，不展示给玩家）
     for (const field of mpdsQ.reveals) {
@@ -290,6 +328,10 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   const questionPenalty = Math.max(0, cs.questionCount - 4) * 3
   newStress = Math.max(0, Math.min(100, newStress + stressEffect + questionPenalty + (turn?.stressDelta ?? 0)))
   newQuestionStress[questionId] = newStress
+
+  // 语气 → 配合度：温和（负压力修饰）拉近距离，催促（正压力修饰）伤配合；重问再扣一份耐心
+  const coopDelta = turn?.stressDelta == null ? 0 : turn.stressDelta < 0 ? 5 : turn.stressDelta > 0 ? -4 : 0
+  const newCooperation = Math.max(5, Math.min(100, cs.cooperation + coopDelta + (isRetry ? -3 : 0)))
   const newStressLevel = stressToLevel(newStress)
 
   // 情绪爆发
@@ -331,6 +373,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
     terminal: newTerminal,
     callerState: {
       ...cs,
+      cooperation: newCooperation,
       revealedInfo: updatedRevealed,
       infoQuality: newInfoQuality,
       askedMPDS: newAskedMPDS,
@@ -341,9 +384,13 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
       stressLevel: newStressLevel,
       questionCount: cs.questionCount + 1,
     },
-    // 说话特质层：同一句信息，按来电者特质重写措辞（只在此处合成一次）
-    dialogueLog: [...state.dialogueLog, ...newDialogue.map(line => line.speaker === 'caller'
-      ? { ...line, text: voiceAnswer(line.text, voice, { stressLevel: newStressLevel, relation: callerProfile.relationship }) }
-      : line)],
+    // 说话特质层：对整块连续来电者回答做一次合成（头尾点缀只加一次、不耐烦前缀加首句）
+    dialogueLog: [...state.dialogueLog, ...synthesizeCallerBlock(
+      newDialogue,
+      voice,
+      { stressLevel: newStressLevel, relation: callerProfile.relationship },
+      isRetry,
+      newCooperation,
+    )],
   }
 }

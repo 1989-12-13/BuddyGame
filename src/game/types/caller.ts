@@ -69,6 +69,24 @@ export function stressToLevel(stress: number): CalleeStressLevel {
 }
 
 /**
+ * 口语标记 — 让「同一句话」在不同人嘴里有不同"活人"质感。
+ * 全部可选：未配置时回落中性行为，便于 AI 批量生成内容时渐进补充。
+ * 只影响措辞与语气，不改变信息本身（信息质量仍由情绪与问法决定）。
+ */
+export interface CallerPersonality {
+  /** 怎么称呼接线员 / 调度台（进入句子前会带称呼语） */
+  address?: string[]
+  /** 口头禅 / 高频语气词，低频混入句子 */
+  catchphrases?: string[]
+  /** 失控（stress≥75）时的口头行为倾向 */
+  panicTick?: 'stammer' | 'sob' | 'scream' | 'ramble' | 'shout'
+  /** 恐慌时会抢话 / 打断接线员 */
+  interjects?: boolean
+  /** 紧张时会不会自言自语式地重复别人的话（复述最后几个词） */
+  echoes?: boolean
+}
+
+/**
  * 说话特质 — 决定「同一句信息」在不同来电者嘴里怎么说。
  * 只影响措辞与语气，不改变信息本身（信息质量仍由情绪与问法决定）。
  */
@@ -79,6 +97,8 @@ export interface CallerVoice {
   rationality: 0 | 1 | 2
   /** 0 缺医疗常识 / 1 一般 / 2 有医疗背景 */
   medicalLiteracy: 0 | 1 | 2
+  /** 口语标记（可选） */
+  personality?: CallerPersonality
 }
 
 // 前向引用：InfoQuality 定义在 scenario 模块

@@ -116,6 +116,16 @@
 /* ============ 对话流式进入 ============ */
 .message-enter { animation:message-in .28s var(--ease-out) both; }
 @keyframes message-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+/* 正在被"说出来"的那一行：句尾光标闪烁，模拟真实的语音 */
+.message.is-streaming p::after { content:'▍'; margin-left:1px; color:var(--accent); animation:caret-blink .7s steps(1) infinite; }
+@keyframes caret-blink { 50% { opacity:0; } }
+/* 已入队、还没轮到开口的行：三个小点跳动，模拟对方正在组织语言 */
+.message.is-queued .queued-dots { display:inline-flex; gap:var(--space-6); align-items:center; padding:var(--space-8) var(--space-12); background:var(--bg-raised); border-radius:var(--radius-xl); border-top-left-radius:var(--radius-xs); }
+.message-operator.is-queued .queued-dots { border-radius:var(--radius-xl); border-top-right-radius:var(--radius-xs); background:color-mix(in srgb,var(--accent) 10%,transparent); }
+.message.is-queued .queued-dots i { width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.4; animation:queued-dot 1.2s var(--ease-out) infinite; }
+.message.is-queued .queued-dots i:nth-child(2) { animation-delay:.18s; }
+.message.is-queued .queued-dots i:nth-child(3) { animation-delay:.36s; }
+@keyframes queued-dot { 0%,60%,100% { transform:translateY(0); opacity:.4 } 30% { transform:translateY(-4px); opacity:1 } }
 
 .task-footer { flex-shrink:0; }
 /* 桌面端登记表内不承载任何操作按钮（派车入口在左栏「下一步」） */

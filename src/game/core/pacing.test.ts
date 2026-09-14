@@ -2,20 +2,22 @@ import { describe, it, expect } from 'vitest'
 import { worldReducer } from './worldReducer'
 import { createInitialState } from './worldState'
 import { buildDispatchPlan } from './dispatchPlanning'
-import { CAMPAIGN_IDS } from './campaign'
 import { availableCareChecks } from './waitingCare'
 import { loadCheckpoint, saveCheckpoint } from './checkpoint'
 import type { WorldState } from '../types'
+
+/** 脚本时长验证选用的五个复核场景；与「每班几通」无关，班次长度由热度模型决定 */
+const SCRIPTED_CALLS = ['falls_elderly', 'chest_pain', 'hemorrhage', 'stroke', 'cardiac_arrest']
 
 function ticks(state: WorldState, count: number) { for (let i = 0; i < count; i++) state = worldReducer(state, { type: 'TICK' }); return state }
 function ready(state: WorldState) { return { ...state, terminal: { ...state.terminal, address: '已确认入口', conscious: true, breathing: true, determinant: 'DELTA' as const, triage: state.currentCall!.correctTriage } } }
 function start(id = 'hemorrhage') { return ready(worldReducer(worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [id] }), { type: 'ANSWER_CALL' })) }
 function send(state: WorldState) { return worldReducer(state, { type: 'DISPATCH', callInstanceId: state.callInstanceId, vehicleId: 'ambulance', route: buildDispatchPlan(state)!.routes[0] }) }
 
-describe('campaign care pacing', () => {
+describe('scripted care pacing', () => {
   it('supports a 15+ minute scripted care run without counting pause, debrief or turnaround', () => {
-    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
-    for (const id of CAMPAIGN_IDS) {
+    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: SCRIPTED_CALLS })
+    for (const id of SCRIPTED_CALLS) {
       for (let i = 0; i < 600 && state.fleet.vehicles[0].status !== 'available'; i++) state = ticks(state, 1)
       expect(state.fleet.vehicles[0].status).toBe('available')
       state = worldReducer(state, { type: 'ANSWER_CALL' })
@@ -58,7 +60,7 @@ describe('campaign care pacing', () => {
   })
   it('persists active time only at completed-call boundaries and accepts old checkpoints', () => {
     localStorage.clear()
-    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
+    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: SCRIPTED_CALLS })
     state = worldReducer(ticks(worldReducer(state, { type: 'ANSWER_CALL' }), 40), { type: 'END_CALL' })
     saveCheckpoint(state)
     expect(loadCheckpoint()!.activePlaySeconds).toBe(40)

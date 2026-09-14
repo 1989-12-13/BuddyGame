@@ -4,7 +4,6 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
-import { CAMPAIGN_GUIDANCE } from './campaignGuidance'
 
 export const fallsElderlyCard: EmergencyScenario = {
   id: 'falls_elderly',
@@ -96,7 +95,91 @@ export const fallsElderlyCard: EmergencyScenario = {
     },
   ],
 
-  guidance: CAMPAIGN_GUIDANCE.falls_elderly,
+  guidance: {
+    title: '疑似骨折急救指导',
+    intro: '不要移动老人，让她保持现在的姿势。在救护车到达前这样做。',
+    steps: [
+      {
+        id: 'falls_dont_move',
+        instruction: '千万不要搬动或扶起老人，保持原位不要动',
+        prompt: '第一步：不要移动',
+        options: [
+          '保持原位不要动',
+          '扶到床上躺着',
+          '扶到椅子上坐着',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！移动骨折部位可能导致错位加重或损伤神经血管。',
+          incorrect: '不对。对于疑似髋部骨折的患者，任何移动都可能造成二次伤害，应保持原位等待救护车。',
+          callerCorrect: '好的好的，我不动她！她还在躺着喊疼，但至少我们没有乱动！',
+          callerIncorrect: '我已经把她抱起来了...她一叫疼我就放下了...她好像更疼了...我是不是做错了？！',
+        },
+      },
+      {
+        id: 'falls_warmth',
+        instruction: '给老人盖上毯子或衣服保暖',
+        prompt: '第二步：保暖',
+        options: [
+          '盖毯子保暖',
+          '用热毛巾热敷患处',
+          '用冰袋冷敷',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！伤者需要保持体温，但不要热敷或冷敷患处以免加重损伤。',
+          incorrect: '不对。不要热敷或冷敷骨折部位，以免加重肿胀或影响血运。轻轻盖上毯子保暖即可。',
+          callerCorrect: '我给她盖上被子了，她说不那么冷了。她还是在喊疼但是比刚才好一点了。',
+          callerIncorrect: '我用热毛巾敷了她大腿根...她说更疼了...我赶紧拿掉了！',
+        },
+      },
+      {
+        id: 'falls_calm',
+        instruction: '安抚老人不要让她乱动',
+        prompt: '第三步：安抚',
+        options: [
+          '安抚老人保持不动',
+          '让她试着站起来',
+          '给她按摩',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！保持不动是最安全的做法。',
+          incorrect: '不对。让老人站立或按摩患处都可能加重伤情。',
+          callerCorrect: '我跟她说了别动，救护车马上就到。她虽然疼但是很听话没有再动了。',
+          callerIncorrect: '她一直在动想翻身...我按不住她！她一动就喊疼！我该怎么办？！',
+        },
+      },
+      {
+        id: 'falls_mg',
+        instruction: '如果老人突然意识不清或呕吐，应将其摆成侧卧复苏体位防止误吸。',
+        prompt: '实操环节：意识变化时的体位',
+        options: ['完成'],
+        correctIndex: 0,
+        feedback: {
+          correct: '操作到位，正确执行。',
+          incorrect: '操作需改进。',
+          callerCorrect: '我明白了！如果她意识不清就要侧过来！但现在先保持她不动！',
+          callerIncorrect: '我理解错了……原来现在不用把她侧过来……',
+        },
+        miniGame: {
+          kind: 'quickChoice',
+          title: '意识下降时的体位选择',
+          instruction: '老人目前清醒，但如果意识水平下降或呕吐，应该怎么做？',
+          passThreshold: 0.5,
+          question: '老人意识下降时应选择什么体位？',
+          options: [
+            '侧卧复苏体位，头偏向一侧',
+            '继续保持平躺不动',
+            '扶起来坐着',
+            '平躺垫高头部',
+          ],
+          correctIndex: 0,
+          feedback: { good: '我明白了！如果她意识不清就要侧过来！但现在先保持她不动！', bad: '我理解错了……原来现在不用把她侧过来……' },
+        },
+      },
+    ],
+  },
 
   specialEvents: [
     {

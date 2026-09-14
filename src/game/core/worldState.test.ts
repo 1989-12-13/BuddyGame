@@ -89,7 +89,7 @@ describe('createInitialState', () => {
     expect(state.screen).toBe('title')
     expect(state.shiftNumber).toBe(0)
     expect(state.callIndex).toBe(0)
-    expect(state.totalCalls).toBe(5)
+    expect(state.totalCalls).toBe(0)
   })
 
   it('没有活跃通话，对话和判定均为空', () => {
@@ -121,9 +121,8 @@ describe('createInitialState', () => {
 describe('buildScenarioQueue', () => {
   beforeEach(() => __resetRng())
 
-  it('总是返回 5 个场景', () => {
-    const queue = buildScenarioQueue()
-    expect(queue).toHaveLength(5)
+  it('按给定通数返回队列（没有默认通数）', () => {
+    expect(buildScenarioQueue(3)).toHaveLength(3)
   })
 
   it('可按参数生成长度更大的队列（并发值班）', () => {
@@ -142,19 +141,19 @@ describe('buildScenarioQueue', () => {
   })
 
   it('序列不含空值', () => {
-    const queue = buildScenarioQueue()
+    const queue = buildScenarioQueue(4)
     queue.forEach(id => expect(id).toBeTruthy())
   })
 
   it('当 rng() 始终 >= 0.2 时（即概率判定失败），不插入恶作剧电话', () => {
     __setRng(() => 0.5) // >0.2 不会触发恶作剧插入
-    const queue = buildScenarioQueue()
+    const queue = buildScenarioQueue(4)
     expect(queue).not.toContain('prank_call')
   })
 
   it('当 rng() < 0.2 时，插入恶作剧电话', () => {
     __setRng(() => 0.1) // <0.2 触发 + <0.5 决定 swapIdx + 替换位置
-    const queue = buildScenarioQueue()
+    const queue = buildScenarioQueue(4)
     expect(queue).toContain('prank_call')
   })
 })

@@ -4,11 +4,10 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
-import { CAMPAIGN_GUIDANCE } from './campaignGuidance'
 
 export const hemorrhageCard: EmergencyScenario = {
   id: 'hemorrhage',
-  title: '玻璃割伤大出血',
+  title: '刀割伤大出血',
   callerId: 'ye_xin',
   phoneNumber: '186****3333',
   baseStation: '东城区鼓楼大街附近',
@@ -154,7 +153,91 @@ export const hemorrhageCard: EmergencyScenario = {
     },
   ],
 
-  guidance: CAMPAIGN_GUIDANCE.hemorrhage,
+  guidance: {
+    title: '动脉出血紧急止血',
+    intro: '这是动脉出血非常危险。请您按我说的做，先不要管玻璃。',
+    steps: [
+      {
+        id: 'hem_press',
+        instruction: '用干净的布或毛巾直接用力按压在伤口上',
+        prompt: '第一步：直接按压',
+        options: [
+          '用干净布料直接按压伤口',
+          '拔出玻璃再止血',
+          '用酒精冲洗',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！持续用力按压是止血的关键。',
+          incorrect: '不对。不要拔出异物，也不要冲洗。用布料直接按压在伤口上。',
+          callerCorrect: '我找了条干净毛巾压上去了！按住了！血好像没喷那么厉害了！但是毛巾很快就红了！',
+          callerIncorrect: '我先把玻璃拔出来了...天哪血喷得更厉害了！喷了我一身！！怎么办怎么办！！',
+        },
+      },
+      {
+        id: 'hem_bandage',
+        instruction: '用绷带或布条紧紧缠绕包扎',
+        prompt: '第二步：加压包扎',
+        options: [
+          '紧紧缠绕加压包扎',
+          '用创可贴贴上',
+          '撒止血药粉',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！加压包扎可以持续止血。',
+          incorrect: '不对。创可贴太小，止血药粉也不适合动脉出血。需要用绷带或布条紧紧缠绕。',
+          callerCorrect: '我找了条围巾！在毛巾外面紧紧缠了两圈系住了！血好像止住了一些！',
+          callerIncorrect: '我贴了几个创可贴...血从边上又流出来了...创可贴太小了根本没用！',
+        },
+      },
+      {
+        id: 'hem_elevate',
+        instruction: '让伤员躺下抬高伤肢',
+        prompt: '第三步：抬高伤肢',
+        options: [
+          '躺下抬高伤肢',
+          '坐着不动',
+          '站起来走动',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！抬高伤肢可以减少出血量。',
+          incorrect: '不对。伤员应躺下减少耗氧，同时抬高伤肢利用重力减少出血。',
+          callerCorrect: '我让他躺下来了！把胳膊垫高放在沙发靠背上！他还在发抖...但好像比刚才好一点了！',
+          callerIncorrect: '他站着走来走去...地上又滴了一路血...我是不是应该让他躺下？',
+        },
+      },
+      {
+        id: 'hem_position_game',
+        instruction: '伤者前臂动脉喷射状出血，请选择正确的按压止血位置。',
+        prompt: '实操环节：选择止血位置',
+        options: ['完成'],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！动脉出血应在伤口近心端的动脉止血点按压。',
+          incorrect: '不对。动脉出血应从近心端阻断血流，上臂内侧肱动脉是正确位置。',
+          callerCorrect: '我按住了上臂内侧的位置！血好像不喷了！',
+          callerIncorrect: '我按在了伤口上...但是血还在往外冒...',
+        },
+        miniGame: {
+          kind: 'locationSelect',
+          title: '手臂止血位置',
+          instruction: '伤者前臂中段被玻璃割伤、动脉喷射状出血。应该在哪个位置按压止血？',
+          passThreshold: 0.5,
+          bodyPart: 'arm',
+          woundDesc: '前臂中段伤口，动脉喷射状出血',
+          options: [
+            '上臂内侧（肱动脉近心端）',
+            '伤口处直接按压',
+            '手腕脉搏处',
+          ],
+          correctIndex: 0,
+          feedback: { good: '我按住了上臂内侧的位置！血好像不喷了！', bad: '我按在了伤口上...但是血还在往外冒...' },
+        },
+      },
+    ],
+  },
 
   specialEvents: [
     {

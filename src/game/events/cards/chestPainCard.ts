@@ -4,7 +4,6 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
-import { CAMPAIGN_GUIDANCE } from './campaignGuidance'
 
 export const chestPainCard: EmergencyScenario = {
   id: 'chest_pain',
@@ -170,7 +169,63 @@ export const chestPainCard: EmergencyScenario = {
     },
   ],
 
-  guidance: CAMPAIGN_GUIDANCE.chest_pain,
+  guidance: {
+    title: '心梗急救指导',
+    intro: '救护车马上就到。在等待期间请让患者保持安静，不要让他走动。',
+    steps: [
+      {
+        id: 'chest_position',
+        instruction: '让患者半卧位，解开衣领腰带',
+        prompt: '第一步：体位',
+        options: [
+          '半卧位解开衣领',
+          '让患者平躺',
+          '让患者站起来走走',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确，半卧位有助于减轻心脏负担',
+          incorrect: '不对，让患者保持安静半卧位，不要走动',
+          callerCorrect: '好，我让他靠着椅子坐，衣领和腰带都解开了',
+          callerIncorrect: '他说想站起来走走看会不会好点……我刚扶他站起来他就说更晕了',
+        },
+      },
+      {
+        id: 'chest_medication',
+        instruction: '如果家里有阿司匹林，让患者嚼服300mg（没有就不吃）',
+        prompt: '第二步：用药',
+        options: [
+          '嚼服阿司匹林300mg',
+          '喝热水',
+          '吃硝苯地平',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确，嚼服阿司匹林能降低死亡率',
+          incorrect: '不对，疑似心梗应嚼服阿司匹林，不要随意用其他药物',
+          callerCorrect: '他说他包里备了阿司匹林！我让他嚼了3片！他说有点苦但是吞下去了',
+          callerIncorrect: '我给他倒了杯热水，他说喝了还是疼，一点用都没有',
+        },
+      },
+      {
+        id: 'chest_monitor',
+        instruction: '密切观察意识，如果患者失去意识立即报告',
+        prompt: '第三步：观察',
+        options: [
+          '持续观察意识呼吸',
+          '让他自己休息',
+          '给他按摩胸口',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确，持续观察是关键',
+          incorrect: '不对，需要持续观察患者意识状态变化',
+          callerCorrect: '我一直在跟他说话，他还能回答我但是声音越来越小了',
+          callerIncorrect: '我看他闭着眼睛好像睡着了……等等他是不是晕过去了？！喂！醒醒！不好了他说不出话了！',
+        },
+      },
+    ],
+  },
 
   specialEvents: [
     {

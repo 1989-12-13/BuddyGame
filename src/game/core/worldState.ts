@@ -4,7 +4,7 @@
 
 import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, PatientStatus, VitalSign } from '../types'
 import { stressToLevel } from '../types'
-import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
+import { SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
 import { rng, rngInt, shuffle as shuffleArray } from './random'
 import { VITAL_SIGN_COLORS } from './colors'
@@ -80,42 +80,14 @@ export function createTerminalState(): TerminalState {
 
 
 
-/** 经典（单通话）模式每班的来电数：并发值班会传入自己的班次长度 */
-export const DEFAULT_QUEUE_LENGTH = 5
-
 /**
- * 严重度阶梯：green 最轻 → black 最难。
- * 用于把随机抽到的一批场景重排成「一上班由轻到重」的爬升，
- * 而不是一上来就是心脏骤停、后面全是腰痛。
- */
-const PACING_RANK: Record<TriageLevel, number> = { green: 0, yellow: 1, red: 2, black: 3 }
-
-/**
- * 把场景队列排成冷→热的爬升，同档位之间随机打散。
+ * 从场景池随机抽 count 个不重复场景（通数由调用方给定，没有默认值）。
  *
- * 不改变抽取结果，只改顺序 —— 因此不会让某张卡变多或变少。
- * 恶作剧（prank_call）不参与排序，由调用方在这之后注入。
- */
-export function paceQueue(ids: string[]): string[] {
-  const ranked = ids.map(id => {
-    const scenario = SCENARIOS[id]
-    const rank = scenario ? PACING_RANK[scenario.correctTriage] ?? 1 : 1
-    return { id, rank, tiebreak: rng() }
-  })
-  ranked.sort((a, b) => (a.rank - b.rank) || (a.tiebreak - b.tiebreak))
-  return ranked.map(r => r.id)
-}
-
-
-/**
- * 获取本班次的场景队列（随机打乱顺序）。
- *
- * 仅服务于经典（单通话线性）模式：那里每班固定 5 通。
- * 并发值班不使用它——班次长度改由热度模型决定，场景从牌堆逐张抽取、发完自动重洗
+ * 并发值班不用它——班次长度由热度模型决定，场景从牌堆逐张抽取、发完自动重洗
  * （见 `core/shift.ts#drawScenario`）。
- * @param count 本班来电数量，上限为可用场景数。
+ * @param count 抽取数量，上限为可用场景数。
  */
-export function buildScenarioQueue(count: number = DEFAULT_QUEUE_LENGTH): string[] {
+export function buildScenarioQueue(count: number): string[] {
   // 从所有场景中随机抽取 count 个
   const prankId = 'prank_call'
   // 分离恶作剧场景和普通场景（恶作剧只按概率插入，不参与基础池）
@@ -123,7 +95,7 @@ export function buildScenarioQueue(count: number = DEFAULT_QUEUE_LENGTH): string
   const shuffled = shuffleArray(normalScenarios)
   // 抽取普通场景 + 20%概率加入恶作剧
   const length = Math.min(Math.max(0, count), normalScenarios.length)
-  const selected = paceQueue(shuffled.slice(0, length))
+  const selected = shuffled.slice(0, length)
   if (selected.length > 0 && rng() < 0.2) {
     selected[rngInt(selected.length)] = prankId
   }
@@ -150,7 +122,7 @@ export function createInitialState(): WorldState {
     activePlaySeconds: 0,
     shiftNumber: 0,
     callIndex: 0,
-    totalCalls: 5,
+    totalCalls: 0,
     scenarioQueue: [],
     shiftElapsed: 0,
     questionCost: 0,

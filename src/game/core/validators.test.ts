@@ -15,14 +15,14 @@ describe('validateState', () => {
     expect(validateState(state)).toBeNull()
   })
 
-  it('totalCalls = 0 → 报错', () => {
+  it('totalCalls = 0 → 合法（还没开班，没有固定通数）', () => {
     const state = { ...createInitialState(), totalCalls: 0 }
-    expect(validateState(state)).toBe('totalCalls must be > 0')
+    expect(validateState(state)).toBeNull()
   })
 
   it('totalCalls < 0 → 报错', () => {
     const state = { ...createInitialState(), totalCalls: -5 }
-    expect(validateState(state)).toBe('totalCalls must be > 0')
+    expect(validateState(state)).toBe('totalCalls must be >= 0')
   })
 
   it('callIndex < 0 → 报错', () => {
@@ -46,8 +46,8 @@ describe('validateState', () => {
   })
 
   it('只有一个字段异常时返回第一个（totalCalls 优先）', () => {
-    const state = { ...createInitialState(), totalCalls: 0, callIndex: -1 }
-    expect(validateState(state)).toBe('totalCalls must be > 0')
+    const state = { ...createInitialState(), totalCalls: -1, callIndex: -1 }
+    expect(validateState(state)).toBe('totalCalls must be >= 0')
   })
 })
 
@@ -60,7 +60,7 @@ describe('isStateConsistent', () => {
   })
 
   it('非法状态 → false', () => {
-    const state = { ...createInitialState(), totalCalls: 0 }
+    const state = { ...createInitialState(), totalCalls: -1 }
     expect(isStateConsistent(state)).toBe(false)
   })
 })

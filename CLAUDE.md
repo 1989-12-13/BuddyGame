@@ -164,7 +164,7 @@ src/
 ## 评分与结局
 
 - 单通：`scoreCall()` 产出 `CallScore = { speed(0-35) + info(0-30) + triage(0-20) + decision(0-5) + guidance(0-10) }`，满 100。
-- 班次：5 通电话累计；`SHOW_ENDING` 根据总分选择 `endings/endings.ts` 中的结局定义。
+- 班次：没有固定通数，累计本班全部通话；`SHOW_ENDING` 根据总分选择 `endings/endings.ts` 中的结局定义。
 
 ## 急救指导小游戏
 

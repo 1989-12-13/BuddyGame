@@ -37,6 +37,10 @@ export type {
   EmergencyScenario,
   ScenarioVariant,
   MenuMeta,
+  StressTier,
+  ScriptedCallerReply,
+  ScriptedExchange,
+  ScenarioScript,
 } from './scenario'
 export {
   isRhythmPress,

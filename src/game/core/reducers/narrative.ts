@@ -41,6 +41,29 @@ function panicGloss(p: CallerPersonality | undefined): string {
   }
 }
 
+/** 失控时的行为模式：不只是催进度，真实慌乱的人会反复确认、答非所问、愣住、否认现实 */
+const PANIC_BEHAVIORS = [
+  // 反复确认同一件事
+  'TA还有气吗？你快告诉我TA还有气吗！',
+  '你确定吗？你确定你们会来？',
+  'TA不会死的吧？不会吧？',
+  // 否认现实
+  '不会的不会的，刚才还好好的……',
+  '不可能啊，TA身体一直挺好的……',
+  // 关注不相关细节
+  'TA手里还攥着遥控器呢……',
+  '我刚才还跟TA说话来着……',
+  // 愣住
+  '我……我说不出话了……',
+  '我不知道该干什么……',
+  // 哀求
+  '求求你了，快点派车来吧……',
+  '你别挂电话，我一个人害怕……',
+]
+function panicBehavior(): string {
+  return PANIC_BEHAVIORS[Math.min(PANIC_BEHAVIORS.length - 1, Math.floor(rng() * PANIC_BEHAVIORS.length))] as string
+}
+
 /** 慌乱中追问救援进度——高危时人的第一反应是"你们什么时候到" */
 const PACE_URGES = [
   '你们到哪儿了？！',
@@ -52,17 +75,28 @@ function paceUrge(): string {
   return PACE_URGES[Math.min(PACE_URGES.length - 1, Math.floor(rng() * PACE_URGES.length))] as string
 }
 
-/** 紧张档的口语小停顿（有则克制地用，不每句都加，也不含人称避免重复） */
+/** 紧张档的口语小停顿（多选，随机出现，不每句都加，也不含人称避免重复） */
 function fillers(rationality: number, verbosity: number): string {
   if (rationality === 2) return ''
-  if (verbosity === 2) return '我现在手都在抖……'
-  return ''
+  const pool: string[] = []
+  if (verbosity === 2) pool.push('我现在手都在抖……', '我、我冷静一下……', '等等让我想想……')
+  else if (verbosity === 0) pool.push('嗯。', '……', '是。')
+  else pool.push('那个……', '我、我说……', '……')
+  if (pool.length === 0 || rng() > 0.4) return ''
+  return pool[Math.floor(rng() * pool.length)] as string + ' '
 }
 
-/** 跑题一句现场杂音（话痨+情绪化专属，仍围绕"现场"，不抛全新话题） */
+/** 跑题一句现场杂音（话痨+情绪化专属，随机从多句中取，不每次出现） */
 function aside(verbosity: number, rationality: number): string {
   if (verbosity !== 2 || rationality !== 0) return ''
-  return '我家里狗也在叫，真的一点都顾不上了——'
+  if (rng() > 0.35) return ''
+  const pool = [
+    '我家里狗也在叫——',
+    '旁边人在那儿喊呢——',
+    '楼上也在砸门——',
+    '灯还在闪呢——',
+  ]
+  return pool[Math.floor(rng() * pool.length)] as string
 }
 
 /** 回声：紧张时无意识地念出对方话语的最后几个词 */
@@ -104,7 +138,7 @@ export function generateLocationNarrative(
   vague: string,
   stress: number,
 ): { lines: string[]; quality: InfoQuality; distorted: boolean } {
-  if (stress >= 75) return { lines: splitSentences(vague), quality: 'vague', distorted: true }
+  if (stress >= 75) return { lines: [panicBehavior(), panicGloss(undefined)], quality: 'vague', distorted: true }
   if (stress >= 50) {
     const hint = vague.split(/[，,、\s]/)[0]
     return {
@@ -162,41 +196,88 @@ export function generateEventNarrative(
   const props = { verbosity: voice.verbosity, rationality: voice.rationality }
 
   if (stress >= 75) {
-    // 失控：只能挤出半句话 + 口头动作 + 对救援进度的追问
+    // 失控：不是每次都报信息。真实慌乱的人会反复确认、答非所问、否认现实。
+    // 有 40% 的概率只挤出恐慌行为，完全丢失信息。
+    if (rng() < 0.4) {
+      return {
+        lines: [panicGloss(personality), panicBehavior()],
+        quality: 'vague', distorted: true,
+      }
+    }
+    // 其余时候挤出半句信息 + 一个恐慌行为（不一定催救援）
     const urgent = firstClause(chiefComplaint)
     const gloss = panicGloss(personality)
     return {
-      lines: [`${gloss}${person}${urgent}`, `真的要不行了……`, paceUrge(), `你们快来啊！`],
+      lines: [`${gloss}${person}${urgent}`, panicBehavior()],
       quality: 'vague', distorted: true,
     }
   }
   if (stress >= 50) {
-    // 恐慌：每句都带着慌乱，句子之间是断的
+    // 恐慌：句子断续，结构随机化
     const gloss = panicGloss(personality)
-    const interject = personality.interjects ? [paceUrge()] : []
+    // 恐慌收束语多选
+    const panics = [
+      `真不知道怎么说${ctx}，一下子就成这样了……`,
+      `我怎么说啊，${ctx}……`,
+      `一下子就……我脑子是空的。`,
+      `天哪，怎么能……怎么可能呢。`,
+    ]
+    const panicClose = panics[Math.floor(rng() * panics.length)] as string
+    // 是否插入催促：有 interjects 特质 OR 30% 概率
+    const useUrge = personality.interjects === true || rng() < 0.3
+    const interject = useUrge ? [paceUrge()] : []
+    // 是否结尾问"怎么办"
+    const useWhatToDo = rng() < 0.6
     return {
       lines: [
         `${gloss}${person}${chiefComplaint}`,
-        `真的不知道怎么说${ctx}，一下子就成这样了……`,
+        panicClose,
         ...interject,
-        `我该怎么办啊？`,
+        ...(useWhatToDo ? [`我该怎么办啊？`] : []),
       ],
       quality: 'partial', distorted: true,
     }
   }
   if (stress >= 25) {
-    // 紧张：能说完，但一句一句地确认，偶尔冒出活人细节
+    // 紧张：能说完，但句式随机化——有时先铺垫、有时先说事、有时中间插一句
     const f = fillers(props.rationality, props.verbosity)
     const asideTxt = aside(props.verbosity, props.rationality)
-    const echo = personality.echoes ? `（自己念叨）${echoBack(chiefComplaint)}` : ''
+    const echo = personality.echoes && rng() < 0.5 ? echoBack(chiefComplaint) : ''
+    // 结尾随机选一个收束语，不是每次都"大概就是这样"
+    const closers = ['大概就是这样。', '反正看着不太对。', '就刚发生的事。', '我也不太确定。']
+    const closer = closers[Math.floor(rng() * closers.length)] as string
+    // 随机排列：50% 先铺垫再说事，30% 先说事，20% 中间插杂音
+    const order = rng()
+    if (order < 0.5) {
+      return {
+        lines: [
+          ...(asideTxt ? [asideTxt] : []),
+          `${f}${person}${chiefComplaint}。`,
+          echo,
+          ctx,
+          closer,
+        ].filter(Boolean),
+        quality: 'partial', distorted: false,
+      }
+    } else if (order < 0.8) {
+      return {
+        lines: [
+          `${f}${person}${chiefComplaint}。`,
+          ctx,
+          ...(asideTxt ? [asideTxt] : []),
+          echo,
+          closer,
+        ].filter(Boolean),
+        quality: 'partial', distorted: false,
+      }
+    }
     return {
       lines: [
-        ...(asideTxt ? [asideTxt] : []),
-        `${f}${person}${chiefComplaint}。`,
-        `就是刚刚发生的事……`,
-        `${ctx}，反正看着不太对。`,
-        echo,
-        `大概就是这样。`,
+        `${f}${person}${chiefComplaint}，`,
+        ctx,
+        asideTxt,
+        `……${echo}`,
+        closer,
       ].filter(Boolean),
       quality: 'partial', distorted: false,
     }
@@ -205,10 +286,42 @@ export function generateEventNarrative(
   return { lines: splitSentences(chiefComplaint), quality: 'clear', distorted: false }
 }
 
+/** 把场景里的年龄文本（如"45岁左右""约60岁"）解析为数字 */
+function parseAgeNum(age: string): number | null {
+  const m = age.match(/(\d+)/)
+  if (!m) return null
+  const n = parseInt(m[1] as string, 10)
+  return Number.isFinite(n) ? n : null
+}
+
+/** 把年龄转为模糊的年龄段目测说法（"看着像五十来岁"） */
+function vagueAgeBand(age: string, stress: number): string {
+  const n = parseAgeNum(age)
+  if (n == null) return '说不太准'
+  // 目测只能是粗略的十年段
+  const band = Math.floor(n / 10) * 10
+  const tail = stress >= 50 ? '……或者是' + (band + 10) + '多？' : ''
+  const map: Record<number, string> = {
+    0: '几岁吧，很小', 10: '十来岁', 20: '二十来岁', 30: '三十来岁',
+    40: '四十来岁', 50: '五十来岁', 60: '六十来岁', 70: '七十来岁',
+    80: '八十来岁', 90: '九十来岁',
+  }
+  return `${map[band] ?? band + '来岁'}${tail}`
+}
+
+/** 来电者对患者的了解程度，决定年龄回答的可靠度 */
+function ageFamiliarity(relationship: string): 'self' | 'family' | 'acquaintance' | 'stranger' {
+  if (relationship === '本人') return 'self'
+  if (['家人','家属','母亲','父亲','儿子','女儿','伴侣','夫妻','妻子','丈夫'].includes(relationship)) return 'family'
+  if (['朋友','同事','工友','室友','邻居'].includes(relationship)) return 'acquaintance'
+  return 'stranger'  // 路人、目击者
+}
+
 /** 生成步骤3（患者年龄）的叙述式回答（句子流） */
-export function generateAgeNarrative(age: string, stress: number): string[] {
+export function generateAgeNarrative(age: string, stress: number, relationship: string = '路人'): string[] {
   const cleanAge = age.replace(/男性|女性|男|女|不详/g, '').trim()
   const isNumericAge = /^\d+/.test(cleanAge)
+  const fam = ageFamiliarity(relationship)
 
   // 非数字年龄（如恶作剧"小猫"），来电者说不清年龄
   if (!isNumericAge) {
@@ -218,18 +331,45 @@ export function generateAgeNarrative(age: string, stress: number): string[] {
     return [`说不太清楚……`]
   }
 
-  if (stress >= 75) return [`${cleanAge}！！`, `就是！！`, `你们快来啊！！`]
-  if (stress >= 50) return [`好像是${cleanAge}……`, `我也记不清了……`, `应该是${cleanAge}吧，这很重要吗？`]
-  if (stress >= 25) return [`${cleanAge}……`, `应该差不多是这个岁数。`]
-  return [`${cleanAge}。`]
+  // 本人：直接报年龄
+  if (fam === 'self') {
+    if (stress >= 75) return [`${cleanAge}！！`, `就是！！`, `你们快来啊！！`]
+    if (stress >= 50) return [`${cleanAge}……`, `对，就是${cleanAge}。`]
+    return [`${cleanAge}。`]
+  }
+
+  // 家属：大致清楚，但紧张时可能记不准
+  if (fam === 'family') {
+    if (stress >= 75) return [`${cleanAge}！！`, `对对对，就是！！`]
+    if (stress >= 50) return [`好像是${cleanAge}……`, `我也记不太清了，应该是吧。`]
+    if (stress >= 25) return [`${cleanAge}……`, `应该差不多。`]
+    return [`${cleanAge}。`]
+  }
+
+  // 熟人（朋友/同事/邻居）：知道个大概
+  if (fam === 'acquaintance') {
+    if (stress >= 75) return [`我不知道！！`, `看样子挺大了！`, `你们快来啊！！`]
+    if (stress >= 50) return [`大概${cleanAge}吧……`, `我记不太准了。`]
+    if (stress >= 25) return [`差不多${cleanAge}吧……`, `我们也没仔细问过。`]
+    return [`大概${cleanAge}吧，`, `我不是特别确定。`]
+  }
+
+  // 路人/目击者：只能目测年龄段，说不出精确数字
+  const band = vagueAgeBand(age, stress)
+  if (stress >= 75) return [`我不知道啊！！`, `看着岁数挺大了！`, `你们快来啊！！`]
+  if (stress >= 50) return [`${band}……`, `我真说不上来。`]
+  if (stress >= 25) return [`看样子${band}，`, `我不认识TA，猜的。`]
+  return [`看样子${band}，`, `我不认识TA，不好说。`]
 }
 
 /** 生成步骤4（意识与呼吸）的叙述式回答（句子流） */
 export function generateVitalsNarrative(consciousness: string, breathing: string, stress: number): string[] {
   if (stress >= 75) {
+    // 失控：不一定还能报出体征信息
+    if (rng() < 0.5) return [panicBehavior(), `你们快来啊！！`]
     const c = firstClause(consciousness)
     const b = firstClause(breathing)
-    return [`${c}！！`, `${b}！！`, `你们快来啊！！`]
+    return [`${c}！！`, `${b}！！`, panicBehavior()]
   }
   if (stress >= 50) return [`${consciousness}……`, `${breathing}……`, `天哪我说不太清楚，反正看着不太对劲……`]
   if (stress >= 25) return [`${consciousness}，`, `${breathing}……`, `应该是这样的……`]
@@ -245,7 +385,6 @@ export function getQuestionTimeCost(questionId: string, call: { mpdsQuestions: {
     step3_age: 1,
     step4_vitals: 2,
     ask_contact: 1,
-    ask_purpose: 1,
   }
   return fixedCosts[questionId] ?? call.mpdsQuestions.find(q => q.id === questionId)?.timeCost ?? 2
 }

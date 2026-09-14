@@ -106,6 +106,133 @@ export const abdominalPainCard: EmergencyScenario = {
     purpose: '我是不是阑尾炎了要不要去医院',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 徐大伟（本人）报告急性腹痛
+  // 来电者个性：说话断断续续、疼得倒吸冷气、沉默寡言型
+  // 关系：本人（对患者完全了解）
+  // ============================================================
+  script: {
+    // --- 步骤1：位置确认 ---
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体到楼号和门牌。',
+      caller: {
+        calm: ['苏州街长远天地大厦A座1206室。'],
+        tense: ['苏州街……长远天地……A座1206！哎哟……'],
+        panic: ['长远天地！A座！1206！嘶——疼……'],
+        lost: ['苏州街……长远天地……1206……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '苏州街长远天地大厦A座1206室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你疼，救护车已经在路上了。咱接着说，每个问题都能帮到你。',
+        calm: '好……你问。',
+        tense: '行……嘶——你问。',
+        panic: '嗯……快问……',
+        lost: '……嗯。',
+      },
+    },
+
+    // --- 步骤1b：标志建筑 ---
+    ask_landmark: {
+      operator: '大厦旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['苏州街地铁站A口出来往北走100米。'],
+        tense: ['地铁A口！往北100米！就在路边！'],
+        panic: ['地铁A口……北边……嘶——'],
+        lost: ['地铁口……旁边……'],
+      },
+      fillTerminal: { address: '苏州街长远天地大厦A座1206室，苏州街地铁站A口往北100米' },
+      calmReply: {
+        operatorCalm: '好，地铁站A口，我记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤2：事件经过 ---
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['昨晚开始肚子疼，胃那边，今天早上跑到右下腹了。', '吐了两次，疼得不敢动。'],
+        tense: ['昨晚胃那儿疼！今天跑到右下腹了！', '吐了两次！嘶——一动就疼！'],
+        panic: ['右下腹！疼！吐了！嘶——受不了了！'],
+        lost: ['肚子疼……右下边……吐了……'],
+      },
+      fillTerminal: { chiefComplaint: '右下腹剧痛，转移性，伴呕吐', patientGender: '男性' },
+      outburst: '哎哟！疼死我了！你们到底来不来！',
+      calmReply: {
+        operatorCalm: '我听清楚了。右下腹痛，从胃那边转移过来的，还吐了——这些我记下了。你按我说的做，别乱动。',
+        calm: '好……我不动。',
+        tense: '行……嘶——你说。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤3：患者年龄 ---
+    step3_age: {
+      operator: '你多大岁数？',
+      caller: {
+        calm: ['32岁。'],
+        tense: ['32！今年32！'],
+        panic: ['32！嘶——'],
+        lost: ['32……对，32。'],
+      },
+      fillTerminal: { patientAge: '32岁' },
+      calmReply: {
+        operatorCalm: '好，32岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行……你说。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤4：意识与呼吸 ---
+    step4_vitals: {
+      operator: '人清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒，但疼得脸色发白。', '呼吸疼得不敢深喘。'],
+        tense: ['清醒！但脸都白了！', '喘气不敢使劲喘！嘶——'],
+        panic: ['清醒！疼！不敢喘气！嘶——'],
+        lost: ['醒着……疼得不敢动……喘不了……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人还清醒，这我知道了。别吃东西别喝水，救护车马上到。',
+        calm: '好……我不吃。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 联系电话 ---
+    ask_contact: {
+      operator: '你的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13877621111，就是这个号。'],
+        tense: ['138……7762……1111！打这个！'],
+        panic: ['138……7762……1111！嘶——'],
+        lost: ['138……这个手机……'],
+      },
+      fillTerminal: { contact: '138****1111' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_abd_pain_transfer',

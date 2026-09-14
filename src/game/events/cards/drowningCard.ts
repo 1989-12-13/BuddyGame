@@ -56,6 +56,128 @@ export const drowningCard: EmergencyScenario = {
     purpose: '快派救护车，他好像没有呼吸了',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 周明（路人）报告游泳池溺水
+  // 来电者个性：语气镇定、叙述有条理、能冷静配合
+  // 关系：路人（对溺水者不了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['朝阳区奥体中心游泳馆，西门入口处。'],
+        tense: ['奥体中心游泳馆！西门！你们快来！'],
+        panic: ['奥体中心！游泳馆！西门！快来！'],
+        lost: ['奥体中心……游泳馆……西门……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '朝阳区奥体中心游泳馆西门入口处' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你紧张，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '游泳馆门口有什么明显的标志吗？',
+      caller: {
+        calm: ['门口有个蓝色泳池指示牌。'],
+        tense: ['蓝色泳池指示牌！就在门口！你们到了就能看到！'],
+        panic: ['蓝色牌子……门口……'],
+        lost: ['有个牌子……蓝色……'],
+      },
+      fillTerminal: { address: '朝阳区奥体中心游泳馆西门入口处，门口有蓝色泳池指示牌' },
+      calmReply: {
+        operatorCalm: '好，蓝色指示牌，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['游泳馆有个人溺水了，刚被救生员捞上来。', '人不动了，叫不醒他。', '不知道溺水多久了。'],
+        tense: ['有人溺水了！刚捞上来！', '不动了！叫不醒！', '不知道溺水多久了！'],
+        panic: ['溺水了！！不动了！！', '叫不醒了！！你们快来！！', '他快不行了！！'],
+        lost: ['有人溺水了……', '不动了……叫不醒……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '游泳池溺水，救上岸后无意识', patientGender: '男性' },
+      outburst: '他没反应了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。溺水，捞上来不动了——这些我记下了。你现在是我唯一的帮手，按我说的做，他有机会。',
+        calm: '好……我按你说的做。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他大概多大岁数？',
+      caller: {
+        calm: ['大概三十岁左右。'],
+        tense: ['三十岁左右！年轻人！'],
+        panic: ['三十岁！！年轻人！！'],
+        lost: ['三十岁……应该是……'],
+      },
+      fillTerminal: { patientAge: '约30岁' },
+      calmReply: {
+        operatorCalm: '好，大约三十岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还有意识吗？还在喘气吗？',
+      caller: {
+        calm: ['完全没有反应，怎么叫都不醒。', '胸口好像不动了，可能没有呼吸了。'],
+        tense: ['没有反应！怎么叫都不醒！', '胸口好像不动了！可能没有呼吸了！'],
+        panic: ['没有反应！！叫不醒了！！', '胸口不动了！！没有呼吸！！', '你们快来啊！！'],
+        lost: ['叫不醒了……胸口也不动了……', '他是不是已经……', '不会的不会的……'],
+      },
+      fillTerminal: { conscious: false, breathing: false },
+      outburst: '他没气了！！你们快来啊！！他快死了！！',
+      calmReply: {
+        operatorCalm: '听我说。没有意识、没有呼吸——这我知道了。现在你能救他。我会一步步教你做心肺复苏，你按我说的来，每一秒都很重要。',
+        calm: '好……我跟你做。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13877629999，就是这个号。'],
+        tense: ['138……7762……9999！打这个就行！'],
+        panic: ['138……这个手机！9999！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '138****9999' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_drowning_time',

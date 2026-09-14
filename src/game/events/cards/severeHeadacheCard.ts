@@ -56,6 +56,127 @@ export const severeHeadacheCard: EmergencyScenario = {
     purpose: '是不是脑出血了要不要吃药',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 高艳（本人）报告突发剧烈头痛
+  // 来电者个性：疼痛压抑语气、说话断断续续、畏光畏声
+  // 关系：本人（对患者完全了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体到楼号。',
+      caller: {
+        calm: ['东城区东四北大街303号2单元501室。'],
+        tense: ['东四北大街！303号！2单元501！嘶——疼……'],
+        panic: ['东四北大街！303号！501！嘶——'],
+        lost: ['东四……303号……501……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '东城区东四北大街303号2单元501室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你疼，救护车已经在路上了。咱接着说。',
+        calm: '好……你问。',
+        tense: '行……嘶——你问。',
+        panic: '嗯……快问……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '楼旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['东四地铁站B口往北200米。'],
+        tense: ['地铁B口！往北200米！'],
+        panic: ['地铁B口……北边……嘶——'],
+        lost: ['地铁口旁边……往北……'],
+      },
+      fillTerminal: { address: '东城区东四北大街303号2单元501室，东四地铁站B口往北200米' },
+      calmReply: {
+        operatorCalm: '好，地铁B口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['半小时前头突然疼起来，像炸开一样。', '从来没这么疼过，吐了一次。', '有高血压史。'],
+        tense: ['头要炸了！突然来的！', '吐了一次！从来没有这么疼过！', '有高血压！'],
+        panic: ['炸开一样！！突然就来了！！', '吐了！！像雷劈了一样！！', '我是不是要死了！！'],
+        lost: ['头疼……炸开一样……', '吐了……', '好疼……'],
+      },
+      fillTerminal: { chiefComplaint: '突发炸裂样头痛伴呕吐，有高血压史', patientGender: '女性' },
+      outburst: '哎哟！疼死了！你们到底来不来！',
+      calmReply: {
+        operatorCalm: '我听清楚了。突然炸裂样头痛，还吐了——这些我记下了。别吃止痛药，按我说的做。',
+        calm: '好……我不吃药。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……不吃……',
+        lost: '……好。',
+      },
+    },
+
+    step3_age: {
+      operator: '您多大岁数？',
+      caller: {
+        calm: ['45岁。'],
+        tense: ['45！我45！'],
+        panic: ['45！嘶——'],
+        lost: ['45……对，45。'],
+      },
+      fillTerminal: { patientAge: '45岁' },
+      calmReply: {
+        operatorCalm: '好，45岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行……你说。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '人清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒，但疼得没法正常说话。', '呼吸正常。'],
+        tense: ['清醒！但疼得说不出话！', '呼吸正常！嘶——'],
+        panic: ['清醒！！疼！！嘶——', '呼吸正常！！但好疼！！'],
+        lost: ['醒着……疼得说不出话……', '呼吸正常……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人清醒，呼吸正常，这我知道了。关灯躺下，别吃任何止痛药，救护车马上到。',
+        calm: '好……我躺着。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['15677628888，就是这个号。'],
+        tense: ['156……7762……8888！打这个！'],
+        panic: ['156……8888！嘶——'],
+        lost: ['156……这个手机……'],
+      },
+      fillTerminal: { contact: '156****8888' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_headache_nature',

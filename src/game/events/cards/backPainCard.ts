@@ -55,6 +55,133 @@ export const backPainCard: EmergencyScenario = {
     purpose: '动不了了需要救护车',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 田峰（本人）报告急性腰扭伤
+  // 来电者个性：强忍疼痛、说话简短、沉默寡言型
+  // 关系：本人（对患者完全了解）
+  // ============================================================
+  script: {
+    // --- 步骤1：位置确认 ---
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体到楼号。',
+      caller: {
+        calm: ['丰台区科技园总部基地16号楼1层大厅。'],
+        tense: ['丰台科技园！总部基地！16号楼！一楼大厅！嘶——'],
+        panic: ['科技园！16号楼！嘶——疼……'],
+        lost: ['科技园……16号楼……大厅……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '丰台区科技园总部基地16号楼1层大厅电梯旁' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你疼，救护车已经在路上了。咱接着说。',
+        calm: '好……你问。',
+        tense: '行……嘶——你问。',
+        panic: '嗯……快问……',
+        lost: '……嗯。',
+      },
+    },
+
+    // --- 步骤1b：标志建筑 ---
+    ask_landmark: {
+      operator: '16号楼旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['一楼大厅电梯旁边。'],
+        tense: ['电梯旁边！一楼大厅！'],
+        panic: ['电梯旁……一楼……嘶——'],
+        lost: ['电梯……旁边……'],
+      },
+      fillTerminal: { address: '丰台区科技园总部基地16号楼1层大厅电梯旁' },
+      calmReply: {
+        operatorCalm: '好，一楼大厅电梯旁，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤2：事件经过 ---
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['搬箱子的时候腰突然响了一声。', '然后就不敢动了，一动就疼得冒冷汗。'],
+        tense: ['搬箱子！腰咔嚓一声！', '不敢动了！一动就疼！嘶——'],
+        panic: ['腰响了！不敢动！嘶——疼死了！'],
+        lost: ['搬东西……腰响了……', '动不了了……'],
+      },
+      fillTerminal: { chiefComplaint: '搬重物时突然腰痛，无法直腰', patientGender: '男性' },
+      outburst: '哎哟！疼死我了！动都动不了！你们快来！',
+      calmReply: {
+        operatorCalm: '我听清楚了。搬东西时腰突然响了，不敢动——这些我记下了。别乱动，保持现在最舒服的姿势。',
+        calm: '好……我不动。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……不动……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤3：患者年龄 ---
+    step3_age: {
+      operator: '你多大岁数？',
+      caller: {
+        calm: ['38岁。'],
+        tense: ['38！今年38！'],
+        panic: ['38！嘶——'],
+        lost: ['38……对，38。'],
+      },
+      fillTerminal: { patientAge: '38岁' },
+      calmReply: {
+        operatorCalm: '好，38岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行……你说。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+
+    // --- 步骤4：意识与呼吸 ---
+    step4_vitals: {
+      operator: '人清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒。', '呼吸疼得不敢深喘。'],
+        tense: ['清醒！但疼得不敢喘气！嘶——'],
+        panic: ['清醒！疼！不敢动！嘶——'],
+        lost: ['醒着……疼得不敢动……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人清醒，这我知道了。别乱动，保持现在最舒服的姿势，救护车马上到。',
+        calm: '好……不动。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    // --- 联系电话 ---
+    ask_contact: {
+      operator: '你的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13777624444，就是这个号。'],
+        tense: ['137……7762……4444！打这个！'],
+        panic: ['137……4444！嘶——'],
+        lost: ['137……这个手机……'],
+      },
+      fillTerminal: { contact: '137****4444' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_bp_radiation',

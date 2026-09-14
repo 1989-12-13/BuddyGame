@@ -56,6 +56,128 @@ export const eyeInjuryCard: EmergencyScenario = {
     purpose: '会不会瞎有没有什么药',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 罗伟（工友）报告化学物入眼
+  // 来电者个性：声音急促慌乱、不断追问会不会瞎
+  // 关系：工友（对现场了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，楼层和位置。',
+      caller: {
+        calm: ['海淀区上地信息路甲28号科实大厦B座5层化学实验室。'],
+        tense: ['上地！科实大厦！B座！5层！实验室！你们快来！'],
+        panic: ['科实大厦！B座！5层！快来！'],
+        lost: ['上地……科实大厦……5层……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '海淀区上地信息路甲28号科实大厦B座5层化学实验室' },
+      outburst: '你们到底来不来啊！他眼睛会不会瞎啊！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '大厦旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['上地地铁站A口出向北300米。'],
+        tense: ['地铁A口！向北300米！你们到了就能看到！'],
+        panic: ['地铁A口……北边300米……'],
+        lost: ['地铁口旁边……向北……'],
+      },
+      fillTerminal: { address: '海淀区上地信息路甲28号科实大厦B座5层化学实验室，上地地铁站A口出向北300米' },
+      calmReply: {
+        operatorCalm: '好，地铁A口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['做实验时盐酸溅到右眼了。', '疼得睁不开，一直流眼泪。', '已经用洗眼器冲了五分钟了。'],
+        tense: ['盐酸溅到眼睛了！右眼！', '疼得睁不开！一直流眼泪！', '已经冲了五分钟了！'],
+        panic: ['盐酸入眼了！！右眼！！', '疼得睁不开！！一直在冲水！！', '会不会瞎啊！！'],
+        lost: ['盐酸溅到了……右眼……', '一直在冲水……但还是很疼……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '盐酸溅入右眼，疼痛剧烈，已冲洗5分钟', patientGender: '男性' },
+      outburst: '他眼睛会不会瞎啊！！你们快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。盐酸入眼，已经在冲水——这些我记下了。你做得很对，继续冲别停，按我说的做。',
+        calm: '好……继续冲。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他多大岁数？',
+      caller: {
+        calm: ['27岁。'],
+        tense: ['27！他27！'],
+        panic: ['27！！27岁！！'],
+        lost: ['27……应该是27……'],
+      },
+      fillTerminal: { patientAge: '27岁' },
+      calmReply: {
+        operatorCalm: '好，27岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒，但疼得不行。', '呼吸正常。'],
+        tense: ['清醒！但疼得厉害！', '呼吸正常！'],
+        panic: ['清醒！！疼！！呼吸正常！！', '你们快来！！'],
+        lost: ['还醒着……疼得厉害……', '呼吸正常……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人清醒，呼吸正常，这我知道了。继续冲水，至少冲15分钟，别停。',
+        calm: '好……继续冲。',
+        tense: '行……知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13977627777，就是这个号。'],
+        tense: ['139……7762……7777！打这个就行！'],
+        panic: ['139……这个手机！7777！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '139****7777' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_eye_chemical',

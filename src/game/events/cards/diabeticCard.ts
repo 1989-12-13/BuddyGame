@@ -55,6 +55,127 @@ export const diabeticCard: EmergencyScenario = {
     purpose: '她是不是低血糖了？要不要给她吃糖？',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 林美（同事）报告同事低血糖昏迷
+  // 来电者个性：紧张但配合、主动补充观察细节
+  // 关系：同事（对患者了解一部分）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，楼层和房间号。',
+      caller: {
+        calm: ['朝阳区国贸写字楼A座18层1803室。'],
+        tense: ['国贸写字楼！A座！18层！1803室！你们快来！'],
+        panic: ['国贸！A座！1803！快来！'],
+        lost: ['国贸……A座……1803……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '朝阳区国贸写字楼A座18层1803室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你紧张，救护车已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '写字楼大厅怎么上去？旁边有什么标志吗？',
+      caller: {
+        calm: ['国贸地铁站D口出来进大厅上电梯。'],
+        tense: ['地铁D口！进大厅！上电梯到18层！'],
+        panic: ['地铁D口……大厅……18层！'],
+        lost: ['地铁口旁边……大厅……'],
+      },
+      fillTerminal: { address: '朝阳区国贸写字楼A座18层1803室，国贸地铁站D口出来进大厅上电梯' },
+      calmReply: {
+        operatorCalm: '好，地铁D口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['同事中午没吃饭，下午突然浑身发抖出冷汗。', '叫她不太应了，她有糖尿病。'],
+        tense: ['同事突然发抖出冷汗！', '叫不太应了！她有糖尿病！', '是不是低血糖了！'],
+        panic: ['她不对劲了！！发抖出冷汗！！', '叫不答应了！！有糖尿病！！', '你们快来！！'],
+        lost: ['她突然发抖……', '叫不太应了……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '突发意识模糊，大汗淋漓，有糖尿病史', patientGender: '女性' },
+      outburst: '她不答应了！！你们到底来不来！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。有糖尿病，中午没吃，突然发抖出汗——这像是低血糖，我记下了。你别慌，按我说的做。',
+        calm: '好……我按你说的做。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['38岁。'],
+        tense: ['38！她今年38！'],
+        panic: ['38！！38岁！！'],
+        lost: ['38……应该是38……'],
+      },
+      fillTerminal: { patientAge: '38岁' },
+      calmReply: {
+        operatorCalm: '好，38岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还有意识吗？能说话吗？',
+      caller: {
+        calm: ['不太清醒，能哼哼但说不出完整的话。', '呼吸有点浅但还算正常。'],
+        tense: ['不太清醒！能哼哼但说不出话！', '呼吸有点浅！但还算正常！'],
+        panic: ['不太清醒了！！能哼哼！！', '呼吸有点浅！！但还算正常！！', '你们快来！！'],
+        lost: ['能哼哼……但说不出话……', '呼吸有点浅……', '她不会……不会吧……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还有一点意识，呼吸也在，这我知道了。如果她能吞咽就给她喝糖水，我告诉你怎么做。',
+        calm: '好……我试试喂糖水。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13777627777，就是这个号。'],
+        tense: ['137……7762……7777！打这个就行！'],
+        panic: ['137……这个手机！7777！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '137****7777' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_diab_medication',

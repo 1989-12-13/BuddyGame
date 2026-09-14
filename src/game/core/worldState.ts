@@ -188,6 +188,7 @@ export function createInitialState(): WorldState {
     dialogueLog: [],
     pendingJudgments: [],
     vitalsPulse: null,
+    pendingReask: null,
     eventSeq: 0,
     callEvaluations: [],
     lastDebrief: null,

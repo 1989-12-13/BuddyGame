@@ -47,27 +47,31 @@ export function TerminalForm({
         />
       </FieldRow>
 
-      {/* 联系电话（可选） */}
-      <FieldRow icon={<Phone size={13} />} label="联系电话">
-        <input
-          aria-label="联系电话"
-          style={{ ...styles.formInput, height: 30 }}
-          value={terminal.contact}
-          onChange={(e) => onChange('contact', e.target.value)}
-          placeholder="记录联系方式…（可选）"
-        />
-      </FieldRow>
-
-      {/* 主诉（可选） */}
-      <FieldRow icon={<HeartPulse size={15} />} label="主诉">
-        <input
-          aria-label="主诉"
-          style={{ ...styles.formInput, height: 30 }}
-          value={terminal.chiefComplaint}
-          onChange={(e) => onChange('chiefComplaint', e.target.value)}
-          placeholder="标准化主诉…（可选）"
-        />
-      </FieldRow>
+      {/* 联系电话 + 主诉（可选，并排一行） */}
+      <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
+        <div style={{ flex: 1 }}>
+          <FieldRow icon={<Phone size={13} />} label="联系电话">
+            <input
+              aria-label="联系电话"
+              style={{ ...styles.formInput, height: 30 }}
+              value={terminal.contact}
+              onChange={(e) => onChange('contact', e.target.value)}
+              placeholder="记录联系方式…（可选）"
+            />
+          </FieldRow>
+        </div>
+        <div style={{ flex: 1 }}>
+          <FieldRow icon={<HeartPulse size={15} />} label="主诉">
+            <input
+              aria-label="主诉"
+              style={{ ...styles.formInput, height: 30 }}
+              value={terminal.chiefComplaint}
+              onChange={(e) => onChange('chiefComplaint', e.target.value)}
+              placeholder="标准化主诉…（可选）"
+            />
+          </FieldRow>
+        </div>
+      </div>
 
       {/* 患者基本信息（可选） */}
       <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
@@ -98,37 +102,41 @@ export function TerminalForm({
       {/* ====== 患者生命体征 — 关键问题（必填） ====== */}
       <SectionTitle icon={<Activity size={15} />} text="关键问题" required />
 
-      {/* 意识状态（必填） */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
-        <span style={{ ...styles.formLabel, marginBottom: 0 }}>意识状态</span>
-        <RequiredMark />
+      {/* 意识状态 + 呼吸状态（必填，并排一行） */}
+      <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
+            <span style={{ ...styles.formLabel, marginBottom: 0 }}>意识状态</span>
+            <RequiredMark />
+          </div>
+          <StatusToggle
+            ariaLabel="患者有意识吗？"
+            field="conscious"
+            value={terminal.conscious}
+            trueLabel="有意识"
+            falseLabel="无意识"
+            colorTrue="var(--success)"
+            colorFalse="var(--danger)"
+            onToggle={onSetStatus}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
+            <span style={{ ...styles.formLabel, marginBottom: 0 }}>呼吸状态</span>
+            <RequiredMark />
+          </div>
+          <StatusToggle
+            ariaLabel="患者有正常呼吸吗？"
+            field="breathing"
+            value={terminal.breathing}
+            trueLabel="正常呼吸"
+            falseLabel="无呼吸/异常"
+            colorTrue="var(--success)"
+            colorFalse="var(--danger)"
+            onToggle={onSetStatus}
+          />
+        </div>
       </div>
-      <StatusToggle
-        ariaLabel="患者有意识吗？"
-        field="conscious"
-        value={terminal.conscious}
-        trueLabel="有意识"
-        falseLabel="无意识"
-        colorTrue="var(--success)"
-        colorFalse="var(--danger)"
-        onToggle={onSetStatus}
-      />
-
-      {/* 呼吸状态（必填） */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)'}}>
-        <span style={{ ...styles.formLabel, marginBottom: 0 }}>呼吸状态</span>
-        <RequiredMark />
-      </div>
-      <StatusToggle
-        ariaLabel="患者有正常呼吸吗？"
-        field="breathing"
-        value={terminal.breathing}
-        trueLabel="正常呼吸"
-        falseLabel="无呼吸/异常"
-        colorTrue="var(--success)"
-        colorFalse="var(--danger)"
-        onToggle={onSetStatus}
-      />
 
       {/* ====== 协议号（可选） ====== */}
       <SectionTitle icon={<ListChecks size={15} />} text="MPDS 协议" />

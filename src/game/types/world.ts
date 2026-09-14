@@ -112,6 +112,12 @@ export interface WorldState {
   triggeredEventIds: string[]
   careChecks: Record<string, number>
   activePlaySeconds: number
+  /**
+   * 字幕已完整流式播出的行数（最后播完那行的索引 + 1）。
+   * 并发值班切线路会让工作台整块重挂载，进度存在通话自己的状态里才能续上，
+   * 切回来时历史对话直接完整呈现、只补播离开期间的新行。
+   */
+  streamedLines: number
 
   // 班次
   shiftNumber: number

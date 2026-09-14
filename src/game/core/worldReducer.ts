@@ -30,6 +30,7 @@ import {
   handleSetTriage,
   handleDismissPatientEvent,
   handleDismissRescueNotification,
+  handleMarkLinesStreamed,
   handleDismissDebrief,
   handleChoosePerk,
   handleShowEnding,
@@ -110,6 +111,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
 
     case 'DISMISS_RESCUE_NOTIFICATION':
       return handleDismissRescueNotification(state, action.notificationId)
+
+    case 'MARK_LINES_STREAMED':
+      return handleMarkLinesStreamed(state, action.throughIndex)
 
     case 'END_CALL':
       return handleEndCall(state, action.perkChoices)

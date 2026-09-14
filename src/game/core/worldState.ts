@@ -138,6 +138,7 @@ export function createInitialState(): WorldState {
     triggeredEventIds: [],
     careChecks: {},
     activePlaySeconds: 0,
+    streamedLines: 0,
     shiftNumber: 0,
     callIndex: 0,
     totalCalls: 0,

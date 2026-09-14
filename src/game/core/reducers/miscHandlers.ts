@@ -101,6 +101,17 @@ export function handleDismissRescueNotification(state: WorldState, notificationI
   }
 }
 
+/**
+ * 字幕流式进度：记下「已经完整播到第几行」。
+ * 并发值班切线路会给工作台换 key（整块重挂载），进度只有存在通话自己的状态里
+ * 才能跨挂载续上——切回来时历史对话直接完整呈现，只补播离开期间的新行。
+ */
+export function handleMarkLinesStreamed(state: WorldState, throughIndex: number): WorldState {
+  if (!Number.isInteger(throughIndex) || throughIndex < 0) return state
+  const streamedLines = Math.max(state.streamedLines, throughIndex + 1)
+  return streamedLines === state.streamedLines ? state : { ...state, streamedLines }
+}
+
 export function handleDismissDebrief(state: WorldState): WorldState {
   return {
     ...state,

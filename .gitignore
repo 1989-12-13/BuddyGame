@@ -19,6 +19,9 @@ npm-debug.log*
 pnpm-lock.yaml
 pnpm-workspace.yaml
 
+# 对话体验审问清单：本地评审稿，不入库
+docs/对话体验审问清单.md
+
 # Tencent Cloud EdgeOne
 .env
 .edgeone/*

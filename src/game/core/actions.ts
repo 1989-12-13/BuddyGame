@@ -44,6 +44,8 @@ export type GameAction =
   | { type: 'CHOOSE_PERK'; perkId: RoguePerkId }
   | { type: 'DISMISS_PATIENT_EVENT'; eventId: string }            // 关闭一个顶部 toast
   | { type: 'DISMISS_RESCUE_NOTIFICATION'; notificationId: string }
+  /** 字幕已完整播出到某一行：记进世界状态，切线路重挂载后不再重播这一段 */
+  | { type: 'MARK_LINES_STREAMED'; throughIndex: number }
   | { type: 'TICK' }
   | { type: 'SHOW_ENDING' }
   | { type: 'BACK_TO_TITLE' }

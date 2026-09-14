@@ -68,7 +68,9 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const [tutorialSeen, setTutorialSeen] = useState(() => readStorage('dispatch120-tutorial') === 'done')
   const [taskPulse, setTaskPulse] = useState(false)
   const audio = useAudio()
-  const { streamIdx, streamPos, pendingSet } = useStreamingQueue(state)
+  // 每播完一行就把进度写回这通电话的状态：切线路重挂载后不会重播整段历史
+  const markStreamed = useCallback((index: number) => dispatch({ type: 'MARK_LINES_STREAMED', throughIndex: index }), [dispatch])
+  const { streamIdx, streamPos, pendingSet } = useStreamingQueue(state, markStreamed)
   const { theme, toggle } = useTheme()
   const paused = isWorldPaused(state) || Boolean(controlled?.paused)
   const call = state.currentCall

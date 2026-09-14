@@ -47,7 +47,7 @@ export function EndingScreen({ ending, totalScore, callScores, activeSeconds = 0
 
   const calls = callScores ?? []
   const solidCount = calls.filter(s => s >= SOLID_THRESHOLD).length
-  const totalCalls = calls.length || 5
+  const totalCalls = Math.max(1, calls.length)
   const maxScore = totalCalls * 100
   const averageScore = totalScore / totalCalls
 

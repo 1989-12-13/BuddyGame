@@ -1,13 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { worldReducer } from './worldReducer'
 import { createInitialState } from './worldState'
-import { CAMPAIGN_IDS } from './campaign'
 import { applyCallEvents } from './callEvents'
 import { buildDispatchPlan } from './dispatchPlanning'
 import { dispatchEligibility } from './session'
 import { loadCheckpoint, saveCheckpoint } from './checkpoint'
 import type { WorldState, MpdsDeterminant } from '../types'
 import { buildHandoffFacts } from './handoff'
+
+/** 连续多通回归用到的场景；不是「每班固定通数」 */
+const QUEUE_SCENARIOS = ['falls_elderly', 'stroke', 'cardiac_arrest']
 
 function begin(id = 'cardiac_arrest') {
   return worldReducer(worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [id] }), { type: 'ANSWER_CALL' })
@@ -155,7 +157,7 @@ describe('workbench state boundaries', () => {
     expect(worldReducer(state, { type: 'SUBMIT_HANDOFF', callInstanceId: state.callInstanceId, factIds: requiredIds })).toBe(state)
   })
   it('persists completed progress but restarts an interrupted call safely', () => {
-    const state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
+    const state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: QUEUE_SCENARIOS })
     saveCheckpoint({ ...state, callIndex: 2, callScores: [78, 85], totalScore: 163 })
     const restored = loadCheckpoint()!
     expect(restored.callIndex).toBe(2)
@@ -175,12 +177,12 @@ describe('workbench state boundaries', () => {
     expect(restored.fleet.vehicles[0].status).toBe('en_route')
     expect(restored.currentCall).toBeNull()
   })
-  it('completes all five campaign calls with independent results and no deadlock', () => {
-    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: CAMPAIGN_IDS })
-    for (let index = 0; index < CAMPAIGN_IDS.length; index++) {
+  it('completes a multi-call queue with independent results and no deadlock', () => {
+    let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: QUEUE_SCENARIOS })
+    for (let index = 0; index < QUEUE_SCENARIOS.length; index++) {
       for (let i = 0; i < 600 && state.fleet.vehicles[0].status !== 'available'; i++) state = worldReducer(state, { type: 'TICK' })
       state = worldReducer(state, { type: 'ANSWER_CALL' })
-      expect(state.currentCall!.id).toBe(CAMPAIGN_IDS[index])
+      expect(state.currentCall!.id).toBe(QUEUE_SCENARIOS[index])
       const call = state.currentCall!
       const map: Record<string, MpdsDeterminant> = { E: 'ECHO', D: 'DELTA', C: 'CHARLIE', B: 'BRAVO', A: 'ALPHA' }
       state = ready(state)

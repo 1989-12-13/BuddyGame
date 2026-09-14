@@ -5,12 +5,8 @@ import { createInitialState } from './worldState'
 import { worldReducer } from './worldReducer'
 
 function classifiedCall(): WorldState {
-  const started = worldReducer(createInitialState(), { type: 'START_SHIFT' })
-  const queued = {
-    ...started,
-    scenarioQueue: ['cardiac_arrest', ...started.scenarioQueue.filter(id => id !== 'cardiac_arrest')],
-  }
-  const answered = worldReducer(queued, { type: 'ANSWER_CALL' })
+  const started = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['cardiac_arrest'] })
+  const answered = worldReducer(started, { type: 'ANSWER_CALL' })
   return worldReducer({ ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
 }
 
@@ -41,7 +37,7 @@ describe('automatic ambulance dispatch planning', () => {
     expect(buildDispatchPlan(state)).toEqual(buildDispatchPlan(state))
   })
 
-  it('applies priority channel after campaign pacing', () => {
+  it('applies priority channel after pacing', () => {
     const normal = classifiedCall()
     const priority = { ...normal, perks: ['priority_channel' as const] }
     const normalRoutes = buildDispatchPlan(normal)!.routes

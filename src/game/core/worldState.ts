@@ -80,18 +80,14 @@ export function createTerminalState(): TerminalState {
 
 
 
-/** 经典（单通话）模式每班的来电数：并发值班会传入自己的班次长度 */
-export const DEFAULT_QUEUE_LENGTH = 5
-
 /**
- * 获取本班次的场景队列（随机打乱顺序）。
+ * 从场景池随机抽 count 个不重复场景（通数由调用方给定，没有默认值）。
  *
- * 仅服务于经典（单通话线性）模式：那里每班固定 5 通。
- * 并发值班不使用它——班次长度改由热度模型决定，场景从牌堆逐张抽取、发完自动重洗
+ * 并发值班不用它——班次长度由热度模型决定，场景从牌堆逐张抽取、发完自动重洗
  * （见 `core/shift.ts#drawScenario`）。
- * @param count 本班来电数量，上限为可用场景数。
+ * @param count 抽取数量，上限为可用场景数。
  */
-export function buildScenarioQueue(count: number = DEFAULT_QUEUE_LENGTH): string[] {
+export function buildScenarioQueue(count: number): string[] {
   // 从所有场景中随机抽取 count 个
   const prankId = 'prank_call'
   // 分离恶作剧场景和普通场景（恶作剧只按概率插入，不参与基础池）
@@ -126,7 +122,7 @@ export function createInitialState(): WorldState {
     activePlaySeconds: 0,
     shiftNumber: 0,
     callIndex: 0,
-    totalCalls: 5,
+    totalCalls: 0,
     scenarioQueue: [],
     shiftElapsed: 0,
     questionCost: 0,

@@ -5,12 +5,8 @@ import { worldReducer } from './worldReducer'
 import { buildDispatchPlan } from './dispatchPlanning'
 
 function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
-  const started = worldReducer(createInitialState(), { type: 'START_SHIFT' })
-  const withScenario = {
-    ...started,
-    scenarioQueue: [scenarioId, ...started.scenarioQueue.filter(id => id !== scenarioId)],
-  }
-  const answered = worldReducer(withScenario, { type: 'ANSWER_CALL' })
+  const started = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [scenarioId] })
+  const answered = worldReducer(started, { type: 'ANSWER_CALL' })
   return { ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }
 }
 

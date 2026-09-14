@@ -4,7 +4,7 @@
 // ============================================================
 
 import type { WorldState, TriageLevel, MpdsDeterminant } from '../../types'
-import { createInitialState, buildScenarioQueue } from '../worldState'
+import { createInitialState } from '../worldState'
 import { fillDeterminantFromProtocol } from '../autoClassify'
 import type { RoguePerkId } from '../perks'
 import type { TerminalField } from '../actions'
@@ -14,7 +14,7 @@ import type { FragmentTargetField } from '../../types'
 
 export function handleStartShift(state: WorldState, forceScenarios?: string[]): WorldState {
   const newShift = state.shiftNumber + 1
-  const useQueue = forceScenarios ?? buildScenarioQueue()
+  const useQueue = forceScenarios ?? []
 
   return {
     ...createInitialState(),

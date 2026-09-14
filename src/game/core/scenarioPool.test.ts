@@ -4,56 +4,55 @@
 // ============================================================
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { paceQueue, buildScenarioQueue } from './worldState'
+import { triageTierWeights, pickScenarioWeighted, buildScenarioQueue } from './worldState'
 import { __setRng, __resetRng } from './random'
 import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { ALL_CARDS } from '../events/cards'
 import { lookupCoords } from '../locations'
 import { getCaller } from '../npc/personas'
-import type { TriageLevel } from '../types'
 
 beforeEach(() => __resetRng())
 
-const RANK: Record<TriageLevel, number> = { green: 0, yellow: 1, red: 2, black: 3 }
-
-describe('paceQueue — 冷→热爬升', () => {
-  it('输出与输入是同一个集合，不新增也不丢卡', () => {
-    const input = SCENARIO_IDS.filter(id => id !== 'prank_call').slice(0, 12)
-    const output = paceQueue(input)
-    expect(output).toHaveLength(input.length)
-    expect(new Set(output)).toEqual(new Set(input))
+describe('triageTierWeights / pickScenarioWeighted — 轮盘赌概率抽取', () => {
+  it('权重随进度向 red 倾斜：green 单调下降，red 单调上升', () => {
+    const at = (t: number) => triageTierWeights(t)
+    expect(at(0).green).toBeGreaterThan(at(1).green)
+    expect(at(0).red).toBeLessThan(at(1).red)
+    expect(at(0).yellow).toBe(at(1).yellow)
+    // 权重和恒为 1
+    for (const t of [0, 0.5, 1]) {
+      const w = at(t)
+      expect(w.green + w.yellow + w.red + w.black).toBeCloseTo(1)
+    }
   })
 
-  it('相邻两通的严重度不倒退', () => {
-    for (let trial = 0; trial < 20; trial++) {
-      __setRng(() => 0.42 + trial * 0.001)
-      const output = paceQueue(SCENARIO_IDS.filter(id => id !== 'prank_call'))
-      const ranks = output.map(id => RANK[SCENARIOS[id].correctTriage])
-      for (let i = 1; i < ranks.length; i++) {
-        expect(ranks[i], `${output[i - 1]} → ${output[i]} 严重度倒退`).toBeGreaterThanOrEqual(ranks[i - 1])
+  it('pickScenarioWeighted 始终返回候选之一，且不返回 prCard 以外的未知 id', () => {
+    const pool = SCENARIO_IDS.filter(id => id !== 'prank_call')
+    for (const progress of [0, 0.5, 1]) {
+      for (let i = 0; i < 50; i++) {
+        const picked = pickScenarioWeighted(pool, progress)
+        expect(picked).not.toBeNull()
+        expect(pool).toContain(picked!)
       }
     }
   })
 
-  it('同档位之间不是固定顺序（会打散）', () => {
-    const greens = SCENARIO_IDS.filter(id => id !== 'prank_call' && SCENARIOS[id].correctTriage === 'green')
-    expect(greens.length).toBeGreaterThan(2)
-    const orders = new Set<string>()
-    for (let trial = 0; trial < 12; trial++) {
-      // tiebreak 必须每次调用都不同，否则稳定排序会把输入顺序原样还回来
-      let n = trial
-      __setRng(() => {
-        n = (n * 1103515245 + 12345) % 2147483648
-        return (n / 2147483648)
-      })
-      orders.add(paceQueue(greens).join(','))
+  it('高进度下抽中的 red 比例显著高于低进度', () => {
+    const pool = SCENARIO_IDS.filter(id => id !== 'prank_call')
+    const redRatio = (progress: number) => {
+      let red = 0
+      const n = 300
+      for (let i = 0; i < n; i++) {
+        const picked = pickScenarioWeighted(pool, progress)!
+        if (SCENARIOS[picked].correctTriage === 'red') red++
+      }
+      return red / n
     }
-    expect(orders.size).toBeGreaterThan(1)
+    expect(redRatio(1)).toBeGreaterThan(redRatio(0) + 0.15)
   })
 
-  it('空队列与单元素队列原样返回', () => {
-    expect(paceQueue([])).toEqual([])
-    expect(paceQueue(['chest_pain'])).toEqual(['chest_pain'])
+  it('空候选返回 null', () => {
+    expect(pickScenarioWeighted([], 0)).toBeNull()
   })
 })
 

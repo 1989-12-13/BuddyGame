@@ -18,10 +18,9 @@ import { stressToLevel } from '../types'
 import type { GameAction } from './actions'
 import type { PauseReason } from './session'
 import { worldReducer } from './worldReducer'
-import { createInitialState, paceQueue } from './worldState'
+import { createInitialState, pickScenarioWeighted } from './worldState'
 import { buildConflictReport, buildVerificationCall, type ConflictReport } from './supplementCall'
 import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
-import { shuffle } from './random'
 
 export type LinePhase = 'idle' | 'ringing' | 'active' | 'done'
 
@@ -248,13 +247,14 @@ export function createShiftState(config: ShiftConfig): ShiftState {
 }
 
 /**
- * 发一张牌。
- * 牌堆用尽就用全部场景重洗 —— 这正是「没有固定通数」的落点：
+ * 发一张牌：轮盘赌按档位概率抽卡，进度（已完成通数 / PROGRESS_HORIZON）
+ * 越高 yellow/red 概率越大。抽中的牌从牌堆移除以避免连续重复，用尽即全池重洗。
  * 班次能接到多少通，由热度模型和玩家表现决定，而不是由牌堆长度决定。
  */
-export function drawScenario(deck: string[]): { scenarioId: string; deck: string[] } {
-  const source = deck.length > 0 ? deck : paceQueue(shuffle([...SCENARIO_IDS]))
-  return { scenarioId: source[0], deck: source.slice(1) }
+export function drawScenario(deck: string[], progress = 0): { scenarioId: string; deck: string[] } {
+  const source = deck.length > 0 ? deck : [...SCENARIO_IDS]
+  const scenarioId = pickScenarioWeighted(source, progress) ?? source[0]
+  return { scenarioId, deck: source.filter(id => id !== scenarioId) }
 }
 
 // -------------------- 派生查询 --------------------
@@ -675,7 +675,9 @@ export function tickShift(shift: ShiftState): ShiftState {
     const ringing = working.lines.filter(line => line.phase === 'ringing').length
     const free = working.lines.find(line => line.phase === 'idle')
     if (free && ringing < maxRingingFor(working.heat)) {
-      const { scenarioId, deck } = drawScenario(working.deck)
+      // 班次进度：按已完成通数推进（约 6 通走完全程），驱动轮盘赌档位概率
+      const progress = Math.min(1, working.completed.length / 6)
+      const { scenarioId, deck } = drawScenario(working.deck, progress)
       working = {
         ...working,
         deck,

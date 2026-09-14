@@ -66,7 +66,8 @@ describe('班次协调器 · 初始化', () => {
 
 describe('班次协调器 · 来电到达与响铃', () => {
   it('第一次 tick 即让第一条空闲线路响铃', () => {
-    const shift = tick(createShiftState(config()), 1)
+    // 单卡牌堆保证轮盘赌抽取确定
+    const shift = tick(createShiftState(config({ deck: ['falls_elderly'] })), 1)
     const ringing = shift.lines.filter(line => line.phase === 'ringing')
     expect(ringing).toHaveLength(1)
     expect(ringing[0].scenarioId).toBe('falls_elderly')
@@ -102,7 +103,8 @@ describe('班次协调器 · 来电到达与响铃', () => {
 
 describe('班次协调器 · 接听与聚焦', () => {
   it('接听后线路转为通话中，并装载对应场景', () => {
-    let shift = tick(createShiftState(config()), 1)
+    // 单卡牌堆保证轮盘赌抽取确定
+    let shift = tick(createShiftState(config({ deck: ['falls_elderly'] })), 1)
     shift = answerLine(shift, 'line-1')
     const line = shift.lines[0]
     expect(line.phase).toBe('active')

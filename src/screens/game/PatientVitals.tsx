@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Activity, Ambulance, Eye, Wind } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 
@@ -16,7 +17,19 @@ export function PatientVitals({ state }: { state: WorldState }) {
   const progress = state.rescue.outcome ? 100 : state.dispatchSent ? Math.min(99, elapsed / Math.max(1, state.rescue.etaTotal) * 100) : 0
   const event = [...state.patientEvents].reverse().find(item => state.shiftElapsed - item.createdAt <= 12)
 
-  return <section className={`vitals-strip ${tone}`} aria-label="患者体征与车辆进度">
+  // 照护余量发生变化时按方向轻微闪烁：上升为好转、下降为恶化
+  const prevValue = useRef(value)
+  const [flash, setFlash] = useState<'good' | 'bad' | null>(null)
+  useEffect(() => {
+    if (value === prevValue.current) return
+    const direction = value > prevValue.current ? 'good' : 'bad'
+    prevValue.current = value
+    setFlash(direction)
+    const timer = window.setTimeout(() => setFlash(null), 900)
+    return () => window.clearTimeout(timer)
+  }, [value])
+
+  return <section className={`vitals-strip ${tone} ${flash ? `vitals-flash-${flash}` : ''}`} aria-label="患者体征与车辆进度">
     <strong className="vitals-title"><Activity size={16} />患者体征</strong>
     <span className="vitals-meter-wrap">
       <span

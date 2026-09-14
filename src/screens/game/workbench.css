@@ -197,7 +197,18 @@
 .sb-clock { font-size:var(--fs-body); font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
 .sb-vehicles { display:inline-flex; align-items:center; gap:var(--space-6); white-space:nowrap; }
 .sb-vehicles b { color:var(--text); }
-.status-strip .vitals-strip { flex:1; min-width:0; padding:0; border-bottom:0; background:none; gap:var(--space-16); }
+.status-strip .vitals-strip { flex:1; min-width:0; padding:0; border-bottom:0; background:none; gap:var(--space-20); justify-content:center; font-size:var(--fs-body); }
+.status-strip .vitals-title { font-size:var(--fs-body); font-weight:700; }
+.status-strip .vitals-title svg { width:17px; height:17px; filter:drop-shadow(0 0 4px color-mix(in srgb, var(--vital-color) 60%, transparent)); }
+.status-strip .vitals-meter-wrap { min-width:190px; }
+.status-strip .vitals-meter { height:9px; border:1px solid color-mix(in srgb, var(--vital-color) 35%, var(--line)); }
+.status-strip .vitals-meter-num { font-size:var(--fs-body-lg); font-weight:700; }
+.status-strip .vitals-observation { color:var(--text); font-weight:600; }
+@keyframes vitals-flash-good { 0%,100% { background:transparent; } 35% { background:color-mix(in srgb, var(--accent) 16%, transparent); } }
+@keyframes vitals-flash-bad { 0%,100% { background:transparent; } 35% { background:color-mix(in srgb, var(--danger) 18%, transparent); } }
+.vitals-strip.vitals-flash-good { animation:vitals-flash-good .9s ease-out; border-radius:var(--radius-md); }
+.vitals-strip.vitals-flash-bad { animation:vitals-flash-bad .9s ease-out; border-radius:var(--radius-md); }
+@media (prefers-reduced-motion: reduce) { .vitals-strip.vitals-flash-good, .vitals-strip.vitals-flash-bad { animation:none; } }
 
 /* ---------- 通话台顶部：线路条 ---------- */
 .line-rail { flex:none; display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-6) var(--space-14); padding:var(--space-8) var(--space-16); border-bottom:1px solid var(--line); background:var(--bg-deep); }

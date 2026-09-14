@@ -6,7 +6,7 @@ import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, Pat
 import { stressToLevel } from '../types'
 import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
-import { rng, rngInt, shuffle as shuffleArray } from './random'
+import { rng, rngInt } from './random'
 import { VITAL_SIGN_COLORS } from './colors'
 import {
   VITAL_STABLE_THRESHOLD,
@@ -79,22 +79,45 @@ export function createTerminalState(): TerminalState {
   }
 }
 
-const PACING_RANK: Record<TriageLevel, number> = {
-  green: 0,
-  yellow: 1,
-  red: 2,
-  black: 3,
+/**
+ * 场景抽取：轮盘赌按档位概率抽卡。
+ * progress 0→1 为班次进度（按已完成通数计），yellow/red 概率随进度升高：
+ * green 0.45→0.05，yellow 恒 0.35，red 0.18→0.55，black 0.02→0.05（全程权重和为 1）。
+ */
+export function triageTierWeights(progress: number): Record<TriageLevel, number> {
+  const t = Math.max(0, Math.min(1, progress))
+  return {
+    green: 0.45 - 0.40 * t,
+    yellow: 0.35,
+    red: 0.18 + 0.37 * t,
+    black: 0.02 + 0.03 * t,
+  }
 }
 
-/** Sort a scenario deck from lower to higher severity, shuffling within a tier. */
-export function paceQueue(ids: string[]): string[] {
-  const ranked = ids.map(id => ({
-    id,
-    rank: SCENARIOS[id] ? PACING_RANK[SCENARIOS[id].correctTriage] : 1,
-    tiebreak: rng(),
-  }))
-  ranked.sort((a, b) => (a.rank - b.rank) || (a.tiebreak - b.tiebreak))
-  return ranked.map(({ id }) => id)
+/** 按档位权重从候选中抽一个（同档位内均匀）；候选缺失的档位权重自动归入其余档位 */
+export function pickScenarioWeighted(ids: string[], progress: number): string | null {
+  if (ids.length === 0) return null
+  const weights = triageTierWeights(progress)
+  const byTier = new Map<TriageLevel, string[]>()
+  for (const id of ids) {
+    const tier = SCENARIOS[id]?.correctTriage
+    if (!tier) continue
+    const bucket = byTier.get(tier)
+    if (bucket) bucket.push(id)
+    else byTier.set(tier, [id])
+  }
+  const entries = [...byTier.entries()]
+  const totalWeight = entries.reduce((sum, [tier]) => sum + weights[tier], 0)
+  let roll = rng() * totalWeight
+  let chosen = entries[entries.length - 1][1]
+  for (const [tier, tierIds] of entries) {
+    roll -= weights[tier]
+    if (roll <= 0) {
+      chosen = tierIds
+      break
+    }
+  }
+  return chosen[rngInt(chosen.length)]
 }
 
 
@@ -111,10 +134,16 @@ export function buildScenarioQueue(count: number): string[] {
   const prankId = 'prank_call'
   // 分离恶作剧场景和普通场景（恶作剧只按概率插入，不参与基础池）
   const normalScenarios = SCENARIO_IDS.filter(id => id !== prankId)
-  const shuffled = shuffleArray(normalScenarios)
-  // 抽取普通场景 + 20%概率加入恶作剧
+  // 轮盘赌逐通抽取：进度 = i/count，前期 green 为主，后期向 yellow/red 倾斜
   const length = Math.min(Math.max(0, count), normalScenarios.length)
-  const selected = paceQueue(shuffled.slice(0, length))
+  const pool = [...normalScenarios]
+  const selected: string[] = []
+  for (let i = 0; i < length; i++) {
+    const picked = pickScenarioWeighted(pool, length > 1 ? i / (length - 1) : 0)
+    if (!picked) break
+    selected.push(picked)
+    pool.splice(pool.indexOf(picked), 1)
+  }
   if (selected.length > 0 && rng() < 0.2) {
     selected[rngInt(selected.length)] = prankId
   }

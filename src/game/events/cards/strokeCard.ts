@@ -4,7 +4,6 @@
 // ============================================================
 
 import type { EmergencyScenario } from '../../types'
-import { CAMPAIGN_GUIDANCE } from './campaignGuidance'
 
 export const strokeCard: EmergencyScenario = {
   id: 'stroke',
@@ -19,7 +18,7 @@ export const strokeCard: EmergencyScenario = {
     number: 28,
     title: '卒中（脑血管意外）',
     chiefComplaint: '老年男性突然口角歪斜、言语不清、单侧肢体无力，发病<4.5h',
-    determinantCode: '28-D-1',
+    determinantCode: '28-C-1',
     hotCold: 'HOT',
     keyQuestions: [
       '症状何时开始？（精确到分钟）',
@@ -124,7 +123,56 @@ export const strokeCard: EmergencyScenario = {
     },
   ],
 
-  guidance: CAMPAIGN_GUIDANCE.stroke,
+  guidance: {
+    title: '脑卒中现场处置',
+    intro: '救护车已在路上。在到达前，请保持患者安静，不要喂食喂水，并帮患者摆好体位防止误吸。',
+    steps: [
+      {
+        id: 'st_position_choice',
+        instruction: '把患者摆成侧卧的复苏体位，头偏向一侧，防止呕吐物堵塞气道。',
+        prompt: '第一步：摆放复苏体位',
+        options: [
+          '侧卧 头偏向一侧',
+          '平躺仰头',
+          '扶坐起来',
+        ],
+        correctIndex: 0,
+        feedback: {
+          correct: '正确！侧卧头偏一侧能防止误吸，保护气道。',
+          incorrect: '不对。脑卒中患者应保持侧卧、头偏向一侧，避免呕吐物呛入气道。',
+          callerCorrect: '我让他侧过身了，头也偏过去了一点。这样对吗？',
+          callerIncorrect: '我把他扶起来坐着了，他好像更难受了。',
+        },
+      },
+      {
+        id: 'st_position_game',
+        instruction: '把患者身体摆成侧卧复苏体位。',
+        prompt: '实操环节：摆位',
+        options: ['完成摆位'],
+        correctIndex: 0,
+        feedback: {
+          correct: '摆位到位。',
+          incorrect: '摆位不达标。',
+          callerCorrect: '我把他侧过来了，头也偏着，看上去呼吸顺多了。',
+          callerIncorrect: '我摆的位置不太对，他好像不太舒服。',
+        },
+        miniGame: {
+          kind: 'stepOrder',
+          title: '复苏体位摆位',
+          instruction: '将患者摆成侧卧复苏体位防止呕吐物误吸。请按正确顺序点击操作步骤。',
+          passThreshold: 0.5,
+          steps: [
+            '将患者靠近自己一侧的手臂向上弯曲呈直角',
+            '将患者另一侧手臂横放胸前',
+            '将患者远侧腿的膝盖弯曲',
+            '抓住远侧肩膀和膝盖，向自己一侧缓缓翻转',
+            '调整头部后仰，保持气道通畅',
+          ],
+          feedback: { good: '我把他侧过来了，头也偏着，看上去呼吸顺多了。', bad: '我摆的位置不太对，他好像不太舒服。' },
+        },
+      },
+    ],
+  },
 
   specialEvents: [
     {

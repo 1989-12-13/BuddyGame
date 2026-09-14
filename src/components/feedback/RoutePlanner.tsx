@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Clock3, MapPin, Navigation, RotateCcw, ShieldAlert, Truck, Undo2, X } from 'lucide-react'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import L from 'leaflet'
 import {
   findCompletedRoute,
   getAvailableNextNodes,
@@ -9,6 +11,8 @@ import {
   type RoadSegment,
   type RoutePlan,
 } from '../../game/core/routing'
+import { DEFAULT_CENTER, DEFAULT_ZOOM, type LatLng } from '../../game/locations'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface Props {
   routes: RoutePlan[]
@@ -16,11 +20,6 @@ interface Props {
   priorityChannelActive?: boolean
   onConfirm: (route: RoutePlan) => void
   onCancel: () => void
-}
-
-interface Point {
-  x: number
-  y: number
 }
 
 const RISK_COLOR: Record<RoutePlan['risk'], string> = {
@@ -48,34 +47,183 @@ function uniqueSegments(routes: RoutePlan[]): RoadSegment[] {
   return [...segments.values()]
 }
 
-function projectNodes(nodes: Map<string, RoadNode>): Map<string, Point> {
-  const values = [...nodes.values()]
-  const lats = values.map(node => node.pos.lat)
-  const lngs = values.map(node => node.pos.lng)
-  const minLat = Math.min(...lats)
-  const maxLat = Math.max(...lats)
-  const minLng = Math.min(...lngs)
-  const maxLng = Math.max(...lngs)
-  const latDelta = maxLat - minLat
-  const lngDelta = maxLng - minLng
-  // 确保最小跨度足够分离同 progress 不同 lane 的节点，避免重叠
-  const latSpan = Math.max(0.02, latDelta)
-  const lngSpan = Math.max(0.02, lngDelta)
-  // 在跨度内居中，防止节点贴边
-  const pad = 5
-  const scale = 100 - pad * 2
+// -------------------- 地图画布（真实地图 + 路网 overlay） --------------------
+// overlay 通过 latLngToContainerPoint 把路网节点投影到屏幕像素，
+// 并在 move/zoom/resize 时重算，保证拖拽缩放地图时路网跟随底图。
+interface CanvasProps {
+  nodes: RoadNode[]
+  segments: RoadSegment[]
+  selectedNodeIds: string[]
+  availableIds: Set<string>
+  matchingRoutes: RoutePlan[]
+  selectedIds: Set<string>
+  onChooseNode: (nodeId: string) => void
+}
 
-  return new Map(values.map(node => [node.id, node.diagram ?? {
-    x: pad + ((node.pos.lng - minLng) / lngSpan) * scale,
-    y: pad + ((maxLat - node.pos.lat) / latSpan) * scale,
-  }]))
+function PlannerFit({ points }: { points: [number, number][] }) {
+  const map = useMap()
+  const key = points.map(p => p.join(',')).join('|')
+  useEffect(() => {
+    if (points.length === 0) return
+    map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 15 })
+    const t = setTimeout(() => map.invalidateSize(), 50)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, key])
+  return null
+}
+
+function PlannerCanvas({ nodes, segments, selectedNodeIds, availableIds, matchingRoutes, selectedIds, onChooseNode }: CanvasProps) {
+  const map = useMap()
+  const [, bump] = useState(0)
+  useEffect(() => {
+    const update = () => bump(value => value + 1)
+    map.on('move', update)
+    map.on('zoom', update)
+    map.on('resize', update)
+    return () => {
+      map.off('move', update)
+      map.off('zoom', update)
+      map.off('resize', update)
+    }
+  }, [map])
+
+  const project = (pos: LatLng) => {
+    const point = map.latLngToContainerPoint([pos.lat, pos.lng])
+    return { x: point.x, y: point.y }
+  }
+
+  const chooseNode = (node: RoadNode) => (
+    <button
+      key={node.id}
+      aria-label={`选择节点 ${node.label}`}
+      title={availableIds.has(node.id) ? `前往 ${node.label}` : node.label}
+      onClick={() => onChooseNode(node.id)}
+      disabled={!availableIds.has(node.id)}
+      style={{
+        position: 'absolute',
+        left: project(node.pos).x,
+        top: project(node.pos).y,
+        transform: 'translate(-50%, -50%)',
+        width: 44,
+        height: 44,
+        borderRadius: '50%',
+        border: `2px solid ${selectedIds.has(node.id) ? 'var(--accent)' : availableIds.has(node.id) ? 'var(--warning)' : 'var(--line)'}`,
+        backgroundColor: selectedIds.has(node.id) ? 'var(--accent)' : availableIds.has(node.id) ? 'var(--bg-surface)' : 'var(--bg-raised)',
+        color: selectedIds.has(node.id) ? 'var(--bg-deep)' : availableIds.has(node.id) ? 'var(--warning)' : 'var(--text-3)',
+        opacity: !selectedIds.has(node.id) && !availableIds.has(node.id) && selectedNodeIds.length > 1
+          ? (matchingRoutes.some(route => route.nodes.some(item => item.id === node.id)) ? 0.48 : 0.22)
+          : !availableIds.has(node.id) && !selectedIds.has(node.id) ? 0.48 : 1,
+        cursor: availableIds.has(node.id) ? 'pointer' : 'default',
+        pointerEvents: 'auto',
+        boxShadow: availableIds.has(node.id) ? '0 0 0 5px color-mix(in srgb, var(--warning) 15%, transparent)' : 'none',
+      }}
+    >
+      {node.kind === 'incident' ? <MapPin size={14} /> : node.kind === 'station' ? <Truck size={14} /> : <span style={{ fontSize: 9, fontWeight: 900 }}>●</span>}
+    </button>
+  )
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 800, pointerEvents: 'none', overflow: 'hidden' }}>
+      <svg width="100%" height="100%" aria-hidden="true">
+        {segments.map(segment => {
+          const from = nodes.find(node => node.id === segment.fromId)
+          const to = nodes.find(node => node.id === segment.toId)
+          if (!from || !to) return null
+          const fromIndex = selectedNodeIds.indexOf(segment.fromId)
+          const isSelected = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
+          const isNext = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId && availableIds.has(segment.toId)
+          const visible = isSelected || isNext || selectedNodeIds.length === 1
+          const a = project(from.pos)
+          const b = project(to.pos)
+          return (
+            <line
+              key={segment.id}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke={isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-3)'}
+              strokeWidth={isSelected ? 4 : isNext ? 3 : 1.5}
+              opacity={visible ? (isSelected ? 1 : 0.72) : 0.14}
+            />
+          )
+        })}
+      </svg>
+
+      {segments.map((segment, index) => {
+        const from = nodes.find(node => node.id === segment.fromId)
+        const to = nodes.find(node => node.id === segment.toId)
+        if (!from || !to) return null
+        const fromIndex = selectedNodeIds.indexOf(segment.fromId)
+        const isSelected = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
+        const isNext = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId && availableIds.has(segment.toId)
+        const visible = isSelected || isNext || selectedNodeIds.length === 1
+        const a = project(from.pos)
+        const b = project(to.pos)
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const length = Math.max(1, Math.hypot(dx, dy))
+        const offset = index % 2 === 0 ? 14 : -14
+        return (
+          <span
+            key={`${segment.fromId}-${segment.toId}-condition`}
+            title={segment.description}
+            style={{
+              position: 'absolute',
+              left: (a.x + b.x) / 2 + (dy / length) * offset,
+              top: (a.y + b.y) / 2 - (dx / length) * offset,
+              transform: 'translate(-50%, -50%)',
+              padding: 'var(--space-2) var(--space-4)',
+              borderRadius: 'var(--radius-sm)',
+              border: `1px solid ${isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--line)'}`,
+              backgroundColor: 'color-mix(in srgb, var(--bg-deep) 88%, transparent)',
+              color: isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-2)',
+              opacity: visible ? 1 : 0.22,
+              fontSize: 10,
+              fontWeight: 800,
+              lineHeight: 1.1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {segment.conditionLabel}
+          </span>
+        )
+      })}
+
+      {nodes.map(chooseNode)}
+
+      {nodes.map(node => {
+        const point = project(node.pos)
+        const emphasized = selectedIds.has(node.id) || availableIds.has(node.id)
+        return (
+          <span key={`${node.id}-label`} style={{
+            position: 'absolute',
+            left: point.x,
+            top: point.y + 23,
+            transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap',
+            color: emphasized ? 'var(--text)' : 'var(--text-3)',
+            opacity: emphasized ? 1 : 0.6,
+            fontSize: 10,
+            fontWeight: emphasized ? 700 : 500,
+            textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+          }}>
+            {node.label}
+          </span>
+        )
+      })}
+    </div>
+  )
 }
 
 export function RoutePlanner({ routes, embedded = false, priorityChannelActive = false, onConfirm, onCancel }: Props) {
+  const { theme } = useTheme()
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(['route-start'])
   const nodes = useMemo(() => nodeMap(routes), [routes])
   const segments = useMemo(() => uniqueSegments(routes), [routes])
-  const points = useMemo(() => projectNodes(nodes), [nodes])
+  const nodeList = useMemo(() => [...nodes.values()], [nodes])
+  const fitPoints = useMemo<[number, number][]>(() => nodeList.map(node => [node.pos.lat, node.pos.lng]), [nodeList])
   const matchingRoutes = getMatchingRoutes(routes, selectedNodeIds)
   const availableNextNodes = getAvailableNextNodes(routes, selectedNodeIds)
   const availableIds = new Set(availableNextNodes.map(node => node.id))
@@ -170,130 +318,32 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             border: '1px solid var(--line)',
             background: 'radial-gradient(circle at 50% 45%, var(--bg-raised), var(--bg-deep))',
           }}>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-              {segments.map(segment => {
-                const from = points.get(segment.fromId)
-                const to = points.get(segment.toId)
-                if (!from || !to) return null
-                const fromIndex = selectedNodeIds.indexOf(segment.fromId)
-                const isSelected = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
-                const isNext = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId && availableIds.has(segment.toId)
-                const visible = isSelected || isNext || selectedNodeIds.length === 1
-                return (
-                  <line
-                    key={segment.id}
-                    x1={from.x}
-                    y1={from.y}
-                    x2={to.x}
-                    y2={to.y}
-                    stroke={isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-3)'}
-                    strokeWidth={isSelected ? 1.4 : isNext ? 1.1 : 0.65}
-                    opacity={visible ? (isSelected ? 1 : 0.72) : 0.14}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                )
-              })}
-            </svg>
-
-            {segments.map((segment, index) => {
-              const from = points.get(segment.fromId)
-              const to = points.get(segment.toId)
-              if (!from || !to) return null
-              const fromIndex = selectedNodeIds.indexOf(segment.fromId)
-              const isSelected = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
-              const isNext = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId && availableIds.has(segment.toId)
-              const visible = isSelected || isNext || selectedNodeIds.length === 1
-              const dx = to.x - from.x
-              const dy = to.y - from.y
-              const length = Math.max(1, Math.hypot(dx, dy))
-              const offset = index % 2 === 0 ? 2.1 : -2.1
-              const x = (from.x + to.x) / 2 + (dy / length) * offset
-              const y = (from.y + to.y) / 2 - (dx / length) * offset
-              return (
-                <span
-                  key={`${segment.fromId}-${segment.toId}-condition`}
-                  title={segment.description}
-                  style={{
-                    position: 'absolute',
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 2,
-                    padding: 'var(--space-2) var(--space-4)',
-                    borderRadius: 'var(--radius-sm)',
-                    border: `1px solid ${isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--line)'}`,
-                    backgroundColor: 'color-mix(in srgb, var(--bg-deep) 88%, transparent)',
-                    color: isSelected ? 'var(--accent)' : isNext ? 'var(--warning)' : 'var(--text-2)',
-                    opacity: visible ? 1 : 0.22,
-                    fontSize: 8,
-                    fontWeight: 800,
-                    lineHeight: 1.1,
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {segment.conditionLabel}
-                </span>
-              )
-            })}
-
-            {[...nodes.values()].map(node => {
-              const point = points.get(node.id)
-              if (!point) return null
-              const selected = selectedIds.has(node.id)
-              const available = availableIds.has(node.id)
-              const disabled = !available
-              const hiddenBranch = !selected && !available && selectedNodeIds.length > 1 && !matchingRoutes.some(route => route.nodes.some(item => item.id === node.id))
-              return (
-                <button
-                  key={node.id}
-                  aria-label={`选择节点 ${node.label}`}
-                  title={available ? `前往 ${node.label}` : node.label}
-                  onClick={() => chooseNode(node.id)}
-                  disabled={disabled}
-                  style={{
-                    position: 'absolute',
-                    left: `${point.x}%`,
-                    top: `${point.y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    width: 44,
-                    height: 44,
-                    borderRadius: '50%',
-                    border: `2px solid ${selected ? 'var(--accent)' : available ? 'var(--warning)' : 'var(--line)'}`,
-                    backgroundColor: selected ? 'var(--accent)' : available ? 'var(--bg-surface)' : 'var(--bg-raised)',
-                    color: selected ? 'var(--bg-deep)' : available ? 'var(--warning)' : 'var(--text-3)',
-                    opacity: hiddenBranch ? 0.22 : disabled && !selected ? 0.48 : 1,
-                    cursor: available ? 'pointer' : 'default',
-                    zIndex: available || selected ? 3 : 2,
-                    boxShadow: available ? '0 0 0 5px color-mix(in srgb, var(--warning) 15%, transparent)' : 'none',
-                  }}
-                >
-                  {node.kind === 'incident' ? <MapPin size={14} /> : node.kind === 'station' ? <Truck size={14} /> : <span style={{ fontSize: 9, fontWeight: 900 }}>●</span>}
-                </button>
-              )
-            })}
-
-            {[...nodes.values()].map(node => {
-              const point = points.get(node.id)
-              if (!point) return null
-              const emphasized = selectedIds.has(node.id) || availableIds.has(node.id)
-              return (
-                <span key={`${node.id}-label`} style={{
-                  position: 'absolute',
-                  left: `${point.x}%`,
-                  top: `calc(${point.y}% + 23px)`,
-                  transform: 'translateX(-50%)',
-                  whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
-                  color: emphasized ? 'var(--text)' : 'var(--text-3)',
-                  opacity: emphasized ? 1 : 0.6,
-                  fontSize: 9,
-                  fontWeight: emphasized ? 700 : 500,
-                }}>
-                  {node.label}
-                </span>
-              )
-            })}
+            <MapContainer
+              center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
+              zoom={DEFAULT_ZOOM}
+              attributionControl={false}
+              scrollWheelZoom
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', backgroundColor: 'transparent' }}
+            >
+              <TileLayer
+                key={theme}
+                url={theme === 'dark'
+                  ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                  : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'}
+                subdomains={['a', 'b', 'c', 'd']}
+                maxZoom={19}
+              />
+              <PlannerFit points={fitPoints} />
+              <PlannerCanvas
+                nodes={nodeList}
+                segments={segments}
+                selectedNodeIds={selectedNodeIds}
+                availableIds={availableIds}
+                matchingRoutes={matchingRoutes}
+                selectedIds={selectedIds}
+                onChooseNode={chooseNode}
+              />
+            </MapContainer>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-6)', color: 'var(--text-3)', fontSize: 'var(--fs-micro)' }}>

@@ -4,7 +4,7 @@
 
 import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, PatientStatus, VitalSign } from '../types'
 import { stressToLevel } from '../types'
-import { SCENARIO_IDS } from '../events/templates'
+import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
 import { rng, rngInt, shuffle as shuffleArray } from './random'
 import { VITAL_SIGN_COLORS } from './colors'
@@ -78,6 +78,24 @@ export function createTerminalState(): TerminalState {
   }
 }
 
+const PACING_RANK: Record<TriageLevel, number> = {
+  green: 0,
+  yellow: 1,
+  red: 2,
+  black: 3,
+}
+
+/** Sort a scenario deck from lower to higher severity, shuffling within a tier. */
+export function paceQueue(ids: string[]): string[] {
+  const ranked = ids.map(id => ({
+    id,
+    rank: SCENARIOS[id] ? PACING_RANK[SCENARIOS[id].correctTriage] : 1,
+    tiebreak: rng(),
+  }))
+  ranked.sort((a, b) => (a.rank - b.rank) || (a.tiebreak - b.tiebreak))
+  return ranked.map(({ id }) => id)
+}
+
 
 
 /**
@@ -95,7 +113,7 @@ export function buildScenarioQueue(count: number): string[] {
   const shuffled = shuffleArray(normalScenarios)
   // 抽取普通场景 + 20%概率加入恶作剧
   const length = Math.min(Math.max(0, count), normalScenarios.length)
-  const selected = shuffled.slice(0, length)
+  const selected = paceQueue(shuffled.slice(0, length))
   if (selected.length > 0 && rng() < 0.2) {
     selected[rngInt(selected.length)] = prankId
   }

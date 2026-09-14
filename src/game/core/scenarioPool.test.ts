@@ -60,7 +60,7 @@ describe('paceQueue — 冷→热爬升', () => {
 describe('buildScenarioQueue 接入节奏后仍满足既有约束', () => {
   it('长度、唯一性与恶作剧位置约束都保持', () => {
     __setRng(() => 0.1)
-    const queue = buildScenarioQueue()
+    const queue = buildScenarioQueue(5)
     expect(queue).toHaveLength(5)
     expect(new Set(queue).size).toBe(5)
     expect(queue[0]).not.toBe('prank_call')

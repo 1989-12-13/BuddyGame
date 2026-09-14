@@ -2,6 +2,8 @@
 // 120调度台 — 游戏可调常量（调参 = 改这一个文件即可）
 // ============================================================
 
+import type { TriageLevel } from '../types'
+
 // -------------------- 来电者压力层 --------------------
 /** 镇定上限（exclusive） */
 export const STRESS_CALM_MAX = 25
@@ -37,17 +39,42 @@ export const CALM_TIME_COST_BASE = 2
 /** 安抚一次的时间成本（技能加成） */
 export const CALM_TIME_COST_PERK = 1
 
-// -------------------- 判断/指导分值 --------------------
-/** 正确判断增加的患者稳定性 */
-export const JUDGMENT_CORRECT_BONUS = 6
-/** 错误判断扣除的患者稳定性 */
-export const JUDGMENT_INCORRECT_PENALTY = 5
-/** 正确指导增加的患者稳定性 */
-export const GUIDANCE_CORRECT_BONUS = 5
-/** 错误指导扣除的患者稳定性 */
-export const GUIDANCE_INCORRECT_PENALTY = 4
-/** 小游戏 delta 倍率（score-0.5）× 此值 */
-export const MINIGAME_STABILITY_MULT = 20
+// -------------------- 指导体征变化（百分比模型） --------------------
+/**
+ * 体征变化采用百分比模型，收益/损失随病情自然缩放：
+ * - 做对：恢复「已损失体征」的一定比例（initialStability - stability），越危险挽回越多；
+ * - 做错：扣除「当前体征」的一定比例，越拖越弱但始终存在。
+ */
+export const GUIDANCE_CORRECT_RECOVERY_RATIO = 0.35
+export const GUIDANCE_INCORRECT_PENALTY_RATIO = 0.10
+/** 小游戏：得分折算系数，score ≥0.5 恢复已损失的，<0.5 扣当前的 */
+export const MINIGAME_RECOVERY_RATIO = 0.50
+export const MINIGAME_PENALTY_RATIO = 0.10
+
+// -------------------- black（濒死）逆转机制 --------------------
+/**
+ * black 患者起始体征极低且衰减极快，电话指导（CPR / 除颤）是唯一逆转手段：
+ * 恢复上限放开到 100。其他档位急救指导只算「稳住」，恢复上限为起始体征。
+ */
+export function stabilityRecoveryCap(triage: TriageLevel, initialStability: number): number {
+  return triage === 'black' ? 100 : initialStability
+}
+
+/** 正确指导：恢复已损失体征的比例值 */
+export function guidanceStabilityGain(stability: number, initialStability: number): number {
+  return Math.round((initialStability - stability) * GUIDANCE_CORRECT_RECOVERY_RATIO)
+}
+/** 错误指导：扣除当前体征的比例值（至少 1 点，避免低体征时惩罚归零） */
+export function guidanceStabilityPenalty(stability: number): number {
+  return Math.max(1, Math.round(stability * GUIDANCE_INCORRECT_PENALTY_RATIO))
+}
+/** 小游戏：按得分折算的体征变化，正=恢复已损失，负=扣当前 */
+export function minigameStabilityDelta(stability: number, initialStability: number, score: number): number {
+  if (score >= 0.5) {
+    return Math.round((initialStability - stability) * (score - 0.5) * 2 * MINIGAME_RECOVERY_RATIO)
+  }
+  return -Math.max(1, Math.round(stability * (0.5 - score) * 2 * MINIGAME_PENALTY_RATIO))
+}
 
 // -------------------- 派车计时阈值 --------------------
 
@@ -106,3 +133,21 @@ export const VITAL_STABLE_THRESHOLD = 70
 export const VITAL_WARNING_THRESHOLD = 40
 /** stability ≥ 此值为 critical */
 export const VITAL_CRITICAL_THRESHOLD = 15
+
+// -------------------- 自适应难度（体征衰减跨通话系数） --------------------
+
+/** 首局难度：体征衰减略慢于基准，给玩家熟悉操作的空间 */
+export const DIFFICULTY_INITIAL = 0.9
+/** 难度系数下限（玩家挣扎时衰减最慢到基准的 0.8 倍） */
+export const DIFFICULTY_MIN = 0.8
+/** 难度系数上限（衰减最快为基准速率的 1.5 倍） */
+export const DIFFICULTY_MAX = 1.5
+
+/**
+ * 根据上一通结束时体征条剩余比例调整下一通难度：
+ * 剩余越多说明玩家越从容，下一通衰减越快；手忙脚乱则放缓。
+ */
+export function nextDifficulty(current: number, remainingRatio: number): number {
+  const delta = remainingRatio >= 0.7 ? +0.2 : remainingRatio >= 0.4 ? +0.1 : remainingRatio > 0 ? -0.1 : -0.15
+  return Math.max(DIFFICULTY_MIN, Math.min(DIFFICULTY_MAX, current + delta))
+}

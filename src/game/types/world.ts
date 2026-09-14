@@ -33,7 +33,7 @@ export type VitalSign = 'stable' | 'warning' | 'critical' | 'arrest'
 export interface PatientStatus {
   stability: number           // 0-100，生命条；到 0 = 患者死亡
   vitalSign: VitalSign        // 由 stability 派生
-  decayRate: number           // 每秒衰减量（按病种严重度）
+  decayRate: number           // 每秒衰减量（按病种严重度 × 自适应难度 × 场景差异）
   initialStability: number    // 起始值（结算时参考）
   died: boolean               // 是否已经死亡（到达时结算或 stability 触底）
 }
@@ -121,6 +121,11 @@ export interface WorldState {
 
   // 班次
   shiftNumber: number
+  /**
+   * 自适应难度系数（≥1 个班次内跨通话累计）：
+   * 乘入体征衰减速率，首局 <1 较慢；通关结束按体征条剩余比例调整。
+   */
+  difficulty: number
   callIndex: number           // 当前是第几通（0-based）
   totalCalls: number          // 本班次总电话数
   scenarioQueue: string[]     // 本班次的场景id队列

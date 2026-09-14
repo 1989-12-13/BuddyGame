@@ -4,19 +4,16 @@
 // 只做一件事：把「现在有哪几条线在动」摆出来。
 //   · 横向 chip 一排，放进通话台顶部 —— 不再占掉左栏上半屏
 //   · 空闲线路完全不出现（没有内容可看的信息不该占位）
-//   · 接听前只给倒计时（你还没听，不该知道是什么事）
-//   · 接听后给「场景名 + 通话时长」，这两条才是调度员真正在盯的读数
+//   · 接听前只给倒计时，接听后只给时长（病情要靠用户自己从通话里判断）
+//   · 接听后给「通话中 + 通话时长」，时长才是调度员真正在盯的读数
 // 时钟 / 车辆 / 患者体征由顶部的状态带承担，这里不再重复。
 // ============================================================
 
 import { Headphones, Phone } from 'lucide-react'
 import type { ShiftLine, ShiftState } from '../../game/core/shift'
-import { getScenario } from '../../game/events/templates'
 
-/** 响铃时不给场景名：你还没接起这通电话 */
-function activeTitle(line: ShiftLine): string {
-  if (line.world.currentCall) return line.world.currentCall.title
-  if (line.scenarioId) return getScenario(line.scenarioId).title
+/** 接听后也不显示场景名：病情要靠用户从通话里自己判断 */
+function activeTitle(): string {
   return '通话中'
 }
 
@@ -53,7 +50,7 @@ export function LineRack({
               >
                 {line.phase === 'ringing'
                   ? <><Phone size={13} /><span>响铃</span><b>{remain}s</b></>
-                  : <><Headphones size={13} /><span>{activeTitle(line)}</span><b>{callDuration(line)}</b></>}
+                  : <><Headphones size={13} /><span>{activeTitle()}</span><b>{callDuration(line)}</b></>}
               </button>
             </li>
           )

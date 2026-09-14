@@ -13,6 +13,7 @@ export const chestPainCard: EmergencyScenario = {
   baseStation: '海淀区中关村科技园附近',
   isPrank: false,
   correctTriage: 'red',
+  decayMultiplier: 1.1, // 胸痛持续恶化
 
   mpdsCard: {
     number: 10,

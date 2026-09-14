@@ -13,6 +13,7 @@ export const fallsElderlyCard: EmergencyScenario = {
   baseStation: '西城区德胜门附近',
   isPrank: false,
   correctTriage: 'yellow',
+  decayMultiplier: 0.7, // 跌倒老人病情相对平稳
 
   mpdsCard: {
     number: 17,

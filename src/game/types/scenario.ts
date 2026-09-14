@@ -259,6 +259,11 @@ export interface EmergencyScenario {
    */
   isVerification?: boolean
   correctTriage: TriageLevel
+  /**
+   * 场景级体征衰减差异系数（默认 1）。
+   * 病情恶化快的场景（心搏骤停、大出血）> 1，相对平稳的 < 1。
+   */
+  decayMultiplier?: number
 
   /** 菜单呈现信息；缺省时由类别默认值补齐 */
   menu?: MenuMeta

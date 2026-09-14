@@ -20,6 +20,8 @@ import {
   calcOnSceneDuration,
   scoreCall,
 } from './worldState'
+import { nextDifficulty } from './constants'
+import { guidanceStabilityGain, guidanceStabilityPenalty, minigameStabilityDelta, stabilityRecoveryCap } from './constants'
 import { __setRng, __resetRng } from './random'
 import { SCENARIO_IDS } from '../events/templates'
 
@@ -162,30 +164,89 @@ describe('buildScenarioQueue', () => {
 // createPatientStatus
 // ============================================================
 describe('createPatientStatus', () => {
-  it('red triage 起始 stability 80，decayRate 0.35', () => {
+  it('red triage 起始 stability 65，decayRate 0.5', () => {
     const ps = createPatientStatus('red')
-    expect(ps.stability).toBe(80)
-    expect(ps.initialStability).toBe(80)
-    expect(ps.decayRate).toBe(0.35)
+    expect(ps.stability).toBe(65)
+    expect(ps.initialStability).toBe(65)
+    expect(ps.decayRate).toBe(0.5)
     expect(ps.died).toBe(false)
   })
 
-  it('yellow triage 起始 stability 85，decayRate 0.2', () => {
+  it('yellow triage 起始 stability 75，decayRate 0.35', () => {
     const ps = createPatientStatus('yellow')
+    expect(ps.stability).toBe(75)
+    expect(ps.decayRate).toBe(0.35)
+  })
+
+  it('green triage 起始 stability 85，decayRate 0.2', () => {
+    const ps = createPatientStatus('green')
     expect(ps.stability).toBe(85)
     expect(ps.decayRate).toBe(0.2)
   })
 
-  it('green triage 起始 stability 92，decayRate 0.08', () => {
-    const ps = createPatientStatus('green')
-    expect(ps.stability).toBe(92)
-    expect(ps.decayRate).toBe(0.08)
-  })
-
-  it('black triage 起始 stability 35，decayRate 1.2', () => {
+  it('black triage 起始 stability 35，decayRate 1', () => {
     const ps = createPatientStatus('black')
     expect(ps.stability).toBe(35)
-    expect(ps.decayRate).toBe(1.2)
+    expect(ps.decayRate).toBe(1)
+  })
+
+  it('难度系数与场景差异系数均乘入 decayRate', () => {
+    expect(createPatientStatus('red', 0.9, 1.4).decayRate).toBeCloseTo(0.5 * 0.9 * 1.4)
+    expect(createPatientStatus('green', 0.9).decayRate).toBeCloseTo(0.2 * 0.9)
+  })
+})
+
+// ============================================================
+// nextDifficulty（自适应难度）
+// ============================================================
+describe('nextDifficulty', () => {
+  it('剩余体征充足 → 难度上升', () => {
+    expect(nextDifficulty(0.9, 0.8)).toBe(1.1)
+  })
+
+  it('剩余体征中等 → 难度小幅上升', () => {
+    expect(nextDifficulty(0.9, 0.5)).toBe(1.0)
+  })
+
+  it('剩余体征偏低 → 难度下降（放缓衰减）', () => {
+    expect(nextDifficulty(1.0, 0.2)).toBe(0.9)
+  })
+
+  it('患者死亡 → 难度大幅下降', () => {
+    expect(nextDifficulty(1.2, 0)).toBe(1.05)
+  })
+
+  it('难度被钳制在 [0.8, 1.5]', () => {
+    expect(nextDifficulty(0.8, 0)).toBe(0.8)
+    expect(nextDifficulty(1.5, 0.9)).toBe(1.5)
+  })
+})
+
+// ============================================================
+// 指导体征变化（百分比模型）+ black 逆转机制
+// ============================================================
+describe('指导体征百分比模型', () => {
+  it('正确指导恢复已损失体征的 25%', () => {
+    expect(guidanceStabilityGain(60, 80)).toBe(7)   // 损失 20 × 35% → +7
+    expect(guidanceStabilityGain(10, 35)).toBe(9)   // 损失 25 × 35% → +9（black 濒死挽回更多）
+    expect(guidanceStabilityGain(80, 80)).toBe(0)   // 无损失则无收益
+  })
+
+  it('错误指导扣除当前体征的 10%，至少 1 点', () => {
+    expect(guidanceStabilityPenalty(80)).toBe(8)
+    expect(guidanceStabilityPenalty(9)).toBe(1)
+    expect(guidanceStabilityPenalty(0)).toBe(1)
+  })
+
+  it('小游戏按得分折算：满分恢复已损失的 30%，不及格扣当前', () => {
+    expect(minigameStabilityDelta(50, 80, 1)).toBe(15)   // 损失 30 × 50% = +15
+    expect(minigameStabilityDelta(50, 80, 0.5)).toBe(0)
+    expect(minigameStabilityDelta(50, 80, 0)).toBe(-5)   // 50 × 10% = -5
+  })
+
+  it('black 恢复上限 100，其他档位为起始体征', () => {
+    expect(stabilityRecoveryCap('black', 35)).toBe(100)
+    expect(stabilityRecoveryCap('red', 80)).toBe(80)
   })
 })
 
@@ -426,7 +487,7 @@ describe('calcOnSceneDuration', () => {
   })
 
   it('yellow ~8s', () => {
-    expect(calcOnSceneDuration('yellow')).toBe(8) // decayRate 0.2 < 0.3 → -12
+    expect(calcOnSceneDuration('yellow')).toBe(15) // decayRate 0.35 不满足 <0.3 → -5
   })
 
   it('green ~8s', () => {

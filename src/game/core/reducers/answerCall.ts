@@ -36,8 +36,10 @@ export function handleAnswerCall(state: WorldState, scenarioOverride?: Emergency
 
   const terminal = createTerminalState()
   // 恶作剧与核实通话都不拥有患者
-  const patientStatus = scenario.isPrank || scenario.isVerification ? null : createPatientStatus(scenario.correctTriage)
-  if (patientStatus && CARE_WINDOWS[scenarioId]) patientStatus.decayRate *= 0.4
+  const patientStatus = scenario.isPrank || scenario.isVerification
+    ? null
+    : createPatientStatus(scenario.correctTriage, state.difficulty, scenario.decayMultiplier ?? 1)
+  if (patientStatus && CARE_WINDOWS[scenarioId]) patientStatus.decayRate *= 0.6
 
   return {
     ...state,

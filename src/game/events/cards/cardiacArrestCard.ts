@@ -14,6 +14,7 @@ export const cardiacArrestCard: EmergencyScenario = {
   baseStation: '朝阳区望京街道附近',
   isPrank: false,
   correctTriage: 'red',
+  decayMultiplier: 1.4, // 心搏骤停恶化极快
 
   mpdsCard: {
     number: 9,

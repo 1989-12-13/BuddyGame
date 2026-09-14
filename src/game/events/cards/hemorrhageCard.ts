@@ -13,6 +13,7 @@ export const hemorrhageCard: EmergencyScenario = {
   baseStation: '东城区鼓楼大街附近',
   isPrank: false,
   correctTriage: 'red',
+  decayMultiplier: 1.25, // 大出血失血快
 
   mpdsCard: {
     number: 21,

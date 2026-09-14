@@ -30,6 +30,7 @@ import {
   COMPLAINT_SCORE,
   PURPOSE_SCORE,
   GUIDANCE_MAX_SCORE,
+  DIFFICULTY_INITIAL,
 } from './constants'
 
 /** 创建空白的来电者追踪状态 */
@@ -139,6 +140,7 @@ export function createInitialState(): WorldState {
     careChecks: {},
     activePlaySeconds: 0,
     streamedLines: 0,
+    difficulty: DIFFICULTY_INITIAL,
     shiftNumber: 0,
     callIndex: 0,
     totalCalls: 0,
@@ -186,22 +188,22 @@ export function createInitialState(): WorldState {
 
 interface SeverityConfig { decayRate: number; initialStability: number; baseRescue: number }
 
-/** 宽松难度曲线：red 患者每秒 -0.35（约 3.5 分钟缓冲），提供更充裕的容错空间 */
+/** red 患者每秒 -0.5（基准难度下约 2.5 分钟缓冲），配合场景/难度系数构成实际压力 */
 const SEVERITY_CONFIG: Record<TriageLevel, SeverityConfig> = {
-  red:    { decayRate: 0.35, initialStability: 80, baseRescue: 0.50 },
-  yellow: { decayRate: 0.20, initialStability: 85, baseRescue: 0.75 },
-  green:  { decayRate: 0.08, initialStability: 92, baseRescue: 0.95 },
-  black:  { decayRate: 1.2, initialStability: 35, baseRescue: 0.15 },
+  red:    { decayRate: 0.50, initialStability: 65, baseRescue: 0.50 },
+  yellow: { decayRate: 0.35, initialStability: 75, baseRescue: 0.75 },
+  green:  { decayRate: 0.20, initialStability: 85, baseRescue: 0.95 },
+  black:  { decayRate: 1, initialStability: 35, baseRescue: 0.15 },
 }
 
-/** 根据 correctTriage 创建 patientStatus */
-export function createPatientStatus(triage: TriageLevel): PatientStatus {
+/** 根据 correctTriage 创建 patientStatus；difficulty 为跨通话自适应系数，scenarioMultiplier 为场景级差异系数，均乘入衰减速率 */
+export function createPatientStatus(triage: TriageLevel, difficulty = 1, scenarioMultiplier = 1): PatientStatus {
   const cfg = SEVERITY_CONFIG[triage]
   return {
     stability: cfg.initialStability,
     initialStability: cfg.initialStability,
     vitalSign: stabilityToVitalSign(cfg.initialStability),
-    decayRate: cfg.decayRate,
+    decayRate: cfg.decayRate * difficulty * scenarioMultiplier,
     died: false,
   }
 }

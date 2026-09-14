@@ -13,6 +13,7 @@ export const strokeCard: EmergencyScenario = {
   baseStation: '西城区金融街附近',
   isPrank: false,
   correctTriage: 'red',
+  decayMultiplier: 0.9, // 卒中进展较缓
 
   mpdsCard: {
     number: 28,

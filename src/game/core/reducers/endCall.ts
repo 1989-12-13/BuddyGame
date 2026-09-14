@@ -5,6 +5,7 @@
 
 import type { WorldState, DialogueLine } from '../../types'
 import { scoreCall, createTerminalState } from '../worldState'
+import { nextDifficulty } from '../constants'
 import { isPrankVerified } from '../judgments'
 import { hasPerk, getPerkChoices } from '../perks'
 import { buildDebrief } from '../debrief'
@@ -127,6 +128,12 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   const isShiftOver = nextCallIndex >= state.totalCalls
   const nextCallScores = [...state.callScores, total]
 
+  // 按本通结束时体征条剩余比例调整下一通的自适应难度（恶作剧/核实通话无患者，难度不变）
+  const ps = state.patientStatus
+  const difficulty = ps && !call.isPrank
+    ? nextDifficulty(state.difficulty, ps.stability / ps.initialStability)
+    : state.difficulty
+
   // 通话结束的总结行
   const summaryLine: DialogueLine = {
     speaker: 'system',
@@ -138,6 +145,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
 
   const stateForDebrief: WorldState = {
     ...state,
+    difficulty,
     callIndex: nextCallIndex,
     callPhase: 'completed',
     currentCall: null,
@@ -193,6 +201,7 @@ export function handleEndCall(state: WorldState, perkChoices?: RoguePerkId[]): W
   // 通话实录（dialogueLog）与调度登记表（terminal）不再残留到下一通。
   return {
     ...state,
+    difficulty,
     callIndex: nextCallIndex,
     callPhase: 'completed',
     currentCall: null,

@@ -5,7 +5,7 @@
 
 import type { WorldState, DialogueLine } from '../../types'
 import { createEventSink, sinkEvent, isGuidanceActive } from './helpers'
-import { MINIGAME_STABILITY_MULT } from '../constants'
+import { minigameStabilityDelta, stabilityRecoveryCap } from '../constants'
 import { stabilityToVitalSign } from '../worldState'
 
 export function handleCompleteMinigame(
@@ -42,8 +42,10 @@ export function handleCompleteMinigame(
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
   if (state.patientStatus && !state.patientStatus.died) {
-    const delta = Math.round((score - 0.5) * MINIGAME_STABILITY_MULT)
-    const newStability = Math.max(0, Math.min(100, state.patientStatus.stability + delta))
+    // 百分比模型：score ≥0.5 恢复已损失体征，<0.5 扣当前体征；black 档恢复上限 100
+    const triage = state.currentCall?.correctTriage ?? 'yellow'
+    const delta = minigameStabilityDelta(state.patientStatus.stability, state.patientStatus.initialStability, score)
+    const newStability = Math.max(0, Math.min(stabilityRecoveryCap(triage, state.patientStatus.initialStability), state.patientStatus.stability + delta))
     newPatientStatus = {
       ...state.patientStatus,
       stability: newStability,

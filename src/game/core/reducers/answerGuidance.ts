@@ -5,7 +5,7 @@
 
 import type { WorldState, DialogueLine } from '../../types'
 import { createEventSink, sinkEvent, isGuidanceActive } from './helpers'
-import { GUIDANCE_CORRECT_BONUS, GUIDANCE_INCORRECT_PENALTY } from '../constants'
+import { guidanceStabilityGain, guidanceStabilityPenalty, stabilityRecoveryCap } from '../constants'
 import { stabilityToVitalSign } from '../worldState'
 
 export function handleAnswerGuidance(
@@ -38,12 +38,19 @@ export function handleAnswerGuidance(
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
   if (state.patientStatus && !state.patientStatus.died) {
+    // 百分比模型：做对恢复已损失的体征，做错扣当前体征的一定比例。
+    // black 档（心搏骤停等）恢复上限放开到 100，其他档位不越过起始体征。
+    const triage = state.currentCall?.correctTriage ?? 'yellow'
     if (isCorrect) {
-      const newStability = Math.min(100, state.patientStatus.stability + GUIDANCE_CORRECT_BONUS)
+      const gain = guidanceStabilityGain(state.patientStatus.stability, state.patientStatus.initialStability)
+      const newStability = Math.min(
+        stabilityRecoveryCap(triage, state.patientStatus.initialStability),
+        state.patientStatus.stability + gain,
+      )
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'good', `✓ ${step.prompt}：操作正确`, state.shiftElapsed)
     } else {
-      const newStability = Math.max(0, state.patientStatus.stability - GUIDANCE_INCORRECT_PENALTY)
+      const newStability = Math.max(0, state.patientStatus.stability - guidanceStabilityPenalty(state.patientStatus.stability))
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'bad', `✗ ${step.prompt}：操作错误，患者情况恶化`, state.shiftElapsed)
     }

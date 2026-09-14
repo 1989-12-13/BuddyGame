@@ -22,6 +22,35 @@ function evaluationState(id = 'cardiac_arrest', overrides: Partial<WorldState> =
     callId: id, dispatchTime: 30, triage: scenario.correctTriage, correctTriage: scenario.correctTriage,
     addressCompleteness: 'full', ambulanceETA: 10, dispatchedAt: 30, isPrank: scenario.isPrank,
   }
+
+function dispatchWithPlannedRoute(state: WorldState): WorldState {
+  state = { ...state, terminal: { ...state.terminal, address: '测试现场', contact: '138****0000', conscious: false, breathing: false } }
+  const plan = buildDispatchPlan(state)
+  if (!plan) throw new Error('Expected an automatic dispatch plan')
+  return worldReducer(state, {
+    type: 'DISPATCH',
+    vehicleId: 'ambulance',
+    route: plan.routes[0],
+  })
+}
+
+function makeDebriefState(
+  scenarioId: string,
+  overrides: Partial<WorldState> & { dispatchRecord?: DispatchRecord | null } = {},
+): WorldState {
+  const scenario = getScenario(scenarioId)
+  const callerState = createCallerState(scenario.callerId, 20)
+  callerState.revealedInfo = {
+    ...callerState.revealedInfo,
+    address: 'full',
+    contact: true,
+    chiefComplaint: true,
+    age: true,
+    gender: true,
+    consciousness: true,
+    breathing: true,
+    purpose: true,
+  }
   return {
     ...createInitialState(),
     screen: 'playing',

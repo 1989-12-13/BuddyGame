@@ -36,7 +36,6 @@ export const PROTOCOL_ORDER = [
   'step4_vitals',
   'ask_landmark',
   'ask_contact',
-  'ask_purpose',
 ] as const
 
 type ProtocolId = (typeof PROTOCOL_ORDER)[number]
@@ -70,10 +69,6 @@ const TOPIC_MAIN: Record<ProtocolId, PhrasingPair> = {
     gentle: '留一个随时能打通的电话给我，号码我记一下。',
     press: '你电话多少？快。',
   },
-  ask_purpose: {
-    gentle: '你现在最急的是什么？说给我听，咱们一件一件办。',
-    press: '你最要紧的是哪件事？说。',
-  },
 }
 
 /** 重问时（没听清/被噪音盖过）的收尾引导：温和道歉式，催促带轻微不耐 */
@@ -102,10 +97,6 @@ const RETRY_MAIN: Record<ProtocolId, PhrasingPair> = {
     gentle: '号码我刚才没记全，麻烦再报一遍？',
     press: '号码再报一遍，快。',
   },
-  ask_purpose: {
-    gentle: '你刚才说的我没完全听懂，重新说一遍，你最需要什么？',
-    press: '再说一遍，你们要什么？',
-  },
 }
 
 /**
@@ -124,6 +115,11 @@ export function phraseFor(id: ProtocolId, retry: boolean): PhrasingPair {
 
 /** 当前协议该问哪一步（第一个还没问过的） */
 export function nextProtocolId(state: WorldState): ProtocolId | null {
+  // 如果有待重问的问题，优先重问
+  if (state.pendingReask) {
+    const reaskId = state.pendingReask.questionId as ProtocolId
+    if (PROTOCOL_ORDER.includes(reaskId)) return reaskId
+  }
   const attempts = state.callerState?.questionAttempts ?? {}
   return PROTOCOL_ORDER.find(id => (attempts[id] ?? 0) === 0) ?? null
 }
@@ -139,30 +135,48 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
   const options: TurnOption[] = []
   const next = nextProtocolId(state)
 
-  // 1) 推进型 —— 同一话题的两种说法，构成「效率 vs 情绪 vs 配合度」的取舍
+  // 1) 推进型 —— 有手写脚本时只出一个选项（话术固定，不拆温和/催促）
   if (next) {
     const retry = attempts(next) > 0
+    const scriptedExchange = call.script?.[next]
     const phrasing = phraseFor(next, retry)
 
-    const impatient = retry && cs.cooperation < 50
-    options.push({
-      id: `advance-gentle-${next}`,
-      kind: 'advance',
-      line: phrasing.gentle,
-      hint: retry
-        ? '放慢安抚 · 再问一次 · 对方耐心下降'
-        : '放慢节奏 · 情绪下降 · 更容易配合 · 多花 1 秒',
-      action: { type: 'ASK_QUESTION', questionId: next, spokenLine: phrasing.gentle, stressDelta: -5, extraTime: 1 },
-    })
-    options.push({
-      id: `advance-press-${next}`,
-      kind: 'advance',
-      line: phrasing.press,
-      hint: impatient
-        ? '催促 · 对方已不耐烦，小心答得更敷衍'
-        : '加快节奏 · 情绪上升 · 配合度下降 · 少花 1 秒',
-      action: { type: 'ASK_QUESTION', questionId: next, spokenLine: phrasing.press, stressDelta: 6, extraTime: -1 },
-    })
+    if (scriptedExchange) {
+      // 脚本版：单一选项，话术用 operator（重问用 operatorRetry）
+      const line = retry
+        ? (scriptedExchange.operatorRetry ?? scriptedExchange.operator)
+        : scriptedExchange.operator
+      options.push({
+        id: `advance-${next}`,
+        kind: 'advance',
+        line,
+        hint: retry ? '再问一次 · 对方耐心下降' : '推进问询',
+        action: { type: 'ASK_QUESTION', questionId: next, spokenLine: line, stressDelta: 0, extraTime: 0 },
+      })
+    } else {
+      // 模板版：温和/催促两种说法，构成「效率 vs 情绪 vs 配合度」的取舍
+      const gentleLine = phrasing.gentle
+      const pressLine = phrasing.press
+      const impatient = retry && cs.cooperation < 50
+      options.push({
+        id: `advance-gentle-${next}`,
+        kind: 'advance',
+        line: gentleLine,
+        hint: retry
+          ? '放慢安抚 · 再问一次 · 对方耐心下降'
+          : '放慢节奏 · 情绪下降 · 更容易配合 · 多花 1 秒',
+        action: { type: 'ASK_QUESTION', questionId: next, spokenLine: gentleLine, stressDelta: -5, extraTime: 1 },
+      })
+      options.push({
+        id: `advance-press-${next}`,
+        kind: 'advance',
+        line: pressLine,
+        hint: impatient
+          ? '催促 · 对方已不耐烦，小心答得更敷衍'
+          : '加快节奏 · 情绪上升 · 配合度下降 · 少花 1 秒',
+        action: { type: 'ASK_QUESTION', questionId: next, spokenLine: pressLine, stressDelta: 6, extraTime: -1 },
+      })
+    }
   }
 
   // 2) 安抚型 —— 情绪偏高时才出现
@@ -309,7 +323,9 @@ export function buildTurn(state: WorldState): TurnState {
   const inaccurate = facts.some(fact => fact.quality === 'vague')
 
   let notice: string | null = null
-  if (degraded) {
+  if (state.pendingReask) {
+    notice = `⚠ ${state.pendingReask.prompt}——请重新确认。`
+  } else if (degraded) {
     notice = `来电者现在「${stressLevel}」—— 越紧张，说出的话越不可靠，地址和体征都可能问不准。先安抚，等情绪回落再复核。`
   } else if (canReview) {
     notice = '情绪已经回落，现在复核刚才没听清的内容，有机会问到准确信息。'

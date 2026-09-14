@@ -10,7 +10,7 @@ import type { WorldState } from '../types'
 const SCRIPTED_CALLS = ['falls_elderly', 'chest_pain', 'hemorrhage', 'stroke', 'cardiac_arrest']
 
 function ticks(state: WorldState, count: number) { for (let i = 0; i < count; i++) state = worldReducer(state, { type: 'TICK' }); return state }
-function ready(state: WorldState) { return { ...state, terminal: { ...state.terminal, address: '已确认入口', conscious: true, breathing: true, determinant: 'DELTA' as const, triage: state.currentCall!.correctTriage } } }
+function ready(state: WorldState) { return { ...state, terminal: { ...state.terminal, address: '已确认入口', contact: '138****0000', conscious: true, breathing: true, determinant: 'DELTA' as const, triage: state.currentCall!.correctTriage } } }
 function start(id = 'hemorrhage') { return ready(worldReducer(worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [id] }), { type: 'ANSWER_CALL' })) }
 function send(state: WorldState) { return worldReducer(state, { type: 'DISPATCH', callInstanceId: state.callInstanceId, vehicleId: 'ambulance', route: buildDispatchPlan(state)!.routes[0] }) }
 

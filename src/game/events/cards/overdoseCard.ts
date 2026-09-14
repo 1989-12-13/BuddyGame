@@ -55,6 +55,129 @@ export const overdoseCard: EmergencyScenario = {
     purpose: '她是不是自杀！你们快来救救她！要不要催吐？！',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 陆洁（室友）报告室友药物过量
+  // 来电者个性：慌张哭泣、语无伦次、不断问要不要催吐
+  // 关系：室友（对患者了解一部分）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，小区名和楼号。',
+      caller: {
+        calm: ['海淀区五道口华清嘉园8号楼2单元501室。'],
+        tense: ['五道口！华清嘉园！8号楼！2单元501！你们快来！'],
+        panic: ['华清嘉园！8号楼！501！快来啊！'],
+        lost: ['五道口……华清嘉园……501……'],
+        retryPrefix: '我不是刚说了——',
+      },
+      fillTerminal: { address: '海淀区五道口华清嘉园8号楼2单元501室' },
+      outburst: '她叫不醒了！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '小区旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['五道口地铁站B口出来往北走300米。'],
+        tense: ['地铁B口！往北300米！你们到了就能看到！'],
+        panic: ['地铁B口……北边300米……'],
+        lost: ['地铁口旁边……往北……'],
+      },
+      fillTerminal: { address: '海淀区五道口华清嘉园8号楼2单元501室，五道口地铁站B口出来往北走300米' },
+      calmReply: {
+        operatorCalm: '好，地铁B口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['室友微信跟我说对不起，我冲进她房间。', '地上好多空药盒，人躺在床上叫不醒。', '旁边还有半瓶白酒。'],
+        tense: ['室友吃药了！微信发对不起！', '空药盒在地上！叫不醒了！', '还有半瓶白酒！'],
+        panic: ['吃药了！！安眠药！！', '叫不醒了！！还有酒！！', '她是不是想死啊！！'],
+        lost: ['室友吃药了……', '叫不醒了……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '青年女性服用过量安眠药加酒精，意识丧失', patientGender: '女性' },
+      outburst: '她是不是死了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。安眠药加酒精，叫不醒——这些我记下了。别催吐，按我说的做。',
+        calm: '好……我不催吐。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['26岁。'],
+        tense: ['26！她26！'],
+        panic: ['26！！26岁！！'],
+        lost: ['26……应该是26……'],
+      },
+      fillTerminal: { patientAge: '26岁' },
+      calmReply: {
+        operatorCalm: '好，26岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还有意识吗？还在喘气吗？',
+      caller: {
+        calm: ['完全叫不醒，用力拍也没反应。', '呼吸非常浅，几乎听不到。'],
+        tense: ['叫不醒！用力拍也没反应！', '呼吸很浅！几乎听不到！'],
+        panic: ['叫不醒了！！没反应！！', '呼吸好浅！！几乎听不到！！', '你们快来！！'],
+        lost: ['叫不醒了……', '呼吸好浅……几乎听不到……', '她是不是已经……'],
+      },
+      fillTerminal: { conscious: false, breathing: true },
+      outburst: '她呼吸越来越慢了！！你们快来啊！！',
+      calmReply: {
+        operatorCalm: '听我说。叫不醒，呼吸很浅——这我知道了。别催吐，让她侧躺，防止呕吐物呛到。我一步步告诉你怎么做。',
+        calm: '好……我翻她侧躺。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['18877622222，就是这个号。'],
+        tense: ['188……7762……2222！打这个就行！'],
+        panic: ['188……这个手机！2222！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '188****2222' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_overdose_drug',

@@ -56,6 +56,126 @@ export const unconsciousFaintingCard: EmergencyScenario = {
     purpose: '她醒了但是还是很晕要不要给她吃什么',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 韩蕾（路人）报告公交车上晕厥
+  // 来电者个性：急切但配合、不断描述患者状态变化
+  // 关系：路人（对患者不了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['西城区西单路口北公交站往南50米，正在行驶的22路公交车上。'],
+        tense: ['西单路口北！22路公交车！往南50米！你们快来！'],
+        panic: ['西单路口北！22路！快来！'],
+        lost: ['西单……22路公交……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '西城区西单路口北公交站往南50米正在行驶的22路公交车上' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '公交车旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['西单大悦城旁边。'],
+        tense: ['西单大悦城旁边！你们到了就能看到！'],
+        panic: ['大悦城……旁边……'],
+        lost: ['有个商场……大悦城……'],
+      },
+      fillTerminal: { address: '西城区西单路口北公交站往南50米正在行驶的22路公交车上，西单大悦城旁' },
+      calmReply: {
+        operatorCalm: '好，西单大悦城旁，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['公交车上一个女孩突然晕倒了。', '过了十几秒醒了，但脸色很差，说头晕。', '她早上没吃早饭。'],
+        tense: ['女孩突然晕倒了！十几秒才醒！', '脸色很差！说头晕！', '她没吃早饭！'],
+        panic: ['晕倒了！！十几秒才醒！！', '脸色很差！！说头晕！！', '你们快来！！'],
+        lost: ['女孩晕倒了……', '十几秒才醒……脸色很差……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '年轻女性在公交车上晕厥，醒后头晕', patientGender: '女性' },
+      calmReply: {
+        operatorCalm: '我听清楚了。晕倒十几秒，醒了说头晕——这些我记下了。让她平躺，按我说的做。',
+        calm: '好……我让她躺下了。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她大概多大岁数？',
+      caller: {
+        calm: ['23岁左右，年轻人。'],
+        tense: ['23岁左右！年轻人！'],
+        panic: ['23岁！！年轻人！！'],
+        lost: ['20多岁……应该是……'],
+      },
+      fillTerminal: { patientAge: '约23岁' },
+      calmReply: {
+        operatorCalm: '好，23岁左右，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她现在清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['醒了，但迷糊，说头晕。', '呼吸比较浅。'],
+        tense: ['醒了！但迷糊！说头晕！', '呼吸比较浅！'],
+        panic: ['醒了！！但很迷糊！！', '呼吸浅！！你们快来！！'],
+        lost: ['醒了……但迷糊……', '呼吸比较浅……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，醒了，这我知道了。让她平躺，把脚抬高，解开衣领，我一步步告诉你怎么做。',
+        calm: '好……我把她腿抬高了。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['18877620000，就是这个号。'],
+        tense: ['188……7762……0000！打这个就行！'],
+        panic: ['188……这个手机！0000！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '188****0000' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_faint_seizure',

@@ -42,7 +42,7 @@ const URGES = [
 /** 有医疗背景者的措辞前缀（未配置个人素材时的兜底） */
 const PRECISE_HEAD = ['我尽量说准一点，']
 /** 缺医疗常识的话痨型前缀（未配置个人素材时的兜底） */
-const LAYMAN_HEAD = ['我也不太懂这些，反正']
+const LAYMAN_HEAD = ['反正']
 
 function pick<T>(list: readonly T[]): T {
   return list[Math.min(list.length - 1, Math.floor(rng() * list.length))] as T
@@ -182,24 +182,73 @@ export function voiceAnswer(base: string, voice: CallerVoice, ctx: VoiceContext)
   return `${charm}${affect}${head}${text}${tail}`
 }
 
+/** 话痨型：给句子中间自然加填充词，不是每句都加 */
+function verboseEmbellish(text: string): string {
+  if (rng() > 0.3) return text
+  const fills = ['就是，', '对对，', '那个……', '怎么说呢，', '哎呀，']
+  const f = fills[Math.floor(rng() * fills.length)] as string
+  return `${f}${text}`
+}
+
+/** 沉默寡言型：去掉冗余修饰，只留核心 */
+function terseShrink(text: string): string {
+  return text
+    .replace(/^[^，。！？\d一二三四五六七八九十百千万岁路号楼号单元栋小区号]+[，。]/g, '')
+    .replace(/大概|可能|好像|应该|差不多|我觉得|我估计/g, '')
+    .replace(/……+/g, '')
+    .trim()
+}
+
+/** 理性型：把口语化措辞替换成更准确的说法 */
+function rationalTighten(text: string): string {
+  return text
+    .replace(/特别/g, '明显')
+    .replace(/一堆/g, '大量')
+    .replace(/一大滩/g, '大面积')
+    .replace(/很多/g, '较多')
+}
+
+/** 情绪化型：在句末加叹号或省略号 */
+function emotionalPunctuate(text: string): string {
+  if (/[！？]$/.test(text)) return text
+  if (rng() < 0.5) return `${text}……`
+  return `${text.replace(/[。]$/, '')}！`
+}
+
 /**
  * 句子流版：来电者的一句完整回答 = 若干短句。
- * 与 voiceAnswer 的差异：头尾点缀只出现在首/末句，不逐句叠加；
- * 沉默寡言按句丢弃纯情绪句，但保证留下至少一条含信息的分句。
+ * 与 voiceAnswer 的差异：
+ * 1. 头尾点缀只出现在首/末句
+ * 2. 沉默寡言按句丢弃纯情绪句，但保证留下至少一条含信息的分句
+ * 3. 中间句子按特质真正改写措辞：话痨加填充、沉默缩短、理性收紧、情绪化加标点
  */
 export function voiceAnswerLines(lines: string[], voice: CallerVoice, ctx: VoiceContext): string[] {
   const src = (lines ?? []).map(s => s.trim()).filter(Boolean)
   if (src.length === 0) return lines
 
-  // 沉默寡言：只留含信息的分句；若全无信息则保最后一句（它通常带关键的半句）
+  // 沉默寡言：只留含信息的分句；若全无信息则保最后一句
   let kept = src
   if (voice.verbosity === 0) {
     const informative = src.filter(s => INFO_HINT.test(s))
     kept = informative.length > 0 ? informative : [src[src.length - 1] as string]
+    kept = kept.map(terseShrink).filter(Boolean)
+    if (kept.length === 0) kept = [src[src.length - 1] as string]
   }
 
-  // 理性：压掉夸张标点（逐句）
-  if (voice.rationality === 2) kept = kept.map(calmPunctuation).filter(Boolean)
+  // 理性：压掉夸张标点 + 收紧措辞（逐句）
+  if (voice.rationality === 2) {
+    kept = kept.map(s => calmPunctuation(rationalTighten(s))).filter(Boolean)
+  }
+
+  // 情绪化：句末加叹号或省略号（逐句，不每次）
+  if (voice.rationality === 0) {
+    kept = kept.map(s => rng() < 0.4 ? emotionalPunctuate(s) : s)
+  }
+
+  // 话痨：给中间句随机加填充词
+  if (voice.verbosity === 2) {
+    kept = kept.map(s => verboseEmbellish(s))
+  }
 
   // 头：医疗常识措辞 + 口语动作 + 口头禅 —— 只加到第一句
   const headBits: string[] = []
@@ -211,7 +260,10 @@ export function voiceAnswerLines(lines: string[], voice: CallerVoice, ctx: Voice
   kept[0] = `${charm}${affect}${headBits.join('')}${firstLine}`
 
   // 尾：话痨跑题 或 情绪化催促 —— 只加到末句
-  const tail = tailFor(voice, ctx.stressLevel)
+  // 但若末句本身已含催促语义（"快来/赶来/派车/到"等），不再追加催促尾巴，避免重复
+  const lastText = (kept[kept.length - 1] as string) ?? ''
+  const alreadyUrgent = /快来|赶来|派车|快点来|撑不住|到[了吗啊]/.test(lastText)
+  const tail = alreadyUrgent ? '' : tailFor(voice, ctx.stressLevel)
   if (tail) {
     const lastIndex = kept.length - 1
     kept[lastIndex] = `${kept[lastIndex] as string}${tail}`

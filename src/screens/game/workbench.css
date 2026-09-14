@@ -198,12 +198,14 @@
 .view-tabs .end-call-tab { flex:0 0 auto; margin-left:auto; min-height:30px; padding:var(--space-4) var(--space-12); font-size:var(--fs-caption); font-weight:700; }
 .view-tabs .end-call-tab:hover { border-color:var(--danger); }
 
-/* ---------- 三栏 → 单视图 ---------- */
-.desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
-.desk-grid .desk-panel { display:none; }
-.desk-grid.tab-call .transcript-panel,
-.desk-grid.tab-map .workspace-panel,
-.desk-grid.tab-task .task-panel { display:flex; }
+/* ---------- 三栏 → 单视图（移动端） ---------- */
+@media(max-width:959px){
+  .desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
+  .desk-grid .desk-panel { display:none; }
+  .desk-grid.tab-call .transcript-panel,
+  .desk-grid.tab-map .workspace-panel,
+  .desk-grid.tab-task .task-panel { display:flex; }
+}
 
 /* ---------- 状态带：班次时钟 / 车辆 + 患者体征合成一条 ---------- */
 .status-strip { flex-shrink:0; display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-6) var(--space-20); padding:var(--space-6) var(--space-20); border-bottom:1px solid var(--line); background:var(--bg-deep); }

@@ -23,6 +23,7 @@ function ready(state: WorldState): WorldState {
     terminal: {
       ...state.terminal,
       address: '已确认入口',
+      contact: '138****0000',
       conscious: true,
       breathing: true,
       determinant: 'DELTA',

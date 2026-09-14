@@ -21,6 +21,7 @@ export function dispatchEligibility(state: WorldState): { allowed: boolean; reas
   if (isWorldPaused(state)) reasons.push('请先继续值班')
   if (isActionBusy(state)) reasons.push('当前问询正在进行')
   if (!state.terminal.address.trim()) reasons.push('确认事发地址')
+  if (!state.terminal.contact?.trim()) reasons.push('确认联系电话')
   if (state.terminal.conscious === null) reasons.push('判断意识状态')
   if (state.terminal.breathing === null) reasons.push('判断呼吸状态')
   if (!state.terminal.determinant || !state.terminal.triage) reasons.push('选择响应优先级')

@@ -1,9 +1,27 @@
 import { Phone } from 'lucide-react'
-import type { EmergencyScenario, CalleeStressLevel } from '../../../game/types'
-import { STRESS_INFO } from '../../../game/types'
+import type { EmergencyScenario, CalleeStressLevel, StressTier } from '../../../game/types'
+import { STRESS_INFO, stressToLevel } from '../../../game/types'
 import { PROTOCOL_STEPS, getVitalsStepQText } from '../../../game/content/phrases'
 import { styles, CATEGORY_ICON } from '../styles'
 import { AskBtnEx } from './AskBtnEx'
+
+/** 检查脚本中该问题在当前情绪档位下是否信息缺失（空数组） */
+function isScriptInfoMissing(call: EmergencyScenario, questionId: string, stress: number): boolean {
+  const scripted = call.script?.[questionId]
+  if (!scripted) return false
+  const tier: StressTier = stressToLevel(stress)
+  const lines = scripted.caller[tier]
+  // 空数组 = 信息缺失；undefined = 没定义该档位（会 fallback 到 calm，不算缺失）
+  return Array.isArray(lines) && lines.length === 0
+}
+
+/** 检查该问题是否已有效完成（在 askedMPDS 中且当前档位下不缺失） */
+function isEffectivelyDone(call: EmergencyScenario, questionId: string, askedMPDS: string[], stress: number): boolean {
+  if (!askedMPDS.includes(questionId)) return false
+  // 即使已问过，如果当前情绪升到更高档位导致信息缺失，仍需重新确认
+  // 但已问过的不会重新变缺失——因为 fillTerminal 已经填了
+  return true
+}
 
 interface QuestionPanelProps {
   call: EmergencyScenario
@@ -25,7 +43,7 @@ export function QuestionPanel({
   onAsk,
   onCalm,
 }: QuestionPanelProps) {
-  const isAsked = (id: string) => askedMPDS.includes(id)
+  const isAsked = (id: string) => isEffectivelyDone(call, id, askedMPDS, stress)
   const si = STRESS_INFO[stressLevel]
 
   // --- 4步协议状态 ---
@@ -65,23 +83,24 @@ export function QuestionPanel({
         <div style={styles.protocolStepsList}>
           {protocolSteps.map((ps) => {
             const done = isAsked(ps.id)
-            const isCurrent = ps.step === nextStepLabel
+            const askedButMissing = askedMPDS.includes(ps.id) && !done
+            const isCurrent = ps.step === nextStepLabel || askedButMissing
             const locked = !done && !isCurrent
 
             return (
               <div key={ps.id} style={{
                 ...styles.protocolStepRow,
                 opacity: locked ? 0.45 : 1,
-                borderColor: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--line)',
-                backgroundColor: done ? 'var(--success-bg)' : isCurrent ? 'var(--warning-bg)' : 'transparent',
+                borderColor: done ? 'var(--success)' : askedButMissing ? 'var(--danger, #e53e3e)' : isCurrent ? 'var(--warning)' : 'var(--line)',
+                backgroundColor: done ? 'var(--success-bg)' : askedButMissing ? 'rgba(229,62,62,0.08)' : isCurrent ? 'var(--warning-bg)' : 'transparent',
               }}>
                 {/* 步骤编号 */}
                 <div style={{
                   ...styles.protocolStepNum,
-                  backgroundColor: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--line)',
-                  color: done ? 'var(--on-accent)' : isCurrent ? 'var(--on-accent)' : 'var(--text-2)',
+                  backgroundColor: done ? 'var(--success)' : askedButMissing ? 'var(--danger, #e53e3e)' : isCurrent ? 'var(--warning)' : 'var(--line)',
+                  color: done ? 'var(--on-accent)' : askedButMissing ? 'var(--on-accent)' : isCurrent ? 'var(--on-accent)' : 'var(--text-2)',
                 }}>
-                  {done ? '✓' : ps.step}
+                  {done ? '✓' : askedButMissing ? '!' : ps.step}
                 </div>
 
                 {/* 步骤信息 */}
@@ -89,13 +108,13 @@ export function QuestionPanel({
                   <div style={{
                     fontSize: 'var(--fs-caption)',
                     fontWeight: done ? 'normal' : 'bold',
-                    color: done ? 'var(--success)' : isCurrent ? 'var(--warning)' : 'var(--text-2)',
+                    color: done ? 'var(--success)' : askedButMissing ? 'var(--danger, #e53e3e)' : isCurrent ? 'var(--warning)' : 'var(--text-2)',
                     textDecoration: done ? 'line-through' : 'none',
                   }}>
                     {ps.icon} {ps.label}
                   </div>
                   <div style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', marginTop: 'var(--space-1)'}}>
-                    {ps.qText}
+                    {askedButMissing ? '⚠ 信息不全，需重新确认' : ps.qText}
                   </div>
                 </div>
 
@@ -110,11 +129,12 @@ export function QuestionPanel({
                       ...styles.protocolStepBtn,
                       opacity: disabled ? 0.45 : 1,
                       cursor: disabled ? 'not-allowed' : 'pointer',
+                      ...(askedButMissing ? { borderColor: 'var(--danger, #e53e3e)', color: 'var(--danger, #e53e3e)' } : {}),
                     }}
                     onClick={() => !disabled && onAsk(ps.id)}
                     disabled={disabled}
                   >
-                    询问
+                    {askedButMissing ? '重新确认' : '询问'}
                   </button>
                 ) : (
                   <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--text-3)', whiteSpace: 'nowrap' }}>

@@ -3,7 +3,7 @@
 // 叙述式问询：来电者絮叨回答，玩家需从混乱中摘取关键信息
 // ============================================================
 
-import type { WorldState, DialogueLine, InfoQuality, JudgmentPrompt, CallerVoice } from '../../types'
+import type { WorldState, DialogueLine, InfoQuality, JudgmentPrompt, CallerVoice, StressTier } from '../../types'
 import { stressToLevel, PROTOCOL_REF } from '../../types'
 import { rng } from '../random'
 import { hasPerk } from '../perks'
@@ -21,6 +21,17 @@ import {
 } from './narrative'
 import { getPronoun } from '../../content/pronouns'
 import { createEventSink } from './helpers'
+
+/** 中文 CalleeStressLevel → 英文 StressTier 映射（stressToLevel 返回中文，脚本 key 用英文） */
+function toTier(level: string): StressTier {
+  switch (level) {
+    case '镇定': return 'calm'
+    case '紧张': return 'tense'
+    case '恐慌': return 'panic'
+    case '失控': return 'lost'
+    default: return 'calm'
+  }
+}
 
 /** 把一组短句展开成逐条 caller 对话行（timestamp 递增，模拟一句一句说） */
 function pushCallerLines(newDialogue: DialogueLine[], lines: string[], now: number): number {
@@ -77,7 +88,12 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   const previousQuality = cs.questionQuality[questionId]
   const previousStress = cs.questionStress[questionId] ?? cs.stress
   const isRetry = attemptCount > 0
-  if (attemptCount >= 2 || (isRetry && (previousQuality === 'clear' || cs.stress >= previousStress))) return state
+  // 脚本标记 requireComplete 的问题允许重问（最多2次），且不受"清晰答案只问一次"限制
+  const scriptedEarly = state.currentCall?.script?.[questionId]
+  const isRequireComplete = scriptedEarly?.requireComplete ?? false
+  const maxAttempts = isRequireComplete ? 2 : 2
+  if (attemptCount >= maxAttempts) return state
+  if (!isRequireComplete && isRetry && (previousQuality === 'clear' || cs.stress >= previousStress)) return state
 
   const now = state.shiftElapsed
   const newDialogue: DialogueLine[] = []
@@ -96,13 +112,173 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   const sink = createEventSink(state)
 
   // ==========================================
+  // 手写对话脚本优先：场景定义了 script 时直接使用，跳过 narrative 生成和 callerVoice 合成
+  // ==========================================
+  const scripted = call.script?.[questionId]
+  if (scripted) {
+    stressEffect = -5 // 脚本对话默认降压，具体值由情绪档位决定
+    const operatorLine = isRetry && scripted.operatorRetry ? scripted.operatorRetry : scripted.operator
+    newDialogue.push({ speaker: 'operator', text: operatorLine, timestamp: now })
+
+    // 按当前情绪档位选台词（stressToLevel 返回中文，脚本 key 用英文，需映射）
+    const tier: StressTier = toTier(stressToLevel(newStress).toString())
+    let callerLines = scripted.caller[tier] ?? scripted.caller.calm ?? []
+    const infoMissing = callerLines.length === 0
+
+    if (infoMissing) {
+      const fallback: Record<StressTier, string> = {
+        calm: '……什么？',
+        tense: '你……你等我一下……我脑子有点乱……',
+        panic: '我不知道！我什么都不知道了！！你说什么我听不进去！！',
+        lost: '……我不行了……什么都想不起来了……',
+      }
+      callerLines = [fallback[tier]]
+    }
+
+    // 重问不耐烦前缀
+    if (isRetry && scripted.caller.retryPrefix) {
+      callerLines = [`${scripted.caller.retryPrefix}${callerLines[0] ?? ''}`, ...callerLines.slice(1)]
+    }
+
+    pushCallerLines(newDialogue, callerLines, now)
+
+    // ==========================================
+    // 信息完整性检查：requireComplete 标记的问题
+    // 地址需要 partial 以上（calm/tense 档位回答才算完整）
+    // 电话需要 calm/tense 档位回答才算清晰
+    // 第一次回答不完整 → 设置 pendingReask 提示，不加入 askedMPDS
+    // 重问 → 强制使用 calm 档位回答（重问必得全部信息）
+    // ==========================================
+    let isComplete = true
+    let reaskPrompt = ''
+    if (scripted.requireComplete && !infoMissing) {
+      if (isRetry) {
+        // 重问：强制使用 calm 档位回答，视为完整
+        isComplete = true
+      } else {
+        // 第一次问：检查档位是否清晰
+        if (tier === 'panic' || tier === 'lost') {
+          isComplete = false
+          if (questionId === 'step1_location' || questionId === 'ask_landmark') {
+            reaskPrompt = '地址不够清晰，请重新确认地址'
+          } else if (questionId === 'ask_contact') {
+            reaskPrompt = '电话号码没听清，请重新确认'
+          } else {
+            reaskPrompt = '信息不够清晰，请重新确认'
+          }
+        }
+      }
+    }
+
+    // 重问时强制用 calm 档位的回答覆盖终端
+    if (isRetry && scripted.requireComplete) {
+      const calmLines = scripted.caller.calm ?? []
+      if (calmLines.length > 0) {
+        // 用 calm 回答覆盖最后几行 caller 对话
+        const callerStart = newDialogue.findIndex((d, i) => d.speaker === 'caller' && i > 0)
+        if (callerStart >= 0) {
+          newDialogue.splice(callerStart)
+          pushCallerLines(newDialogue, calmLines, now)
+        }
+      }
+    }
+
+    // 填终端：只有来电者真正给出了信息（!infoMissing）且回答完整（isComplete）才填
+    const canFill = !infoMissing && isComplete
+    if (canFill && scripted.fillTerminal) {
+      newTerminal = { ...newTerminal, ...scripted.fillTerminal }
+    }
+
+    // 信息质量
+    answerQuality = infoMissing ? 'vague' : (isComplete ? 'clear' : 'partial')
+    newInfoQuality[questionId] = answerQuality
+    if (canFill) {
+      if (scripted.fillTerminal?.address) newRevealed.address = 'full'
+      if (scripted.fillTerminal?.chiefComplaint) newRevealed.chiefComplaint = true
+      if (scripted.fillTerminal?.patientGender) newRevealed.gender = true
+      if (scripted.fillTerminal?.patientAge) newRevealed.age = true
+      if (scripted.fillTerminal && 'conscious' in scripted.fillTerminal) newRevealed.consciousness = true
+      if (scripted.fillTerminal && 'breathing' in scripted.fillTerminal) newRevealed.breathing = true
+      if (scripted.fillTerminal?.contact) newRevealed.contact = true
+    }
+    // ask_purpose 永远标记为已揭示
+    if (questionId === 'ask_purpose' && !infoMissing) newRevealed.purpose = true
+
+    // 只有信息完整才算问完；不完整则设置 pendingReask
+    if (canFill && !newAskedMPDS.includes(questionId)) newAskedMPDS.push(questionId)
+    newQuestionAttempts[questionId] = attemptCount + 1
+    newQuestionQuality[questionId] = answerQuality
+    const scriptedPenalty = Math.max(0, cs.questionCount - 4) * 3
+    newStress = Math.max(0, Math.min(100, newStress + stressEffect + scriptedPenalty + (turn?.stressDelta ?? 0)))
+    newQuestionStress[questionId] = newStress
+    const sCoopDelta = turn?.stressDelta == null ? 0 : turn.stressDelta < 0 ? 5 : turn.stressDelta > 0 ? -4 : 0
+    const sCooperation = Math.max(5, Math.min(100, cs.cooperation + sCoopDelta + (isRetry ? -3 : 0)))
+    const sStressLevel = stressToLevel(newStress)
+
+    // 情绪爆发（脚本版：使用脚本里该轮手写的爆发台词）
+    if (cs.stressLevel !== '失控' && sStressLevel === '失控' && scripted.outburst) {
+      newDialogue.push({ speaker: 'caller', text: scripted.outburst, timestamp: now })
+    }
+
+    // 脚本版 step2_event：生成协议编号判断题（与非脚本版一致）
+    if (questionId === 'step2_event' && !isRetry && canFill) {
+      const correctProtocol = call.mpdsCard.number
+      const allProtocols = PROTOCOL_REF.map(([n]) => n)
+      const distractorProtocols = allProtocols.filter(n => n !== correctProtocol)
+      const shuffledDists = distractorProtocols.sort(() => rng() - 0.5).slice(0, 3)
+      const protoOptions = [correctProtocol, ...shuffledDists].sort(() => rng() - 0.5)
+      const protoNameMap = Object.fromEntries(PROTOCOL_REF)
+      newJudgments.push({
+        id: `judge_step2_protocol_${sink.seq++}`,
+        questionId: 'step2_event',
+        dialogueIndex: state.dialogueLog.length + newDialogue.findIndex(d => d.speaker === 'caller'),
+        question: '根据来电者描述，此情况最可能对应哪个 MPDS 协议？',
+        options: protoOptions.map(n => ({
+          label: `${n} — ${protoNameMap[n] ?? '未知'}`,
+          fills: [{ field: 'protocolNumber' as const, value: String(n) }],
+          isCorrect: n === correctProtocol,
+        })),
+        chosenOptionIndex: null,
+      })
+    }
+
+    const sTimeCost = getQuestionTimeCost(questionId, call)
+    return {
+      ...state,
+      eventSeq: sink.seq,
+      actionEndsAt: state.shiftElapsed + Math.max(0, (hasPerk(state.perks, 'rapid_intake') && cs.questionCount === 0 ? 0 : sTimeCost) + (turn?.extraTime ?? 0)),
+      calmCount: 0,
+      questionCost: state.questionCost + Math.max(0, (hasPerk(state.perks, 'rapid_intake') && cs.questionCount === 0 ? 0 : sTimeCost) + (turn?.extraTime ?? 0)),
+      callPhase: 'questioning',
+      pendingJudgments: newJudgments,
+      pendingReask: !isComplete && reaskPrompt ? { questionId, prompt: reaskPrompt } : null,
+      terminal: newTerminal,
+      callerState: {
+        ...cs,
+        cooperation: sCooperation,
+        revealedInfo: { ...newRevealed, address: canFill && scripted.fillTerminal?.address ? 'full' : newRevealed.address },
+        infoQuality: newInfoQuality,
+        askedMPDS: newAskedMPDS,
+        questionAttempts: newQuestionAttempts,
+        questionQuality: newQuestionQuality,
+        questionStress: newQuestionStress,
+        stress: newStress,
+        stressLevel: sStressLevel,
+        questionCount: cs.questionCount + 1,
+      },
+      // 脚本对话不做 callerVoice 合成，直接使用原文
+      dialogueLog: [...state.dialogueLog, ...newDialogue],
+    }
+  }
+
+  // ==========================================
   // 5步标准协议 (Protocol 0) — 每通电话必须依次完成
   // ==========================================
 
   // --- 步骤1：位置确认 ---
   if (questionId === 'step1_location') {
     stressEffect = -5
-    newDialogue.push({ speaker: 'operator', text: '请问事发的确切地址是哪里？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '您在哪儿？具体地址说一下。', timestamp: now })
     const nq = generateLocationNarrative(
       call.fourElements.address.partial,
       call.fourElements.address.vague,
@@ -119,7 +295,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   // --- 步骤1b：标志建筑（补充精确地址）---
   else if (questionId === 'ask_landmark') {
     stressEffect = -3
-    newDialogue.push({ speaker: 'operator', text: '旁边有什么明显的标志物或者店铺吗？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '旁边有什么明显的店或者牌子吗？', timestamp: now })
     const nq = pickNarrativeAnswer(
       newStress,
       call.fourElements.address.full,
@@ -137,7 +313,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   // --- 步骤2：事件简述 ---
   else if (questionId === 'step2_event') {
     stressEffect = -8
-    newDialogue.push({ speaker: 'operator', text: '好的，请告诉我具体发生了什么事？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '好，告诉我到底怎么了。', timestamp: now })
     const nq = generateEventNarrative(
       call.fourElements.condition.chiefComplaint,
       call.fourElements.condition.gender,
@@ -188,9 +364,9 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   // --- 步骤3：患者年龄（自动填入调度卡，不再弹出选择题）---
   else if (questionId === 'step3_age') {
     stressEffect = -4
-    newDialogue.push({ speaker: 'operator', text: '患者多大年龄了？', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: 'TA多大岁数了？', timestamp: now })
     const age = call.fourElements.condition.age
-    const ageLines = generateAgeNarrative(age, newStress)
+    const ageLines = generateAgeNarrative(age, newStress, callerProfile.relationship)
     pushCallerLines(newDialogue, ageLines, now)
     newRevealed.age = newStress < 75
     newInfoQuality['age'] = newStress >= 75 ? 'vague' : newStress >= 50 ? 'partial' : 'clear'
@@ -205,7 +381,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   else if (questionId === 'step4_vitals') {
     stressEffect = -10
     const pronoun = getPronoun(call.fourElements.condition.gender)
-    newDialogue.push({ speaker: 'operator', text: `患者清醒吗？${pronoun}还有呼吸吗？`, timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: `${pronoun}还有意识吗？还在喘气吗？`, timestamp: now })
     const consciousness = call.fourElements.condition.consciousness
     const breathing = call.fourElements.condition.breathing
     const vitalsLines = generateVitalsNarrative(consciousness, breathing, newStress)
@@ -239,7 +415,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   // --- 联系电话（补充信息，随时可问）---
   else if (questionId === 'ask_contact') {
     stressEffect = -2
-    newDialogue.push({ speaker: 'operator', text: '您的联系电话是多少？我记一下。', timestamp: now })
+    newDialogue.push({ speaker: 'operator', text: '您的电话号码是多少？我记一下。', timestamp: now })
     const contactAnswer = newStress >= 50
       ? '就是我这个手机吧...哎我现在脑子都是乱的...你打我这个号就行...这个是...等一下我看看...'
       : newStress >= 25
@@ -256,16 +432,6 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
     answerQuality = cq.quality
     // 自动填写调度卡：联系电话
     newTerminal = { ...newTerminal, contact: call.fourElements.contact }
-  }
-
-  // --- 求助诉求（补充闭环信息）---
-  else if (questionId === 'ask_purpose') {
-    stressEffect = -1
-    newDialogue.push({ speaker: 'operator', text: '您现在最需要我们帮您做什么？', timestamp: now })
-    pushCallerLines(newDialogue, splitSentences(call.fourElements.purpose), now)
-    newRevealed.purpose = true
-    newInfoQuality['purpose'] = newStress >= 50 ? 'partial' : 'clear'
-    answerQuality = newInfoQuality['purpose']
   }
 
   // --- MPDS 标准问询 ---
@@ -346,11 +512,11 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   // 情绪爆发
   if (cs.stressLevel !== '失控' && newStressLevel === '失控') {
     newDialogue.push({
-      speaker: 'caller', text: '我...我真的不行了！你们到底能不能来？！', timestamp: now,
+      speaker: 'caller', text: '不行了！你们到底在哪儿！', timestamp: now,
     })
   } else if (cs.stressLevel === '镇定' && newStressLevel === '恐慌') {
     newDialogue.push({
-      speaker: 'caller', text: '你能不能快点……我感觉越来越不好了……', timestamp: now,
+      speaker: 'caller', text: '越来越不对劲了……你们快点……', timestamp: now,
     })
   }
 

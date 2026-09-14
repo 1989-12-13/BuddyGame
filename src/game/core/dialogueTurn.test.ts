@@ -24,22 +24,24 @@ describe('对话回合 · 顺序交给协议', () => {
     expect(buildTurnOptions(createInitialState())).toEqual([])
   })
 
-  it('开局自动指向协议第一步，并给出两种措辞', () => {
+  it('开局自动指向协议第一步，并给出推进选项', () => {
     const state = beginCall()
     expect(nextProtocolId(state)).toBe('step1_location')
 
     const advances = buildTurnOptions(state).filter(option => option.kind === 'advance')
-    expect(advances).toHaveLength(2)
-    expect(askAction(advances[0])).toMatchObject({ questionId: 'step1_location', stressDelta: -5, extraTime: 1 })
-    expect(askAction(advances[1])).toMatchObject({ questionId: 'step1_location', stressDelta: 6, extraTime: -1 })
+    // 有手写脚本时只出一个选项（不拆温和/催促）
+    expect(advances).toHaveLength(1)
+    expect(askAction(advances[0])).toMatchObject({ questionId: 'step1_location' })
   })
 
   it('问过之后协议自动推进到下一步', () => {
     const state = beginCall()
-    const first = buildTurnOptions(state).find(option => option.kind === 'advance')!
-    const next = worldReducer(state, first.action)
+    // 将 stress 设为 40（紧张档），确保 script 版 step1_location 回答完整
+    const calmState = withCaller(state, { stress: 40, stressLevel: '紧张' })
+    const first = buildTurnOptions(calmState).find(option => option.kind === 'advance')!
+    const next = worldReducer(calmState, first.action)
 
-    expect(nextProtocolId(state)).toBe('step1_location')
+    expect(nextProtocolId(calmState)).toBe('step1_location')
     expect(nextProtocolId(next)).toBe('step2_event')
   })
 
@@ -60,15 +62,15 @@ describe('对话回合 · 每回合必须保留真实取舍', () => {
     expect(options.length).toBeLessThanOrEqual(4)
   })
 
-  it('放慢与加快的代价方向相反（效率 vs 情绪）', () => {
-    const [gentle, press] = buildTurnOptions(beginCall())
+  it('有脚本时单一选项推进，无温和/催促拆分', () => {
+    const advances = buildTurnOptions(beginCall())
       .filter(option => option.kind === 'advance')
       .map(askAction)
 
-    expect(gentle.stressDelta).toBeLessThan(0)
-    expect(gentle.extraTime).toBeGreaterThan(0)
-    expect(press.stressDelta).toBeGreaterThan(0)
-    expect(press.extraTime).toBeLessThan(0)
+    // 有script时只有1个advance选项，stressDelta=0, extraTime=0
+    expect(advances).toHaveLength(1)
+    expect(advances[0].stressDelta).toBe(0)
+    expect(advances[0].extraTime).toBe(0)
   })
 
   it('开局可以抢问意识与呼吸（跳过当前步骤）', () => {

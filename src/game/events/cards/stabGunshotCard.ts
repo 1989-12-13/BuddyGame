@@ -55,6 +55,128 @@ export const stabGunshotCard: EmergencyScenario = {
     purpose: '他胸口中刀了我能做什么',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 蒋雯（路人）报告街头刀刺伤
+  // 来电者个性：紧张但配合、压低声音、不断确认伤者状态
+  // 关系：路人（对伤者不了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['海淀区五道口成府路与王庄路交叉口西北角书吧门口。'],
+        tense: ['五道口！成府路和王庄路交叉口！书吧门口！你们快来！'],
+        panic: ['成府路和王庄路！书吧门口！快来！'],
+        lost: ['五道口……成府路……书吧……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '海淀区五道口成府路与王庄路交叉口西北角书吧门口' },
+      outburst: '他还在流血！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你紧张，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '旁边有什么明显的店吗？',
+      caller: {
+        calm: ['书吧门口，旁边有个红色的奶茶店。'],
+        tense: ['书吧门口！旁边有奶茶店！红色的！'],
+        panic: ['书吧……奶茶店……门口！'],
+        lost: ['有个店……书吧……'],
+      },
+      fillTerminal: { address: '海淀区五道口成府路与王庄路交叉口西北角书吧门口，旁边有红色奶茶店' },
+      calmReply: {
+        operatorCalm: '好，书吧旁边奶茶店，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['两伙人打架，一个人被刀捅了左胸。', '刀已经拔出来了，伤口在冒血还有气泡。', '打人的跑了。'],
+        tense: ['被人捅了！左胸！', '刀拔出来了！伤口冒血还有气泡！', '打人的跑了！'],
+        panic: ['左胸被捅了！！冒血！！', '有气泡！！跟血一起冒！！', '你们快来！！'],
+        lost: ['被刀捅了……左胸……', '伤口冒血……有气泡……', '打人的跑了……'],
+      },
+      fillTerminal: { chiefComplaint: '左胸刀刺伤，开放性气胸，活动性出血', patientGender: '男性' },
+      outburst: '他喘不上气了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。左胸被捅，伤口有气泡——这是开放性气胸，我记下了。别塞东西进伤口，按我说的做。',
+        calm: '好……我不塞。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他大概多大岁数？',
+      caller: {
+        calm: ['22岁左右，年轻人。'],
+        tense: ['22岁左右！年轻人！'],
+        panic: ['22岁！！年轻人！！'],
+        lost: ['20多岁……应该是……'],
+      },
+      fillTerminal: { patientAge: '约22岁' },
+      calmReply: {
+        operatorCalm: '好，22岁左右，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['还清醒，但很害怕，一直在喘粗气。', '呼吸很急促，说喘不上气。'],
+        tense: ['还清醒！但很害怕！', '呼吸很急促！说喘不上气！'],
+        panic: ['清醒！！但喘不上气！！', '呼吸很急！！你们快来！！'],
+        lost: ['还醒着……但很害怕……', '呼吸很急……喘不上气……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。用保鲜膜盖住伤口贴三边，让他半坐着偏向伤侧，我一步步告诉你怎么做。',
+        calm: '好……我找保鲜膜。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13077625678，就是这个号。'],
+        tense: ['130……7762……5678！打这个就行！'],
+        panic: ['130……这个手机！5678！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '130****5678' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_stab_wound',

@@ -55,6 +55,128 @@ export const obstetricCard: EmergencyScenario = {
     purpose: '马上派救护车！可能需要接生！',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 赵磊（丈夫）报告妻子临产
+  // 来电者个性：大喊大叫、语无伦次、反复说"快点来"
+  // 关系：丈夫（对妻子了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，小区名和楼号。',
+      caller: {
+        calm: ['丰台区方庄芳城园一区5号楼1单元802室。'],
+        tense: ['方庄！芳城园一区！5号楼！1单元802！你们快来！'],
+        panic: ['芳城园！5号楼！802！快来啊！'],
+        lost: ['方庄……芳城园……802……'],
+        retryPrefix: '我不是刚说了——',
+      },
+      fillTerminal: { address: '丰台区方庄芳城园一区5号楼1单元802室' },
+      outburst: '你们到底来不来啊！她要生了！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '小区旁边有什么明显的店吗？',
+      caller: {
+        calm: ['楼下有个链家地产。'],
+        tense: ['楼下链家地产！你们到了就能看到！'],
+        panic: ['链家……楼下……'],
+        lost: ['有个店……楼下……'],
+      },
+      fillTerminal: { address: '丰台区方庄芳城园一区5号楼1单元802室，楼下有链家地产' },
+      calmReply: {
+        operatorCalm: '好，链家地产，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['我老婆怀孕38周，刚才突然破水了。', '宫缩越来越频繁，三四分钟一次。', '这是第二胎。'],
+        tense: ['老婆破水了！38周！', '宫缩三四分钟一次！越来越快！', '第二胎！预产期还有两周！'],
+        panic: ['破水了！！要生了！！', '宫缩越来越快！！三四分钟！！', '你们快来！！'],
+        lost: ['破水了……', '宫缩越来越快……', '要生了……'],
+      },
+      fillTerminal: { chiefComplaint: '孕38周破水，规律宫缩3-4分钟', patientGender: '女性' },
+      outburst: '她要生了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。38周破水，宫缩三四分钟——这些我记下了。让她平躺，按我说的做。',
+        calm: '好……我让她躺下了。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['32岁。'],
+        tense: ['32！她32！'],
+        panic: ['32！！32岁！！'],
+        lost: ['32……对，32。'],
+      },
+      fillTerminal: { patientAge: '32岁' },
+      calmReply: {
+        operatorCalm: '好，32岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还清醒吗？能说话吗？',
+      caller: {
+        calm: ['清醒，但疼得话都说不全了。', '呼吸很急促，一直在喘。'],
+        tense: ['清醒！但疼得说不出话！', '呼吸很急！一直在喘！'],
+        panic: ['清醒！！但疼！！说不出话！！', '呼吸很急！！你们快来！！'],
+        lost: ['还醒着……但疼得说不出话……', '呼吸很急……', '她快撑不住了……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。让她平躺，别站起来，我一步步告诉你怎么做。',
+        calm: '好……她躺着。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13777623456，就是这个号。'],
+        tense: ['137……7762……3456！打这个就行！'],
+        panic: ['137……这个手机！3456！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '137****3456' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_ob_water',

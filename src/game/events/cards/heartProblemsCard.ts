@@ -55,6 +55,127 @@ export const heartProblemsCard: EmergencyScenario = {
     purpose: '她是不是心脏病发了要不要吃药',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 钟奇（邻居）报告同事心律失常
+  // 来电者个性：压低声音、反复问要不要报警
+  // 关系：同事（对患者了解一部分）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，楼层和房间号。',
+      caller: {
+        calm: ['朝阳区望京soho塔1 15层1508室。'],
+        tense: ['望京soho！塔1！15层！1508室！你们快来！'],
+        panic: ['望京soho！塔1！1508！快来！'],
+        lost: ['望京soho……塔1……1508……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '朝阳区望京soho塔1 15层1508室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '大厦怎么进？旁边有什么标志吗？',
+      caller: {
+        calm: ['望京东地铁站B口出来进大厅上电梯。'],
+        tense: ['望京东地铁B口！进大厅！上电梯！'],
+        panic: ['地铁B口……进大厅……15层！'],
+        lost: ['地铁口旁边……大厅……'],
+      },
+      fillTerminal: { address: '朝阳区望京soho塔1 15层1508室，望京东地铁站B口出来进大厅上电梯' },
+      calmReply: {
+        operatorCalm: '好，地铁B口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['同事开会时突然心跳特别快。', '心慌，胸口发闷，头晕站不住。', '大概十分钟前突然开始的。'],
+        tense: ['同事心跳特别快！心慌！', '胸口发闷！头晕站不住！', '十分钟前突然开始的！'],
+        panic: ['心跳快得不行！！心慌！！', '胸口发闷！！站不住！！', '你们快来！！'],
+        lost: ['突然心跳快了……', '心慌……站不住……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '突发心悸心慌，心跳极快，伴胸闷头晕', patientGender: '女性' },
+      outburst: '她快撑不住了！！你们到底来不来！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。突然心跳快，心慌胸闷——这些我记下了。别让她走动，按我说的做。',
+        calm: '好……我不让她动。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['52岁。'],
+        tense: ['52！她52！'],
+        panic: ['52！！52岁！！'],
+        lost: ['52……应该是52……'],
+      },
+      fillTerminal: { patientAge: '52岁' },
+      calmReply: {
+        operatorCalm: '好，52岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还有意识吗？能说话吗？',
+      caller: {
+        calm: ['清醒，但很害怕，脸色发白。', '呼吸急促。'],
+        tense: ['清醒！但很害怕！脸色发白！', '呼吸很急！'],
+        panic: ['清醒！！但很害怕！！脸色白！！', '呼吸很急！！你们快来！！'],
+        lost: ['还醒着……但很害怕……', '呼吸很急……', '她快晕了……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。让她半坐着别动，我一步步告诉你怎么做。',
+        calm: '好……我让她靠着。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['15877626666，就是这个号。'],
+        tense: ['158……7762……6666！打这个就行！'],
+        panic: ['158……这个手机！6666！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '158****6666' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_heart_onset',

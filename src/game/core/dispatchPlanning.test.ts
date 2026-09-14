@@ -7,7 +7,7 @@ import { worldReducer } from './worldReducer'
 function classifiedCall(): WorldState {
   const started = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: ['cardiac_arrest'] })
   const answered = worldReducer(started, { type: 'ANSWER_CALL' })
-  return worldReducer({ ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
+  return worldReducer({ ...answered, terminal: { ...answered.terminal, address: '测试现场', contact: '138****0000', conscious: false, breathing: false } }, { type: 'SET_MPDS_DETERMINANT', determinant: 'ECHO' })
 }
 
 describe('automatic ambulance dispatch planning', () => {

@@ -99,6 +99,128 @@ export const traumaCarCard: EmergencyScenario = {
     purpose: '需要救护车和急救',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 王晓（路人）报告车祸伤
+  // 来电者个性：冷静有条理、主动提供信息、能配合指令
+  // 关系：路人（对伤者不了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['海淀区中关村大街和知春路交叉口。'],
+        tense: ['中关村大街和知春路交叉口！你们快来！'],
+        panic: ['中关村大街！知春路！快来！'],
+        lost: ['中关村大街……知春路……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '海淀区中关村大街和知春路交叉口' },
+      outburst: '他还在流血！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你紧张，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '路口旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['海淀黄庄地铁站A2出口往北50米。'],
+        tense: ['地铁A2出口！往北50米！你们到了就能看到！'],
+        panic: ['地铁A2出口……北边50米……'],
+        lost: ['地铁口旁边……往北……'],
+      },
+      fillTerminal: { address: '海淀区中关村大街和知春路交叉口，海淀黄庄地铁站A2出口往北50米' },
+      calmReply: {
+        operatorCalm: '好，地铁A2出口，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['一个骑电动车的人被汽车撞了。', '右腿在流血，人还醒着但动不了。', '他说腰疼。'],
+        tense: ['骑电动车的被汽车撞了！', '右腿流血！人还醒着但动不了！', '他说腰疼！'],
+        panic: ['被撞了！！腿在流血！！', '动不了了！！说腰疼！！', '你们快来！！'],
+        lost: ['被车撞了……', '腿在流血……动不了……', '说腰疼……'],
+      },
+      fillTerminal: { chiefComplaint: '车祸致右腿外伤出血，腰痛，疑似脊柱损伤', patientGender: '男性' },
+      outburst: '他血止不住！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。车祸，右腿流血，腰疼——这些我记下了。别移动他，可能有脊柱伤，按我说的做。',
+        calm: '好……我不动他。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他大概多大岁数？',
+      caller: {
+        calm: ['30岁左右。'],
+        tense: ['30岁左右！年轻人！'],
+        panic: ['30岁！！年轻人！！'],
+        lost: ['30岁……应该是……'],
+      },
+      fillTerminal: { patientAge: '约30岁' },
+      calmReply: {
+        operatorCalm: '好，30岁左右，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒，能跟我说话。', '呼吸看着还算正常。'],
+        tense: ['清醒！能说话！', '呼吸还算正常！但腿在流血！'],
+        panic: ['清醒！！能说话！！', '呼吸正常！！但血好多！！', '你们快来！！'],
+        lost: ['还醒着……能说话……', '呼吸正常……但腿在流血……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。用布按压伤口，别移动他，我一步步告诉你怎么做。',
+        calm: '好……我按住了。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13977625678，就是这个号。'],
+        tense: ['139……7762……5678！打这个就行！'],
+        panic: ['139……这个手机！5678！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '139****5678' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_bleeding',

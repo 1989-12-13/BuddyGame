@@ -56,6 +56,127 @@ export const urinaryCard: EmergencyScenario = {
     purpose: '受不了了需要打止痛针',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 郑宇（本人）报告肾绞痛
+  // 来电者个性：疼痛时说话咬牙切齿、阵发性疼痛间隙能正常交流
+  // 关系：本人（对患者完全了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体到楼层。',
+      caller: {
+        calm: ['东城区东直门外大街东方银座公寓C座1508室。'],
+        tense: ['东直门！东方银座！C座！1508！嘶——疼……'],
+        panic: ['东方银座！C座！1508！嘶——'],
+        lost: ['东直门……东方银座……1508……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '东城区东直门外大街东方银座公寓C座1508室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你疼，救护车已经在路上了。咱接着说。',
+        calm: '好……你问。',
+        tense: '行……嘶——你问。',
+        panic: '嗯……快问……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '公寓旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['东直门地铁站C口出来就是。'],
+        tense: ['地铁C口！出来就是！'],
+        panic: ['地铁C口……旁边……嘶——'],
+        lost: ['地铁口旁边……'],
+      },
+      fillTerminal: { address: '东城区东直门外大街东方银座公寓C座1508室，东直门地铁站C口出来就是' },
+      calmReply: {
+        operatorCalm: '好，地铁C口，记下了。咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['半小时前左边腰突然绞痛，一阵一阵的。', '往肚子下面串，疼得冒冷汗。', '以前有肾结石。'],
+        tense: ['左腰绞痛！半小时前开始的！', '一阵一阵的！往下面串！', '以前有肾结石！'],
+        panic: ['左腰绞痛！！一阵一阵的！！', '往下面串！！嘶——疼死了！！', '你们快来！！'],
+        lost: ['左腰疼……一阵一阵的……', '往下面串……', '以前有结石……'],
+      },
+      fillTerminal: { chiefComplaint: '左侧腰腹部阵发性绞痛，放射至会阴部', patientGender: '男性' },
+      outburst: '哎哟！疼死了！你们到底来不来！',
+      calmReply: {
+        operatorCalm: '我听清楚了。左腰阵发性绞痛，往下面串，有肾结石史——这些我记下了。侧躺蜷腿，按我说的做。',
+        calm: '好……我侧躺了。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……侧躺……',
+        lost: '……好。',
+      },
+    },
+
+    step3_age: {
+      operator: '您多大岁数？',
+      caller: {
+        calm: ['35岁。'],
+        tense: ['35！我35！'],
+        panic: ['35！嘶——'],
+        lost: ['35……对，35。'],
+      },
+      fillTerminal: { patientAge: '35岁' },
+      calmReply: {
+        operatorCalm: '好，35岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行……你说。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '人清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['清醒，但疼得坐立不安。', '喘粗气。'],
+        tense: ['清醒！但疼得坐立不安！', '喘粗气！嘶——'],
+        panic: ['清醒！！疼！！喘粗气！！嘶——'],
+        lost: ['醒着……疼得坐立不安……', '喘粗气……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人清醒，这我知道了。侧躺蜷腿，多喝水，救护车马上到。',
+        calm: '好……我侧躺。',
+        tense: '行……嘶——知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['15877626666，就是这个号。'],
+        tense: ['158……7762……6666！打这个！'],
+        panic: ['158……6666！嘶——'],
+        lost: ['158……这个手机……'],
+      },
+      fillTerminal: { contact: '158****6666' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行……我听着。',
+        panic: '嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_urinary_pain',

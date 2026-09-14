@@ -108,38 +108,17 @@ const RETRY_MAIN: Record<ProtocolId, PhrasingPair> = {
   },
 }
 
-/** 从来电者这边（对话流末尾）取最近一句话，压缩成可承接的引子 */
-function lastCallerQuote(state: WorldState): string | null {
-  for (let i = state.dialogueLog.length - 1; i >= 0; i--) {
-    const line = state.dialogueLog[i]
-    if (line.speaker !== 'caller') continue
-    const t = line.text.replace(/\s+/g, '').trim()
-    if (!t) continue
-    const cleaned = t.replace(/[！!？?。，,；;：:]$/g, '')
-    if (cleaned.length <= 16) return cleaned || null
-    return `${cleaned.slice(0, 16)}…`
-  }
-  return null
-}
-
 /**
  * 承接型问话：同一话题给出「放慢 / 加快」两种说法。
- * 好处：有引用就先把来电者刚说的话接回来（"嗯，我听到你说……"），
- * 让每一问都像在接上一句，而不是话筒里突然冒出的固定模板。
+ * 台词就是模板本身，不再复述来电者上一句原话。
  */
-export function phraseFor(id: ProtocolId, quote: string | null, retry: boolean): PhrasingPair {
+export function phraseFor(id: ProtocolId, retry: boolean): PhrasingPair {
   const pair = (retry ? RETRY_MAIN : TOPIC_MAIN)[id]
-  if (!quote) return pair
-
-  const hook = retry
-    ? ''
-    : `你刚才说「${quote}」——`
+  if (!retry) return pair
 
   return {
-    gentle: retry
-      ? `明白，${pair.gentle}`
-      : `${hook}${pair.gentle}`,
-    press: `${hook}${pair.press}`,
+    gentle: `明白，${pair.gentle}`,
+    press: pair.press,
   }
 }
 
@@ -162,9 +141,8 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
 
   // 1) 推进型 —— 同一话题的两种说法，构成「效率 vs 情绪 vs 配合度」的取舍
   if (next) {
-    const quote = lastCallerQuote(state)
     const retry = attempts(next) > 0
-    const phrasing = phraseFor(next, quote, retry)
+    const phrasing = phraseFor(next, retry)
 
     const impatient = retry && cs.cooperation < 50
     options.push({
@@ -206,7 +184,7 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
     && cs.stress < (cs.questionStress[id] ?? cs.stress)
     && cs.cooperation >= 35)
   if (shaky) {
-    const retryPhrasing = phraseFor(shaky, null, true)
+    const retryPhrasing = phraseFor(shaky, true)
     const confirmLine = retryPhrasing.gentle
     options.push({
       id: `confirm-${shaky}`,
@@ -225,7 +203,7 @@ export function buildTurnOptions(state: WorldState): TurnOption[] {
 
   // 4) 捷径型 —— 跳过当前步骤，直奔最关键的意识与呼吸
   if (next && next !== 'step4_vitals' && !wasAsked('step4_vitals')) {
-    const pressLine = phraseFor('step4_vitals', lastCallerQuote(state), false).press
+    const pressLine = phraseFor('step4_vitals', false).press
     options.push({
       id: 'shortcut-vitals',
       kind: 'shortcut',

@@ -59,6 +59,8 @@ export interface CallEvaluation {
 
 export interface ShiftEvaluation {
   calls: CallEvaluation[]
+  /** 在班次截止前完整结束的电话数，不含到点后移交的在办线路。 */
+  completedCallCount: number
   dimensions: Record<EvaluationDimensionKey, DimensionEvaluation>
   overallGrade: Exclude<EvaluationGrade, 'NA'>
   profile: EvaluationProfile

@@ -84,11 +84,13 @@ export interface ShiftLine {
 export interface ShiftConfig {
   lineCount: number
   vehicleCount: number
+  /** 班次总通数：默认 6 通，达到后立即交班并进入总结。 */
+  targetCalls: number
   /** 响铃超时秒数：超时未接 → 记入未接来电并释放线路 */
   ringTimeout: number
   /**
    * 初始场景牌堆 —— 仅用于测试与确定性回放，缺省时运行时随机发牌。
-   * 注意：牌堆不是「班次长度」。发完会自动重洗，班次何时结束由热度模型决定。
+   * 注意：牌堆不是「班次长度」。发完会自动重洗，班次由 targetCalls 截止。
    */
   deck?: string[]
 }
@@ -97,12 +99,12 @@ export interface ShiftConfig {
 export type ShiftMoment = 'opening' | 'rising' | 'peak' | 'ended'
 
 /**
- * 收班方式 —— 全部由表现驱动，没有任何「今晚几通」的预设。
+ * 收班方式。complete 是现行 6 通值班的正常结束；其余值保留用于旧记录兼容。
  * - perfect：撑过峰值段 → 交班
  * - collapse：患者死亡 / 连续漏接达阈值 → 被换下来
  * - fade：热度长期低迷 → 平静收班
  */
-export type ShiftEnding = 'perfect' | 'collapse' | 'fade'
+export type ShiftEnding = 'complete' | 'perfect' | 'collapse' | 'fade'
 
 export interface ShiftState {
   clock: number
@@ -113,7 +115,7 @@ export interface ShiftState {
   /** 已完成的通话（跨线路累积，不随线路复用而丢失） */
   completed: ShiftCompletedCall[]
   focusedLineId: string | null
-  /** 剩余场景牌堆；发完自动重洗，因此班次没有固定通数 */
+  /** 剩余场景牌堆；发完自动重洗。 */
   deck: string[]
   /** 到达冷却剩余秒数 */
   arrivalCooldown: number
@@ -137,18 +139,18 @@ export interface ShiftState {
   lastRejection: string | null
 }
 
-/** 默认班次配置：3 条线路 / 2 辆车（见设计方案 §0.2）。班次长度由热度模型决定，不在此配置。 */
+/** 默认班次配置：3 条线路 / 2 辆车 / 6 通电话。 */
 export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
   lineCount: 3,
   vehicleCount: 2,
   ringTimeout: 22,
+  targetCalls: 6,
 }
 
 // ============================================================
-// 热度模型 —— 替代「固定通数」
+// 热度模型 —— 控制来电密度与并发强度
 // ============================================================
-// 约定：没有任何地方写「今晚几通」或「班次多久」。
-// 长度是热度的上升 / 衰减速率标定出来的自然结果。
+// 班次长度由 targetCalls 固定为 6 通；热度决定每通之间的密度与并发上限。
 
 /** 达到该热度即进入峰值段 */
 export const HEAT_PEAK = 85
@@ -201,6 +203,7 @@ export function maxRingingFor(heat: number): number {
 
 /** 收班叙事（崩溃时是「被换下来」，不是冷冰冰的结算） */
 export const ENDING_NARRATIVE: Record<ShiftEnding, string> = {
+  complete: '六通电话处理完了。下一班调度员已经接上线路。你摘下耳机，屏幕开始整理这段时间留下的记录。',
   perfect: '最忙的那一段你顶住了。组长拍拍你的肩：接下来的交给下一班。',
   collapse: '组长把手按在你的肩膀上：「先下来，喝口水。」耳机被摘下的那一刻，线路还在响。',
   fade: '后半夜的线路安静下来。你把登记表收好，等下一次响铃。',
@@ -645,12 +648,12 @@ export function tickShift(shift: ShiftState): ShiftState {
   }
 
   // 1) 来电到达：由热度决定「多密」与「多并发」——这是上强度的两条腿
-  if (!working.ending && working.arrivalCooldown === 0) {
+  if (!working.ending && working.completed.length < working.config.targetCalls && working.arrivalCooldown === 0) {
     const ringing = working.lines.filter(line => line.phase === 'ringing').length
     const free = working.lines.find(line => line.phase === 'idle')
     if (free && ringing < maxRingingFor(working.heat)) {
-      // 班次进度：按已完成通数推进（约 6 通走完全程），驱动轮盘赌档位概率
-      const progress = Math.min(1, working.completed.length / 6)
+      // 班次进度：按已完成通数推进（6 通走完全程），驱动轮盘赌档位概率
+      const progress = Math.min(1, working.completed.length / working.config.targetCalls)
       const { scenarioId, deck } = drawScenario(working.deck, progress)
       working = {
         ...working,
@@ -664,7 +667,9 @@ export function tickShift(shift: ShiftState): ShiftState {
   }
 
   // 1.5) 交叉核实：已派车的事故会引来第二位来电者，占用另一条空闲线路
-  const freeLine = working.ending ? null : working.lines.find(line => line.phase === 'idle')
+  const freeLine = working.ending || working.completed.length >= working.config.targetCalls
+    ? null
+    : working.lines.find(line => line.phase === 'idle')
   if (freeLine) {
     const incident = working.incidents.find(i =>
       !i.supplementLineId && !i.resolved && working.clock >= i.supplementAt)
@@ -768,10 +773,11 @@ export function tickShift(shift: ShiftState): ShiftState {
     else if (working.moment === 'opening' && working.completed.length > 0) working = { ...working, moment: 'rising' }
   }
 
-  // 6) 收班判定 —— 全部由表现驱动，没有任何「今晚几通」的预设。
-  //    优先级：崩盘 > 圆满 > 平稳
+  // 6) 收班判定 —— 6 通完成即交班；其他原因收班保留兼容。
   if (!working.ending) {
-    if (working.deaths >= COLLAPSE_DEATHS || working.missedStreak >= COLLAPSE_MISSED_STREAK) {
+    if (working.completed.length >= working.config.targetCalls) {
+      working = { ...working, ending: 'complete', moment: 'ended' }
+    } else if (working.deaths >= COLLAPSE_DEATHS || working.missedStreak >= COLLAPSE_MISSED_STREAK) {
       working = { ...working, ending: 'collapse', moment: 'ended' }
     } else if (working.peakSurvived >= PEAK_CALLS_TO_SURVIVE) {
       working = { ...working, ending: 'perfect', moment: 'ended' }
@@ -780,8 +786,8 @@ export function tickShift(shift: ShiftState): ShiftState {
     }
   }
 
-  // 7) 崩盘 = 当场被换下来：手里的活立刻移交，不让你再收拾残局
-  if (working.ending === 'collapse') {
+  // 7) 班次收班后把仍在处理的病例交给下一班；已得到现场结果的 done 线路保留真实结果。
+  if (working.ending === 'complete' || working.ending === 'collapse') {
     const transferred = working.lines.flatMap(line => {
       if (line.role !== 'primary' || (line.phase !== 'active' && line.phase !== 'done')) return []
       const scenarioId = line.world.currentCall?.id ?? line.scenarioId
@@ -789,7 +795,10 @@ export function tickShift(shift: ShiftState): ShiftState {
       const scenario = getScenario(scenarioId)
       const existing = line.world.callEvaluations[line.world.callEvaluations.length - 1]
       if (!existing && (!line.world.currentCall || !line.world.callerState)) return []
-      const evaluation = markCallEvaluationTransferred(existing ?? buildCallEvaluation(line.world, scenario), scenario)
+      const baseEvaluation = existing ?? buildCallEvaluation(line.world, scenario)
+      const evaluation = line.phase === 'done' && baseEvaluation.outcome !== 'pending'
+        ? baseEvaluation
+        : markCallEvaluationTransferred(baseEvaluation, scenario)
       return [{ lineId: line.id, scenarioId: scenario.id, evaluation, activeSeconds: line.world.activePlaySeconds }]
     })
     const abandonedRings = working.lines

@@ -41,7 +41,7 @@ const call: CallEvaluation = {
 }
 
 const evaluation: ShiftEvaluation = {
-  calls: [call], dimensions, overallGrade: 'B', profile: call.profile,
+  calls: [call], completedCallCount: 1, dimensions, overallGrade: 'B', profile: call.profile,
   rescuedCount: 3, worsenedCount: 1, deathCount: 0, transferredCount: 1, unresolvedCount: 0,
   prankCount: 0, missedCount: 1, missedCalls: [{ scenarioId: 'missed', title: '未接病例' }],
   activeSeconds: 42, endingNarrative: '班次平稳结束。', narrative: '共处理 1 通。', incidents: [],
@@ -51,6 +51,8 @@ describe('EndingScreen 五维结算', () => {
   it('展示人数、画像、雷达图和逐病例叙事，不显示旧分数', () => {
     const { container } = render(<EndingScreen evaluation={evaluation} onRestart={vi.fn()} />)
     expect(screen.getByLabelText('综合评级 B')).toBeInTheDocument()
+    expect(screen.getByText('本班完成')).toBeInTheDocument()
+    expect(screen.getByText('1', { selector: '.completed-total strong' })).toBeInTheDocument()
     expect(screen.getByText('本班次确认救治')).toBeInTheDocument()
     expect(screen.getByText('3', { selector: '.saved-total strong' })).toBeInTheDocument()
     expect(screen.getAllByLabelText('五维评价雷达图')).not.toHaveLength(0)

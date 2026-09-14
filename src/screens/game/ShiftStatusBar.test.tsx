@@ -15,12 +15,14 @@ function withVehicleOut(base: ShiftState): ShiftState {
 }
 
 describe('ShiftStatusBar · 班次状态条', () => {
-  it('只给玩家看时钟与可用车辆', () => {
+  it('显示时钟、已完成电话进度与可用车辆', () => {
     const base = createShiftState(DEFAULT_SHIFT_CONFIG)
     render(<ShiftStatusBar shift={{ ...base, clock: 125, heat: 88, moment: 'peak' }} />)
 
     const bar = screen.getByLabelText('班次状态')
     expect(bar.textContent).toContain('02:05')
+    expect(bar.textContent).toContain('已完成')
+    expect(bar.textContent).toContain('/ 6')
     expect(bar.textContent).toContain('可用车辆 2')
   })
 

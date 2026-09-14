@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Activity, Ambulance, HeartPulse, RotateCcw, ShieldAlert, Siren } from 'lucide-react'
+import { Activity, Ambulance, HeartPulse, PhoneCall, RotateCcw, ShieldAlert, Siren } from 'lucide-react'
 import { useAudio } from '../audio/AudioContext'
 import { formatPlayTime } from '../game/core/pacing'
 import { DIMENSION_KEYS } from '../game/core/evaluation'
@@ -78,6 +78,7 @@ export function EndingScreen({ evaluation, onRestart }: Props) {
         {evaluation.endingNarrative && <p className="shift-ending-narrative">{evaluation.endingNarrative}</p>}
 
         <section className="rescue-summary" aria-label="患者结果汇总">
+          <div className="completed-total"><PhoneCall size={24} /><span>本班完成</span><strong>{evaluation.completedCallCount}</strong><span>通电话</span></div>
           <div className="saved-total"><HeartPulse size={24} /><span>本班次确认救治</span><strong>{evaluation.rescuedCount}</strong><span>人</span></div>
           <div className="outcome-counts">
             <span><Activity size={15} />病情恶化 {evaluation.worsenedCount}</span>
@@ -94,7 +95,7 @@ export function EndingScreen({ evaluation, onRestart }: Props) {
         </section>
 
         <section className="case-list" aria-label="逐病例现场记录">
-          <header><h2>逐病例现场记录</h2><span>{evaluation.calls.length} 通已处理</span></header>
+          <header><h2>逐病例现场记录</h2><span>{evaluation.completedCallCount} 通已完成</span></header>
           {evaluation.calls.map((call, index) => (
             <article className={`case-card outcome-${call.outcome}`} key={`${call.callInstanceId}-${call.scenarioId}-${index}`}>
               <div className="case-index">{String(index + 1).padStart(2, '0')}</div>

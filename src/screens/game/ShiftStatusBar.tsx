@@ -21,6 +21,7 @@ export function ShiftStatusBar({ shift }: { shift: ShiftState }) {
   return (
     <div className="shift-bar" aria-label="班次状态">
       <span className="sb-clock">{formatClock(shift.clock)}</span>
+      <span className="sb-completed" aria-label="已完成通话">已完成 <b>{shift.completed.length}</b> / {shift.config.targetCalls} 通</span>
       <span className="sb-vehicles">
         <Ambulance size={14} /> 可用车辆 <b>{availableVehicleCount(shift)}</b> / {shift.config.vehicleCount}
       </span>

@@ -502,6 +502,7 @@ export function buildShiftEvaluation(
   const counts = outcomeCounts(calls)
   return {
     calls,
+    completedCallCount: calls.filter(call => call.outcome !== 'transferred' && call.outcome !== 'pending').length,
     dimensions,
     overallGrade: selected.grade,
     profile: selected.profile,

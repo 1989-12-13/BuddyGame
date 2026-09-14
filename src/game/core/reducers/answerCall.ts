@@ -7,6 +7,7 @@ import type { WorldState, DialogueLine, EmergencyScenario } from '../../types'
 import { createCallerState, createTerminalState, createPatientStatus } from '../worldState'
 import { getScenario } from '../../events/templates'
 import { getCaller } from '../../npc/personas'
+import { resolveScenarioCaller } from './presentScenario'
 import { toneToInitialStress } from './helpers'
 import { CARE_WINDOWS } from '../pacing'
 
@@ -16,7 +17,7 @@ export function handleAnswerCall(state: WorldState, scenarioOverride?: Emergency
   const scenarioId = state.scenarioQueue[state.callIndex]
   if (!scenarioId) return state
 
-  const scenario = scenarioOverride ?? getScenario(scenarioId)
+  const scenario = resolveScenarioCaller(scenarioOverride ?? getScenario(scenarioId))
   const callerProfile = getCaller(scenario.callerId)
   const initialStress = toneToInitialStress(callerProfile.tone)
   const callerState = createCallerState(scenario.callerId, initialStress)

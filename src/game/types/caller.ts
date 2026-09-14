@@ -84,6 +84,15 @@ export interface CallerPersonality {
   interjects?: boolean
   /** 紧张时会不会自言自语式地重复别人的话（复述最后几个词） */
   echoes?: boolean
+  /**
+   * 话痨型回答之后的跑题 / 重复。
+   * 不填则回落到全局兜底池 —— 填了才能拉开「同一句话不同人说出来」的差异。
+   */
+  rambleTails?: string[]
+  /** 情绪化 + 高压时的结尾催促（不填则回落全局兜底池） */
+  urges?: string[]
+  /** 有医疗背景者的措辞前缀（不填则回落全局兜底句） */
+  preciseHead?: string[]
 }
 
 /**

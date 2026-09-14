@@ -31,6 +31,57 @@ export const abdominalPainCard: EmergencyScenario = {
 
   openingLine: '喂120吗，我肚子疼得不行了，从昨晚开始右下腹一直疼，现在越来越厉害，动一下都疼得冒冷汗',
 
+  variants: [
+    {
+      id: 'food_poisoning_party',
+      callers: ['lin_mei', 'fan_tao'],
+      openingLine: '你们快来！我们公司十几个人中午吃完工作餐全都不对劲了，好几个又吐又拉，有个人刚才直接晕过去了！',
+      purpose: '不止一个人！你们能不能多派几辆车过来？我们这边倒了一片！',
+      condition: {
+        chiefComplaint: '公司集体聚餐后多人呕吐腹泻，其中一人晕厥',
+        age: '38岁',
+        gender: '女性',
+        consciousness: '大部分人清醒，晕倒那位刚醒过来，还坐在地上缓',
+        breathing: '都在喘粗气，看着很难受',
+        patientCount: '十几人（其中一人晕厥）',
+        additional: [
+          '中午吃的盒饭，鸡腿饭和炒青菜，好几个人说鸡腿味道不太对',
+          '最早发病的是下午两点，陆续开始有同事喊肚子疼',
+          '有人吐了四五次，嘴唇都白了',
+          '晕倒那位是蹲下去捡东西时突然倒下的',
+        ],
+      },
+      answers: {
+        mpds_abd_pain_transfer: {
+          answer: '几乎都是先肚子中间绞着疼，后来整个肚子都疼，分不清是哪儿了',
+          answerVague: '到处都疼……分不清……',
+          ramblingAnswer: '不是一个人的事，是好多人都这样。大部分是先说肚子中间绞着疼，然后就说不清具体哪儿疼了，反正整个肚子都不舒服。有个女同事吐得最厉害，说胃和肚子一起翻。晕倒那个倒没喊疼，就是突然站起来蹲下去，一屁股坐地上了。',
+          panickedAnswer: '好多人都在喊肚子疼！！到处疼！！分不清！！有人还晕过去了！！',
+        },
+        mpds_abd_fever: {
+          answer: '有几个说有点低烧，大多数没量，但是都在吐，还有好几个在拉肚子',
+          answerVague: '吐……拉……好像有人发烧……',
+          ramblingAnswer: '好几个人在拉肚子，跑厕所都排队了。温度计我们只有一个，量了三个，一个37度8一个38度1，还有一个正常的。吐的人也多，前台那个妹妹吐完之后脸都绿了。工作餐就那一家送的，我们天天订。',
+          panickedAnswer: '都在吐都在拉！！有人发烧！！一屋子人！！你们快派车！！',
+        },
+      },
+      specialEvents: [
+        {
+          id: 'abd_mass_collapse',
+          trigger: 'after_dispatch',
+          triggerValue: '',
+          type: 'new_symptom',
+          dialogue: '又倒下一个！现在都蹲在地上起不来了，有几个人开始说手脚发麻，是不是很严重啊？！',
+        },
+      ],
+      outcomeNarrative: {
+        good: '你按人数重新核了一遍现场，把发病时间、共同进食和症状分布都记进了交接单。救护车分批到场，送医后陆续补液观察，第二天大部分人都陆续回了家。',
+        bad: '电话里没问出到底有多少人不舒服，第一批车到了才发现现场远超预期，临时从别的站点调车。有几位症状偏重的等得比较久。',
+      },
+      menu: { category: '消化泌尿', desc: '集体食物中毒 · 多人分诊', tag: '📞' },
+    },
+  ],
+
   fourElements: {
     address: {
       vague: '海淀区苏州街附近',
@@ -163,8 +214,8 @@ export const abdominalPainCard: EmergencyScenario = {
   ],
 
   outcomeNarrative: {
-    good: '调度员指导禁食禁水，患者送医后确诊急性阑尾炎行腹腔镜手术，术后三天出院',
-    bad: '患者自行服用止痛药掩盖了症状，导致阑尾穿孔后才被确诊，术后住院一周',
+    good: '你让他别给患者喂水喂饭，也别自己找止痛药压着。到医院一查是急性阑尾炎，当天下午就上了手术台，三天后出院。',
+    bad: '电话里没拦住，患者自己吞了两片止痛药，疼是压下去了，真正的问题也跟着被盖住了。等发现是阑尾穿孔，人已经多住了一周。',
     prank: '',
   },
 }

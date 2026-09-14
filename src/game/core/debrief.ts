@@ -88,44 +88,44 @@ function buildOutcome(
   if (!facts.triageCorrect) {
     reviewPoints.push(facts.triageDiff <= 1
       ? '分诊等级接近正确答案，但仍需复核优先级。'
-      : '分诊等级偏差较大，可能造成资源错配。')
+      : '分诊等级差得比较多，车可能会跑错地方。')
   } else {
-    reviewPoints.push('分诊等级与病例风险匹配。')
+    reviewPoints.push('分诊等级压得准，和病例风险对得上。')
   }
 
   if (!facts.determinantCorrect && !facts.isPrank) {
-    reviewPoints.push('MPDS 判定码不匹配，后续指导依据存在风险。')
+    reviewPoints.push('MPDS 判定码对不上，后面几步指导的依据就站不稳了。')
   }
 
   if (facts.guidanceTotal > 0) {
     reviewPoints.push(guidanceRatio >= 0.8
-      ? '现场急救指导执行较完整。'
-      : '现场急救指导存在关键缺口。')
+      ? '现场急救指导基本走完了。'
+      : '现场急救指导漏了几步关键的。')
   }
 
-  if (!facts.hasContact) reviewPoints.push('联系电话未确认，回拨与补充定位风险较高。')
-  if (!facts.hasPurpose) reviewPoints.push('求助诉求未记录，复盘时难以判断来电目标。')
-  if (!facts.hasCondition) reviewPoints.push('主诉信息不足，分诊依据偏弱。')
+  if (!facts.hasContact) reviewPoints.push('联系电话没确认，回拨和补定位都悬着。')
+  if (!facts.hasPurpose) reviewPoints.push('求助诉求没记下来，复盘时说不清这通电话到底要解决什么。')
+  if (!facts.hasCondition) reviewPoints.push('主诉信息不足，分诊的依据偏薄。')
 
   if (facts.isPrank) {
     if (facts.prankHandledCorrectly) {
       return {
         outcomeTier: 'special',
-        outcomeTitle: '特殊结局：无效来电被拦截',
-        patientStatus: '未派出急救资源',
-        consequence: '接线员完成核实后终止通话，救护资源保留给真实急症。',
-        reviewPoints: ['识别恶作剧电话前完成了必要核实。'],
+        outcomeTitle: '特殊结局：这通电话是假的',
+        patientStatus: '没有出车',
+        consequence: '核实清楚之后挂了电话，车还留给真正等着的人。',
+        reviewPoints: ['挂断前把该核实的都核实了。'],
         outcomeNarrative: scenario.outcomeNarrative.prank,
       }
     }
 
     return {
       outcomeTier: 'bad',
-      outcomeTitle: '坏结局：资源被误占用',
-      patientStatus: facts.dispatchTime === null ? '未完成核实' : '救护资源误派',
+      outcomeTitle: '坏结局：车白跑了',
+      patientStatus: facts.dispatchTime === null ? '没核实完' : '车派给了一通假电话',
       consequence: facts.dispatchTime === null
-        ? '来电真实性没有被确认，处置记录无法闭环。'
-        : '救护车被派往无效目标，真实急救需求可能因此排队。',
+        ? '这通电话的真假没个说法，记录也就到此为止了。'
+        : '车去了一趟根本没事的地方，真出事的人得多等一会儿。',
       reviewPoints,
       outcomeNarrative: scenario.outcomeNarrative.bad,
     }
@@ -145,9 +145,9 @@ function buildOutcome(
   if (strongRun) {
     return {
       outcomeTier: 'good',
-      outcomeTitle: '好结局：患者稳定交接',
-      patientStatus: '生命体征与现场处置稳定',
-      consequence: '急救车到场后可直接按高质量记录接手，患者获得较好的院前处置窗口。',
+      outcomeTitle: '好结局：患者平稳交接',
+      patientStatus: '体征稳住了，现场处置也跟上了',
+      consequence: '急救车到场直接按完整记录接手，前面争取到的每一分钟都用上了。',
       reviewPoints,
       outcomeNarrative: scenario.outcomeNarrative.good,
     }
@@ -156,9 +156,9 @@ function buildOutcome(
   if (severeFailure) {
     return {
       outcomeTier: 'bad',
-      outcomeTitle: '坏结局：病情风险扩大',
-      patientStatus: '患者现场风险升高',
-      consequence: '延误、误判或急救指导缺口让院前处置变得被动，需要重点复盘。',
+      outcomeTitle: '坏结局：病情拖不住了',
+      patientStatus: '现场风险一路往上走',
+      consequence: '拖时间、判错方向或者指导漏步，把人交给了被动的一方。这通值得好好复盘。',
       reviewPoints,
       outcomeNarrative: scenario.outcomeNarrative.bad,
     }
@@ -166,9 +166,9 @@ function buildOutcome(
 
   return {
     outcomeTier: 'normal',
-    outcomeTitle: '普通结局：送医但需复盘',
-    patientStatus: '患者完成转运，仍有处置风险',
-    consequence: '关键方向基本正确，但信息完整度、判定或急救指导仍有可改进点。',
+    outcomeTitle: '普通结局：人送走了，但还能做得更好',
+    patientStatus: '人转运走了，处置上还有隐患',
+    consequence: '大方向没错，但信息、判定或指导这几处都还有能抠的地方。',
     reviewPoints,
     outcomeNarrative: scenario.outcomeNarrative.good,
   }
@@ -253,7 +253,7 @@ export function buildDebrief(
   const completedGuidance = state.guidanceResults.filter(result => result !== null).length
   const reviewPoints = [...outcome.reviewPoints]
   if (!isPrank && guidanceTotal > 0) {
-    reviewPoints.push(`电话急救指导完成 ${completedGuidance}/${guidanceTotal} 步；未完成步骤会有限度增加模拟救援风险。`)
+    reviewPoints.push(`电话急救指导完成 ${completedGuidance}/${guidanceTotal} 步。${completedGuidance < (scenario.guidance?.steps.length ?? 0) ? '剩下的步骤没走完，现场少了一段本可以争取的时间。' : ''}`)
   }
   if (!isPrank && dispatchRecord) {
     reviewPoints.push(state.handoff.completed
@@ -286,8 +286,8 @@ export function buildDebrief(
     ...outcome,
     ...(!isPrank ? {
       outcomeTier: state.rescue.outcome === 'success' ? 'good' as const : state.rescue.outcome === 'failed' || state.patientStatus?.died ? 'bad' as const : 'normal' as const,
-      outcomeTitle: state.rescue.outcome === 'success' ? '现场交接已完成' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '救援未成功，回顾处置过程' : dispatchRecord ? '已派车，通话提前结束' : '尚未派车，通话已结束',
-      patientStatus: state.rescue.outcome === 'success' ? '模拟救援完成；院后结果不在本次记录内。' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '模拟救援未成功，操作评价独立保留。' : '现场最终结果尚未确认。',
+      outcomeTitle: state.rescue.outcome === 'success' ? '现场交接已完成' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '人没救回来，回头看看是哪一步' : dispatchRecord ? '车派出去了，通话先结束' : '通话结束，车没派出去',
+      patientStatus: state.rescue.outcome === 'success' ? '现场处置按计划完成，人交给接车医院。' : state.rescue.outcome === 'failed' || state.patientStatus?.died ? '现场处置没能把人稳住，评分只反映电话这一步。' : '现场最终结果尚未确认。',
       outcomeNarrative: `本次${dispatchRecord ? `在接听后 ${dispatchRecord.dispatchTime} 秒派出救护车，采用所选路线` : '未形成派车记录'}。${guidanceTotal ? `急救指导完成 ${completedGuidance}/${guidanceTotal} 步，其中 ${rawGuidanceCorrect} 步操作到位。` : ''}${state.rescue.failureReason ? `记录中的影响因素：${state.rescue.failureReason}。` : ''}`,
     } : {}),
     reviewPoints,

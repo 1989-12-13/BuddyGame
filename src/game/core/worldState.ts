@@ -4,7 +4,7 @@
 
 import type { WorldState, CallerState, TerminalState, TriageLevel, CallerId, PatientStatus, VitalSign } from '../types'
 import { stressToLevel } from '../types'
-import { SCENARIO_IDS } from '../events/templates'
+import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
 import { rng, rngInt, shuffle as shuffleArray } from './random'
 import { VITAL_SIGN_COLORS } from './colors'
@@ -84,6 +84,30 @@ export function createTerminalState(): TerminalState {
 export const DEFAULT_QUEUE_LENGTH = 5
 
 /**
+ * 严重度阶梯：green 最轻 → black 最难。
+ * 用于把随机抽到的一批场景重排成「一上班由轻到重」的爬升，
+ * 而不是一上来就是心脏骤停、后面全是腰痛。
+ */
+const PACING_RANK: Record<TriageLevel, number> = { green: 0, yellow: 1, red: 2, black: 3 }
+
+/**
+ * 把场景队列排成冷→热的爬升，同档位之间随机打散。
+ *
+ * 不改变抽取结果，只改顺序 —— 因此不会让某张卡变多或变少。
+ * 恶作剧（prank_call）不参与排序，由调用方在这之后注入。
+ */
+export function paceQueue(ids: string[]): string[] {
+  const ranked = ids.map(id => {
+    const scenario = SCENARIOS[id]
+    const rank = scenario ? PACING_RANK[scenario.correctTriage] ?? 1 : 1
+    return { id, rank, tiebreak: rng() }
+  })
+  ranked.sort((a, b) => (a.rank - b.rank) || (a.tiebreak - b.tiebreak))
+  return ranked.map(r => r.id)
+}
+
+
+/**
  * 获取本班次的场景队列（随机打乱顺序）。
  *
  * 仅服务于经典（单通话线性）模式：那里每班固定 5 通。
@@ -99,7 +123,7 @@ export function buildScenarioQueue(count: number = DEFAULT_QUEUE_LENGTH): string
   const shuffled = shuffleArray(normalScenarios)
   // 抽取普通场景 + 20%概率加入恶作剧
   const length = Math.min(Math.max(0, count), normalScenarios.length)
-  const selected = shuffled.slice(0, length)
+  const selected = paceQueue(shuffled.slice(0, length))
   if (selected.length > 0 && rng() < 0.2) {
     selected[rngInt(selected.length)] = prankId
   }

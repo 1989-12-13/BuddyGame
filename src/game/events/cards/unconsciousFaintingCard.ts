@@ -191,8 +191,8 @@ export const unconsciousFaintingCard: EmergencyScenario = {
   ],
 
   outcomeNarrative: {
-    good: '调度员指导平躺抬脚，患者意识逐渐恢复。送医检查后为血管迷走性晕厥，补充液体后出院。',
-    bad: '患者被扶起坐着导致脑供血不足再次晕厥且摔倒在地造成头部外伤。',
+    good: '你让她平躺、把脚抬高。人慢慢就清醒了，查出来是血管迷走性晕厥，补了液当天出院。',
+    bad: '有人把她扶起来坐着，脑供血不足又晕了一次，倒下的时候还磕了头。',
     prank: '',
   },
 }

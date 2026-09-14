@@ -35,6 +35,8 @@ export type {
   CallEvent,
   MpdsProtocolCard,
   EmergencyScenario,
+  ScenarioVariant,
+  MenuMeta,
 } from './scenario'
 export {
   isRhythmPress,

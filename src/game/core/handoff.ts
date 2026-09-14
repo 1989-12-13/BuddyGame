@@ -26,7 +26,7 @@ export function buildHandoffFacts(state: WorldState): { facts: HandoffFact[]; re
   facts.push(state.terminal.patientAge.trim()
     ? { id: 'age', label: `患者年龄：${state.terminal.patientAge}`, required: false }
     : { id: 'unknown-age', label: '患者年龄：本通电话尚未核实', required: false })
-  facts.push({ id: 'unknown-diagnosis', label: '院后诊断：本通电话无法确认', required: false })
+  facts.push({ id: 'unknown-diagnosis', label: '院后情况：交由接车医院记录', required: false })
   const requiredIds = facts.filter(fact => fact.required).slice(0, 5).map(fact => fact.id)
   return { facts, requiredIds }
 }

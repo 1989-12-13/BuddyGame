@@ -145,12 +145,12 @@ export function handleTick(state: WorldState): WorldState {
       speaker: 'system',
       text: success
         ? '【✓ 救护车已到达 · 现场交接准备完成】'
-        : `【✗ 本次模拟救援未成功 · ${newRescue.failureReason}】`,
+        : `【✗ 救护车到了，但人没救回来 · ${newRescue.failureReason}】`,
       timestamp: newElapsed,
     })
     sinkEvent(sink,
       success ? 'good' : 'bad',
-      success ? '✓ 救护车已到达 · 请完成现场交接' : `✗ 本次模拟救援未成功 · ${newRescue.failureReason}`,
+      success ? '✓ 救护车已到达 · 请完成现场交接' : `✗ 救护车到了，但人没救回来 · ${newRescue.failureReason}`,
       newElapsed,
     )
   }

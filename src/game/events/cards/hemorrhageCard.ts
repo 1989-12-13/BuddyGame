@@ -32,6 +32,57 @@ export const hemorrhageCard: EmergencyScenario = {
 
   openingLine: '出事了！我朋友摔了一跤胳膊撞碎了玻璃门，手臂被划了一个大口子！血往外喷！怎么都止不住！',
 
+  variants: [
+    {
+      id: 'workshop_saw',
+      callers: ['lei_gang', 'fang_yu'],
+      openingLine: '喂120！车间里出事了！老张用电锯锯木头，手滑了一下，锯到大腿了！裤子全是血，他站都站不住了！',
+      purpose: '血止不住！我拿工作服压着了！要不要弄个绳子在他大腿根那儿扎起来？！',
+      condition: {
+        chiefComplaint: '木工车间电锯伤及大腿，大量出血，伤员站立不稳',
+        age: '46岁',
+        gender: '男性',
+        consciousness: '还醒着，但说头晕，脸色发灰',
+        breathing: '呼吸很急，一直在冒冷汗',
+        patientCount: '1人',
+        additional: [
+          '右大腿前侧一条很深的斜切口子',
+          '血一直往外涌，工作服一下就湿透了',
+          '锯片上还挂着碎布，已经断电了',
+          '车间里有木屑，地上很滑',
+        ],
+      },
+      answers: {
+        mpds_hem_bleed_type: {
+          answer: '涌出来的！不是喷的，但是量特别大，一块毛巾按上去马上就透了！',
+          answerVague: '一直涌……好多……',
+          ramblingAnswer: '不是那种一阵一阵喷的，就是一直往外涌，咕咚咕咚的。我拿他一整件工作服按上去的，没两下就洇透了，手都能感觉到热的。他刚才还能站着，现在得靠着我，说眼前发黑。地上这一片全湿了，我脚底下都打滑。',
+          panickedAnswer: '血一直涌！！按都按不住！！他身上都是血！！我手上一片红！！',
+        },
+        mpds_hem_foreign: {
+          answer: '伤口里好像有木屑，还有一点锯片上蹭下来的东西，我看不太清',
+          answerVague: '有……木头渣……',
+          ramblingAnswer: '木屑肯定有，锯木头嘛，到处都是。伤口里我看不太清楚，好像卡着点黑的东西，不知道是木刺还是别的。我不敢伸手去掏，就用布整个压住了。他那个伤口挺深的，翻着口。',
+          panickedAnswer: '里面好像有东西！！木屑！！我不敢碰！！',
+        },
+      },
+      specialEvents: [
+        {
+          id: 'hem_workshop_shock',
+          trigger: 'after_dispatch',
+          triggerValue: '',
+          type: 'new_symptom',
+          dialogue: '老张现在说得话都连不上了，一个劲说冷，嘴唇都发白了……他刚才还好好的！这是不是要休克了？！',
+        },
+      ],
+      outcomeNarrative: {
+        good: '你让他不要反复掀开查看伤口，用整块布料持续按住，也提醒别再往伤口里掏东西。救护车赶到时出血已经明显减缓，人还清醒着被抬上车。',
+        bad: '电话里没说清能不能用绳子捆，来电者自己在大腿根上勒了一道，过紧又不敢松，等救护车到的时候那侧脚趾已经发紫了。',
+      },
+      menu: { category: '创伤出血', desc: '车间电锯伤 · 加压止血', tag: '🔢' },
+    },
+  ],
+
   fourElements: {
     address: {
       vague: '东城区鼓楼大街附近',
@@ -116,8 +167,8 @@ export const hemorrhageCard: EmergencyScenario = {
   ],
 
   outcomeNarrative: {
-    good: '你确认了出血和异物情况，并记录了现场实际进行的照护。救护车到场后由专业人员接手，院后结果不在本次记录内。',
-    bad: '本次指导或操作存在未完成项目，增加了模拟救援风险。复盘只引用电话中发生的行动，不推断院后恢复情况。',
+    good: '你让叶欣压住不动、别去动那块玻璃，她就一直没松手。救护车进门的时候她还跪在地上压着，白衬衫袖子全红了。',
+    bad: '叶欣问到能不能拔那块玻璃，电话里没来得及拦住。她拔了之后血一下涌得更凶，她自己也吓得哭了出来。',
     prank: '',
   },
 }

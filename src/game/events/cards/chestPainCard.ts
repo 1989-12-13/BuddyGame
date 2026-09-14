@@ -32,6 +32,59 @@ export const chestPainCard: EmergencyScenario = {
 
   openingLine: '120吗！我朋友突然说胸口疼得厉害，满头大汗，脸色煞白，动不了了！',
 
+  variants: [
+    {
+      id: 'solo_night',
+      callers: ['zheng_yu', 'tian_feng'],
+      openingLine: '喂……喂……是120吧……我胸口难受得厉害……喘不上气……家里就我一个人……',
+      purpose: '你们直接上来吧……门没锁……我起不来身去开门……',
+      condition: {
+        chiefComplaint: '半夜一个人在家，胸口发闷喘不上气，出了一身汗',
+        age: '78岁',
+        consciousness: '清醒，但说话有气无力，说一句要歇一下',
+        breathing: '喘得厉害，电话里听得见喉咙里的动静',
+        additional: [
+          '凌晨两点多醒的，一醒过来就闷得慌',
+          '有高血压，降压药一直在吃',
+          '床头柜上摆着速效救心丸，够不着，不知道该不该含',
+        ],
+      },
+      answers: {
+        mpds_chest_pain_type: {
+          answer: '闷……像有东西压着……喘不上气……',
+          answerVague: '闷……压着……',
+          ramblingAnswer: '就……就胸口这一块，闷得慌，像压了块石头……不对，说不上石头，反正是压得喘不上来。我半夜醒的，一醒就这样了。想坐起来倒口水都费劲。床头那瓶救心丸，我够不着，也不知道能不能吃。',
+          panickedAnswer: '压着……喘不上气……我一个人啊……',
+        },
+        mpds_chest_radiation: {
+          answer: '左边胳膊……也酸……脖子后面……有点沉',
+          answerVague: '左边……胳膊……',
+          ramblingAnswer: '左边这条胳膊也酸……还有点发麻。脖子后面沉沉的，不知道是不是睡落枕了……哎，也可能不是，我平时不落枕的。反正就是浑身不对劲。',
+          panickedAnswer: '左胳膊……麻……脖子也……',
+        },
+        mpds_chest_history: {
+          answer: '有高血压……药一直吃着……没做过支架',
+          answerVague: '高血压……有……',
+          ramblingAnswer: '高血压是有的，好多年了，药也没断过。支架没做过，心脏的检查……好像是前年做过一次，医生说没什么大事。我一个人住，孩子在外地，平时都还行的。',
+          panickedAnswer: '高血压……吃药……就这些……',
+        },
+      },
+      specialEvents: [
+        {
+          id: 'solo_chest_weaker',
+          trigger: 'time_elapsed',
+          triggerValue: '25',
+          type: 'new_symptom',
+          dialogue: '我……我说话越来越没力气了……你们还有多久到啊……我听不清楼下有没有车……',
+        },
+      ],
+      outcomeNarrative: {
+        good: '你一句一句把老人的位置、症状和发病时间问清楚了，也让他别乱动、够不着药就别硬撑。救护车到场时他还清醒着，被抬下楼时一直念叨"麻烦你们了"。',
+        bad: '电话里一直没问清住哪栋楼，救护车在小区里绕了好一阵。等找到人的时候，门反锁着，最后是破门进去的。',
+      },
+    },
+  ],
+
   fourElements: {
     address: {
       vague: '海淀区中关村科技园附近',
@@ -130,8 +183,8 @@ export const chestPainCard: EmergencyScenario = {
   ],
 
   outcomeNarrative: {
-    good: '你确认了胸部不适、意识呼吸和时间线，并及时安排响应。救护车到场后由专业人员继续评估，院后诊断不在本次记录内。',
-    bad: '本次问询、响应或指导存在未完成项目，增加了模拟救援风险。院后诊断和治疗结果不作推断。',
+    good: '你让孙伟别让朋友走动，也问清了发病时间和既往病史。救护车到的时候，他朋友还坐在那把椅子上，一直没敢乱动。',
+    bad: '电话里没提"别让他走动"，孙伟扶着他朋友站起来往楼下走了一段。等车的时候人已经脸色灰白，靠着墙才没倒下。',
     prank: '',
   },
 }

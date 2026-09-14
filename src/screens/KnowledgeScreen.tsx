@@ -61,7 +61,7 @@ export function KnowledgeScreen({ onBack }: Props) {
   const scenarios = useMemo(() => {
     const list = SCENARIO_IDS
       .map((id) => SCENARIOS[id])
-      .filter((s) => !s.isPrank)
+      .filter((s) => !s.isPrank && !s.variantOf)
       .sort((a, b) => a.mpdsCard.number - b.mpdsCard.number)
 
     if (!search.trim()) return list

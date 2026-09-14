@@ -18,7 +18,7 @@ import { stressToLevel } from '../types'
 import type { GameAction } from './actions'
 import type { PauseReason } from './session'
 import { worldReducer } from './worldReducer'
-import { createInitialState } from './worldState'
+import { createInitialState, paceQueue } from './worldState'
 import { buildConflictReport, buildVerificationCall, type ConflictReport } from './supplementCall'
 import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { shuffle } from './random'
@@ -253,7 +253,7 @@ export function createShiftState(config: ShiftConfig): ShiftState {
  * 班次能接到多少通，由热度模型和玩家表现决定，而不是由牌堆长度决定。
  */
 export function drawScenario(deck: string[]): { scenarioId: string; deck: string[] } {
-  const source = deck.length > 0 ? deck : shuffle([...SCENARIO_IDS])
+  const source = deck.length > 0 ? deck : paceQueue(shuffle([...SCENARIO_IDS]))
   return { scenarioId: source[0], deck: source.slice(1) }
 }
 

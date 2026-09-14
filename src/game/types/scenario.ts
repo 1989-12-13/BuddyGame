@@ -211,6 +211,41 @@ export interface MpdsProtocolCard {
   keyQuestions: string[]    // 必问关键问题（MPDS标准）
 }
 
+// -------------------- 场景变体（同协议的新来电者 / 新机制 / 新严重度） --------------------
+
+/**
+ * 变体卡：与母卡共用协议号、标题、判定码与分诊等级，只替换「情境」。
+ * 由 `events/cards/variantBuilder.ts` 展开成独立的 EmergencyScenario。
+ */
+export interface ScenarioVariant {
+  /** 变体短名；最终 id = `${母卡id}__${id}` */
+  id: string
+  /** 该变体的来电者池，接通时随机选一位 */
+  callers: CallerId[]
+  openingLine: string
+  purpose?: string
+  /** 覆盖母卡的四要素-病情描述（浅合并） */
+  condition?: Partial<EmergencyScenario['fourElements']['condition']>
+  /** 按 question id 覆盖母卡的回答文本（浅合并） */
+  answers?: Record<
+    string,
+    Partial<Pick<MPDSQuestion, 'answer' | 'answerVague' | 'ramblingAnswer' | 'panickedAnswer'>>
+  >
+  specialEvents?: CallEvent[]
+  /** 覆盖母卡的结局叙述（变体的情境不同，结局也该不同；未提供则沿用母卡） */
+  outcomeNarrative?: Partial<EmergencyScenario['outcomeNarrative']>
+  /** 覆盖菜单呈现信息 */
+  menu?: MenuMeta
+}
+
+/** 选关菜单的呈现信息 —— 仅影响菜单，不参与游戏逻辑 */
+export interface MenuMeta {
+  category: string
+  label?: string
+  desc?: string
+  tag?: string
+}
+
 export interface EmergencyScenario {
   id: string
   title: string                // 场景标题（内部用）
@@ -224,6 +259,15 @@ export interface EmergencyScenario {
    */
   isVerification?: boolean
   correctTriage: TriageLevel
+
+  /** 菜单呈现信息；缺省时由类别默认值补齐 */
+  menu?: MenuMeta
+  /** 该卡的变体定义；由 variantBuilder 展开进 ALL_CARDS，本体不出现在菜单 */
+  variants?: ScenarioVariant[]
+  /** 接通时随机选一位来电者的池子 */
+  callerPool?: CallerId[]
+  /** 变体卡指回母卡 id；菜单据此过滤，变体自身不单独列出 */
+  variantOf?: string
 
   /** MPDS协议卡片 */
   mpdsCard: MpdsProtocolCard

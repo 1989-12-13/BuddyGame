@@ -48,7 +48,7 @@ type PhrasingPair = { gentle: string; press: string }
 const TOPIC_MAIN: Record<ProtocolId, PhrasingPair> = {
   step1_location: {
     gentle: '咱先把位置说清楚，我好派车——具体在哪个小区、哪条路？',
-    press: '位置，快说——在哪儿？',
+    press: '先说位置——在哪儿？',
   },
   step2_event: {
     gentle: '你慢慢说，具体是怎么发生的？',
@@ -71,8 +71,8 @@ const TOPIC_MAIN: Record<ProtocolId, PhrasingPair> = {
     press: '你电话多少？快。',
   },
   ask_purpose: {
-    gentle: '你现在最需要我们做什么？你告诉我，一步步来。',
-    press: '你们现在到底要我做什么？',
+    gentle: '你现在最急的是什么？说给我听，咱们一件一件办。',
+    press: '你最要紧的是哪件事？说。',
   },
 }
 

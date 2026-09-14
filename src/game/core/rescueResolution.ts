@@ -47,12 +47,12 @@ export function resolveRescue(input: RescueAssessment): RescueResolution {
   })
   const success = judgeRescueSuccess(rate) && !input.patientStatus.died
   const failureReason = success ? null
-    : triageDiff >= 2 ? '分诊严重不足，院前响应延误'
-    : triageDiff === 1 ? '分诊偏低，院前响应降级'
-    : input.dispatchRecord.dispatchTime > 60 ? '派车超时，错过黄金窗'
-    : input.patientStatus.stability < 30 ? '患者模拟照护余量耗尽'
-    : guidanceCompletionRatio < 1 ? '电话指导未完整执行，救援风险上升'
-    : '现场救治未成功'
+    : triageDiff >= 2 ? '分诊级别压得太低，车到得晚了'
+    : triageDiff === 1 ? '分诊偏轻，到场资源不够用'
+    : input.dispatchRecord.dispatchTime > 60 ? '派车拖过了黄金时间'
+    : input.patientStatus.stability < 30 ? '电话这头没能把人稳住，体征一路往下掉'
+    : guidanceCompletionRatio < 1 ? '电话指导没走完，现场少了一段能争取的时间'
+    : '现场处置没能把人救回来'
   return {
     outcome: success ? 'success' : 'failed',
     successScore: rate,

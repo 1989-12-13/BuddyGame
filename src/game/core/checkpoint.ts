@@ -24,7 +24,7 @@ export function saveCheckpoint(state: WorldState): boolean {
 export function loadCheckpoint(): WorldState | null {
   try {
     const saved = JSON.parse(readStorage(KEY) ?? 'null')
-    if (!saved || ![1, 2].includes(saved.version) || !Array.isArray(saved.queue) || !saved.queue.length || saved.queue.length > 33 || !saved.queue.every((id: unknown) => typeof id === 'string' && SCENARIO_IDS.includes(id))) return null
+    if (!saved || ![1, 2].includes(saved.version) || !Array.isArray(saved.queue) || !saved.queue.length || saved.queue.length > SCENARIO_IDS.length || !saved.queue.every((id: unknown) => typeof id === 'string' && SCENARIO_IDS.includes(id))) return null
     if (!Number.isInteger(saved.index) || saved.index < 0 || saved.index > saved.queue.length || (saved.version === 1 && saved.index >= saved.queue.length)) return null
     if (!Array.isArray(saved.scores) || saved.scores.length !== saved.index || !saved.scores.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 100)) return null
     if (!Array.isArray(saved.perks) || !saved.perks.every((id: unknown) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(ROGUE_PERKS, id))) return null

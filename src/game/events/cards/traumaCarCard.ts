@@ -31,6 +31,51 @@ export const traumaCarCard: EmergencyScenario = {
 
   openingLine: '你好，这边出车祸了，一个骑电动车的人被汽车撞了，流了好多血，人还清醒但是动不了。',
 
+  variants: [
+    {
+      id: 'multi_vehicle_highway',
+      callers: ['chen_ming', 'lin_mei'],
+      openingLine: '快！高速上追尾了，三辆车撞在一起，我车上有两个人出不来，后面还有一辆车上倒着一个人没动静！',
+      purpose: '你们要派几辆车？我在哪个方向、哪个出口说清楚点好还是你们能定位我？',
+      condition: {
+        chiefComplaint: '高速公路连环追尾，多人受伤，其中一人无反应',
+        age: '40岁上下',
+        gender: '男性',
+        consciousness: '一个卡在驾驶座能说话，另一个在后排没反应',
+        breathing: '后排那位胸口起伏很弱，看着不太对',
+        patientCount: '3人以上（其中一人无反应）',
+        additional: [
+          '追尾的是三辆私家车，最后一辆变形比较严重',
+          '现场在高速主路上，后面车流还在往前挤',
+          '已经有人在后面摆了三角牌，但不远',
+          '有一辆车开始冒白烟，不确定是不是要起火',
+        ],
+      },
+      answers: {
+        mpds_bleeding: {
+          answer: '看得见的就是脸上和手臂擦破流血，不像是喷的那种，主要是人卡住了出不来',
+          answerVague: '有血……脸上……卡住了……',
+          ramblingAnswer: '明面上能看到的是脸和胳膊蹭破在流血，面积不小，但是看着不是往外喷的那种。主要问题是中间那辆车后排的人卡住了，门打不开，我们几个在外面拉了半天拉不动。他一开始还哼哼，现在不太出声了。还有一辆车前面在冒白烟，我有点怕。',
+          panickedAnswer: '好多人卡在里面出不来！！有个不动了！！还有车在冒烟！！你们再不来要出大事了！！',
+        },
+      },
+      specialEvents: [
+        {
+          id: 'trauma_car_smoke',
+          trigger: 'after_dispatch',
+          triggerValue: '',
+          type: 'new_symptom',
+          dialogue: '冒烟那辆车的味道更重了，我们不敢再靠过去拉了！后排那个人还是没动静……这算不算要爆炸啊？',
+        },
+      ],
+      outcomeNarrative: {
+        good: '你把出事方向、大概里程和伤员人数一次说清，还提醒身后车流注意避让。救援力量分批到场，先救出了能说话的两名伤员。',
+        bad: '地址在高速上说得很含糊，救援车来回多跑了一段。现场车流没及时清出通道，后到的救援车堵在路上进不来。',
+      },
+      menu: { category: '创伤出血', desc: '高速连环追尾 · 多人被困', tag: '🎯' },
+    },
+  ],
+
   fourElements: {
     address: {
       vague: '海淀区中关村大街附近',

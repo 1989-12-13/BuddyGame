@@ -24,7 +24,7 @@ export interface VoiceContext {
 /** 判定一个分句是否承载有效信息 */
 const INFO_HINT = /[0-9０-９一二三四五六七八九十百千万]|路|号|栋|楼|单元|小区|岁|呼吸|意识|清醒|昏迷|醒|血|疼|痛|分钟|小时|天|吐|烧|烫|紫|凉|抽|喘|摔|倒|撞|咬|卡|疼/
 
-/** 话痨型：回答之后的跑题/重复 */
+/** 话痨型：回答之后的跑题/重复（未配置个人素材时的兜底） */
 const RAMBLE_TAILS = [
   '……我也不太懂，反正就是这样。',
   '……你们快点来吧，别的我也想不起来了。',
@@ -32,15 +32,29 @@ const RAMBLE_TAILS = [
   '……哎我现在脑子一片空白。',
 ]
 
-/** 情绪化 + 高压：结尾催促 */
+/** 情绪化 + 高压：结尾催促（未配置个人素材时的兜底） */
 const URGES = [
   '你们到底还有多久到啊？！',
   '快点啊啊，我真的撑不住了！',
   '你先别问了，先派人来好不好！',
 ]
 
+/** 有医疗背景者的措辞前缀（未配置个人素材时的兜底） */
+const PRECISE_HEAD = ['我尽量说准一点，']
+/** 缺医疗常识的话痨型前缀（未配置个人素材时的兜底） */
+const LAYMAN_HEAD = ['我也不太懂这些，反正']
+
 function pick<T>(list: readonly T[]): T {
   return list[Math.min(list.length - 1, Math.floor(rng() * list.length))] as T
+}
+
+/**
+ * 取个人素材池，空则回落全局兜底池。
+ * 这是「33 个人说同一句话」的出口：素材在 voices.ts 里按角色配置，
+ * 未配置的老角色仍然走兜底，行为与之前完全一致。
+ */
+function pool(own: string[] | undefined, fallback: readonly string[]): readonly string[] {
+  return own && own.length > 0 ? own : fallback
 }
 
 function isHigh(level: CalleeStressLevel): boolean {
@@ -124,6 +138,27 @@ function personalityCharm(voice: CallerVoice, stressLevel: CalleeStressLevel): s
 }
 
 /**
+ * 医疗常识前缀：有背景的人说「我尽量说准一点」，没常识的话痨说「我也不太懂」。
+ * `preciseHead` 可覆盖，让不同角色有自己的说法（同为医护口吻也不至于一字不差）。
+ */
+function literacyHead(voice: CallerVoice): string {
+  const p = voice.personality
+  if (voice.verbosity !== 0 && voice.medicalLiteracy === 2) {
+    return p?.preciseHead?.length ? pick(p.preciseHead) : pick(PRECISE_HEAD)
+  }
+  if (voice.medicalLiteracy === 0 && voice.verbosity === 2) return pick(LAYMAN_HEAD)
+  return ''
+}
+
+/** 结尾：话痨跑题 或 情绪化催促（互斥，避免句子过长） */
+function tailFor(voice: CallerVoice, stressLevel: CalleeStressLevel): string {
+  const p = voice.personality
+  if (voice.verbosity === 2) return pick(pool(p?.rambleTails, RAMBLE_TAILS))
+  if (voice.rationality === 0 && isHigh(stressLevel)) return pick(pool(p?.urges, URGES))
+  return ''
+}
+
+/**
  * 按说话特质重写一句来电者回答。
  * 注意：只调用一次。
  */
@@ -137,15 +172,8 @@ export function voiceAnswer(base: string, voice: CallerVoice, ctx: VoiceContext)
   // 理性：压掉夸张标点
   if (voice.rationality === 2) text = calmPunctuation(text)
 
-  // 医疗常识：影响措辞的精确度（不新增医学断言，避免与病例冲突）
-  let head = ''
-  if (voice.verbosity !== 0 && voice.medicalLiteracy === 2) head = '我尽量说准一点，'
-  else if (voice.medicalLiteracy === 0 && voice.verbosity === 2) head = '我也不太懂这些，反正'
-
-  // 结尾：话痨跑题 或 情绪化催促（互斥，避免句子过长）
-  let tail = ''
-  if (voice.verbosity === 2) tail = pick(RAMBLE_TAILS)
-  else if (voice.rationality === 0 && isHigh(ctx.stressLevel)) tail = pick(URGES)
+  const head = literacyHead(voice)
+  const tail = tailFor(voice, ctx.stressLevel)
 
   // 口语动作：只影响语气，不改变信息
   const affect = voice.verbosity === 0 ? '' : panicAffect(voice.personality)
@@ -175,17 +203,15 @@ export function voiceAnswerLines(lines: string[], voice: CallerVoice, ctx: Voice
 
   // 头：医疗常识措辞 + 口语动作 + 口头禅 —— 只加到第一句
   const headBits: string[] = []
-  if (voice.verbosity !== 0 && voice.medicalLiteracy === 2) headBits.push('我尽量说准一点，')
-  else if (voice.medicalLiteracy === 0 && voice.verbosity === 2) headBits.push('我也不太懂这些，反正')
+  const literacy = literacyHead(voice)
+  if (literacy) headBits.push(literacy)
   const affect = voice.verbosity === 0 ? '' : panicAffect(voice.personality)
   const charm = personalityCharm(voice, ctx.stressLevel)
   const firstLine = kept[0] as string
   kept[0] = `${charm}${affect}${headBits.join('')}${firstLine}`
 
   // 尾：话痨跑题 或 情绪化催促 —— 只加到末句
-  let tail = ''
-  if (voice.verbosity === 2) tail = pick(RAMBLE_TAILS)
-  else if (voice.rationality === 0 && isHigh(ctx.stressLevel)) tail = pick(URGES)
+  const tail = tailFor(voice, ctx.stressLevel)
   if (tail) {
     const lastIndex = kept.length - 1
     kept[lastIndex] = `${kept[lastIndex] as string}${tail}`

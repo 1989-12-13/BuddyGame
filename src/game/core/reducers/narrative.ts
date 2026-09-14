@@ -125,24 +125,24 @@ export function generateLocationNarrative(
 /** 根据来电者与患者的关系生成自然的开场情景描述 */
 function relationshipContext(relationship: string): string {
   switch (relationship) {
-    case '路人':    return '我在路边看到的'
+    case '路人':    return '我就是路过瞅见的'
     case '同事':
-    case '工友':   return '我们正在上班'
+    case '工友':   return '我们一块儿上班的'
     case '家人':
     case '家属':
     case '母亲':
     case '父亲':
-    case '儿子':   return '刚才在家里还好好的'
-    case '朋友':    return '我们刚才还在聊天'
-    case '邻居':    return '我听到声音过来看的'
+    case '儿子':   return '家里人嘛，就我们几个在一块儿'
+    case '朋友':    return '我们俩刚才还说着话呢'
+    case '邻居':    return '我在隔壁听着声儿不对才过来的'
     case '伴侣':
     case '夫妻':
     case '妻子':
-    case '丈夫':   return '我们俩刚才还好好的'
-    case '本人':    return '我刚才'
-    case '小孩':    return '我刚才在'
-    case '室友':    return '我们一起住的'
-    default:        return '刚才还好好的'
+    case '丈夫':   return '我们俩过了大半辈子了'
+    case '本人':    return '我自己一个人'
+    case '小孩':    return '我在边上呢'
+    case '室友':    return '我们合租的，住一块儿'
+    default:        return '就在我眼前出的事'
   }
 }
 

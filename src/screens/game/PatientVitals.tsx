@@ -8,6 +8,18 @@ import type { WorldState } from '../../game/types'
  * 状态文案只保留在无障碍描述里，界面上不再重复一句话占位。
  */
 export function PatientVitals({ state }: { state: WorldState }) {
+  // 仅玩家操作（电话指导 / 照护小游戏）改变体征时轻微闪烁；自然衰减不触发
+  const pulse = state.vitalsPulse
+  const seenPulse = useRef<number>(0)
+  const [flash, setFlash] = useState<'good' | 'bad' | null>(null)
+  useEffect(() => {
+    if (!pulse || pulse.seq === seenPulse.current) return
+    seenPulse.current = pulse.seq
+    setFlash(pulse.delta >= 0 ? 'good' : 'bad')
+    const timer = window.setTimeout(() => setFlash(null), 900)
+    return () => window.clearTimeout(timer)
+  }, [pulse])
+
   const patient = state.patientStatus
   if (!patient || !state.currentCall) return null
   const value = Math.max(0, Math.min(100, Number.isFinite(patient.stability) ? patient.stability : 0))
@@ -16,18 +28,6 @@ export function PatientVitals({ state }: { state: WorldState }) {
   const elapsed = Math.max(0, state.rescue.etaTotal - state.ambulanceRemaining)
   const progress = state.rescue.outcome ? 100 : state.dispatchSent ? Math.min(99, elapsed / Math.max(1, state.rescue.etaTotal) * 100) : 0
   const event = [...state.patientEvents].reverse().find(item => state.shiftElapsed - item.createdAt <= 12)
-
-  // 照护余量发生变化时按方向轻微闪烁：上升为好转、下降为恶化
-  const prevValue = useRef(value)
-  const [flash, setFlash] = useState<'good' | 'bad' | null>(null)
-  useEffect(() => {
-    if (value === prevValue.current) return
-    const direction = value > prevValue.current ? 'good' : 'bad'
-    prevValue.current = value
-    setFlash(direction)
-    const timer = window.setTimeout(() => setFlash(null), 900)
-    return () => window.clearTimeout(timer)
-  }, [value])
 
   return <section className={`vitals-strip ${tone} ${flash ? `vitals-flash-${flash}` : ''}`} aria-label="患者体征与车辆进度">
     <strong className="vitals-title"><Activity size={16} />患者体征</strong>

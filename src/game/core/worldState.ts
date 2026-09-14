@@ -200,6 +200,7 @@ export function createInitialState(): WorldState {
     guidanceMinigameScores: [],
     dialogueLog: [],
     pendingJudgments: [],
+    vitalsPulse: null,
     eventSeq: 0,
     totalScore: 0,
     callScores: [],

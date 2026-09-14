@@ -41,16 +41,19 @@ export function handleCompleteMinigame(
 
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
+  let vitalsPulse: WorldState['vitalsPulse'] = null
   if (state.patientStatus && !state.patientStatus.died) {
     // 百分比模型：score ≥0.5 恢复已损失体征，<0.5 扣当前体征；black 档恢复上限 100
     const triage = state.currentCall?.correctTriage ?? 'yellow'
     const delta = minigameStabilityDelta(state.patientStatus.stability, state.patientStatus.initialStability, score)
     const newStability = Math.max(0, Math.min(stabilityRecoveryCap(triage, state.patientStatus.initialStability), state.patientStatus.stability + delta))
+    const vitalsPulseLocal: WorldState['vitalsPulse'] = { delta: newStability - state.patientStatus.stability, seq: state.eventSeq + 1 }
     newPatientStatus = {
       ...state.patientStatus,
       stability: newStability,
       vitalSign: stabilityToVitalSign(newStability),
     }
+    vitalsPulse = vitalsPulseLocal
     sinkEvent(
       sink,
       score >= 0.7 ? 'good' : score >= 0.4 ? 'warn' : 'bad',
@@ -65,6 +68,7 @@ export function handleCompleteMinigame(
     guidanceResults: newResults,
     guidanceMinigameScores: newScores,
     patientStatus: newPatientStatus,
+    vitalsPulse,
     patientEvents: sink.events,
     dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],
   }

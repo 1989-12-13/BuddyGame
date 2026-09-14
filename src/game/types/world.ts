@@ -174,6 +174,9 @@ export interface WorldState {
   // 确定性事件序列号（用于生成可复现的事件 ID）
   eventSeq: number
 
+  // 体征脉冲：仅当玩家操作（电话指导 / 照护小游戏）改变照护余量时设置，用于触发体征条闪烁；自然衰减不设置
+  vitalsPulse: { delta: number; seq: number } | null
+
   // 临床判断
   pendingJudgments: JudgmentPrompt[]   // 等待玩家做出判断的选择题
 

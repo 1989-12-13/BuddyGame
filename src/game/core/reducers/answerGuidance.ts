@@ -37,6 +37,7 @@ export function handleAnswerGuidance(
 
   const sink = createEventSink(state)
   let newPatientStatus = state.patientStatus
+  let vitalsPulse: WorldState['vitalsPulse'] = null
   if (state.patientStatus && !state.patientStatus.died) {
     // 百分比模型：做对恢复已损失的体征，做错扣当前体征的一定比例。
     // black 档（心搏骤停等）恢复上限放开到 100，其他档位不越过起始体征。
@@ -47,10 +48,12 @@ export function handleAnswerGuidance(
         stabilityRecoveryCap(triage, state.patientStatus.initialStability),
         state.patientStatus.stability + gain,
       )
+      vitalsPulse = { delta: newStability - state.patientStatus.stability, seq: state.eventSeq + 1 }
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'good', `✓ ${step.prompt}：操作正确`, state.shiftElapsed)
     } else {
       const newStability = Math.max(0, state.patientStatus.stability - guidanceStabilityPenalty(state.patientStatus.stability))
+      vitalsPulse = { delta: newStability - state.patientStatus.stability, seq: state.eventSeq + 1 }
       newPatientStatus = { ...state.patientStatus, stability: newStability, vitalSign: stabilityToVitalSign(newStability) }
       sinkEvent(sink, 'bad', `✗ ${step.prompt}：操作错误，患者情况恶化`, state.shiftElapsed)
     }
@@ -61,6 +64,7 @@ export function handleAnswerGuidance(
     eventSeq: sink.seq,
     guidanceResults: newResults,
     patientStatus: newPatientStatus,
+    vitalsPulse,
     patientEvents: sink.events,
     dialogueLog: [...state.dialogueLog, operatorLine, feedbackLine],
   }

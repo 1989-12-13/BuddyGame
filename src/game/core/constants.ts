@@ -92,39 +92,6 @@ export const DISPATCH_WARN_TIME = 50
 /** 派车严重阈值（秒）— 超过显示红色警告 */
 export const DISPATCH_CRITICAL_TIME = 80
 
-// -------------------- 评分系数 --------------------
-
-/** 派车速度满分 */
-export const SPEED_SCORE_PERFECT = 35
-/** 派车速度良好分 */
-export const SPEED_SCORE_GOOD = 30
-/** 派车速度及格分 */
-export const SPEED_SCORE_BRONZE = 20
-/** 派车速度差评分 */
-export const SPEED_SCORE_COPPER = 10
-/** 派车速度极差分 */
-export const SPEED_SCORE_BAD = 5
-
-/** 分诊完全匹配分 */
-export const TRIAGE_PERFECT_SCORE = 20
-/** 分诊差一档分 */
-export const TRIAGE_OFFBY1_SCORE = 10
-/** 地址完整度分 */
-export const ADDRESS_FULL_SCORE = 10
-export const ADDRESS_PARTIAL_SCORE = 6
-export const ADDRESS_VAGUE_SCORE = 3
-/** 联系方式得分 */
-export const CONTACT_SCORE = 5
-/** 主诉得分 */
-export const COMPLAINT_SCORE = 10
-/** 目的得分 */
-export const PURPOSE_SCORE = 5
-
-/** 急救指导满分 */
-export const GUIDANCE_MAX_SCORE = 10
-/** 信息质量加分上限 */
-export const INFO_QUALITY_MAX_BONUS = 5
-
 // -------------------- 生命体征阈值 --------------------
 
 /** stability ≥ 此值为 stable */

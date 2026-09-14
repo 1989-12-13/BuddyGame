@@ -1,4 +1,15 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
+
+async function answerNextCall(page: Page) {
+  const singleCallButton = page.getByRole('button', { name: '接听来电', exact: true })
+  const ringingLine = page.getByRole('button', { name: /^响铃/ }).first()
+  await singleCallButton.or(ringingLine).first().click()
+}
+
+async function confirmLocation(page: Page) {
+  await page.getByRole('button', { name: /确认位置|具体在哪个小区、哪条路/ }).click()
+}
+
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/tts', route => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"test unavailable"}' }))
   await page.route('**/*.basemaps.cartocdn.com/**', route => route.abort())
@@ -12,9 +23,9 @@ for (const [width, height] of [[1920,1080], [1366,768], [1280,720], [1024,768], 
     await expect(page.getByRole('heading', { name: /电话这头.*希望的起点/ })).toBeVisible()
     await page.screenshot({ path: `artifacts/title-${width}.png`, fullPage: true })
     await page.getByRole('button', { name: '开始值班', exact: true }).click()
-    await page.getByRole('button', { name: '接听来电', exact: true }).click()
+    await answerNextCall(page)
     if (width < 960) await page.getByRole('button', { name: '工作区', exact: true }).click()
-    await page.getByRole('button', { name: '确认位置', exact: true }).click()
+    await confirmLocation(page)
     await page.screenshot({ path: `artifacts/workbench-${width}.png`, fullPage: true })
     if (width < 1280) await page.getByRole('button', { name: '任务卡', exact: true }).click()
     await expect(page.getByRole('button', { name: '规划救援路线', exact: true })).toBeDisabled()
@@ -31,8 +42,8 @@ test('pause, cancel, weak network, refresh and explicit handoff', async ({ page 
   await page.waitForTimeout(500)
   await page.clock.install()
   await page.getByRole('button', { name: '开始值班', exact: true }).click()
-  await page.getByRole('button', { name: '接听来电', exact: true }).click()
-  await page.getByRole('button', { name: '确认位置', exact: true }).click()
+  await answerNextCall(page)
+  await confirmLocation(page)
   await page.clock.runFor(2100)
   await page.getByRole('button', { name: '有意识', exact: true }).click()
   await page.getByRole('button', { name: '正常呼吸', exact: true }).click()
@@ -58,9 +69,9 @@ test('pause, cancel, weak network, refresh and explicit handoff', async ({ page 
   await expect(page.getByLabel('事件地址')).not.toHaveValue('')
   await page.reload()
   await page.getByRole('button', { name: '继续第 1 通', exact: true }).click()
-  await page.getByRole('button', { name: '接听来电', exact: true }).click()
+  await answerNextCall(page)
   await expect(page.getByLabel('事件地址')).toHaveValue('')
-  await page.getByRole('button', { name: '确认位置', exact: true }).click()
+  await confirmLocation(page)
   await page.clock.runFor(2100)
   await expect(page.getByText('离线示意图 · 不影响路线规划')).toBeVisible()
 })

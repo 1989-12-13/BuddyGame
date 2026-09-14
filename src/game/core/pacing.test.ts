@@ -58,15 +58,15 @@ describe('scripted care pacing', () => {
     const paused = worldReducer(state, { type: 'PAUSE', reason: 'settings' })
     expect(ticks(paused, 90)).toBe(paused)
   })
-  it('persists active time only at completed-call boundaries and accepts old checkpoints', () => {
+  it('persists active time only at completed-call boundaries and accepts an early v3 payload', () => {
     localStorage.clear()
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: SCRIPTED_CALLS })
     state = worldReducer(ticks(worldReducer(state, { type: 'ANSWER_CALL' }), 40), { type: 'END_CALL' })
     saveCheckpoint(state)
     expect(loadCheckpoint()!.activePlaySeconds).toBe(40)
-    const saved = JSON.parse(localStorage.getItem('dispatch120-checkpoint-v1')!)
+    const saved = JSON.parse(localStorage.getItem('dispatch120-checkpoint-v3')!)
     delete saved.activeSeconds
-    localStorage.setItem('dispatch120-checkpoint-v1', JSON.stringify(saved))
+    localStorage.setItem('dispatch120-checkpoint-v3', JSON.stringify(saved))
     expect(loadCheckpoint()!.activePlaySeconds).toBe(0)
     localStorage.clear()
   })

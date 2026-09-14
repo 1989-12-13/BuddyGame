@@ -93,6 +93,7 @@ describe('workbench state boundaries', () => {
     const beforeCalm = state
     expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
     state = worldReducer(state, { type: 'CALM_CALLER' })
+    expect(state.attitudeEvidence.calmingActions).toBe(1)
     while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
     state = worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
     expect(state).not.toBe(beforeCalm)
@@ -101,12 +102,25 @@ describe('workbench state boundaries', () => {
     while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
     expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
   })
-  it('does not automatically end a call after arrival, and never scores twice', () => {
+  it('records supportive and pressuring phrasing evidence, including player-caused loss of control', () => {
+    const started = begin('falls_elderly')
+    const supported = worldReducer(started, { type: 'ASK_QUESTION', questionId: 'step1_location', stressDelta: -5 })
+    expect(supported.attitudeEvidence.supportiveTurns).toBe(1)
+
+    const pressuredStart = {
+      ...started,
+      callerState: { ...started.callerState!, stress: 99, stressLevel: '紧张' as const },
+    }
+    const pressured = worldReducer(pressuredStart, { type: 'ASK_QUESTION', questionId: 'step1_location', stressDelta: 8 })
+    expect(pressured.attitudeEvidence.pressuringTurns).toBe(1)
+    expect(pressured.attitudeEvidence.playerCausedLossControl).toBe(true)
+  })
+  it('does not automatically end a call after arrival, and never evaluates twice', () => {
     let state = dispatch(ready())
     for (let i = 0; i < 200; i++) state = worldReducer(state, { type: 'TICK' })
     expect(state.currentCall).not.toBeNull()
     const ended = worldReducer(state, { type: 'END_CALL' })
-    expect(ended.callScores).toHaveLength(1)
+    expect(ended.callEvaluations).toHaveLength(1)
     expect(worldReducer(ended, { type: 'TICK' })).toBe(ended)
     expect(worldReducer(ended, { type: 'END_CALL' })).toBe(ended)
   })
@@ -118,11 +132,12 @@ describe('workbench state boundaries', () => {
     expect(state.backgroundRescues).toHaveLength(1)
     state = worldReducer(state, { type: 'DISMISS_DEBRIEF' })
     state = worldReducer(state, { type: 'CHOOSE_PERK', perkId: 'rapid_intake' })
-    const scoreCount = state.callScores.length
+    const evaluationCount = state.callEvaluations.length
     for (let i = 0; i < 600 && !state.backgroundRescues[0].outcome; i++) state = worldReducer(state, { type: 'TICK' })
     expect(state.backgroundRescues[0].outcome).not.toBeNull()
     expect(state.rescueNotifications).toHaveLength(1)
-    expect(state.callScores).toHaveLength(scoreCount)
+    expect(state.callEvaluations).toHaveLength(evaluationCount)
+    expect(state.callEvaluations.find(item => item.callInstanceId === state.backgroundRescues[0].callInstanceId)?.outcome).not.toBe('pending')
     for (let i = 0; i < 10; i++) state = worldReducer(state, { type: 'TICK' })
     expect(state.rescueNotifications).toHaveLength(1)
   })
@@ -157,14 +172,16 @@ describe('workbench state boundaries', () => {
     expect(worldReducer(state, { type: 'SUBMIT_HANDOFF', callInstanceId: state.callInstanceId, factIds: requiredIds })).toBe(state)
   })
   it('persists completed progress but restarts an interrupted call safely', () => {
+    let completed = begin('falls_elderly')
+    completed = worldReducer(completed, { type: 'END_CALL' })
     const state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: QUEUE_SCENARIOS })
-    saveCheckpoint({ ...state, callIndex: 2, callScores: [78, 85], totalScore: 163 })
+    saveCheckpoint({ ...state, callIndex: 2, callEvaluations: [completed.callEvaluations[0], completed.callEvaluations[0]] })
     const restored = loadCheckpoint()!
     expect(restored.callIndex).toBe(2)
     expect(restored.currentCall).toBeNull()
-    expect(restored.totalScore).toBe(163)
+    expect(restored.callEvaluations).toHaveLength(2)
     expect(restored.fleet.vehicles[0].status).toBe('available')
-    localStorage.setItem('dispatch120-checkpoint-v1', '{broken')
+    localStorage.setItem('dispatch120-checkpoint-v3', '{broken')
     expect(loadCheckpoint()).toBeNull()
   })
   it('restores a pending background rescue with its vehicle', () => {
@@ -176,6 +193,13 @@ describe('workbench state boundaries', () => {
     expect(restored.backgroundRescues).toHaveLength(1)
     expect(restored.fleet.vehicles[0].status).toBe('en_route')
     expect(restored.currentCall).toBeNull()
+  })
+  it('invalidates legacy score-only checkpoints instead of fabricating evidence', () => {
+    localStorage.setItem('dispatch120-checkpoint-v1', JSON.stringify({ version: 1, totalScore: 100, callScores: [100] }))
+    localStorage.setItem('dispatch120-checkpoint-v2', JSON.stringify({ version: 2, totalScore: 100, callScores: [100] }))
+    expect(loadCheckpoint()).toBeNull()
+    expect(localStorage.getItem('dispatch120-checkpoint-v1')).toBeNull()
+    expect(localStorage.getItem('dispatch120-checkpoint-v2')).toBeNull()
   })
   it('completes a multi-call queue with independent results and no deadlock', () => {
     let state = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: QUEUE_SCENARIOS })
@@ -196,7 +220,7 @@ describe('workbench state boundaries', () => {
       for (let i = 0; i < 600 && !state.rescue.outcome; i++) state = worldReducer(state, { type: 'TICK' })
       expect(state.rescue.outcome).not.toBeNull()
       state = worldReducer(state, { type: 'END_CALL' })
-      expect(state.callScores).toHaveLength(index + 1)
+      expect(state.callEvaluations).toHaveLength(index + 1)
       state = worldReducer(state, { type: 'DISMISS_DEBRIEF' })
       if (state.pendingPerkChoices.length) state = worldReducer(state, { type: 'CHOOSE_PERK', perkId: state.pendingPerkChoices[0] })
     }

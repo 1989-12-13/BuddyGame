@@ -128,8 +128,19 @@ const BASE_CARDS: EmergencyScenario[] = [
   urinaryCard,
 ]
 
-/** 全部卡片：母卡 + 由 variants 展开出的变体卡 */
+function patientCountOf(card: EmergencyScenario): number {
+  if (card.isPrank || card.isVerification) return 0
+  const text = card.fourElements.condition.patientCount
+  const numeric = Number.parseInt(text, 10)
+  if (Number.isFinite(numeric)) return numeric
+  // 当前“十几人”群体事件采用可重复、可测试的保守值 12 人。
+  if (text.includes('十几')) return 12
+  return 1
+}
+
+/** 全部卡片：母卡 + 由 variants 展开出的变体卡，并固化患者人数。 */
 export const ALL_CARDS: EmergencyScenario[] = [...BASE_CARDS, ...expandVariants(BASE_CARDS)]
+  .map(card => ({ ...card, patientCount: patientCountOf(card) }))
 
 /** 仅母卡（不含变体）—— 需要一对一映射时用，如菜单默认键 */
 export const BASE_CARD_IDS = BASE_CARDS.map(c => c.id)

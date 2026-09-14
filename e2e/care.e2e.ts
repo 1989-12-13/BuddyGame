@@ -5,13 +5,23 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/tts', route => route.fulfill({ status: 503, body: 'unavailable' }))
 })
 
+async function answerNextCall(page: Page) {
+  const singleCallButton = page.getByRole('button', { name: '接听来电', exact: true })
+  const ringingLine = page.getByRole('button', { name: /^响铃/ }).first()
+  await singleCallButton.or(ringingLine).first().click()
+}
+
+async function confirmLocation(page: Page) {
+  await page.getByRole('button', { name: /确认位置|具体在哪个小区、哪条路/ }).click()
+}
+
 async function dispatchScenario(page: Page, name: string) {
   await page.clock.install()
   await page.goto('/')
   await page.getByRole('button', { name: '场景练习', exact: true }).click()
   await page.getByRole('button', { name: `练习${name}`, exact: true }).click()
-  await page.getByRole('button', { name: '接听来电', exact: true }).click()
-  await page.getByRole('button', { name: '确认位置', exact: true }).click()
+  await answerNextCall(page)
+  await confirmLocation(page)
   await page.clock.runFor(2200)
   await page.getByRole('button', { name: name === '心脏骤停' ? '无意识' : '有意识', exact: true }).click()
   await page.getByRole('button', { name: name === '心脏骤停' ? '无呼吸/异常' : '正常呼吸', exact: true }).click()
@@ -26,7 +36,7 @@ for (const theme of ['light', 'dark']) {
   test(`task card and care controls remain readable in ${theme} theme`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem('buddy-game-theme', value), theme)
     await page.setViewportSize({ width: 1920, height: 1080 })
-    await dispatchScenario(page, '玻璃割伤大出血')
+    await dispatchScenario(page, '刀割伤大出血')
     await page.getByText('协议编号对照', { exact: true }).click()
     const conscious = page.getByRole('button', { name: '有意识', exact: true })
     const unconscious = page.getByRole('button', { name: '无意识', exact: true })
@@ -86,7 +96,7 @@ test('chapter 3 keeps feedback until acknowledgment and stops an unfinished spee
   })
   await page.route('**/api/tts', route => route.fulfill({ status: 200, contentType: 'audio/wav', body: 'simulated long speech' }))
   await page.setViewportSize({ width: 1366, height: 768 })
-  await dispatchScenario(page, '玻璃割伤大出血')
+  await dispatchScenario(page, '刀割伤大出血')
   const answer = page.getByRole('button', { name: '保留玻璃，用干净布料在异物周围加压', exact: true })
   await answer.dblclick()
   await expect(page.getByRole('region', { name: '本步指导反馈' })).toBeVisible()
@@ -137,7 +147,7 @@ test('cardiac care reaches rhythm and breaths; pause freezes vitals and active t
 test('stroke traffic update allows one reroute and arrival requires a fact-based handoff', async ({ page }) => {
   test.setTimeout(90_000)
   await page.setViewportSize({ width: 1366, height: 768 })
-  await dispatchScenario(page, '脑卒中')
+  await dispatchScenario(page, '疑似脑卒中')
 
   const reroute = page.getByRole('region', { name: '途中路况选择' })
   await page.clock.runFor(60_000)

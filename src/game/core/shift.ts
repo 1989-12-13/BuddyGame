@@ -13,14 +13,15 @@
 //   5. 线路生命周期（idle → ringing → active → done）
 // ============================================================
 
-import type { WorldState } from '../types'
+import type { CallEvaluation, ShiftEvaluation, WorldState } from '../types'
 import { stressToLevel } from '../types'
 import type { GameAction } from './actions'
 import type { PauseReason } from './session'
 import { worldReducer } from './worldReducer'
 import { createInitialState, pickScenarioWeighted } from './worldState'
 import { buildConflictReport, buildVerificationCall, type ConflictReport } from './supplementCall'
-import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
+import { SCENARIOS, SCENARIO_IDS, getScenario } from '../events/templates'
+import { buildCallEvaluation, buildShiftEvaluation, gradeAtLeast, markCallEvaluationTransferred } from './evaluation'
 
 export type LinePhase = 'idle' | 'ringing' | 'active' | 'done'
 
@@ -38,12 +39,12 @@ export interface VerificationState {
 /**
  * 已完成的通话快照。
  * 必须跨线路累积：线路会被复用，复用时 START_SHIFT 会重置该线路的
- * totalScore / callScores / activePlaySeconds，直接读线路会丢掉前面的成绩。
+ * callEvaluations / activePlaySeconds，直接读线路会丢掉前面的评价。
  */
 export interface ShiftCompletedCall {
   lineId: string
   scenarioId: string
-  score: number
+  evaluation: CallEvaluation
   activeSeconds: number
 }
 
@@ -181,8 +182,6 @@ export const HEAT_LOSS_MISSED = -14
 export const HEAT_LOSS_DEATH = -30
 /** 没有任何在途任务时，热度自然回落（夜渐深） */
 const HEAT_IDLE_DECAY = 0.1
-/** 高分通话的判定线 */
-const GOOD_CALL_SCORE = 70
 
 function clampHeat(value: number): number {
   return Math.max(0, Math.min(100, value))
@@ -320,7 +319,7 @@ export function ringingLines(shift: ShiftState): ShiftLine[] {
 export interface ShiftCallSummary {
   scenarioId: string
   title: string
-  score: number
+  evaluation: CallEvaluation
 }
 
 export interface ShiftIncidentSummary {
@@ -330,26 +329,7 @@ export interface ShiftIncidentSummary {
   resolution: 'adopt' | 'reject' | null
 }
 
-export interface ShiftSummary {
-  totalScore: number
-  /** 逐通得分（未接来电按 0 分计入，让它出现在结算里） */
-  callScores: number[]
-  activeSeconds: number
-  missedCount: number
-  incidentCount: number
-  /** 已完成的通话（带场景名，供结算逐通展示） */
-  calls: ShiftCallSummary[]
-  /** 未接来电 */
-  missed: ShiftCallSummary[]
-  /** 发生过的事故及其交叉核实结论 */
-  incidents: ShiftIncidentSummary[]
-  /** 收班方式（热度模型判定）；null = 玩家主动结束 */
-  ending: ShiftEnding | null
-  /** 收班叙事 */
-  endingNarrative: string | null
-  /** 跨线路的叙事总结 */
-  narrative: string
-}
+export type ShiftSummary = ShiftEvaluation
 
 function scenarioTitle(id: string): string {
   return SCENARIOS[id]?.title ?? id
@@ -360,12 +340,11 @@ export function summarizeShift(shift: ShiftState): ShiftSummary {
   const calls: ShiftCallSummary[] = shift.completed.map(call => ({
     scenarioId: call.scenarioId,
     title: scenarioTitle(call.scenarioId),
-    score: call.score,
+    evaluation: call.evaluation,
   }))
-  const missed: ShiftCallSummary[] = shift.missed.map(id => ({
+  const missed = shift.missed.map(id => ({
     scenarioId: id,
     title: scenarioTitle(id),
-    score: 0,
   }))
   const incidents: ShiftIncidentSummary[] = shift.incidents.map(incident => ({
     scenarioId: incident.scenarioId,
@@ -384,22 +363,17 @@ export function summarizeShift(shift: ShiftState): ShiftSummary {
     parts.push(`${reviewed.length} 起事故收到第二位来电者，采纳最新观察 ${adopted} 次、维持初报 ${rejected} 次`)
   }
 
-  return {
-    totalScore: calls.reduce((sum, call) => sum + call.score, 0),
-    callScores: [...calls.map(call => call.score), ...missed.map(() => 0)],
-    activeSeconds: shift.completed.reduce((sum, call) => sum + call.activeSeconds, 0),
-    missedCount: missed.length,
-    incidentCount: incidents.length,
-    calls,
-    missed,
-    incidents,
-    ending: shift.ending,
-    endingNarrative: shift.ending ? ENDING_NARRATIVE[shift.ending] : null,
-    narrative: [
+  const narrative = [
       shift.ending ? ENDING_NARRATIVE[shift.ending] : null,
       parts.length > 0 ? `你今晚${parts.join('，')}。` : '这个班次没有留下记录。',
-    ].filter(Boolean).join(' '),
-  }
+    ].filter(Boolean).join(' ')
+  return buildShiftEvaluation(calls.map(call => call.evaluation), {
+    missedCalls: missed,
+    activeSeconds: shift.completed.reduce((sum, call) => sum + call.activeSeconds, 0),
+    endingNarrative: shift.ending ? ENDING_NARRATIVE[shift.ending] : null,
+    narrative,
+    incidents,
+  })
 }
 
 // -------------------- 线路操作 --------------------
@@ -722,27 +696,30 @@ export function tickShift(shift: ShiftState): ShiftState {
     lines: working.lines.map(line => advanceLine(line, line.id === working.focusedLineId)),
   }
 
-  // 线路刚刚结束 → 快照成绩 + 结算热度（避免线路复用后成绩被重置）
+  // 线路救援已经结算并准备复用 → 快照评价 + 结算热度。
+  // 等到 done→idle 才归档，保证后台救援结果已经回写到评价记录。
   const justFinished = working.lines.filter((line, index) =>
-    line.phase === 'done' && shift.lines[index].phase !== 'done')
+    line.phase === 'idle' && shift.lines[index].phase === 'done')
   if (justFinished.length > 0) {
     let heat = working.heat
     let deaths = working.deaths
-    const snapshots = justFinished.map(line => {
-      const score = line.world.callScores[line.world.callScores.length - 1] ?? line.world.totalScore
+    const snapshots = justFinished.flatMap(line => {
+      const evaluation = line.world.callEvaluations[line.world.callEvaluations.length - 1]
+      // 交叉核实线路没有独立患者评价，只写入 incident 回顾。
+      if (!evaluation) return []
       if (lineHasDeath(line)) {
         heat += HEAT_LOSS_DEATH
         deaths += 1
       }
-      heat += score >= GOOD_CALL_SCORE ? HEAT_GAIN_CALL_GOOD
-        : score > 0 ? HEAT_GAIN_CALL_OK
+      heat += gradeAtLeast(evaluation.overallGrade, 'A') ? HEAT_GAIN_CALL_GOOD
+        : gradeAtLeast(evaluation.overallGrade, 'C') ? HEAT_GAIN_CALL_OK
           : HEAT_LOSS_CALL_POOR
-      return {
+      return [{
         lineId: line.id,
-        scenarioId: line.scenarioId ?? line.world.currentCall?.id ?? 'unknown',
-        score,
+        scenarioId: evaluation.scenarioId,
+        evaluation,
         activeSeconds: line.world.activePlaySeconds,
-      }
+      }]
     })
     working = {
       ...working,
@@ -805,10 +782,25 @@ export function tickShift(shift: ShiftState): ShiftState {
 
   // 7) 崩盘 = 当场被换下来：手里的活立刻移交，不让你再收拾残局
   if (working.ending === 'collapse') {
+    const transferred = working.lines.flatMap(line => {
+      if (line.role !== 'primary' || (line.phase !== 'active' && line.phase !== 'done')) return []
+      const scenarioId = line.world.currentCall?.id ?? line.scenarioId
+      if (!scenarioId) return []
+      const scenario = getScenario(scenarioId)
+      const existing = line.world.callEvaluations[line.world.callEvaluations.length - 1]
+      if (!existing && (!line.world.currentCall || !line.world.callerState)) return []
+      const evaluation = markCallEvaluationTransferred(existing ?? buildCallEvaluation(line.world, scenario), scenario)
+      return [{ lineId: line.id, scenarioId: scenario.id, evaluation, activeSeconds: line.world.activePlaySeconds }]
+    })
+    const abandonedRings = working.lines
+      .filter(line => line.phase === 'ringing' && line.role === 'primary' && line.scenarioId)
+      .map(line => line.scenarioId!)
     working = {
       ...working,
       focusedLineId: null,
-      lines: working.lines.map(line => (line.phase === 'active' || line.phase === 'ringing'
+      completed: [...working.completed, ...transferred],
+      missed: [...working.missed, ...abandonedRings],
+      lines: working.lines.map(line => (line.phase === 'active' || line.phase === 'ringing' || line.phase === 'done'
         ? { ...line, phase: 'idle' as const, scenarioId: null, ringingFor: 0 }
         : line)),
     }

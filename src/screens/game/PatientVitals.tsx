@@ -21,8 +21,10 @@ export function PatientVitals({ state }: { state: WorldState }) {
   }, [pulse])
 
   const patient = state.patientStatus
+  const stability = patient?.stability
+  const value = Math.max(0, Math.min(100, typeof stability === 'number' && Number.isFinite(stability) ? stability : 0))
+
   if (!patient || !state.currentCall) return null
-  const value = Math.max(0, Math.min(100, Number.isFinite(patient.stability) ? patient.stability : 0))
   const tone = patient.died || value < 30 ? 'urgent' : value < 60 ? 'caution' : 'steady'
   const label = patient.died ? '本次救援未成功' : state.rescue.outcome ? '已转交现场' : value < 30 ? '照护余量很低' : value < 60 ? '需要持续关注' : state.currentCall.id === 'cardiac_arrest' ? '需要持续复苏' : '保持观察与照护'
   const elapsed = Math.max(0, state.rescue.etaTotal - state.ambulanceRemaining)

@@ -106,10 +106,11 @@ export function useStreamingQueue(state: WorldState, onLineStreamed?: (index: nu
   //   2. 并发值班切线路（key 变化）整块重挂载。此时这条通话可能已经播过一段，
   //      prevLogLen 必须按 state.streamedLines 续上，直接归零会把历史重播一遍。
   useEffect(() => {
+    const pending = pendingSet.current
     return () => {
       clearAllTimers()
       pendingQueue.current = []
-      pendingSet.current.clear()
+      pending.clear()
       lockUntilRef.current = 0
       // 清掉通话指纹 → 下一次（重）挂载按 state.streamedLines 重新定位进度
       callKeyRef.current = ''

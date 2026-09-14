@@ -3,7 +3,7 @@
 // ============================================================
 
 import type { CSSProperties } from 'react'
-import { Clock, List, Star } from 'lucide-react'
+import { Ambulance, Clock, HeartPulse, List } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 
 
@@ -22,6 +22,11 @@ export function Hud({ state }: Props) {
   const minutes = Math.floor(state.shiftElapsed / 60)
   const seconds = state.shiftElapsed % 60
   const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  const rescuedCount = state.callEvaluations
+    .filter(item => item.outcome === 'rescued')
+    .reduce((sum, item) => sum + item.patientCount, 0)
+  const inTransitCount = state.backgroundRescues.filter(item => !item.outcome).length
+    + (state.dispatchSent && state.rescue.outcome === null ? 1 : 0)
 
   return (
     <div style={styles.container}>
@@ -32,26 +37,30 @@ export function Hud({ state }: Props) {
         <span style={styles.value}>{timeStr}</span>
       </div>
 
-      {/* 通话编号 */}
+      {/* 已处理 */}
       <div style={styles.group}>
         <span style={iconEl('var(--text-2)')}><List size={SIZE} strokeWidth={2.5} /></span>
-        <span style={styles.label}>通话</span>
-        <span style={styles.value}>
-          {state.callIndex}/{state.totalCalls}
-        </span>
+        <span style={styles.label}>已处理</span>
+        <span style={styles.value}>{state.callEvaluations.length}</span>
       </div>
 
-      {/* 右侧：累计得分 */}
+      {/* 右侧：已确认救治人数 */}
       <div style={{ ...styles.group, marginLeft: 'auto' }}>
-        <span style={iconEl('var(--warning)')}><Star size={SIZE} strokeWidth={2.5} /></span>
-        <span style={styles.label}>得分</span>
-        <span style={{ ...styles.value, color: 'var(--warning)' }}>{state.totalScore}</span>
+        <span style={iconEl('var(--success)')}><HeartPulse size={SIZE} strokeWidth={2.5} /></span>
+        <span style={styles.label}>已救治</span>
+        <span style={{ ...styles.value, color: 'var(--success)' }}>{rescuedCount}</span>
+      </div>
+
+      <div style={styles.group}>
+        <span style={iconEl('var(--warning)')}><Ambulance size={SIZE} strokeWidth={2.5} /></span>
+        <span style={styles.label}>在途</span>
+        <span style={styles.value}>{inTransitCount}</span>
       </div>
 
       {/* 救护车 ETA */}
       {state.dispatchSent && state.ambulanceRemaining > 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--danger)')}><Star size={SIZE} strokeWidth={2.5} /></span>
+          <span style={iconEl('var(--danger)')}><Ambulance size={SIZE} strokeWidth={2.5} /></span>
           <span style={{ ...styles.value, color: 'var(--danger)', fontSize: 'var(--fs-body-sm)' }}>
             ETA {state.ambulanceRemaining}s
           </span>
@@ -60,7 +69,7 @@ export function Hud({ state }: Props) {
 
       {state.dispatchSent && state.ambulanceRemaining === 0 && (
         <div style={styles.group}>
-          <span style={iconEl('var(--success)')}><Star size={SIZE} strokeWidth={2.5} /></span>
+          <span style={iconEl('var(--success)')}><Ambulance size={SIZE} strokeWidth={2.5} /></span>
           <span style={{ ...styles.value, color: 'var(--success)', fontSize: 'var(--fs-body-sm)' }}>
             已到达
           </span>

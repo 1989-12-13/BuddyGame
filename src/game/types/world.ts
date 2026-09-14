@@ -7,6 +7,7 @@ import type { TriageLevel } from './mpds'
 import type { EmergencyScenario, CallPhase, JudgmentPrompt } from './scenario'
 import type { CallerState } from './caller'
 import type { RouteStrategy, RoutePlan } from '../core/routing'
+import type { AttitudeEvidence, CallEvaluation } from './evaluation'
 
 // -------------------- 调度记录 --------------------
 export interface DispatchRecord {
@@ -26,7 +27,6 @@ export interface DispatchRecord {
   routeStrategy?: RouteStrategy
   routeRisk?: 'low' | 'medium' | 'high'
 }
-
 // -------------------- 患者生命体征（实时反馈层） --------------------
 export type VitalSign = 'stable' | 'warning' | 'critical' | 'arrest'
 
@@ -118,6 +118,8 @@ export interface WorldState {
    * 切回来时历史对话直接完整呈现、只补播离开期间的新行。
    */
   streamedLines: number
+  /** 本通电话的沟通行为证据；结束通话后写入 CallEvaluation。 */
+  attitudeEvidence: AttitudeEvidence
 
   // 班次
   shiftNumber: number
@@ -180,12 +182,10 @@ export interface WorldState {
   // 临床判断
   pendingJudgments: JudgmentPrompt[]   // 等待玩家做出判断的选择题
 
-  // 累计得分
-  totalScore: number
-  callScores: number[]        // 每通电话的得分
+  // 已完成通话的结构化评价（包含仍等待现场结果的暂定记录）
+  callEvaluations: CallEvaluation[]
 
   // 结算
-  endingId: string | null
   lastDebrief: import('../core/debrief').DebriefEntry | null
   pendingPerkChoices: import('../core/perks').RoguePerkId[]
   perks: import('../core/perks').RoguePerkId[]
@@ -198,14 +198,4 @@ export interface DialogueLine {
   timestamp: number           // shiftElapsed 时间戳
   /** 情绪标签——赋能 galgame 式回合节拍与情绪可视化（可选） */
   emotion?: 'calm' | 'anxious' | 'panicked' | 'broken'
-}
-
-// -------------------- 结局 --------------------
-export interface EndingDef {
-  id: string
-  title: string
-  subtitle: string
-  description: string
-  minScore: number
-  badge: string              // 奖章名称
 }

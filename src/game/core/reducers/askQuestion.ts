@@ -333,6 +333,15 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
   const coopDelta = turn?.stressDelta == null ? 0 : turn.stressDelta < 0 ? 5 : turn.stressDelta > 0 ? -4 : 0
   const newCooperation = Math.max(5, Math.min(100, cs.cooperation + coopDelta + (isRetry ? -3 : 0)))
   const newStressLevel = stressToLevel(newStress)
+  const stressDelta = turn?.stressDelta ?? 0
+  const attitudeEvidence = {
+    ...state.attitudeEvidence,
+    supportiveTurns: state.attitudeEvidence.supportiveTurns + (stressDelta < 0 ? 1 : 0),
+    neutralTurns: state.attitudeEvidence.neutralTurns + (stressDelta === 0 ? 1 : 0),
+    pressuringTurns: state.attitudeEvidence.pressuringTurns + (stressDelta > 0 ? 1 : 0),
+    playerCausedLossControl: state.attitudeEvidence.playerCausedLossControl
+      || (stressDelta > 0 && cs.stressLevel !== '失控' && newStressLevel === '失控'),
+  }
 
   // 情绪爆发
   if (cs.stressLevel !== '失控' && newStressLevel === '失控') {
@@ -368,6 +377,7 @@ export function handleAskQuestion(state: WorldState, questionId: string, turn?: 
     actionEndsAt: state.shiftElapsed + questionTimeCost,
     calmCount: 0,
     questionCost: state.questionCost + questionTimeCost,
+    attitudeEvidence,
     callPhase: 'questioning',
     pendingJudgments: newJudgments,
     terminal: newTerminal,

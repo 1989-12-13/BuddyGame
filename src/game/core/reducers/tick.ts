@@ -9,6 +9,8 @@ import { createEventSink, sinkEvent } from './helpers'
 import { advanceFleet } from '../fleet'
 import { stabilityToVitalSign } from '../worldState'
 import { resolveRescue } from '../rescueResolution'
+import { updateCallEvaluationOutcome } from '../evaluation'
+import { getScenario } from '../../events/templates'
 
 export function handleTick(state: WorldState): WorldState {
   if (state.screen !== 'playing' || isWorldPaused(state)) return state
@@ -21,6 +23,7 @@ export function handleTick(state: WorldState): WorldState {
   let newRescue = state.rescue
   let newRescueNotifications = state.rescueNotifications
   let newPendingReroute = state.pendingReroute
+  let newCallEvaluations = state.callEvaluations
 
   // 救护车到达判定：基于 fleet 状态机 en_route→on_scene 转移
   const beforeFleet = state.fleet
@@ -145,12 +148,12 @@ export function handleTick(state: WorldState): WorldState {
       speaker: 'system',
       text: success
         ? '【✓ 救护车已到达 · 现场交接准备完成】'
-        : `【✗ 救护车到了，但人没救回来 · ${newRescue.failureReason}】`,
+        : `【✗ 救护车已到达 · 患者病情恶化 · ${newRescue.failureReason}】`,
       timestamp: newElapsed,
     })
     sinkEvent(sink,
       success ? 'good' : 'bad',
-      success ? '✓ 救护车已到达 · 请完成现场交接' : `✗ 救护车到了，但人没救回来 · ${newRescue.failureReason}`,
+      success ? '✓ 救护车已到达 · 请完成现场交接' : `✗ 救护车已到达 · 患者病情恶化 · ${newRescue.failureReason}`,
       newElapsed,
     )
   }
@@ -192,6 +195,10 @@ export function handleTick(state: WorldState): WorldState {
           : `${mission.scenarioTitle}：救护车已到达，${resolution.failureReason ?? '救援未成功'}。`,
       }]
     }
+    const scenario = getScenario(mission.callId)
+    newCallEvaluations = newCallEvaluations.map(evaluation => evaluation.callInstanceId === mission.callInstanceId
+      ? updateCallEvaluationOutcome(evaluation, scenario, resolution.outcome, patientStatus.died, resolution.failureReason)
+      : evaluation)
     return {
       ...mission,
       patientStatus,
@@ -213,6 +220,7 @@ export function handleTick(state: WorldState): WorldState {
     rescue: newRescue,
     backgroundRescues: newBackgroundRescues,
     rescueNotifications: newRescueNotifications,
+    callEvaluations: newCallEvaluations,
     pendingReroute: newPendingReroute,
     fleet: afterFleet,
     dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0

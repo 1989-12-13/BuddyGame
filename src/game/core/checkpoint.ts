@@ -1,17 +1,23 @@
-import type { WorldState } from '../types'
+import type { CallEvaluation, WorldState } from '../types'
 import { createInitialState } from './worldState'
 import { SCENARIO_IDS } from '../events/templates'
 import { ROGUE_PERKS } from './perks'
 import { readStorage, writeStorage, removeStorage } from '../../utils/storage'
 
-const KEY = 'dispatch120-checkpoint-v1'
+const KEY = 'dispatch120-checkpoint-v3'
+const LEGACY_KEYS = ['dispatch120-checkpoint-v1', 'dispatch120-checkpoint-v2']
+
 export function saveCheckpoint(state: WorldState): boolean {
-  if (state.callIndex >= state.totalCalls && !state.backgroundRescues.some(rescue => !rescue.outcome)) { removeStorage(KEY); return true }
+  LEGACY_KEYS.forEach(removeStorage)
+  if (state.callIndex >= state.totalCalls && !state.backgroundRescues.some(rescue => !rescue.outcome)) {
+    removeStorage(KEY)
+    return true
+  }
   return writeStorage(KEY, JSON.stringify({
-    version: 2,
+    version: 3,
     queue: state.scenarioQueue,
     index: state.callIndex,
-    scores: state.callScores,
+    evaluations: state.callEvaluations,
     perks: state.perks,
     elapsed: state.shiftElapsed,
     activeSeconds: Math.max(0, state.activePlaySeconds - (state.currentCall ? state.shiftElapsed - state.callStartTime : 0)),
@@ -21,18 +27,31 @@ export function saveCheckpoint(state: WorldState): boolean {
     rescueNotifications: state.rescueNotifications,
   }))
 }
+
+function validEvaluations(value: unknown, expectedLength: number): value is CallEvaluation[] {
+  return Array.isArray(value)
+    && value.length === expectedLength
+    && value.every(item => item && typeof item === 'object'
+      && typeof (item as CallEvaluation).scenarioId === 'string'
+      && typeof (item as CallEvaluation).overallGrade === 'string'
+      && Array.isArray((item as CallEvaluation).reviewPoints))
+}
+
 export function loadCheckpoint(): WorldState | null {
+  LEGACY_KEYS.forEach(removeStorage)
+  const reject = () => { removeStorage(KEY); return null }
   try {
     const saved = JSON.parse(readStorage(KEY) ?? 'null')
-    if (!saved || ![1, 2].includes(saved.version) || !Array.isArray(saved.queue) || !saved.queue.length || saved.queue.length > SCENARIO_IDS.length || !saved.queue.every((id: unknown) => typeof id === 'string' && SCENARIO_IDS.includes(id))) return null
-    if (!Number.isInteger(saved.index) || saved.index < 0 || saved.index > saved.queue.length || (saved.version === 1 && saved.index >= saved.queue.length)) return null
-    if (!Array.isArray(saved.scores) || saved.scores.length !== saved.index || !saved.scores.every((n: unknown) => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 100)) return null
-    if (!Array.isArray(saved.perks) || !saved.perks.every((id: unknown) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(ROGUE_PERKS, id))) return null
-    if (!Number.isFinite(saved.elapsed) || saved.elapsed < 0) return null
-    if (saved.activeSeconds !== undefined && (!Number.isInteger(saved.activeSeconds) || saved.activeSeconds < 0 || saved.activeSeconds > saved.elapsed)) return null
+    // v1/v2 只有旧分数，无法可靠还原五维证据，明确失效。
+    if (!saved || saved.version !== 3) return reject()
+    if (!Array.isArray(saved.queue) || !saved.queue.length || saved.queue.length > SCENARIO_IDS.length || !saved.queue.every((id: unknown) => typeof id === 'string' && SCENARIO_IDS.includes(id))) return reject()
+    if (!Number.isInteger(saved.index) || saved.index < 0 || saved.index > saved.queue.length) return reject()
+    if (!validEvaluations(saved.evaluations, saved.index)) return reject()
+    if (!Array.isArray(saved.perks) || !saved.perks.every((id: unknown) => typeof id === 'string' && Object.prototype.hasOwnProperty.call(ROGUE_PERKS, id))) return reject()
+    if (!Number.isFinite(saved.elapsed) || saved.elapsed < 0) return reject()
+    if (saved.activeSeconds !== undefined && (!Number.isInteger(saved.activeSeconds) || saved.activeSeconds < 0 || saved.activeSeconds > saved.elapsed)) return reject()
     const initial = createInitialState()
-    const restoreBackground = saved.version === 2
-      && Array.isArray(saved.backgroundRescues)
+    const restoreBackground = Array.isArray(saved.backgroundRescues)
       && Array.isArray(saved.rescueNotifications)
       && saved.fleet?.vehicles?.length === 1
     return {
@@ -43,8 +62,7 @@ export function loadCheckpoint(): WorldState | null {
       scenarioQueue: saved.queue,
       totalCalls: saved.queue.length,
       callIndex: saved.index,
-      callScores: saved.scores,
-      totalScore: saved.scores.reduce((a: number, b: number) => a + b, 0),
+      callEvaluations: saved.evaluations,
       perks: [...new Set<string>(saved.perks)] as WorldState['perks'],
       shiftElapsed: saved.elapsed,
       activePlaySeconds: saved.activeSeconds ?? 0,
@@ -56,5 +74,7 @@ export function loadCheckpoint(): WorldState | null {
         shiftCompletePending: saved.index >= saved.queue.length,
       } : {}),
     }
-  } catch { return null }
+  } catch {
+    return reject()
+  }
 }

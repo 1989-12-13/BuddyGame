@@ -240,7 +240,7 @@
   --fs-heading-lg: 27px; /* 页面大标题、大分数 */
   --fs-heading-xl: 30px; /* 结束画面标题 */
   --fs-hero: 40px; /* 标题画面主标题 */
-  --fs-score: 46px; /* 结束画面分数 */
+  --fs-display: 46px; /* 结束画面大号状态 */
 
   /* === 字重 === */
   --fw-normal: 400;

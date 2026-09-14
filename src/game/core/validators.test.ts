@@ -35,13 +35,13 @@ describe('validateState', () => {
     expect(validateState(state)).toBe('shiftElapsed must be >= 0')
   })
 
-  it('totalScore < 0 → 报错', () => {
-    const state = { ...createInitialState(), totalScore: -1 }
-    expect(validateState(state)).toBe('totalScore must be >= 0')
+  it('评价数量超过已开始来电数时 → 报错', () => {
+    const state = { ...createInitialState(), callEvaluations: [{} as never] }
+    expect(validateState(state)).toBe('callEvaluations cannot exceed completed calls')
   })
 
-  it('totalScore = 0 合法', () => {
-    const state = { ...createInitialState(), totalScore: 0 }
+  it('没有评价记录时合法', () => {
+    const state = createInitialState()
     expect(validateState(state)).toBeNull()
   })
 

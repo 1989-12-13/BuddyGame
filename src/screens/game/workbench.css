@@ -6,6 +6,17 @@
   height:100dvh; min-height:540px; display:flex; flex-direction:column;
   background:var(--bg); color:var(--text);
 }
+
+.debrief-grade{display:flex;align-items:center;gap:var(--space-16)}
+.debrief-grade strong{display:grid;place-items:center;width:72px;height:72px;border:1px solid var(--accent);border-radius:50%;font-size:44px;font-weight:600;color:var(--accent)}
+.debrief-grade span{color:var(--text);font-size:var(--fs-title)}
+.patient-outcome{display:flex;align-items:center;gap:var(--space-6);padding:var(--space-10) var(--space-14);border-left:3px solid var(--warning);background:var(--bg-raised);border-radius:var(--radius-md)}
+.patient-outcome.outcome-rescued{border-left-color:var(--success)}
+.patient-outcome.outcome-died,.patient-outcome.outcome-not_dispatched{border-left-color:var(--danger)}
+.evaluation-chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--space-8)}
+.evaluation-chips span{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);background:var(--bg-raised);padding:var(--space-8);border-radius:var(--radius-md)}
+.evaluation-chips small{color:var(--text-3)}
+.evaluation-chips b{font-size:var(--fs-title);color:var(--accent)}
 .dispatch-desk button,.dispatch-title button,.desk-dialog button { min-height:44px; display:inline-flex; gap:var(--space-8); align-items:center; justify-content:center; font:inherit; border-radius:var(--radius-lg); transition:background .18s,border-color .18s,color .18s; }
 .dispatch-desk button:disabled,.desk-dialog button:disabled { opacity:.5; cursor:not-allowed; }
 .dispatch-desk button:focus-visible,.dispatch-title button:focus-visible,.desk-dialog button:focus-visible,

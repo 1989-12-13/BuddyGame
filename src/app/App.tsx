@@ -4,8 +4,7 @@
 
 import { lazy, Suspense, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import type { EndingDef } from '../game/types'
-import type { ShiftSummary } from '../game/core/shift'
+import type { ShiftEvaluation } from '../game/types'
 import { TitleScreen } from '../screens/TitleScreen'
 import { AudioProvider } from '../audio/AudioContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
@@ -30,12 +29,7 @@ const NOOP_DISPATCH: DispatchCardControl = {
 
 export default function App() {
   const [screen, setScreen] = useState<AppScreen>('title')
-  const [ending, setEnding] = useState<EndingDef | null>(null)
-  const [finalScore, setFinalScore] = useState(0)
-  const [finalActiveSeconds, setFinalActiveSeconds] = useState(0)
-  const [finalCallScores, setFinalCallScores] = useState<number[]>([])
-  /** 并发模式专有：未接来电、同一事故的交叉核实结论 */
-  const [finalShiftDetail, setFinalShiftDetail] = useState<ShiftSummary | null>(null)
+  const [finalEvaluation, setFinalEvaluation] = useState<ShiftEvaluation | null>(null)
   const [gameKey, setGameKey] = useState(0)
   const [selectedScenario, setSelectedScenario] = useState<string | undefined>(undefined)
   /** 记住从哪个模式进来的，重新值班时回到同一个模式 */
@@ -51,33 +45,23 @@ export default function App() {
     const target: AppScreen = scenarioId === '__shift__' ? 'shift' : 'game'
     setScreen(target)
     setLastMode(target)
-    setEnding(null)
-    setFinalScore(0)
-    setFinalCallScores([])
+    setFinalEvaluation(null)
     setDispatchCard(NOOP_DISPATCH)
   }, [])
 
   const handleNavigate = useCallback(
     (
       target: 'title' | 'ending',
-      end?: EndingDef,
-      totalScore?: number,
-      callScores?: number[],
-      activeSeconds?: number,
-      shiftDetail?: ShiftSummary,
+      evaluation?: ShiftEvaluation,
     ) => {
       if (target === 'title') {
         setScreen('title')
-        setEnding(null)
+        setFinalEvaluation(null)
         setSelectedScenario(undefined)
         setDispatchCard(NOOP_DISPATCH)
       } else {
         setScreen('ending')
-        if (end) setEnding(end)
-        if (totalScore !== undefined) setFinalScore(totalScore)
-        if (callScores) setFinalCallScores(callScores)
-        setFinalActiveSeconds(activeSeconds ?? 0)
-        setFinalShiftDetail(shiftDetail ?? null)
+        setFinalEvaluation(evaluation ?? null)
       }
     },
     [],
@@ -87,9 +71,7 @@ export default function App() {
     setGameKey(k => k + 1)
     // 回到进入结算前的那个模式，而不是固定回到线性流程
     setScreen(lastMode)
-    setEnding(null)
-    setFinalScore(0)
-    setFinalCallScores([])
+    setFinalEvaluation(null)
     setDispatchCard(NOOP_DISPATCH)
   }, [lastMode])
 
@@ -111,8 +93,8 @@ export default function App() {
           case 'knowledge':
             return <KnowledgeScreen onBack={() => setScreen('title')} />
           case 'ending':
-            return ending ? (
-              <EndingScreen ending={ending} totalScore={finalScore} callScores={finalCallScores} activeSeconds={finalActiveSeconds} shiftDetail={finalShiftDetail ?? undefined} onRestart={handleRestart} />
+            return finalEvaluation ? (
+              <EndingScreen evaluation={finalEvaluation} onRestart={handleRestart} />
             ) : (
               <TitleScreen onStart={handleStart} onLevelSelect={() => setScreen('level_select')} />
             )

@@ -74,6 +74,10 @@ export function handleCalmCaller(state: WorldState): WorldState {
     ...state,
     actionEndsAt: state.shiftElapsed + calmCost,
     calmCount: state.calmCount + 1,
+    attitudeEvidence: {
+      ...state.attitudeEvidence,
+      calmingActions: state.attitudeEvidence.calmingActions + 1,
+    },
     questionCost: state.questionCost + calmCost,
     callerState: {
       ...cs,

@@ -1,6 +1,6 @@
 // ============================================================
 // 120调度台 — COMPLETE_MINIGAME reducer 处理器
-// 互动小游戏完成：记录分数，玩家核对反馈后再推进。
+// 互动小游戏完成：记录内部准确率证据，玩家核对反馈后再推进。
 // ============================================================
 
 import type { WorldState, DialogueLine } from '../../types'
@@ -24,7 +24,7 @@ export function handleCompleteMinigame(
   const spec = step.miniGame
   const operatorLine: DialogueLine = {
     speaker: 'operator',
-    text: `【实操指导：${spec.title}】${passed ? '操作到位' : '操作需改进'}（评分 ${(score * 100).toFixed(0)}分）`,
+    text: `【实操指导：${spec.title}】${passed ? '操作到位' : '操作需改进'}`,
     timestamp: now,
   }
   const feedbackLine: DialogueLine = {
@@ -57,7 +57,7 @@ export function handleCompleteMinigame(
     sinkEvent(
       sink,
       score >= 0.7 ? 'good' : score >= 0.4 ? 'warn' : 'bad',
-      `${score >= 0.7 ? '✓' : score >= 0.4 ? '◐' : '✗'} ${spec.title}：评分 ${(score * 100).toFixed(0)}`,
+      `${score >= 0.7 ? '✓' : score >= 0.4 ? '◐' : '✗'} ${spec.title}：${score >= 0.7 ? '动作稳定' : score >= 0.4 ? '基本完成' : '需要重做'}`,
       state.shiftElapsed,
     )
   }

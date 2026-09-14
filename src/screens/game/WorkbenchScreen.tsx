@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { Activity, ArrowRight, BookOpen, CheckCircle2, ClipboardList, Headphones, Map, Pause, Phone, Play, Settings, ShieldCheck, Volume2, X, Ambulance } from 'lucide-react'
-import type { EndingDef, WorldState } from '../../game/types'
+import type { ShiftEvaluation, WorldState } from '../../game/types'
 import type { GameAction } from '../../game/core/actions'
 import type { DispatchCardControl } from '../../contexts/DispatchCardContext'
 import { worldReducer } from '../../game/core/worldReducer'
@@ -10,7 +10,7 @@ import { isWorldPaused } from '../../game/core/session'
 import { buildDispatchPlan, type DispatchPlan } from '../../game/core/dispatchPlanning'
 import { loadCheckpoint, saveCheckpoint } from '../../game/core/checkpoint'
 import { readStorage, writeStorage } from '../../utils/storage'
-import { detectEnding } from '../../game/endings/endings'
+import { buildShiftEvaluation, DIMENSION_KEYS } from '../../game/core/evaluation'
 import { useAudio } from '../../audio/AudioContext'
 import { stressToEmotion } from '../../audio/ttsEmotion'
 import { useStreamingQueue } from './hooks/useStreamingQueue'
@@ -41,7 +41,7 @@ interface ControlledProps {
   /** 班次层塞进工作台的区块：线路列表进通话栏，状态条进顶栏下方 */
   slots?: { statusBar?: ReactNode; lineBoard?: ReactNode }
 }
-interface Props { onNavigate: (screen: 'title' | 'ending', ending?: EndingDef, totalScore?: number, callScores?: number[], activeSeconds?: number) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void; controlled?: ControlledProps }
+interface Props { onNavigate: (screen: 'title' | 'ending', evaluation?: ShiftEvaluation) => void; scenarioId?: string; onDispatchCardChange?: (control: DispatchCardControl) => void; controlled?: ControlledProps }
 type Tab = 'call' | 'map' | 'task'
 type Modal = 'settings' | 'help' | 'exit' | 'end' | null
 const PHASES = ['接听', '问询', '路线', '指导', '交接']
@@ -112,8 +112,8 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   useEffect(() => { if (embedded) return; setSaveFailed(!saveCheckpoint(state)) }, [embedded, state.callIndex, state.scenarioQueue, state.perks, state.rescueNotifications.length]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (embedded || state.screen !== 'ending') return
-    onNavigate('ending', detectEnding(state.totalScore / Math.max(1, state.totalCalls) * 5), state.totalScore, state.callScores, state.activePlaySeconds)
-  }, [embedded, state.screen, state.totalScore, state.totalCalls, state.callScores, state.activePlaySeconds, onNavigate])
+    onNavigate('ending', buildShiftEvaluation(state.callEvaluations, { activeSeconds: state.activePlaySeconds }))
+  }, [embedded, state.screen, state.callEvaluations, state.activePlaySeconds, onNavigate])
   /**
    * 工作区出现「必须处理的事」时自动带玩家过去，处理完自动回到通话台。
    * 默认单视图之后，指导窗口 / 改道 / 交接都住在工作区里，
@@ -149,12 +149,12 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   }
   let overlay: ReactNode = null
   if (modal) overlay = <Dialog title={modal === 'settings' ? '值班设置' : modal === 'help' ? '接好这通电话' : modal === 'exit' ? '离开工作台？' : '结束这通电话？'} onClose={closeModal}>
-    {modal === 'settings' ? <div className="dialog-content"><label className="setting-row"><span className="setting-label"><Volume2 size={20} /> 音量</span><input aria-label="音量" type="range" min="0" max="1" step="0.05" value={audio.volume} onChange={e => audio.setVolume(Number(e.target.value))} /></label><div className="setting-row"><span className="setting-label">工作台外观</span><button className="secondary" onClick={toggle}>切换到{theme === 'dark' ? '明亮' : '夜间'}</button></div><div className="dialog-actions"><button className="text-button" onClick={() => { closeModal(); openModal('exit') }}>返回主菜单</button></div></div> : modal === 'help' ? <div className="dialog-content"><p>你是电话这头的接线员。听清来电，确认地点与患者情况，再选择响应优先级和路线。</p><ol><li>左侧阅读对话，并选择下一句要问的问题。</li><li>需要判断时，右下角会弹出选择卡。</li><li>右侧登记表记录已知信息；左栏「下一步」会提示还差什么。</li><li>信息齐了就能派车，之后按指导保持通话，直到现场交接。</li></ol><p>急救内容用于公益科普。现实中请及时拨打 120，听从专业指导。</p><button className="primary" onClick={() => { writeStorage('dispatch120-tutorial', 'done'); setTutorialSeen(true); closeModal() }}>明白了，回到工作台</button></div> : <div className="dialog-content"><p>{modal === 'exit' ? '已完成的通话成绩会保留。' : state.dispatchSent && !state.rescue.outcome ? '救护车仍在途中，尚未完成的操作将记入复盘。' : '当前记录将结算。'}</p><div className="dialog-actions"><button className="secondary" onClick={closeModal}>继续当前通话</button><button className="danger-button" onClick={() => { closeModal(); if (modal === 'exit') onNavigate('title'); else endCall() }}>{modal === 'exit' ? '保存并离开' : '确认结束通话'}</button></div></div>}
+    {modal === 'settings' ? <div className="dialog-content"><label className="setting-row"><span className="setting-label"><Volume2 size={20} /> 音量</span><input aria-label="音量" type="range" min="0" max="1" step="0.05" value={audio.volume} onChange={e => audio.setVolume(Number(e.target.value))} /></label><div className="setting-row"><span className="setting-label">工作台外观</span><button className="secondary" onClick={toggle}>切换到{theme === 'dark' ? '明亮' : '夜间'}</button></div><div className="dialog-actions"><button className="text-button" onClick={() => { closeModal(); openModal('exit') }}>返回主菜单</button></div></div> : modal === 'help' ? <div className="dialog-content"><p>你是电话这头的接线员。听清来电，确认地点与患者情况，再选择响应优先级和路线。</p><ol><li>左侧阅读对话，并选择下一句要问的问题。</li><li>需要判断时，右下角会弹出选择卡。</li><li>右侧登记表记录已知信息；左栏「下一步」会提示还差什么。</li><li>信息齐了就能派车，之后按指导保持通话，直到现场交接。</li></ol><p>急救内容用于公益科普。现实中请及时拨打 120，听从专业指导。</p><button className="primary" onClick={() => { writeStorage('dispatch120-tutorial', 'done'); setTutorialSeen(true); closeModal() }}>明白了，回到工作台</button></div> : <div className="dialog-content"><p>{modal === 'exit' ? '已完成通话的五维评价会保留。' : state.dispatchSent && !state.rescue.outcome ? '救护车仍在途中，现场结果会在抵达后更新。' : '当前记录将结算。'}</p><div className="dialog-actions"><button className="secondary" onClick={closeModal}>继续当前通话</button><button className="danger-button" onClick={() => { closeModal(); if (modal === 'exit') onNavigate('title'); else endCall() }}>{modal === 'exit' ? '保存并离开' : '确认结束通话'}</button></div></div>}
   </Dialog>
   else if (paused && !state.lastDebrief && !state.pendingPerkChoices.length) overlay = <Dialog title="值班已暂停" onClose={() => dispatch({ type: 'RESUME' })}><div className="dialog-content"><button className="primary wide" onClick={() => dispatch({ type: 'RESUME' })}><Play size={18} /> 继续值班</button></div></Dialog>
   else if (state.lastDebrief) {
     const result = state.lastDebrief
-    overlay = <Dialog title="通话复盘" onClose={() => dispatch({ type: 'DISMISS_DEBRIEF' })}><div className="dialog-content debrief-content"><span className="eyebrow">每一次回顾，都为了下一次更好</span><h3>{result.scenarioTitle}</h3><div className="debrief-score"><strong>{result.score}</strong><span>/ 100 · 操作评价</span></div><p>{result.patientStatus}</p><p>{result.outcomeNarrative}</p><div className="score-chips">{Object.entries(result.breakdown).map(([key, value]) => <span key={key}>{({ speed: '响应', info: '信息', triage: '优先级', decision: '判断', guidance: '指导', penalty: '扣分' } as Record<string, string>)[key]} <b>{value}</b></span>)}</div><h4>下一次可以留意</h4><ul>{result.reviewPoints.map(point => <li key={point}>{point}</li>)}</ul><div className="knowledge-note"><BookOpen size={20} /><p>完整描述观察到的情况，配合接线员确认关键信息。</p></div><button className="primary wide" onClick={() => dispatch({ type: 'DISMISS_DEBRIEF' })}>{state.shiftCompletePending ? '查看班次总结' : '准备下一通来电'}<ArrowRight size={18} /></button></div></Dialog>
+    overlay = <Dialog title="通话复盘" onClose={() => dispatch({ type: 'DISMISS_DEBRIEF' })}><div className="dialog-content debrief-content"><span className="eyebrow">每一次回顾，都为了下一次更好</span><h3>{result.scenarioTitle}</h3><div className="debrief-grade"><strong>{result.overallGrade}</strong><span>{result.profile.title}</span></div><div className={`patient-outcome outcome-${result.outcome}`}><b>{result.outcomeLabel}</b><span>{result.patientCount > 0 ? ` · 涉及 ${result.patientCount} 人` : ''}</span></div><p>{result.arrivalNarrative}</p><div className="evaluation-chips">{DIMENSION_KEYS.map(key => { const item = result.dimensions[key]; return <span key={key}><small>{item.label}</small><b>{item.grade === 'NA' ? '—' : item.grade}</b></span> })}</div><h4>下一次可以留意</h4>{result.reviewPoints.length ? <ul>{result.reviewPoints.map(point => <li key={point}>{point}</li>)}</ul> : <p>本通没有需要优先纠正的项目，继续保持稳定流程。</p>}<div className="knowledge-note"><BookOpen size={20} /><p>{result.profile.description}</p></div><button className="primary wide" onClick={() => dispatch({ type: 'DISMISS_DEBRIEF' })}>{state.shiftCompletePending ? '查看班次总结' : '准备下一通来电'}<ArrowRight size={18} /></button></div></Dialog>
   } else if (state.pendingPerkChoices.length) overlay = <Dialog title="给下一通电话的一点支持" onClose={() => dispatch({ type: 'CHOOSE_PERK', perkId: state.pendingPerkChoices[0] })}><div className="dialog-content"><p>选择一项工作辅助，带进下一通电话。</p>{state.pendingPerkChoices.map(id => <button key={id} className="perk-option" onClick={() => dispatch({ type: 'CHOOSE_PERK', perkId: id })}><strong>{ROGUE_PERKS[id].title}</strong><span>{ROGUE_PERKS[id].description}</span></button>)}</div></Dialog>
   return <div className="dispatch-desk">
     <header className="desk-header">

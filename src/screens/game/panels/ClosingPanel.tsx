@@ -24,7 +24,7 @@ export function ClosingPanel({
     <div style={styles.closingPanel}>
       {/* 状态卡片 */}
       <div style={styles.closingStatusCard}>
-        <div style={{ fontSize: 'var(--fs-score)', marginBottom: 'var(--space-8)', filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
+        <div style={{ fontSize: 'var(--fs-display)', marginBottom: 'var(--space-8)', filter: arrived ? 'none' : 'brightness(1.2)', animation: arrived ? 'none' : 'pulse 1.5s ease-in-out infinite' }}>
           🚑
         </div>
         <div style={{ fontSize: 'var(--fs-body-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text)', marginBottom: 'var(--space-4)'}}>

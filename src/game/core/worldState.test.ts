@@ -18,7 +18,6 @@ import {
   triageLevelDiff,
   calcAmbulanceETA,
   calcOnSceneDuration,
-  scoreCall,
 } from './worldState'
 import { nextDifficulty } from './constants'
 import { guidanceStabilityGain, guidanceStabilityPenalty, minigameStabilityDelta, stabilityRecoveryCap } from './constants'
@@ -99,7 +98,7 @@ describe('createInitialState', () => {
     expect(state.currentCall).toBeNull()
     expect(state.dialogueLog).toEqual([])
     expect(state.pendingJudgments).toEqual([])
-    expect(state.callScores).toEqual([])
+    expect(state.callEvaluations).toEqual([])
   })
 
   it('无 perks 和 debrief', () => {
@@ -499,6 +498,7 @@ describe('calcOnSceneDuration', () => {
   })
 })
 
+/* 旧 0–100 分制测试已由 evaluation/debrief 测试替代。
 // ============================================================
 // scoreCall
 // ============================================================
@@ -599,3 +599,4 @@ describe('scoreCall', () => {
     expect(s.total).toBe(s.speed + s.info + s.triage + s.decision + s.guidance)
   })
 })
+*/

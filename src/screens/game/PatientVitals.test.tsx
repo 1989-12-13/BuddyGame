@@ -10,7 +10,10 @@ describe('patient vitals strip', () => {
     render(<PatientVitals state={state} />)
     expect(screen.getByText('意识：待确认')).toBeInTheDocument()
     expect(screen.getByText('呼吸：待确认')).toBeInTheDocument()
-    expect(screen.getByRole('meter', { name: '模拟照护余量' })).toHaveAttribute('aria-valuenow', '80')
+    expect(screen.getByRole('meter', { name: '模拟照护余量' })).toHaveAttribute(
+      'aria-valuenow',
+      String(Math.round(state.patientStatus?.stability ?? 0)),
+    )
     expect(screen.queryByText(/不是血氧、心率或存活概率/)).not.toBeInTheDocument()
   })
 })

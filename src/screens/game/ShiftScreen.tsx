@@ -19,11 +19,9 @@ import {
   shiftReducer,
   summarizeShift,
   type ShiftAction,
-  type ShiftSummary,
 } from '../../game/core/shift'
 import { createInitialState } from '../../game/core/worldState'
-import { detectEnding } from '../../game/endings/endings'
-import type { EndingDef, WorldState } from '../../game/types'
+import type { ShiftEvaluation, WorldState } from '../../game/types'
 import { GameScreen } from './WorkbenchScreen'
 import { LineRack } from './LineRack'
 import { ShiftStatusBar } from './ShiftStatusBar'
@@ -33,11 +31,7 @@ import './shift.css'
 interface Props {
   onNavigate: (
     screen: 'title' | 'ending',
-    ending?: EndingDef,
-    totalScore?: number,
-    callScores?: number[],
-    activeSeconds?: number,
-    shiftDetail?: ShiftSummary,
+    evaluation?: ShiftEvaluation,
   ) => void
 }
 
@@ -66,16 +60,14 @@ export function ShiftScreen({ onNavigate }: Props) {
   const idleWorld = useMemo<WorldState>(() => ({ ...createInitialState(), screen: 'playing' }), [])
   const world = hasFocus && focused ? focused.world : idleWorld
 
-  // 班次收束 → 交给既有的结算画面（未接来电按 0 分计入，让它出现在接警记录里）
+  // 班次收束 → 生成统一五维结算。
   const summaryRef = useRef(summarizeShift(shift))
   summaryRef.current = summarizeShift(shift)
   const navigatedAway = useRef(false)
   const finishShift = useCallback(() => {
     if (navigatedAway.current) return
     navigatedAway.current = true
-    const { totalScore, callScores, activeSeconds } = summaryRef.current
-    const average = callScores.length > 0 ? totalScore / callScores.length : 0
-    onNavigate('ending', detectEnding(average * 5), totalScore, callScores, activeSeconds, summaryRef.current)
+    onNavigate('ending', summaryRef.current)
   }, [onNavigate])
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import { SCENARIOS, SCENARIO_IDS } from '../events/templates'
 import { createDefaultFleet } from './fleet'
 import { rng, rngInt } from './random'
 import { VITAL_SIGN_COLORS } from './colors'
+import { emptyAttitudeEvidence } from './evaluation'
 import {
   VITAL_STABLE_THRESHOLD,
   VITAL_WARNING_THRESHOLD,
@@ -16,20 +17,6 @@ import {
   DISPATCH_SILVER_TIME,
   DISPATCH_BRONZE_TIME,
   DISPATCH_COPPER_TIME,
-  SPEED_SCORE_PERFECT,
-  SPEED_SCORE_GOOD,
-  SPEED_SCORE_BRONZE,
-  SPEED_SCORE_COPPER,
-  SPEED_SCORE_BAD,
-  TRIAGE_PERFECT_SCORE,
-  TRIAGE_OFFBY1_SCORE,
-  ADDRESS_FULL_SCORE,
-  ADDRESS_PARTIAL_SCORE,
-  ADDRESS_VAGUE_SCORE,
-  CONTACT_SCORE,
-  COMPLAINT_SCORE,
-  PURPOSE_SCORE,
-  GUIDANCE_MAX_SCORE,
   DIFFICULTY_INITIAL,
 } from './constants'
 
@@ -78,7 +65,6 @@ export function createTerminalState(): TerminalState {
     conditionNote: '',
   }
 }
-
 /**
  * 场景抽取：轮盘赌按档位概率抽卡。
  * progress 0→1 为班次进度（按已完成通数计），yellow/red 概率随进度升高：
@@ -170,6 +156,7 @@ export function createInitialState(): WorldState {
     activePlaySeconds: 0,
     streamedLines: 0,
     difficulty: DIFFICULTY_INITIAL,
+    attitudeEvidence: emptyAttitudeEvidence(),
     shiftNumber: 0,
     callIndex: 0,
     totalCalls: 0,
@@ -202,9 +189,7 @@ export function createInitialState(): WorldState {
     pendingJudgments: [],
     vitalsPulse: null,
     eventSeq: 0,
-    totalScore: 0,
-    callScores: [],
-    endingId: null,
+    callEvaluations: [],
     lastDebrief: null,
     pendingPerkChoices: [],
     perks: [],
@@ -334,101 +319,4 @@ export function calcOnSceneDuration(triage: TriageLevel): number {
   const cfg = SEVERITY_CONFIG[triage]
   // 越严重现场救治越久：red ~20s, yellow ~15s, green ~8s, black ~10s
   return Math.round(20 - (cfg.decayRate < 0.3 ? 12 : cfg.decayRate < 0.6 ? 5 : 0))
-}
-
-// ============================================================
-// 单通电话评分
-// ============================================================
-
-export interface CallScore {
-  speed: number       // 派车速度分（0-35）
-  info: number        // 四要素完整度分（0-30）
-  triage: number      // 分诊准确度分（0-20）
-  decision: number    // 协议/判定码正确度分（0-5）
-  guidance: number    // 急救指导分（0-10）
-  total: number
-}
-
-export function scoreCall(
-  dispatchTime: number | null,
-  addressCompleteness: 'vague' | 'partial' | 'full',
-  hasContact: boolean,
-  hasCondition: boolean,
-  hasPurpose: boolean,
-  triageDecision: TriageLevel | null,
-  correctTriage: TriageLevel,
-  guidanceCorrect: number,
-  guidanceTotal: number,
-  miniGameAvg = 0,
-  infoQualityBonus = 0,
-  // 协议/判定码参数
-  chosenProtocol: number | null = null,
-  correctProtocol = 0,
-  chosenDeterminant: string | null = null,
-  correctDeterminant = '',
-  chosenSubcode: number | null = null,
-  miniGameAttemptCount = miniGameAvg > 0 ? 1 : 0,
-): CallScore {
-  // 1. 派车速度分（0-35）— 自然时间流逝，不扣除问询耗时
-  const netTime = dispatchTime
-  let speed = 0
-  if (netTime !== null) {
-    if (netTime <= DISPATCH_GOLD_TIME) speed = SPEED_SCORE_PERFECT
-    else if (netTime <= DISPATCH_SILVER_TIME) speed = SPEED_SCORE_GOOD
-    else if (netTime <= DISPATCH_BRONZE_TIME) speed = SPEED_SCORE_BRONZE
-    else if (netTime <= DISPATCH_COPPER_TIME) speed = SPEED_SCORE_COPPER
-    else speed = SPEED_SCORE_BAD
-  }
-
-  // 2. 四要素信息分（0-30） + 信息质量加分
-  let info = 0
-  if (addressCompleteness === 'full') info += ADDRESS_FULL_SCORE
-  else if (addressCompleteness === 'partial') info += ADDRESS_PARTIAL_SCORE
-  else if (addressCompleteness === 'vague') info += ADDRESS_VAGUE_SCORE
-  if (hasContact) info += CONTACT_SCORE
-  if (hasCondition) info += COMPLAINT_SCORE
-  if (hasPurpose) info += PURPOSE_SCORE
-
-  // 信息质量加分（最多+5）
-  info = Math.min(30, info + infoQualityBonus)
-
-  // 3. 分诊准确度分（0-20）
-  let triage = 0
-  if (triageDecision === correctTriage) {
-    triage = TRIAGE_PERFECT_SCORE
-  } else if (triageDecision && correctTriage) {
-    const order = ['red', 'yellow', 'green', 'black'] as const
-    const diff = Math.abs(order.indexOf(triageDecision) - order.indexOf(correctTriage))
-    if (diff === 1) triage = TRIAGE_OFFBY1_SCORE
-    else triage = 0
-  }
-
-  // 4. 协议/判定码正确度分（0-5）
-  // 协议确定后判定等级与细分编码由 autoClassify 自动补齐（字母/子码基本恒定正确），
-  // 玩家真正需要判断的是「协议编号选得对不对」，因此主分押在协议上：
-  // 协议正确 +3、判定字母正确 +1、细分编码正确 +1。
-  let decision = 0
-  if (chosenProtocol && chosenProtocol === correctProtocol) decision += 3
-  if (chosenDeterminant && correctDeterminant) {
-    const parts = correctDeterminant.split('-')
-    const correctLetter = parts[1] ?? ''
-    const correctSub = parts[2] ? parseInt(parts[2], 10) : 0
-    if (chosenDeterminant[0] === correctLetter) decision += 1
-    if (chosenSubcode && correctSub && chosenSubcode === correctSub) decision += 1
-  }
-  decision = Math.min(5, decision)
-
-  // 5. 急救指导分（0-10）— 选择题与互动小游戏各占一半
-  let guidance = 0
-  if (guidanceTotal > 0 || miniGameAttemptCount > 0) {
-    const choiceFrac = guidanceTotal > 0 ? guidanceCorrect / guidanceTotal : 0
-    let combined: number
-    if (guidanceTotal > 0 && miniGameAttemptCount > 0) combined = choiceFrac * 0.6 + miniGameAvg * 0.4
-    else if (miniGameAttemptCount > 0) combined = miniGameAvg
-    else combined = choiceFrac
-    guidance = Math.round(combined * GUIDANCE_MAX_SCORE)
-  }
-
-  const total = speed + info + triage + decision + guidance
-  return { speed, info, triage, decision, guidance, total }
 }

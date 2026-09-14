@@ -9,7 +9,7 @@ export function validateState(state: WorldState): string | null {
   if (state.totalCalls < 0) return 'totalCalls must be >= 0'
   if (state.callIndex < 0) return 'callIndex must be >= 0'
   if (state.shiftElapsed < 0) return 'shiftElapsed must be >= 0'
-  if (state.totalScore < 0) return 'totalScore must be >= 0'
+  if (state.callEvaluations.length > state.callIndex) return 'callEvaluations cannot exceed completed calls'
   return null
 }
 

@@ -130,7 +130,8 @@ describe('worldReducer', () => {
     const wrong = worldReducer(answered, { type: 'SET_PROTOCOL', protocolNumber: 27 })
     const wrongEnded = worldReducer(dispatchWithPlannedRoute(wrong), { type: 'END_CALL' })
 
-    expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(3)
+    expect(correctEnded.callEvaluations[0].dimensions.knowledge.correct)
+      .toBeGreaterThan(wrongEnded.callEvaluations[0].dimensions.knowledge.correct!)
   })
 
   it('deducts points for an incorrect clinical judgment', () => {
@@ -163,7 +164,8 @@ describe('worldReducer', () => {
       { type: 'END_CALL' },
     )
 
-    expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(5)
+    expect(correctEnded.callEvaluations[0].dimensions.knowledge.correct)
+      .toBeGreaterThan(wrongEnded.callEvaluations[0].dimensions.knowledge.correct!)
   })
 
   it('does not award a perfect prank score before the caller is verified', () => {
@@ -184,8 +186,9 @@ describe('worldReducer', () => {
     })
     const verifiedEnd = worldReducer(verified, { type: 'END_CALL' })
 
-    expect(unverifiedEnd.callScores[0]).toBe(40)
-    expect(verifiedEnd.callScores[0]).toBe(100)
+    expect(unverifiedEnd.callEvaluations[0].dimensions.knowledge.grade).toBe('D')
+    expect(verifiedEnd.callEvaluations[0].dimensions.knowledge.grade).toBe('S')
+    expect(verifiedEnd.callEvaluations[0].dimensions.outcome.grade).toBe('NA')
   })
 
   it('does not accept an unrelated correct judgment as prank verification', () => {
@@ -204,7 +207,7 @@ describe('worldReducer', () => {
       { type: 'END_CALL' },
     )
 
-    expect(ended.callScores[0]).toBe(40)
+    expect(ended.callEvaluations[0].dimensions.knowledge.grade).toBe('D')
   })
 
   it('deducts points when final vital signs are recorded incorrectly', () => {
@@ -231,7 +234,8 @@ describe('worldReducer', () => {
       { type: 'END_CALL' },
     )
 
-    expect(correctEnded.callScores[0] - wrongEnded.callScores[0]).toBe(6)
+    expect(correctEnded.callEvaluations[0].dimensions.knowledge.correct)
+      .toBeGreaterThan(wrongEnded.callEvaluations[0].dimensions.knowledge.correct!)
   })
 
   it('clears the transcript, dispatch record and task card when a call ends', () => {

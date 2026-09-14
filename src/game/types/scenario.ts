@@ -249,6 +249,8 @@ export interface MenuMeta {
 export interface EmergencyScenario {
   id: string
   title: string                // 场景标题（内部用）
+  /** 明确患者人数；旧卡未填写时从 fourElements.condition.patientCount 解析。 */
+  patientCount?: number
   callerId: CallerId
   phoneNumber: string
   baseStation: string          // 模糊的基站定位

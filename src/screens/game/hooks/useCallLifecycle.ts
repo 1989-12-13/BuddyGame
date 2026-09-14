@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
-import type { WorldState, EndingDef } from '../../../game/types'
+import type { ShiftEvaluation, WorldState } from '../../../game/types'
 import type { GameAction } from '../../../game/core/actions'
-import { detectEnding } from '../../../game/endings/endings'
+import { buildShiftEvaluation } from '../../../game/core/evaluation'
 
 interface LifecycleCallbacks {
-  onEnding: (ending: EndingDef, totalScore: number, callScores: number[]) => void
+  onEnding: (evaluation: ShiftEvaluation) => void
 }
 
 /**
@@ -31,10 +31,9 @@ export function useCallLifecycle(
   // --- 检测结局 ---
   useEffect(() => {
     if (state.screen === 'ending') {
-      const ending = detectEnding(state.totalScore)
-      onEnding(ending, state.totalScore, state.callScores)
+      onEnding(buildShiftEvaluation(state.callEvaluations, { activeSeconds: state.activePlaySeconds }))
     }
-  }, [onEnding, state.callScores, state.screen, state.totalScore])
+  }, [onEnding, state.activePlaySeconds, state.callEvaluations, state.screen])
 
   // --- 自动滚动对话 ---
   useEffect(() => {

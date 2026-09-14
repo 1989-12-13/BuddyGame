@@ -61,5 +61,14 @@ export type {
   GameScreen,
   WorldState,
   DialogueLine,
-  EndingDef,
 } from './world'
+export type {
+  EvaluationGrade,
+  EvaluationDimensionKey,
+  PatientOutcome,
+  AttitudeEvidence,
+  DimensionEvaluation,
+  EvaluationProfile,
+  CallEvaluation,
+  ShiftEvaluation,
+} from './evaluation'

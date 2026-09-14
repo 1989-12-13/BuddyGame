@@ -26,6 +26,42 @@ import {
 } from './shift'
 import { createCallerState, createInitialState } from './worldState'
 import { SCENARIO_IDS, getScenario } from '../events/templates'
+import type { CallEvaluation, EvaluationDimensionKey, EvaluationGrade, PatientOutcome } from '../types'
+
+const DIMENSION_KEYS: EvaluationDimensionKey[] = ['attitude', 'guidance', 'knowledge', 'timing', 'outcome']
+
+function evaluation(
+  scenarioId = 'falls_elderly',
+  grade: Exclude<EvaluationGrade, 'NA'> = 'A',
+  outcome: PatientOutcome = 'rescued',
+): CallEvaluation {
+  const scenario = getScenario(scenarioId)
+  const dimensions = Object.fromEntries(DIMENSION_KEYS.map(key => [key, {
+    key,
+    label: key,
+    grade: key === 'outcome' && scenario.isPrank ? 'NA' : grade,
+    evidence: ['测试证据'],
+    improvement: null,
+  }])) as CallEvaluation['dimensions']
+  return {
+    callInstanceId: 1,
+    scenarioId,
+    scenarioTitle: scenario.title,
+    isPrank: Boolean(scenario.isPrank),
+    vehicleDispatched: !scenario.isPrank,
+    patientCount: scenario.isPrank ? 0 : (scenario.patientCount ?? (Number.parseInt(scenario.fourElements.condition.patientCount, 10) || 1)),
+    activeSeconds: 30,
+    outcome,
+    outcomeLabel: outcome,
+    arrivalNarrative: '测试现场记录',
+    dimensions,
+    overallGrade: grade,
+    profile: { id: 'test', title: '测试画像', subtitle: '', description: '', badge: grade },
+    reviewPoints: [],
+    safetyViolation: grade === 'D',
+    criticalPatientRescued: scenario.correctTriage === 'red' && outcome === 'rescued',
+  }
+}
 
 function config(overrides: Partial<ShiftConfig> = {}): ShiftConfig {
   return {
@@ -276,7 +312,7 @@ describe('班次协调器 · 收束结算', () => {
     const shift: ShiftState = {
       ...base,
       missed: ['chest_pain'],
-      completed: [{ lineId: 'line-1', scenarioId: 'falls_elderly', score: 80, activeSeconds: 40 }],
+      completed: [{ lineId: 'line-1', scenarioId: 'falls_elderly', evaluation: evaluation('falls_elderly'), activeSeconds: 40 }],
       incidents: [
         { id: 'inc-1', scenarioId: 'falls_elderly', primaryLineId: 'line-1', supplementLineId: 'line-2', supplementAt: 0, resolved: true, resolution: 'adopt' },
         { id: 'inc-2', scenarioId: 'stroke', primaryLineId: 'line-3', supplementLineId: null, supplementAt: 0, resolved: false, resolution: null },
@@ -285,28 +321,28 @@ describe('班次协调器 · 收束结算', () => {
 
     const summary = summarizeShift(shift)
 
-    expect(summary.calls[0].title).toBe(getScenario('falls_elderly').title)
-    expect(summary.missed[0].scenarioId).toBe('chest_pain')
+    expect(summary.calls[0].scenarioTitle).toBe(getScenario('falls_elderly').title)
+    expect(summary.missedCalls[0].scenarioId).toBe('chest_pain')
     expect(summary.incidents.filter(item => item.resolution)).toHaveLength(1)
     expect(summary.narrative).toContain('接住 1 通')
     expect(summary.narrative).toContain('漏接 1 通')
     expect(summary.narrative).toContain('采纳最新观察 1 次')
   })
 
-  it('跨线路累积成绩，未接来电按 0 分计入', () => {
+  it('跨线路汇总评价与未接来电', () => {
     const base = createShiftState(config({ deck: [] }))
     const shift: ShiftState = {
       ...base,
       missed: ['chest_pain'],
       completed: [
-        { lineId: 'line-1', scenarioId: 'falls_elderly', score: 80, activeSeconds: 40 },
-        { lineId: 'line-2', scenarioId: 'hemorrhage', score: 60, activeSeconds: 30 },
+        { lineId: 'line-1', scenarioId: 'falls_elderly', evaluation: evaluation('falls_elderly', 'A'), activeSeconds: 40 },
+        { lineId: 'line-2', scenarioId: 'hemorrhage', evaluation: evaluation('hemorrhage', 'B'), activeSeconds: 30 },
       ],
     }
 
     const summary = summarizeShift(shift)
-    expect(summary.totalScore).toBe(140)
-    expect(summary.callScores).toEqual([80, 60, 0])
+    expect(summary.calls).toHaveLength(2)
+    expect(summary.overallGrade).toBeDefined()
     expect(summary.activeSeconds).toBe(70)
     expect(summary.missedCount).toBe(1)
   })
@@ -315,7 +351,7 @@ describe('班次协调器 · 收束结算', () => {
     const base = createShiftState(config({ deck: [] }))
     const ending: ShiftLine = {
       ...base.lines[0],
-      phase: 'active',
+      phase: 'done',
       scenarioId: 'falls_elderly',
       world: {
         ...createInitialState(),
@@ -323,17 +359,17 @@ describe('班次协调器 · 收束结算', () => {
         totalCalls: 1,
         callIndex: 1,
         currentCall: null,
-        callScores: [77],
-        totalScore: 77,
+        callEvaluations: [evaluation('falls_elderly', 'A')],
         activePlaySeconds: 42,
       },
     }
     const shift: ShiftState = { ...base, lines: [ending, base.lines[1], base.lines[2]] }
 
     const next = tickShift(shift)
-    expect(next.lines[0].phase).toBe('done')
+    expect(next.lines[0].phase).toBe('idle')
     expect(next.completed).toHaveLength(1)
-    expect(next.completed[0]).toMatchObject({ lineId: 'line-1', scenarioId: 'falls_elderly', score: 77, activeSeconds: 42 })
+    expect(next.completed[0]).toMatchObject({ lineId: 'line-1', scenarioId: 'falls_elderly', activeSeconds: 42 })
+    expect(next.completed[0].evaluation.overallGrade).toBe('A')
   })
 })
 
@@ -378,14 +414,14 @@ describe('班次协调器 · 暂停', () => {
 
 /** 造一条「这通已经打完」的线路，用于驱动收班判定 */
 function finishingLine(base: ShiftState, overrides: {
-  score?: number
+  grade?: Exclude<EvaluationGrade, 'NA'>
   died?: boolean
   scenarioId?: string
 } = {}): ShiftLine {
-  const { score = 90, died = false, scenarioId = 'falls_elderly' } = overrides
+  const { grade = 'A', died = false, scenarioId = 'falls_elderly' } = overrides
   return {
     ...base.lines[0],
-    phase: 'active',
+    phase: 'done',
     scenarioId,
     world: {
       ...createInitialState(),
@@ -393,8 +429,7 @@ function finishingLine(base: ShiftState, overrides: {
       totalCalls: 1,
       callIndex: 1,
       currentCall: null,
-      callScores: [score],
-      totalScore: score,
+      callEvaluations: [evaluation(scenarioId, died ? 'D' : grade, died ? 'died' : 'rescued')],
       activePlaySeconds: 30,
       patientStatus: {
         stability: died ? 0 : 80,
@@ -440,10 +475,16 @@ describe('班次协调器 · 表现 → 热度', () => {
     expect(shift.heat).toBe(0) // 已在地板，不再往下
   })
 
-  it('高分通话推高热度', () => {
+  it('A 级通话推高热度', () => {
     const base = createShiftState(config())
     const shift: ShiftState = { ...base, heat: 40, lines: [finishingLine(base), base.lines[1], base.lines[2]] }
     expect(tickShift(shift).heat).toBeGreaterThan(40)
+  })
+
+  it('D 级通话降低热度，评价等级而非数字分数驱动结算', () => {
+    const base = createShiftState(config())
+    const shift: ShiftState = { ...base, heat: 40, lines: [finishingLine(base, { grade: 'D' }), base.lines[1], base.lines[2]] }
+    expect(tickShift(shift).heat).toBeLessThan(40)
   })
 })
 
@@ -455,6 +496,17 @@ describe('班次协调器 · 三种收班', () => {
     expect(shift.moment).toBe('ended')
     expect(shift.lines.every(line => line.phase === 'idle' || line.phase === 'done')).toBe(true)
     expect(isShiftComplete(shift)).toBe(true)
+  })
+
+  it('崩盘时将在办真实病例写成已移交记录，不让病例从总结消失', () => {
+    let shift = tick(createShiftState(config()), 1)
+    shift = answerLine(shift, 'line-1')
+    shift = { ...shift, missedStreak: COLLAPSE_MISSED_STREAK }
+    const ended = tickShift(shift)
+    expect(ended.ending).toBe('collapse')
+    expect(ended.completed).toHaveLength(1)
+    expect(ended.completed[0].evaluation.outcome).toBe('transferred')
+    expect(ended.lines[0].phase).toBe('idle')
   })
 
   it('患者死亡 → 崩盘收班', () => {
@@ -500,9 +552,9 @@ describe('班次协调器 · 三种收班', () => {
       heat: 0,
       moment: 'rising',
       completed: [
-        { lineId: 'line-1', scenarioId: 'falls_elderly', score: 10, activeSeconds: 10 },
-        { lineId: 'line-2', scenarioId: 'chest_pain', score: 10, activeSeconds: 10 },
-        { lineId: 'line-3', scenarioId: 'hemorrhage', score: 10, activeSeconds: 10 },
+        { lineId: 'line-1', scenarioId: 'falls_elderly', evaluation: evaluation('falls_elderly', 'D'), activeSeconds: 10 },
+        { lineId: 'line-2', scenarioId: 'chest_pain', evaluation: evaluation('chest_pain', 'D'), activeSeconds: 10 },
+        { lineId: 'line-3', scenarioId: 'hemorrhage', evaluation: evaluation('hemorrhage', 'D'), activeSeconds: 10 },
       ],
     }
     const next = tickShift(shift)

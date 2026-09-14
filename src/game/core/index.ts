@@ -1,7 +1,18 @@
 export type { GameAction, TerminalField } from './actions'
 export { VITAL_SIGN_COLORS, C_DARK_DANGER, C_DANGER, C_SUCCESS, C_AMBER, C_INFO, C_WARNING } from './colors'
 export * from './constants'
-export { buildDebrief, parseScoreBreakdown } from './debrief'
+export { buildDebrief } from './debrief'
+export {
+  DIMENSION_KEYS,
+  DIMENSION_LABELS,
+  buildCallEvaluation,
+  buildShiftEvaluation,
+  emptyAttitudeEvidence,
+  gradeAtLeast,
+  markCallEvaluationTransferred,
+  patientCountFor,
+  updateCallEvaluationOutcome,
+} from './evaluation'
 export { getDispatchTimingState, crossedDispatchWarning, formatPlayerDeterminantCode } from './dispatchTiming'
 export { createDefaultFleet, type FleetState } from './fleet'
 export { createInitialState } from './initialState'

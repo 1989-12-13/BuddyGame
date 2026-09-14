@@ -7,15 +7,13 @@ export function CallWaiting({
   totalCalls,
   onAnswer,
   shiftElapsed,
-  totalScore,
-  lastScore,
+  rescuedCount,
 }: {
   callIndex: number
   totalCalls: number
   onAnswer: () => void
   shiftElapsed: number
-  totalScore: number
-  lastScore?: number
+  rescuedCount: number
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)'}}>
@@ -32,13 +30,8 @@ export function CallWaiting({
       <p style={{ color: 'var(--danger)', fontWeight: 'var(--fw-bold)', margin: '0 0 var(--space-8)', fontSize: 'var(--fs-body-sm)' }}>
         线路接通中...
       </p>
-      {lastScore !== undefined && (
-        <p style={{ color: 'var(--success)', fontWeight: 'var(--fw-bold)', margin: '0 0 var(--space-12)' }}>
-          上一通得分：{lastScore}/100
-        </p>
-      )}
       <p style={{ color: 'var(--text-3)', marginBottom: 'var(--space-16)', fontSize: 'var(--fs-caption)' }}>
-        班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 累计 {totalScore}分
+        班次运行 {Math.floor(shiftElapsed / 60)}分{shiftElapsed % 60}秒 | 已确认救治 {rescuedCount} 人
       </p>
       <button style={styles.answerBtn} onClick={onAnswer}>
         接 听 电 话

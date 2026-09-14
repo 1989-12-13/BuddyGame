@@ -60,16 +60,49 @@ interface CanvasProps {
   onChooseNode: (nodeId: string) => void
 }
 
+function fitRouteArea(map: L.Map, points: [number, number][]) {
+  if (points.length === 0) return
+  map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 15 })
+}
+
 function PlannerFit({ points }: { points: [number, number][] }) {
   const map = useMap()
   const key = points.map(p => p.join(',')).join('|')
   useEffect(() => {
-    if (points.length === 0) return
-    map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 15 })
+    fitRouteArea(map, points)
     const t = setTimeout(() => map.invalidateSize(), 50)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, key])
+  return null
+}
+
+// 定位按钮：挂在 zoom 控件同一栏（topleft），点击后视野回到路网规划区域
+function PlannerLocateControl({ points }: { points: [number, number][] }) {
+  const map = useMap()
+  useEffect(() => {
+    const Control = L.Control.extend({
+      onAdd() {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control')
+        const button = L.DomUtil.create('a', 'route-planner-locate', container) as HTMLAnchorElement
+        button.href = '#'
+        button.title = '定位到路线规划区域'
+        button.setAttribute('role', 'button')
+        button.setAttribute('aria-label', '定位到路线规划区域')
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/></svg>'
+        L.DomEvent.disableClickPropagation(button)
+        L.DomEvent.on(button, 'click', (event: Event) => {
+          L.DomEvent.stop(event)
+          fitRouteArea(map, points)
+        })
+        return container
+      },
+    })
+    const control = new Control({ position: 'topleft' })
+    control.addTo(map)
+    return () => control.remove()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map])
   return null
 }
 
@@ -258,7 +291,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           width: 'min(1040px, 96vw)',
           height: 'min(720px, 92vh)',
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.65fr) minmax(280px, 0.8fr)',
+          gridTemplateColumns: 'minmax(0, 1fr)',
           gridTemplateRows: 'auto minmax(0, 1fr)',
           overflow: 'hidden',
           borderRadius: 'var(--radius-2xl)',
@@ -293,18 +326,39 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
           </button>
         </header>
 
-        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 'var(--space-14)', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 'var(--space-10)'}}>
+        <div className="route-map-panel" style={{ minWidth: 0, minHeight: 0, padding: 'var(--space-14)', display: 'flex', flexDirection: 'column', gap: 'var(--space-10)'}}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-10)'}}>
-            <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-2)' }}>
-              当前节点：<strong style={{ color: 'var(--text)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong>
-              {' · '}下一步可选 {availableNextNodes.length} 个节点
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-6)', fontSize: 'var(--fs-caption)', color: 'var(--text-2)' }}>
+              <span>当前节点：<strong style={{ color: 'var(--text)' }}>{nodes.get(selectedNodeIds[selectedNodeIds.length - 1] ?? '')?.label ?? '急救站'}</strong> · 下一步可选 {availableNextNodes.length} 个节点</span>
+              {activeRoute && <>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
+              </>}
+              <span style={{ fontSize: 'var(--fs-micro)', color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>
+                {completedRoute ? '已到达事件现场，可以确认派车' : '必须沿相邻节点抵达事件现场后才能派车'}
+              </span>
+              {priorityChannelActive && <span style={{ fontSize: 'var(--fs-micro)', color: 'var(--warning)', backgroundColor: 'var(--warning-dim)', padding: 'var(--space-2) var(--space-6)', borderRadius: 'var(--radius-sm)' }}>优先通道已生效：所有路线 ETA -5 秒</span>}
             </div>
-            <div style={{ display: 'flex', gap: 'var(--space-6)'}}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)'}}>
               <button onClick={undo} disabled={selectedNodeIds.length <= 1} style={smallButtonStyle}>
                 <Undo2 size={13} /> 撤回
               </button>
               <button onClick={reset} disabled={selectedNodeIds.length <= 1} style={smallButtonStyle}>
                 <RotateCcw size={13} /> 重置
+              </button>
+              <button
+                onClick={() => completedRoute && onConfirm(completedRoute)}
+                disabled={!completedRoute}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 'var(--space-6)',
+                  padding: 'var(--space-6) var(--space-12)', borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--danger)',
+                  backgroundColor: completedRoute ? 'var(--danger)' : 'var(--bg-raised)',
+                  color: completedRoute ? 'var(--on-danger)' : 'var(--text-3)',
+                  fontSize: 'var(--fs-caption)', fontWeight: 800, cursor: completedRoute ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <Navigation size={14} /> 确认路线并派车
               </button>
             </div>
           </div>
@@ -334,6 +388,7 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
                 maxZoom={19}
               />
               <PlannerFit points={fitPoints} />
+              <PlannerLocateControl points={fitPoints} />
               <PlannerCanvas
                 nodes={nodeList}
                 segments={segments}
@@ -353,67 +408,6 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             ))}
           </div>
         </div>
-
-        <aside className="route-summary-panel" style={{ minHeight: 0, padding: 'var(--space-14)', display: 'flex', flexDirection: 'column', gap: 'var(--space-12)', overflowY: 'auto' }}>
-          {priorityChannelActive && (
-            <div style={{ padding: 'var(--space-8) var(--space-10)', borderRadius: 'var(--radius-md)', color: 'var(--warning)', backgroundColor: 'var(--warning-dim)', fontSize: 'var(--fs-small)' }}>
-              优先通道已生效：所有路线 ETA -5 秒
-            </div>
-          )}
-
-          {!activeRoute ? (
-            <div style={{ fontSize: 'var(--fs-caption)', fontWeight: 700, color: 'var(--text)' }}>沿道路文字逐段选择</div>
-          ) : (
-            <>
-              <div style={{ padding: 'var(--space-12)', borderRadius: 'var(--radius-lg)', border: `1px solid ${RISK_COLOR[activeRoute.risk]}`, backgroundColor: 'var(--bg-raised)' }}>
-                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text)' }}>当前选定路线</div>
-                <div style={{ display: 'flex', gap: 'var(--space-12)', marginTop: 'var(--space-10)', fontSize: 'var(--fs-small)' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: 'var(--accent)' }}><Clock3 size={13} />ETA {activeRoute.totalEta} 秒</span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-4)', color: RISK_COLOR[activeRoute.risk] }}><ShieldAlert size={13} />{routeRiskLabel(activeRoute.risk)}</span>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
-                {activeRoute.segments.map((segment, index) => {
-                  const fromIndex = selectedNodeIds.indexOf(segment.fromId)
-                  const traversed = fromIndex >= 0 && selectedNodeIds[fromIndex + 1] === segment.toId
-                  const current = selectedNodeIds[selectedNodeIds.length - 1] === segment.fromId
-                  const fromLabel = nodes.get(segment.fromId)?.label ?? `节点 ${index + 1}`
-                  const toLabel = nodes.get(segment.toId)?.label ?? `节点 ${index + 2}`
-                  return (
-                    <div key={segment.id} style={{ padding: 'var(--space-6) var(--space-8)', borderRadius: 'var(--radius-md)', border: '1px solid var(--line)', opacity: traversed || current ? 1 : 0.58 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-6)', fontSize: 'var(--fs-micro)' }}>
-                        <span style={{ color: 'var(--text-2)' }}>{fromLabel} → {toLabel}</span>
-                        <strong style={{ padding: 'var(--space-1) var(--space-4)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--line)', color: 'var(--text)' }}>{segment.conditionLabel}</strong>
-                      </div>
-                      <div style={{ marginTop: 'var(--space-2)', fontSize: 9, color: 'var(--text-3)' }}>{segment.description}</div>
-                    </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
-
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)'}}>
-            <div style={{ minHeight: 30, fontSize: 'var(--fs-micro)', lineHeight: 1.5, color: completedRoute ? 'var(--success)' : 'var(--text-3)' }}>
-              {completedRoute ? '已到达事件现场，可以确认派车' : '必须沿相邻节点抵达事件现场后才能派车'}
-            </div>
-            <button
-              onClick={() => completedRoute && onConfirm(completedRoute)}
-              disabled={!completedRoute}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-6)',
-                width: '100%', padding: 'var(--space-10) var(--space-12)', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--danger)',
-                backgroundColor: completedRoute ? 'var(--danger)' : 'var(--bg-raised)',
-                color: completedRoute ? 'var(--on-danger)' : 'var(--text-3)',
-                fontSize: 'var(--fs-caption)', fontWeight: 800, cursor: completedRoute ? 'pointer' : 'not-allowed',
-              }}
-            >
-              <Navigation size={15} /> 确认路线并派车
-            </button>
-          </div>
-        </aside>
       </section>
     </div>
   )

@@ -175,18 +175,21 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       {call && <PatientVitals state={state} />}
     </div>
     {state.rescueNotifications.length > 0 && <section className="rescue-notices" aria-label="后台救援结果">{state.rescueNotifications.map(notification => <div key={notification.id} className={notification.kind}><Ambulance size={18} /><span>{notification.text}</span><button className="icon-button" aria-label="关闭救援结果" onClick={() => dispatch({ type: 'DISMISS_RESCUE_NOTIFICATION', notificationId: notification.id })}><X size={16} /></button></div>)}</section>}
-    <nav className="view-tabs" aria-label="工作区切换">{([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}</nav>
+    {/* 线路 chips 居左、视图切换居中、结束通话居右，合并成一条 chip 行 */}
+    <nav className="view-tabs" aria-label="工作区切换">
+      {controlled?.slots?.lineBoard}
+      {([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}
+      {call && !state.rescue.outcome && !state.patientStatus?.died && <button className="end-call-tab text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}
+    </nav>
     <main className={`desk-grid tab-${tab} ${taskPulse ? 'task-pulse' : ''}`} inert={paused}>
-      {/* 通话台：线路条 → 对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉 */}
+      {/* 通话台：对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉；线路 chips 已合并进顶部 chip 行 */}
       <aside className="desk-panel transcript-panel">
-        {controlled?.slots?.lineBoard}
         <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} streamIdx={streamIdx} streamPos={streamPos} pendingSet={pendingSet.current} />
         {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
         <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
         <QuestionDock state={state} dispatch={dispatch} />
       </aside>
       <section className="desk-panel workspace-panel">
-        <div className="workspace-heading"><div><span className="eyebrow">当前 {PHASES[step]}</span><h1>{call?.title ?? '城市正在等待你的声音'}</h1></div><div className="workspace-actions">{call && !state.rescue.outcome && !state.patientStatus?.died && <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}</div></div>
         {/* 「下一步」原本占着通话栏，现在挪到工作区：它的按钮本来就把你送进这里规划路线 */}
         <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
         {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>

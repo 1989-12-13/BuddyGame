@@ -193,6 +193,10 @@
 .view-tabs button { flex:0 1 190px; min-height:34px; padding:var(--space-4) var(--space-14); gap:var(--space-6); background:var(--bg-surface); color:var(--text-2); border:1px solid var(--line); border-radius:var(--radius-full); font-size:var(--fs-body-sm); }
 .view-tabs button:hover { border-color:var(--accent); color:var(--text); }
 .view-tabs button[aria-pressed='true'] { color:var(--accent); border-color:var(--accent); background:var(--accent-bg); }
+/* 线路 chips 合并进 chip 行：居左；结束通话居右 */
+.view-tabs .line-rail { padding:0; border-bottom:none; background:transparent; margin-right:auto; flex-wrap:nowrap; }
+.view-tabs .end-call-tab { flex:0 0 auto; margin-left:auto; min-height:30px; padding:var(--space-4) var(--space-12); font-size:var(--fs-caption); font-weight:700; }
+.view-tabs .end-call-tab:hover { border-color:var(--danger); }
 
 /* ---------- 三栏 → 单视图 ---------- */
 .desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
@@ -359,3 +363,7 @@
   .question-dock .turn-options { grid-template-columns:1fr; }
   .message p { max-width:90%; }
 }
+
+/* ============ 路线规划地图定位按钮（与 zoom 控件同栏） ============ */
+.leaflet-bar a.route-planner-locate { display:flex; align-items:center; justify-content:center; font-size:0; }
+.leaflet-bar a.route-planner-locate svg { width:15px; height:15px; }

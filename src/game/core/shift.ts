@@ -165,9 +165,9 @@ export const FADE_MIN_CALLS = 3
 export const COLLAPSE_DEATHS = 1
 export const COLLAPSE_MISSED_STREAK = 3
 
-/** 来电间隔（秒）：热度越低越稀疏 —— 「上强度」的第一条腿：更密 */
-const ARRIVAL_GAP_COLD = 7
-const ARRIVAL_GAP_HOT = 1
+/** 来电间隔（秒）：接听一通电话后，下一通在 [MIN, MAX] 内随机到来 */
+export const ARRIVAL_GAP_MIN = 15
+export const ARRIVAL_GAP_MAX = 30
 /** 同时响铃的线路上限 —— 「上强度」的第二条腿：更多并发 */
 const MAX_RINGING_COLD = 1
 const MAX_RINGING_HOT = 3
@@ -189,10 +189,9 @@ function clampHeat(value: number): number {
   return Math.max(0, Math.min(100, value))
 }
 
-/** 热度 → 两次来电之间的最小间隔（秒） */
-export function arrivalGapFor(heat: number): number {
-  const t = clampHeat(heat) / 100
-  return Math.round(ARRIVAL_GAP_COLD + (ARRIVAL_GAP_HOT - ARRIVAL_GAP_COLD) * t)
+/** 下一通来电的随机间隔（秒）：从接听当前电话起算 */
+export function randomArrivalGap(): number {
+  return ARRIVAL_GAP_MIN + Math.floor(Math.random() * (ARRIVAL_GAP_MAX - ARRIVAL_GAP_MIN + 1))
 }
 
 /** 热度 → 同时响铃的线路上限（并发强度） */
@@ -427,6 +426,8 @@ export function answerLine(shift: ShiftState, lineId: string): ShiftState {
     focusedLineId: lineId,
     lastRejection: null,
     missedStreak: 0,
+    // 下一通来电从接听这一刻起随机倒计时
+    arrivalCooldown: randomArrivalGap(),
     heat: clampHeat(shift.heat + (fastAnswer ? HEAT_GAIN_FAST_ANSWER : 0)),
     incidents: startsIncident
       ? [...shift.incidents, {
@@ -658,7 +659,7 @@ export function tickShift(shift: ShiftState): ShiftState {
       working = {
         ...working,
         deck,
-        arrivalCooldown: arrivalGapFor(working.heat),
+        arrivalCooldown: randomArrivalGap(),
         lines: working.lines.map(line => (line.id === free.id
           ? { ...line, phase: 'ringing' as const, scenarioId, ringingFor: 0 }
           : line)),

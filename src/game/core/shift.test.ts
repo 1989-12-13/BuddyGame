@@ -6,7 +6,7 @@ import {
   HEAT_PEAK,
   PEAK_CALLS_TO_SURVIVE,
   answerLine,
-  arrivalGapFor,
+  randomArrivalGap,
   availableVehicleCount,
   busyVehicleCount,
   createShiftState,
@@ -443,8 +443,12 @@ function finishingLine(base: ShiftState, overrides: {
 }
 
 describe('班次协调器 · 热度派生强度', () => {
-  it('热度越高，来电间隔越短', () => {
-    expect(arrivalGapFor(0)).toBeGreaterThan(arrivalGapFor(100))
+  it('下一通来电间隔落在 15–30 秒内', () => {
+    for (let i = 0; i < 50; i++) {
+      const gap = randomArrivalGap()
+      expect(gap).toBeGreaterThanOrEqual(15)
+      expect(gap).toBeLessThanOrEqual(30)
+    }
   })
 
   it('热度越高，同时响铃上限越高', () => {

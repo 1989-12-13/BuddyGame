@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { Activity, ArrowRight, BookOpen, CheckCircle2, ClipboardList, Headphones, Map, Pause, Phone, Play, Settings, ShieldCheck, Volume2, X, Ambulance } from 'lucide-react'
 import type { ShiftEvaluation, WorldState } from '../../game/types'
 import type { GameAction } from '../../game/core/actions'

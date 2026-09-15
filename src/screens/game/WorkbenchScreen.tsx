@@ -9,7 +9,6 @@ import { handleStartShift } from '../../game/core/reducers/miscHandlers'
 import { isWorldPaused } from '../../game/core/session'
 import { buildDispatchPlan, shouldAutoPlan, type DispatchPlan } from '../../game/core/dispatchPlanning'
 import { nextProtocolId } from '../../game/core/dialogueTurn'
-import { loadCheckpoint, saveCheckpoint } from '../../game/core/checkpoint'
 import { readStorage, writeStorage } from '../../utils/storage'
 import { buildShiftEvaluation, DIMENSION_KEYS } from '../../game/core/evaluation'
 import { useAudio } from '../../audio/AudioContext'
@@ -47,8 +46,7 @@ const PHASES = ['接听', '问询', '路线', '指导', '交接']
 
 export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const [internalState, internalDispatch] = useReducer(worldReducer, scenarioId, id => {
-    if (id === '__resume__') { const saved = loadCheckpoint(); if (saved) return saved }
-    // 线性流程只跑调用方指定的场景（场景练习 / 断点续玩），没有内置的固定通数排班
+    // 线性流程只跑调用方指定的场景（场景练习），没有内置的固定通数排班
     return handleStartShift(createInitialState(), id && !id.startsWith('__') ? [id] : [])
   })
   // 并发模式下由班次层驱动：本组件只渲染聚焦线路，不自行计时/存档/跳转
@@ -74,7 +72,6 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
     return () => mql.removeEventListener('change', onChange)
   }, [])
   const [plan, setPlan] = useState<DispatchPlan | null>(null)
-  const [saveFailed, setSaveFailed] = useState(false)
   const [audioFailed, setAudioFailed] = useState(false)
   const [tutorialSeen, setTutorialSeen] = useState(() => readStorage('dispatch120-tutorial') === 'done')
   const [taskPulse, setTaskPulse] = useState(false)
@@ -119,8 +116,6 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
     if (lines.some(line => line.speaker === 'caller')) audio.tts.stop()
     lines.forEach((line, i) => { if (line.speaker === 'caller') void audio.tts.enqueue(`${state.callInstanceId}-${i}-${line.timestamp}`, { text: line.text, kind: 'caller', emotion: stressToEmotion(state.callerState?.stress ?? 40) }).catch(() => setAudioFailed(true)) })
   }, [state.dialogueLog, state.callInstanceId, state.callerState?.stress, audio.tts])
-  // Deliberately persist only at safe boundaries, never every timer tick.
-  useEffect(() => { if (embedded) return; setSaveFailed(!saveCheckpoint(state)) }, [embedded, state.callIndex, state.scenarioQueue, state.perks, state.rescueNotifications.length]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (embedded || state.screen !== 'ending') return
     onNavigate('ending', buildShiftEvaluation(state.callEvaluations, { activeSeconds: state.activePlaySeconds }))
@@ -177,7 +172,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   }
   let overlay: ReactNode = null
   if (modal) overlay = <Dialog title={modal === 'settings' ? '值班设置' : modal === 'help' ? '接好这通电话' : modal === 'exit' ? '离开工作台？' : '结束这通电话？'} onClose={closeModal}>
-    {modal === 'settings' ? <div className="dialog-content"><label className="setting-row"><span className="setting-label"><Volume2 size={20} /> 音量</span><input aria-label="音量" type="range" min="0" max="1" step="0.05" value={audio.volume} onChange={e => audio.setVolume(Number(e.target.value))} /></label><div className="setting-row"><span className="setting-label">工作台外观</span><button className="secondary" onClick={toggle}>切换到{theme === 'dark' ? '明亮' : '夜间'}</button></div><div className="dialog-actions"><button className="text-button" onClick={() => { closeModal(); openModal('exit') }}>返回主菜单</button></div></div> : modal === 'help' ? <div className="dialog-content"><p>你是电话这头的接线员。听清来电，确认地点与患者情况，再选择响应优先级和路线。</p><ol><li>中间是通话实录，读它并选择下一句要问的问题。</li><li>需要判断时，下方会弹出选择卡。</li><li>左侧抽屉是地图，右侧抽屉是登记表，随时可以拉开查看；把手的梯形凸起在中左与中右。</li><li>四项信息齐了，左侧抽屉会自动展开让你派车，之后按指导保持通话，直到现场交接。</li></ol><p>急救内容用于公益科普。现实中请及时拨打 120，听从专业指导。</p><button className="primary" onClick={() => { writeStorage('dispatch120-tutorial', 'done'); setTutorialSeen(true); closeModal() }}>明白了，回到工作台</button></div> : <div className="dialog-content"><p>{modal === 'exit' ? '已完成通话的五维评价会保留。' : state.dispatchSent && !state.rescue.outcome ? '救护车仍在途中，现场结果会在抵达后更新。' : '当前记录将结算。'}</p><div className="dialog-actions"><button className="secondary" onClick={closeModal}>继续当前通话</button><button className="danger-button" onClick={() => { closeModal(); if (modal === 'exit') onNavigate('title'); else endCall() }}>{modal === 'exit' ? '保存并离开' : '确认结束通话'}</button></div></div>}
+    {modal === 'settings' ? <div className="dialog-content"><label className="setting-row"><span className="setting-label"><Volume2 size={20} /> 音量</span><input aria-label="音量" type="range" min="0" max="1" step="0.05" value={audio.volume} onChange={e => audio.setVolume(Number(e.target.value))} /></label><div className="setting-row"><span className="setting-label">工作台外观</span><button className="secondary" onClick={toggle}>切换到{theme === 'dark' ? '明亮' : '夜间'}</button></div><div className="dialog-actions"><button className="text-button" onClick={() => { closeModal(); openModal('exit') }}>返回主菜单</button></div></div> : modal === 'help' ? <div className="dialog-content"><p>你是电话这头的接线员。听清来电，确认地点与患者情况，再选择响应优先级和路线。</p><ol><li>中间是通话实录，读它并选择下一句要问的问题。</li><li>需要判断时，下方会弹出选择卡。</li><li>左侧抽屉是地图，右侧抽屉是登记表，随时可以拉开查看；把手的梯形凸起在中左与中右。</li><li>四项信息齐了，左侧抽屉会自动展开让你派车，之后按指导保持通话，直到现场交接。</li></ol><p>急救内容用于公益科普。现实中请及时拨打 120，听从专业指导。</p><button className="primary" onClick={() => { writeStorage('dispatch120-tutorial', 'done'); setTutorialSeen(true); closeModal() }}>明白了，回到工作台</button></div> : <div className="dialog-content"><p>{modal === 'exit' ? '已完成通话的五维评价会保留。' : state.dispatchSent && !state.rescue.outcome ? '救护车仍在途中，现场结果会在抵达后更新。' : '当前记录将结算。'}</p><div className="dialog-actions"><button className="secondary" onClick={closeModal}>继续当前通话</button><button className="danger-button" onClick={() => { closeModal(); if (modal === 'exit') onNavigate('title'); else endCall() }}>{modal === 'exit' ? '离开' : '确认结束通话'}</button></div></div>}
   </Dialog>
   else if (paused && !state.lastDebrief && !state.pendingPerkChoices.length) overlay = <Dialog title="值班已暂停" onClose={() => dispatch({ type: 'RESUME' })}><div className="dialog-content"><button className="primary wide" onClick={() => dispatch({ type: 'RESUME' })}><Play size={18} /> 继续值班</button></div></Dialog>
   else if (state.lastDebrief) {
@@ -241,7 +236,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
             </>}
           </div>
         </>}
-        {(audioFailed || saveFailed) && <div className="workspace-footnote"><ShieldCheck size={14} /><span>{audioFailed ? '语音暂不可用，可继续阅读字幕。' : '当前浏览器无法保存进度，本次仍可正常游玩。'}</span></div>}
+        {audioFailed && <div className="workspace-footnote"><ShieldCheck size={14} /><span>语音暂不可用，可继续阅读字幕。</span></div>}
         </div>
       </section>
       {/* 中间：通话台。对话流是核心内容，左右抽屉都收起时它居中占满 */}

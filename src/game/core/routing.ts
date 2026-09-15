@@ -2,7 +2,7 @@
 // 零点接线台 — 节点式道路网络与动态路线规划
 // ============================================================
 
-import type { LatLng } from '../locations'
+import { MIN_MAP_SPAN, type LatLng } from '../locations'
 
 export type RouteStrategy = 'express' | 'balanced' | 'stable'
 
@@ -219,6 +219,26 @@ function interpolate(a: LatLng, b: LatLng, t: number): LatLng {
   return { lat: a.lat + (b.lat - a.lat) * t, lng: a.lng + (b.lng - a.lng) * t }
 }
 
+/**
+ * 起终点过近时，以事发点为中心、用 seed 派生的方向撑开一条虚拟轴线，
+ * 保证路网始终有可辨识的地理跨度（节点散得开，缩放才有意义）。
+ *
+ * 现实中完全可能出现「事发地就在急救站门口」：心脏骤停卡片的 baseStation 是望京，
+ * lookupCoords 的结果与望京站坐标完全相同。此时 start - end 恒为 0、法向量也是 0，
+ * 所有路网节点都会落在同一个坐标上 —— 地图上坍缩成一个点，缩放也看不出任何变化。
+ * 路网本来就是按 start/end 程序生成的示意网络，因此这里的偏移不影响玩法。
+ */
+function resolveRouteAxis(start: LatLng, end: LatLng, seed: string): { start: LatLng; end: LatLng } {
+  if (Math.hypot(end.lat - start.lat, end.lng - start.lng) >= MIN_MAP_SPAN) return { start, end }
+  const angle = createSeededRandom(`${seed}:axis`)() * Math.PI * 2
+  const halfLat = (Math.cos(angle) * MIN_MAP_SPAN) / 2
+  const halfLng = (Math.sin(angle) * MIN_MAP_SPAN) / 2
+  return {
+    start: { lat: start.lat - halfLat, lng: start.lng - halfLng },
+    end: { lat: end.lat + halfLat, lng: end.lng + halfLng },
+  }
+}
+
 function buildRoadNodes(start: LatLng, end: LatLng, seed: string): Map<string, RoadNode> {
   const latDelta = end.lat - start.lat
   const lngDelta = end.lng - start.lng
@@ -300,7 +320,9 @@ function routeEta(
 
 /** 为一辆车生成八条候选路径；共享节点组成三层可决策的道路网络。 */
 export function buildRouteOptions(input: BuildRouteOptionsInput): RoutePlan[] {
-  const roadNodes = buildRoadNodes(input.start, input.end, input.seed)
+  // 起终点几乎重合时先把轴线撑开，否则所有节点会落在同一个坐标上（路网坍缩成一个点）
+  const axis = resolveRouteAxis(input.start, input.end, input.seed)
+  const roadNodes = buildRoadNodes(axis.start, axis.end, input.seed)
   return ROUTE_TEMPLATES.map(template => {
     const random = createSeededRandom(`${input.seed}:route:${template.id}`)
     const nodes = template.path.map(nodeId => {

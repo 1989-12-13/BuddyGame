@@ -56,6 +56,38 @@ export const DEFAULT_CENTER: LatLng = { lat: 39.92, lng: 116.40 }
 export const DEFAULT_ZOOM = 11
 
 /**
+ * 地图 / 路网「不退化成一个点」的最小跨度（单位：度，约 2 km）。
+ *
+ * 事发地很可能正好落在急救站上（心脏骤停卡的 baseStation 是望京，
+ * lookupCoords 的结果与望京站坐标完全相同）。此时坐标集合跨度为 0，
+ * fitBounds 会一路顶到 maxZoom，画面上仍然只是一个点、缩放看着像失灵。
+ */
+export const MIN_MAP_SPAN = 0.02
+
+/**
+ * 若坐标集合在任一方向上的跨度小于 MIN_MAP_SPAN，就在中心两侧补两个对角点，
+ * 让 fitBounds 得到一片有面积的视野，而不是把一个点放到最大。
+ */
+export function withMinSpan(points: LatLng[], span: number = MIN_MAP_SPAN): LatLng[] {
+  if (points.length === 0) return points
+  const lats = points.map(point => point.lat)
+  const lngs = points.map(point => point.lng)
+  const minLat = Math.min(...lats)
+  const maxLat = Math.max(...lats)
+  const minLng = Math.min(...lngs)
+  const maxLng = Math.max(...lngs)
+  if (maxLat - minLat >= span && maxLng - minLng >= span) return points
+  const centerLat = (minLat + maxLat) / 2
+  const centerLng = (minLng + maxLng) / 2
+  const half = span / 2
+  return [
+    ...points,
+    { lat: centerLat - half, lng: centerLng - half },
+    { lat: centerLat + half, lng: centerLng + half },
+  ]
+}
+
+/**
  * 根据 baseStation 字符串查找坐标（最长匹配优先）
  * @returns 找到的坐标，未找到返回 null
  */

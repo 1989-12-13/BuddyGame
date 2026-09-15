@@ -11,7 +11,7 @@ import {
   type RoadSegment,
   type RoutePlan,
 } from '../../game/core/routing'
-import { DEFAULT_CENTER, DEFAULT_ZOOM, type LatLng } from '../../game/locations'
+import { DEFAULT_CENTER, DEFAULT_ZOOM, withMinSpan, type LatLng } from '../../game/locations'
 import { useTheme } from '../../contexts/ThemeContext'
 
 interface Props {
@@ -62,7 +62,10 @@ interface CanvasProps {
 
 function fitRouteArea(map: L.Map, points: [number, number][]) {
   if (points.length === 0) return
-  map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 15 })
+  // 视野退化成「一条线 / 一个点」时 fitBounds 会一路顶到 maxZoom，
+  // 画面上仍然只有一个点，缩放按钮按下去也看不出变化 → 先撑成一片有面积的区域
+  const padded = withMinSpan(points.map(([lat, lng]) => ({ lat, lng })))
+  map.fitBounds(L.latLngBounds(padded.map(point => [point.lat, point.lng])), { padding: [48, 48], maxZoom: 15 })
 }
 
 function PlannerFit({ points }: { points: [number, number][] }) {
@@ -148,7 +151,9 @@ function PlannerCanvas({ nodes, segments, selectedNodeIds, availableIds, matchin
           ? (matchingRoutes.some(route => route.nodes.some(item => item.id === node.id)) ? 0.48 : 0.22)
           : !availableIds.has(node.id) && !selectedIds.has(node.id) ? 0.48 : 1,
         cursor: availableIds.has(node.id) ? 'pointer' : 'default',
-        pointerEvents: 'auto',
+        // 不可选的节点不拦截指针事件：否则它们堆叠在缩放控件 / 定位按钮上时，
+        // 会把这些控件一起挡住，表现为「按钮点不动」
+        pointerEvents: availableIds.has(node.id) ? 'auto' : 'none',
         boxShadow: availableIds.has(node.id) ? '0 0 0 5px color-mix(in srgb, var(--warning) 15%, transparent)' : 'none',
       }}
     >
@@ -375,6 +380,8 @@ export function RoutePlanner({ routes, embedded = false, priorityChannelActive =
             <MapContainer
               center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
               zoom={DEFAULT_ZOOM}
+              minZoom={10}
+              maxZoom={18}
               attributionControl={false}
               scrollWheelZoom
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', backgroundColor: 'transparent' }}

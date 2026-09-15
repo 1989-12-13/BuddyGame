@@ -9,7 +9,7 @@ import { CircleMarker, MapContainer, TileLayer, Marker, Polyline, Tooltip, useMa
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { WorldState } from '../../game/types'
-import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, type LatLng } from '../../game/locations'
+import { STATION_COORDS, DEFAULT_CENTER, DEFAULT_ZOOM, lookupCoords, withMinSpan, type LatLng } from '../../game/locations'
 import type { Ambulance, AmbulanceStatus } from '../../game/core/fleet'
 import { positionAlongRoute, roadConditionColor } from '../../game/core/routing'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -48,7 +48,9 @@ function FitBounds({ points }: { points: LatLng[] }) {
     } else if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], DEFAULT_ZOOM)
     } else {
-      const bounds = L.latLngBounds(points.map(p => [p.lat, p.lng]))
+      // 站点与事发点可能重合（望京站 = 望京），先撑出最小视野，
+      // 否则 fitBounds 会一路顶到 maxZoom，画面上仍然只是一个点
+      const bounds = L.latLngBounds(withMinSpan(points).map(p => [p.lat, p.lng]))
       map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 })
     }
     // 异步触发 leaflet 重算容器 size，避免灰色块（容器 layout 未及时确定时 fitBounds 会错位）

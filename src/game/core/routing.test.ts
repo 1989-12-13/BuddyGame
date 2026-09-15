@@ -47,6 +47,23 @@ describe('node route planning', () => {
     expect(conditionLabels.has('学校特殊路段')).toBe(true)
   })
 
+  it('spreads the road network out when the incident sits on the station itself', () => {
+    // 心脏骤停卡片的 baseStation 在望京，与望京站坐标完全相同。
+    // 起终点重合时法向量为 0，若不撑开轴线，所有节点会坍缩成同一个点：
+    // 地图上看不到路网，缩放按钮按下去也看不出任何变化。
+    const routes = buildRouteOptions({ start: START, end: START, baseEta: 70, seed: 'cardiac-arrest:1:0:30' })
+    const positions = new Set(
+      routes.flatMap(route => route.nodes.map(node => `${node.pos.lat.toFixed(5)},${node.pos.lng.toFixed(5)}`)),
+    )
+    expect(positions.size).toBeGreaterThanOrEqual(10)
+
+    const lats = routes.flatMap(route => route.nodes.map(node => node.pos.lat))
+    const lngs = routes.flatMap(route => route.nodes.map(node => node.pos.lng))
+    expect(Math.max(...lats) - Math.min(...lats)).toBeGreaterThan(0.005)
+    expect(Math.max(...lngs) - Math.min(...lngs)).toBeGreaterThan(0.005)
+    expect(routes[0].nodes[0].pos).not.toEqual(routes[0].nodes[routes[0].nodes.length - 1].pos)
+  })
+
   it('offers repeated adjacent-node decisions and rejects a cross-branch jump', () => {
     const routes = buildRouteOptions({ start: START, end: END, baseEta: 70, seed: 'graph-check' })
     const firstNodes = getAvailableNextNodes(routes, ['route-start'])

@@ -112,6 +112,128 @@ export const strokeCard: EmergencyScenario = {
     purpose: '不会是要中风了吧！你们快来！',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 张秀兰（妻子）报告丈夫疑似脑卒中
+  // 来电者个性：紧张但努力配合、叙述啰嗦、记不清时间
+  // 关系：妻子（对丈夫了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，小区名和楼号。',
+      caller: {
+        calm: ['西城区金融街丰汇园小区7号楼3单元201室。'],
+        tense: ['金融街！丰汇园！7号楼！3单元201！你们快来！'],
+        panic: ['丰汇园！7号楼！201！快来！'],
+        lost: ['金融街……丰汇园……201……'],
+        retryPrefix: '我不是刚说了——',
+      },
+      fillTerminal: { address: '西城区金融街丰汇园小区7号楼3单元201室' },
+      outburst: '他嘴歪了！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到老伴。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '小区门口有什么明显的店吗？',
+      caller: {
+        calm: ['小区门口有个工商银行。'],
+        tense: ['门口有工商银行！你们到了就能看到！'],
+        panic: ['工商银行……门口……'],
+        lost: ['有个银行……门口……'],
+      },
+      fillTerminal: { address: '西城区金融街丰汇园小区7号楼3单元201室，小区门口有工商银行' },
+      calmReply: {
+        operatorCalm: '好，工商银行，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['老伴吃饭时突然嘴歪了，话说不清楚。', '右手抬不起来了。', '大概二十分钟前开始的。'],
+        tense: ['老伴嘴歪了！话说不清楚了！', '右手抬不起来了！', '二十分钟前开始的！'],
+        panic: ['嘴歪了！！说不出话了！！', '右手不行了！！你们快来！！', '是不是中风了！！'],
+        lost: ['老伴嘴歪了……', '说不出话了……右手也不行了……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '突发口角歪斜、言语不清、右侧肢体无力', patientGender: '男性' },
+      outburst: '他越来越严重了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。嘴歪，话说不清，右手抬不起来——这些我记下了。别移动他，别喂水，按我说的做。',
+        calm: '好……我不动他。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他多大岁数？',
+      caller: {
+        calm: ['72岁。'],
+        tense: ['72！他72！'],
+        panic: ['72！！72岁！！'],
+        lost: ['72……对，72。'],
+      },
+      fillTerminal: { patientAge: '72岁' },
+      calmReply: {
+        operatorCalm: '好，72岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还清醒吗？能说话吗？',
+      caller: {
+        calm: ['醒着的，但说话含糊不清。', '呼吸看着还正常。'],
+        tense: ['醒着！但说话含糊！', '呼吸看着还正常！'],
+        panic: ['醒着！！但说不清话！！', '呼吸正常！！你们快来！！'],
+        lost: ['醒着……但说不清话……', '呼吸正常……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。让他侧躺，头偏一侧，别喂水。我一步步告诉你怎么做。',
+        calm: '好……我让他侧躺。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13677629012，就是这个号。'],
+        tense: ['136……7762……9012！打这个就行！'],
+        panic: ['136……这个手机！9012！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '136****9012' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_stroke_time',

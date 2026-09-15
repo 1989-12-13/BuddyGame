@@ -107,6 +107,128 @@ export const hemorrhageCard: EmergencyScenario = {
     purpose: '血止不住！快想办法！我要不要把那块玻璃拔出来？！',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 叶欣（朋友）报告朋友刀割伤大出血
+  // 来电者个性：语速极快、夹杂哭喊、手上还在做止血操作
+  // 关系：朋友（对患者了解一部分）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['东城区鼓楼大街乙28号老北京炸酱面馆。'],
+        tense: ['鼓楼大街！乙28号！炸酱面馆！你们快来！'],
+        panic: ['鼓楼大街！28号！面馆！快来！'],
+        lost: ['鼓楼大街……28号……面馆……'],
+        retryPrefix: '我不是刚说了——',
+      },
+      fillTerminal: { address: '东城区鼓楼大街乙28号老北京炸酱面馆' },
+      outburst: '他血止不住！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '面馆旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['鼓楼往南200米路东。'],
+        tense: ['鼓楼往南200米！路东！你们到了就能看到！'],
+        panic: ['鼓楼南边……200米……路东！'],
+        lost: ['鼓楼旁边……往南……'],
+      },
+      fillTerminal: { address: '东城区鼓楼大街乙28号老北京炸酱面馆，鼓楼往南200米路东' },
+      calmReply: {
+        operatorCalm: '好，鼓楼往南，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['朋友摔了一跤胳膊撞碎了玻璃门。', '手臂被划了一个大口子，血往外喷。', '有一块玻璃还插在胳膊上。'],
+        tense: ['朋友摔倒了！胳膊撞碎玻璃门！', '大口子！血往外喷！止不住！', '玻璃还插着！我不敢拔！'],
+        panic: ['胳膊割了！！血喷的！！', '止不住！！玻璃还在里面！！', '你们快来！！'],
+        lost: ['胳膊割了……在喷血……', '玻璃还在里面……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '右前臂玻璃割伤，动脉出血，异物残留', patientGender: '男性' },
+      outburst: '他血止不住！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。胳膊割了大口子，血喷，玻璃还在——这些我记下了。别拔玻璃，用布按压住，按我说的做。',
+        calm: '好……我按住了。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他多大岁数？',
+      caller: {
+        calm: ['29岁。'],
+        tense: ['29！他29！'],
+        panic: ['29！！29岁！！'],
+        lost: ['29……应该是29……'],
+      },
+      fillTerminal: { patientAge: '29岁' },
+      calmReply: {
+        operatorCalm: '好，29岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还清醒吗？呼吸怎么样？',
+      caller: {
+        calm: ['还清醒，但脸色发白。', '呼吸很快，吓到了。'],
+        tense: ['还清醒！但脸色发白！', '呼吸很快！吓到了！'],
+        panic: ['清醒！！但脸色白！！', '呼吸很快！！你们快来！！'],
+        lost: ['还醒着……但脸色白……', '呼吸很快……', '他快晕了……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。让他躺下，抬高伤肢，持续按压别松手，救护车马上到。',
+        calm: '好……我让他躺下了。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['18677623333，就是这个号。'],
+        tense: ['186……7762……3333！打这个就行！'],
+        panic: ['186……这个手机！3333！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '186****3333' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_hem_bleed_type',

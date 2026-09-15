@@ -175,6 +175,11 @@ export interface WorldState {
   // 已完成通话的结构化评价（包含仍等待现场结果的暂定记录）
   callEvaluations: CallEvaluation[]
 
+  // 信息完整性提示：问完地址/电话后如果不完整，记录待重问的问题ID和提示语
+  pendingReask: { questionId: string; prompt: string } | null
+
+  // 累计得分
+
   // 结算
   lastDebrief: import('../core/debrief').DebriefEntry | null
   pendingPerkChoices: import('../core/perks').RoguePerkId[]

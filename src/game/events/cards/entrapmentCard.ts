@@ -56,6 +56,128 @@ export const entrapmentCard: EmergencyScenario = {
     purpose: '孕妇快不行了你们快想办法把她弄出去',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 魏强（家属）报告电梯困人
+  // 来电者个性：语气焦急但积极配合、反复催促快点来
+  // 关系：家属（对孕妇了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，大厦名和位置。',
+      caller: {
+        calm: ['海淀区中关村西区银科大厦东侧货梯。'],
+        tense: ['中关村西区！银科大厦！东侧货梯！你们快来！'],
+        panic: ['银科大厦！货梯！快来！'],
+        lost: ['中关村……银科大厦……货梯……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '海淀区中关村西区银科大厦东侧货梯' },
+      outburst: '你们到底还有多久到啊！孕妇快撑不住了！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，消防已经在路上了。咱接着说，每个问题都帮到她。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '大厦旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['中关村地铁站E口出来向西走200米。'],
+        tense: ['地铁E口！向西200米！你们到了就能看到！'],
+        panic: ['地铁E口……西边200米……'],
+        lost: ['地铁口旁边……向西……'],
+      },
+      fillTerminal: { address: '海淀区中关村西区银科大厦东侧货梯，中关村地铁站E口出来向西走200米' },
+      calmReply: {
+        operatorCalm: '好，地铁E口，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['电梯卡在3楼和4楼之间。', '里面有个孕妇说胸闷头晕。', '已经困了20分钟了。'],
+        tense: ['电梯卡住了！3楼和4楼之间！', '孕妇说胸闷头晕！喘不上气！', '困了20分钟了！'],
+        panic: ['电梯卡住了！！孕妇喘不上气！！', '困了20分钟了！！你们快来！！', '她快不行了！！'],
+        lost: ['电梯卡住了……', '孕妇喘不上气……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '电梯困人，孕妇胸闷头晕，通风不良', patientGender: '女性' },
+      outburst: '她快晕过去了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。电梯卡住，孕妇胸闷——这些我记下了。别扒门，按我说的做。',
+        calm: '好……我不扒门。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['30岁左右。'],
+        tense: ['30岁左右！怀孕7个月！'],
+        panic: ['30岁！！怀孕7个月！！'],
+        lost: ['30岁……怀孕7个月……'],
+      },
+      fillTerminal: { patientAge: '约30岁' },
+      calmReply: {
+        operatorCalm: '好，30岁左右，怀孕7个月，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还清醒吗？能说话吗？',
+      caller: {
+        calm: ['清醒，但脸色很差。', '说喘不上气，呼吸急促。'],
+        tense: ['清醒！但脸色很差！', '喘不上气！呼吸很急！'],
+        panic: ['清醒！！但脸色很差！！', '喘不上气！！呼吸急促！！', '你们快来！！'],
+        lost: ['还清醒……但脸色很差……', '喘不上气……', '她快晕了……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，还清醒，这我知道了。让她坐低一些，别站起来，给她扇风。消防马上到。',
+        calm: '好……我让她坐下了。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13977623333，就是这个号。'],
+        tense: ['139……7762……3333！打这个就行！'],
+        panic: ['139……这个手机！3333！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '139****3333' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_trap_env',

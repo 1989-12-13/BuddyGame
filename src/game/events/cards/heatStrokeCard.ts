@@ -56,6 +56,129 @@ export const heatStrokeCard: EmergencyScenario = {
     purpose: '他是不是中暑了要不要给他喝水',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 范涛（同事）报告同事热射病
+  // 来电者个性：着急但能配合、不断描述患者状态变化
+  // 关系：同事（对现场了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，具体位置。',
+      caller: {
+        calm: ['朝阳区奥林匹克森林公园南门入口，右手边跑道旁。'],
+        tense: ['奥林匹克森林公园！南门！跑道旁！你们快来！'],
+        panic: ['森林公园南门！跑道！快来！'],
+        lost: ['森林公园……南门……跑道……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '朝阳区奥林匹克森林公园南门入口右手边跑道旁' },
+      outburst: '他烫得跟火炉一样！！你们到底来不来啊！！',
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到他。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '南门旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['地铁森林公园南门站B口。'],
+        tense: ['地铁B口！森林公园南门站！你们到了就能看到！'],
+        panic: ['地铁B口……南门站……'],
+        lost: ['地铁口旁边……南门……'],
+      },
+      fillTerminal: { address: '朝阳区奥林匹克森林公园南门入口右手边跑道旁，地铁森林公园南门站B口' },
+      calmReply: {
+        operatorCalm: '好，地铁B口，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['同事中午在公园跑步突然倒下了。', '身上滚烫，皮肤干干的没有汗。', '叫不醒了。'],
+        tense: ['同事跑步倒下了！身上滚烫！', '皮肤干干的！没有汗！', '叫不醒了！'],
+        panic: ['倒下了！！滚烫！！', '没有汗！！叫不醒了！！', '你们快来！！'],
+        lost: ['跑步倒下了……', '身上烫……没有汗……', '叫不醒了……'],
+      },
+      fillTerminal: { chiefComplaint: '户外跑步后倒地昏迷，皮肤干热无汗，高热', patientGender: '男性' },
+      outburst: '他不行了！！你们到底在干什么！！快来啊！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。跑步后倒地，身上干热无汗——这是热射病，我记下了。把他挪到阴凉处，按我说的做。',
+        calm: '好……已经挪到树荫下了。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '他多大岁数？',
+      caller: {
+        calm: ['40岁。'],
+        tense: ['40！他40！'],
+        panic: ['40！！40岁！！'],
+        lost: ['40……应该是40……'],
+      },
+      fillTerminal: { patientAge: '40岁' },
+      calmReply: {
+        operatorCalm: '好，40岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '他还有意识吗？还在喘气吗？',
+      caller: {
+        calm: ['叫不醒，完全没反应。', '呼吸非常急促，在喘。'],
+        tense: ['叫不醒！完全没反应！', '呼吸很急！在喘！'],
+        panic: ['叫不醒了！！没反应！！', '呼吸很急！！在喘！！', '你们快来！！'],
+        lost: ['叫不醒了……', '呼吸很急……在喘……', '他不会……不会吧……'],
+      },
+      fillTerminal: { conscious: false, breathing: true },
+      outburst: '他开始抽搐了！！眼睛往上翻！！你们快来啊！！',
+      calmReply: {
+        operatorCalm: '听我说。叫不醒但在喘——这我知道了。脱掉上衣，往身上泼凉水，扇风。我一步步告诉你怎么做。',
+        calm: '好……我脱了他上衣。',
+        tense: '好，好，你说，怎么做？',
+        panic: '怎么做……你快说……我做了……',
+        lost: '……我试试……',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['15177629999，就是这个号。'],
+        tense: ['151……7762……9999！打这个就行！'],
+        panic: ['151……这个手机！9999！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '151****9999' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_heat_skin',

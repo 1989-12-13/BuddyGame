@@ -174,18 +174,22 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       {call && <PatientVitals state={state} />}
     </div>
     {state.rescueNotifications.length > 0 && <section className="rescue-notices" aria-label="后台救援结果">{state.rescueNotifications.map(notification => <div key={notification.id} className={notification.kind}><Ambulance size={18} /><span>{notification.text}</span><button className="icon-button" aria-label="关闭救援结果" onClick={() => dispatch({ type: 'DISMISS_RESCUE_NOTIFICATION', notificationId: notification.id })}><X size={16} /></button></div>)}</section>}
-    <nav className="view-tabs" aria-label="工作区切换">{([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}</nav>
+    {/* 线路 chips 居左、视图切换居中、结束通话居右，合并成一条 chip 行 */}
+    <nav className="view-tabs" aria-label="工作区切换">
+      {controlled?.slots?.lineBoard}
+      {([['call', Headphones, '通话'], ['map', Map, '工作区'], ['task', ClipboardList, '任务卡']] as const).map(([id, Icon, label]) => <button key={id} aria-pressed={tab === id} onClick={() => setTab(id)}><Icon size={17} />{label}</button>)}
+      {call && !state.rescue.outcome && !state.patientStatus?.died && <button className="end-call-tab text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}
+    </nav>
     <main className={`desk-grid tab-${tab} ${taskPulse ? 'task-pulse' : ''}`} inert={paused}>
-      {/* 通话台：线路条 → 对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉 */}
+      {/* 通话台：对话流（顶栏含来电者与登记完成度）→ 判断卡 + 选项抽屉；线路 chips 已合并进顶部 chip 行 */}
       <aside className="desk-panel transcript-panel">
-        {controlled?.slots?.lineBoard}
         <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} streamIdx={streamIdx} streamPos={streamPos} pendingSet={pendingSet.current} />
         {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
         <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
         <QuestionDock state={state} dispatch={dispatch} />
       </aside>
       <section className="desk-panel workspace-panel">
-        <div className="workspace-heading"><div><span className="eyebrow">当前 {PHASES[step]}</span><h1>{call?.title ?? '城市正在等待你的声音'}</h1></div></div>
+        {/* 工作区大标题已移除（origin/master）；「下一步」改住进底部常驻操作条 */}
         {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
             {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
@@ -194,12 +198,10 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
             </>}
           </div>
         </>}
-        {/* 常驻操作条：派车 / 结束通话固定在底部，不随主区滚动，也不需要上下滑动去找 */}
+        {/* 常驻操作条：派车主入口固定在底部，不随主区滚动，也不需要上下滑动去找。
+            「结束通话」留在顶部 chip 行（origin/master 的方案），不在两处重复出现。 */}
         <div className="action-bar">
           <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
-          {call && !state.rescue.outcome && !state.patientStatus?.died && (
-            <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>
-          )}
         </div>
         {(audioFailed || saveFailed) && <div className="workspace-footnote"><ShieldCheck size={14} /><span>{audioFailed ? '语音暂不可用，可继续阅读字幕。' : '当前浏览器无法保存进度，本次仍可正常游玩。'}</span></div>}
       </section>

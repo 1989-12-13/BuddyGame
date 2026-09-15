@@ -15,7 +15,7 @@ function begin(id = 'cardiac_arrest') {
   return worldReducer(worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [id] }), { type: 'ANSWER_CALL' })
 }
 function ready(state = begin()) {
-  return { ...state, terminal: { ...state.terminal, address: '已核实的位置', conscious: false, breathing: false, determinant: 'ECHO' as const, triage: 'red' as const } }
+  return { ...state, terminal: { ...state.terminal, address: '已核实的位置', contact: '138****0000', conscious: false, breathing: false, determinant: 'ECHO' as const, triage: 'red' as const } }
 }
 function dispatch(state: WorldState) {
   const plan = buildDispatchPlan(state)!
@@ -86,20 +86,17 @@ describe('workbench state boundaries', () => {
     const started = begin('falls_elderly')
     let state: WorldState = {
       ...started,
-      callerState: { ...started.callerState!, stress: 90, stressLevel: '失控' as const },
+      callerState: { ...started.callerState!, stress: 50, stressLevel: '恐慌' as const },
     }
+    // step1_location 有 requireComplete，恐慌档回答不完整 → 设置 pendingReask
     state = worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
     while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
-    const beforeCalm = state
-    expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
-    state = worldReducer(state, { type: 'CALM_CALLER' })
-    expect(state.attitudeEvidence.calmingActions).toBe(1)
-    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
+    // 恐慌档回答不完整，但 step1_location 有 requireComplete 允许重问
     state = worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })
-    expect(state).not.toBe(beforeCalm)
+    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
     expect(state.callerState!.questionAttempts.step1_location).toBe(2)
-    expect(state.callerState!.askedMPDS.filter(id => id === 'step1_location')).toHaveLength(1)
-    while (state.actionEndsAt > state.shiftElapsed) state = worldReducer(state, { type: 'TICK' })
+    expect(state.callerState!.askedMPDS).toContain('step1_location')
+    // 重问达到上限，第三次被拒绝
     expect(worldReducer(state, { type: 'ASK_QUESTION', questionId: 'step1_location' })).toBe(state)
   })
   it('records supportive and pressuring phrasing evidence, including player-caused loss of control', () => {

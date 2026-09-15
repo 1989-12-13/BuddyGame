@@ -29,3 +29,4 @@ docs/对话体验审问清单.md
 
 # 本地演示构建产物
 promo-demo
+.playwright-mcp/

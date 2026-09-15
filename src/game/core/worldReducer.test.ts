@@ -7,7 +7,7 @@ import { buildDispatchPlan } from './dispatchPlanning'
 function beginCall(scenarioId = 'cardiac_arrest'): WorldState {
   const started = worldReducer(createInitialState(), { type: 'START_SHIFT', forceScenarios: [scenarioId] })
   const answered = worldReducer(started, { type: 'ANSWER_CALL' })
-  return { ...answered, terminal: { ...answered.terminal, address: '测试现场', conscious: false, breathing: false } }
+  return { ...answered, terminal: { ...answered.terminal, address: '测试现场', contact: '138****0000', conscious: false, breathing: false } }
 }
 
 function dispatchWithPlannedRoute(state: WorldState): WorldState {
@@ -28,17 +28,16 @@ describe('worldReducer', () => {
       questionId: 'step1_location',
     })
     const ready = worldReducer(worldReducer(afterLocation, { type: 'TICK' }), { type: 'TICK' })
-    const afterPurpose = worldReducer(ready, {
+    const afterEvent = worldReducer(ready, {
       type: 'ASK_QUESTION',
-      questionId: 'ask_purpose',
+      questionId: 'step2_event',
     })
 
     expect(afterLocation.shiftElapsed).toBe(answered.shiftElapsed)
     expect(afterLocation.actionEndsAt).toBe(answered.shiftElapsed + 2)
-    expect(afterPurpose.shiftElapsed).toBe(answered.shiftElapsed + 2)
-    expect(afterPurpose.actionEndsAt).toBe(answered.shiftElapsed + 3)
-    expect(afterPurpose.callerState?.questionCount).toBe(2)
-    expect(afterPurpose.callerState?.revealedInfo.purpose).toBe(true)
+    expect(afterEvent.shiftElapsed).toBe(answered.shiftElapsed + 2)
+    expect(afterEvent.callerState?.questionCount).toBe(2)
+    expect(afterEvent.callerState?.revealedInfo.chiefComplaint).toBe(true)
   })
 
   it('keeps MPDS determinant and triage independent and emits after-dispatch events', () => {

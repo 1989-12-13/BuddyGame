@@ -57,6 +57,127 @@ export const fallsElderlyCard: EmergencyScenario = {
     purpose: '她疼得不行动不了，我能不能把她抱到床上？',
   },
 
+  // ============================================================
+  // 手写对话脚本 — 马涛（儿子）报告母亲跌倒
+  // 来电者个性：焦急但克制、反复确认操作是否正确
+  // 关系：儿子（对母亲了解）
+  // ============================================================
+  script: {
+    step1_location: {
+      operator: '您好，120。您在哪儿？',
+      operatorRetry: '地址再说一遍，小区名和楼号。',
+      caller: {
+        calm: ['西城区德胜门内大街103号院2号楼3单元101室。'],
+        tense: ['德胜门内大街！103号院！2号楼！3单元101！你们快来！'],
+        panic: ['德胜门内大街！103号院！101！快来！'],
+        lost: ['德胜门……103号院……101……'],
+        retryPrefix: '我刚才不是说了——',
+      },
+      fillTerminal: { address: '西城区德胜门内大街103号院2号楼3单元101室' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '地址记下了。我知道你急，救护车已经在路上了。咱接着说，每个问题都帮到你母亲。',
+        calm: '好……好，你问。',
+        tense: '行……行，你问，我尽量。',
+        panic: '你快说……我听着呢……',
+        lost: '……嗯。',
+      },
+    },
+
+    ask_landmark: {
+      operator: '小区旁边有什么明显的标志吗？',
+      caller: {
+        calm: ['德胜门桥往南200米路西。'],
+        tense: ['德胜门桥！往南200米！路西！'],
+        panic: ['德胜门桥……南边……路西……'],
+        lost: ['德胜门桥旁边……往南……'],
+      },
+      fillTerminal: { address: '西城区德胜门内大街103号院2号楼3单元101室，德胜门桥往南200米路西' },
+      calmReply: {
+        operatorCalm: '好，德胜门桥往南，记下了。你做得很好，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……你说……',
+        lost: '……好。',
+      },
+    },
+
+    step2_event: {
+      operator: '好，告诉我怎么了。',
+      caller: {
+        calm: ['我妈午睡翻身时从床上掉下来了。', '大概半米高，摔到右边。', '右髋部疼得厉害，站不起来。'],
+        tense: ['我妈从床上掉下来了！半米高！', '右髋部疼得厉害！站不起来！', '一碰就疼得叫！'],
+        panic: ['掉下来了！！右边胯骨疼！！', '站不起来了！！一碰就疼！！', '你们快来！！'],
+        lost: ['从床上掉下来了……', '右边胯骨疼……', '怎么办……'],
+      },
+      fillTerminal: { chiefComplaint: '老人从床上跌落，右髋部疼痛无法站立', patientGender: '女性' },
+      outburst: '她疼得受不了了！！你们到底来不来！！',
+      calmReply: {
+        operatorCalm: '我听清楚了。从床上掉下来，右髋疼——这些我记下了。别移动她，可能有骨折，按我说的做。',
+        calm: '好……我不动她。',
+        tense: '好，好，你说，我做什么？',
+        panic: '你说……我做什么……我听你的……',
+        lost: '……我做什么……',
+      },
+    },
+
+    step3_age: {
+      operator: '她多大岁数？',
+      caller: {
+        calm: ['78岁。'],
+        tense: ['78！今年78！'],
+        panic: ['78！！78岁！！'],
+        lost: ['78……对，78。'],
+      },
+      fillTerminal: { patientAge: '78岁' },
+      calmReply: {
+        operatorCalm: '好，78岁，记下了。别急，一个一个来。',
+        calm: '好，你问。',
+        tense: '行，你说。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+
+    step4_vitals: {
+      operator: '她还清醒吗？能说话吗？',
+      caller: {
+        calm: ['清醒，能正常说话。', '呼吸也正常。'],
+        tense: ['清醒！能说话！', '呼吸正常！就是右边疼！'],
+        panic: ['清醒！！能说话！！', '呼吸正常！！就是疼！！', '你们快来！！'],
+        lost: ['还醒着……能说话……', '呼吸正常……', '就是疼……'],
+      },
+      fillTerminal: { conscious: true, breathing: true },
+      calmReply: {
+        operatorCalm: '好，人清醒，呼吸正常，这我知道了。别移动她，给她盖个毯子保暖，救护车马上到。',
+        calm: '好……我给她盖上。',
+        tense: '行……知道了。',
+        panic: '嗯……快……',
+        lost: '……好。',
+      },
+    },
+
+    ask_contact: {
+      operator: '您的电话号码是多少？',
+      operatorRetry: '号码再说一遍，一个数字一个数字说。',
+      caller: {
+        calm: ['13577625555，就是这个号。'],
+        tense: ['135……7762……5555！打这个就行！'],
+        panic: ['135……这个手机！5555！你打这个！'],
+        lost: ['这个手机……能打通吧……'],
+      },
+      fillTerminal: { contact: '135****5555' },
+      requireComplete: true,
+      calmReply: {
+        operatorCalm: '电话记好了。别急，咱继续。',
+        calm: '好，你说。',
+        tense: '行，我听着。',
+        panic: '嗯……嗯。',
+        lost: '……好。',
+      },
+    },
+  },
+
   mpdsQuestions: [
     {
       id: 'mpds_falls_injury',

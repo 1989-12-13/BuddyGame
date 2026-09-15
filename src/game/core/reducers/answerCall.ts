@@ -67,6 +67,7 @@ export function handleAnswerCall(state: WorldState, scenarioOverride?: Emergency
     guidanceMinigameScores: [],
     pendingJudgments: [],
     vitalsPulse: null,
+    pendingReask: null,
     lastDebrief: null,
     pendingPerkChoices: [],
     dialogueLog: [systemLine, openingLine],

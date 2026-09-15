@@ -201,6 +201,62 @@ export interface CallEvent {
 
 // -------------------- 急救场景（一通电话） --------------------
 
+/** 情绪档位 */
+export type StressTier = 'calm' | 'tense' | 'panic' | 'lost'
+
+/** 信息完整性检查结果 */
+export interface CompletenessCheck {
+  /** 该问题是否需要完整回答才算通过 */
+  required: boolean
+  /** 当前回答是否完整 */
+  complete: boolean
+  /** 不完整时的提示语 */
+  prompt?: string
+  /** 重问时来电者使用的档位（强制清晰） */
+  retryTier?: StressTier
+}
+
+/** 来电者的手写回答：按情绪档位分 4 个版本，每个版本是句子流 */
+export type ScriptedCallerReply = Partial<Record<StressTier, string[]>> & {
+  /** 重问时的不耐烦前缀（可选） */
+  retryPrefix?: string
+}
+
+/** 一轮问答的完整脚本：接线员问话 + 来电者回答 */
+export interface ScriptedExchange {
+  /** 接线员说出的话（写死，不随措辞变体变化） */
+  operator: string
+  /** 重问时接线员的话术（可选，不写则用 operator） */
+  operatorRetry?: string
+  /** 来电者的回答（按当前情绪档位选） */
+  caller: ScriptedCallerReply
+  /** 回答后自动填入调度卡的终端字段（可选，手写对话不依赖 InfoQuality） */
+  fillTerminal?: Partial<{
+    address: string
+    contact: string
+    chiefComplaint: string
+    patientAge: string
+    patientGender: string
+    conscious: boolean
+    breathing: boolean
+    conditionNote: string
+    protocolNumber: string
+  }>
+  /** 情绪爆发台词：回答完这轮后如果跨入失控，说这句话（可选，不写则不爆发） */
+  outburst?: string
+  /** 安抚回应：玩家点"安抚"后，来电者说的话（按安抚后档位选，可选） */
+  calmReply?: Partial<Record<StressTier, string>> & {
+    /** 接线员的安抚话术（可选，不写则用默认） */
+    operatorCalm?: string
+  }
+  /** 标记该问题必须获得完整信息才算通过（地址需 partial 以上、电话需 calm/tense 档位回答）。
+   *  第一次回答不完整时，系统自动提示"信息不全，请重新确认"，重问时强制使用 calm 档位回答。 */
+  requireComplete?: boolean
+}
+
+/** 场景对话脚本：按 questionId 索引的完整问答对 */
+export type ScenarioScript = Record<string, ScriptedExchange>
+
 /** MPDS协议卡片定义 — 每类主诉对应一张协议卡 */
 export interface MpdsProtocolCard {
   number: number            // 协议编号 (1-35)
@@ -304,6 +360,9 @@ export interface EmergencyScenario {
 
   /** 可用的MPDS标准问询 */
   mpdsQuestions: MPDSQuestion[]
+
+  /** 手写对话脚本：按 questionId 索引的完整问答对。存在时跳过 narrative 生成 */
+  script?: ScenarioScript
 
   /** 派车后的急救指导（null表示无需指导） */
   guidance: FirstAidGuidance | null

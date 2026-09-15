@@ -22,6 +22,7 @@ function evaluationState(id = 'cardiac_arrest', overrides: Partial<WorldState> =
     callId: id, dispatchTime: 30, triage: scenario.correctTriage, correctTriage: scenario.correctTriage,
     addressCompleteness: 'full', ambulanceETA: 10, dispatchedAt: 30, isPrank: scenario.isPrank,
   }
+
   return {
     ...createInitialState(),
     screen: 'playing',

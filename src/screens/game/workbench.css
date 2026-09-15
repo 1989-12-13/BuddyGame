@@ -137,15 +137,13 @@
 .message.is-queued .queued-dots i:nth-child(3) { animation-delay:.36s; }
 @keyframes queued-dot { 0%,60%,100% { transform:translateY(0); opacity:.4 } 30% { transform:translateY(-4px); opacity:1 } }
 
-/* ============ 工作区底部常驻操作条 ============
-   派车 / 结束通话固定在这一条里，主区怎么滚动它都在。 */
-.action-bar { flex-shrink:0; display:flex; align-items:flex-end; gap:var(--space-12); padding:var(--space-12) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
-.action-bar:empty { display:none; }
-.action-bar .next-step { flex:1; min-width:0; padding:0; border-top:0; background:transparent; }
-.action-bar .text-button { flex:none; min-height:44px; white-space:nowrap; }
+.task-footer { flex-shrink:0; }
+/* 桌面端登记表内不承载任何操作按钮（派车入口在左栏「下一步」） */
+@media(min-width:960px){ .task-footer { display:none; } }
+.workspace-actions { display:flex; align-items:center; gap:var(--space-8); flex-shrink:0; }
 
-/* ============ 下一步（派车主入口） ============ */
-.next-step { flex:1; min-width:0; display:grid; gap:var(--space-10); padding:var(--space-14) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
+/* ============ 左栏「下一步」操作区 ============ */
+.next-step { flex-shrink:0; display:grid; gap:var(--space-10); padding:var(--space-14) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
 .next-step-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-8); }
 .next-step-count { font-size:var(--fs-caption); color:var(--text-3); font-variant-numeric:tabular-nums; }
 .next-step-checks { list-style:none; display:flex; flex-wrap:wrap; gap:var(--space-6) var(--space-12); }
@@ -154,17 +152,9 @@
 .next-dot { width:8px; height:8px; border-radius:50%; border:1px solid var(--line-strong); }
 .next-step .primary { min-height:44px; }
 
-/* ============ 登记表：只读摘要 + 按需展开 ============ */
-.task-done-count { margin-left:auto; font-size:var(--fs-caption); color:var(--text-3); font-variant-numeric:tabular-nums; }
-.task-summary { flex-shrink:0; display:grid; gap:var(--space-12); padding:var(--space-14) var(--space-16); }
-.task-summary-list { margin:0; display:grid; grid-template-columns:1fr 1fr; gap:var(--space-10) var(--space-12); }
-.task-summary-list > div { min-width:0; }
-.task-summary-list dt { font-size:var(--fs-caption); color:var(--text-3); }
-.task-summary-list dd { margin:2px 0 0; font-size:var(--fs-body-sm); font-weight:600; color:var(--text); overflow-wrap:anywhere; }
-.task-summary-list dd.is-pending { font-weight:400; color:var(--text-3); }
-.task-expand { justify-self:start; gap:var(--space-6); }
-.task-expand .is-flipped { transform:rotate(180deg); }
-.task-fields { overflow-y:auto; min-height:0; }
+/* 登记表内的派车入口仅在移动端显示；桌面端由左栏「下一步」承担 */
+.task-dispatch-mobile { display:none; }
+@media(max-width:959px){ .task-dispatch-mobile { display:inline-flex; } }
 
 /* 由「下一步」跳到登记表时的定位脉冲 */
 .desk-grid.task-pulse .task-panel { animation:task-pulse 1.2s var(--ease-out); }
@@ -207,24 +197,13 @@
 .view-tabs .end-call-tab { flex:0 0 auto; margin-left:auto; min-height:30px; padding:var(--space-4) var(--space-12); font-size:var(--fs-caption); font-weight:700; }
 .view-tabs .end-call-tab:hover { border-color:var(--danger); }
 
-/* ---------- 三栏 → 单视图 ----------
-   桌面（≥1280px）三栏常驻：对话流 / 工作区 / 登记表同时在场，
-   派车与指导都在同一屏内完成，不需要切标签或上下滚动。
-   只有窄屏才退回单视图 + 标签切换。 */
-@media (max-width:1279px) {
+/* ---------- 三栏 → 单视图（移动端） ---------- */
+@media(max-width:959px){
   .desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
   .desk-grid .desk-panel { display:none; }
   .desk-grid.tab-call .transcript-panel,
   .desk-grid.tab-map .workspace-panel,
   .desk-grid.tab-task .task-panel { display:flex; }
-}
-@media (min-width:1280px) {
-  /* 三栏常驻后不再需要视图切换按钮（它们只会把操作藏到别的视图里），
-     但这一行还挂着线路 chips 与「结束通话」，所以只隐藏切换按钮本身。 */
-  .view-tabs > button:not(.end-call-tab) { display:none; }
-  .desk-grid .desk-panel { display:flex; }
-  .main-workspace { min-height:240px; }
-  .main-workspace.has-activity { min-height:300px; }
 }
 
 /* ---------- 状态带：班次时钟 / 车辆 + 患者体征合成一条 ---------- */
@@ -389,3 +368,16 @@
 /* ============ 路线规划地图定位按钮（与 zoom 控件同栏） ============ */
 .leaflet-bar a.route-planner-locate { display:flex; align-items:center; justify-content:center; font-size:0; }
 .leaflet-bar a.route-planner-locate svg { width:15px; height:15px; }
+
+
+/* ============ 登记表：只读摘要 + 按需展开 ============
+   玩家不再手工填表（问询与判断会自动写入），登记表退成「已确认了什么的回执」。 */
+.task-done-count { margin-left:auto; font-size:var(--fs-caption); color:var(--text-3); font-variant-numeric:tabular-nums; }
+.task-summary { flex-shrink:0; display:grid; gap:var(--space-12); padding:var(--space-14) var(--space-16); }
+.task-summary-list { margin:0; display:grid; grid-template-columns:1fr 1fr; gap:var(--space-10) var(--space-12); }
+.task-summary-list > div { min-width:0; }
+.task-summary-list dt { font-size:var(--fs-caption); color:var(--text-3); }
+.task-summary-list dd { margin:2px 0 0; font-size:var(--fs-body-sm); font-weight:600; color:var(--text); overflow-wrap:anywhere; }
+.task-summary-list dd.is-pending { font-weight:400; color:var(--text-3); }
+.task-expand { justify-self:start; gap:var(--space-6); }
+.task-expand .is-flipped { transform:rotate(180deg); }

@@ -189,7 +189,8 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
         <QuestionDock state={state} dispatch={dispatch} />
       </aside>
       <section className="desk-panel workspace-panel">
-        {/* 工作区大标题已移除（origin/master）；「下一步」改住进底部常驻操作条 */}
+        {/* 「下一步」原本占着通话栏，现在挪到工作区：它的按钮本来就把你送进这里规划路线 */}
+        <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
         {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
             {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
@@ -198,14 +199,9 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
             </>}
           </div>
         </>}
-        {/* 常驻操作条：派车主入口固定在底部，不随主区滚动，也不需要上下滑动去找。
-            「结束通话」留在顶部 chip 行（origin/master 的方案），不在两处重复出现。 */}
-        <div className="action-bar">
-          <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
-        </div>
         {(audioFailed || saveFailed) && <div className="workspace-footnote"><ShieldCheck size={14} /><span>{audioFailed ? '语音暂不可用，可继续阅读字幕。' : '当前浏览器无法保存进度，本次仍可正常游玩。'}</span></div>}
       </section>
-      <aside className="desk-panel task-panel"><TaskCard state={state} dispatch={dispatch} /></aside>
+      <aside className="desk-panel task-panel">{call ? <TaskCard state={state} dispatch={dispatch} onRoute={openRoute} /> : <div className="task-idle" inert><TaskCard state={state} dispatch={dispatch} onRoute={openRoute} idle /></div>}</aside>
     </main>
     {overlay}
   </div>

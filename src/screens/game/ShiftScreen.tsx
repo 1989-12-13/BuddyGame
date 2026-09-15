@@ -96,9 +96,9 @@ export function ShiftScreen({ onNavigate }: Props) {
         done: () => (world?.dialogueLog.length ?? 0) > 3,
       },
       {
-        target: '.action-bar',
-        title: '四项齐了，就在底部派车',
-        body: '地点、意识、呼吸、判定码都确认后，这条常驻操作栏会亮起「规划救援路线」。',
+        target: '.next-step',
+        title: '四项齐了，就在这里派车',
+        body: '地点、意识、呼吸、判定码都确认后，这里会出现「规划救援路线」。',
         done: () => Boolean(world?.dispatchSent),
       },
       {

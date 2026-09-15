@@ -390,7 +390,7 @@ ul,ol{padding:0;list-style:none}
   <div class="metrics rv" style="--d:4">
     <div><b>33</b>MPDS 协议主诉</div>
     <div><b>3 / 2</b>并发线路 / 救护车</div>
-    <div><b>1192</b>单元测试通过</div>
+    <div><b>1198</b>单元测试通过</div>
     <div><b>0</b>生产依赖漏洞</div>
   </div>
   <p class="disclaimer rv" style="--d:5">游戏内容用于公益科普，不能替代专业急救培训；现实紧急情况请拨打 120，并听从专业调度指导。</p>
@@ -905,7 +905,7 @@ ul,ol{padding:0;list-style:none}
     <p class="lede rv" style="--d:1">六道关卡依次执行；数字取自汇报当日（2026-09-15）在本机 Windows / Node.js 22 环境的一次完整运行。</p>
     <div class="stats mt rv" style="--d:2">
       <div class="stat"><div class="n num">38<small>files</small></div><p class="l">单元测试文件，全部通过</p></div>
-      <div class="stat"><div class="n num">1192<small>tests</small></div><p class="l">单元测试用例，0 失败</p></div>
+      <div class="stat"><div class="n num">1198<small>tests</small></div><p class="l">单元测试用例，0 失败</p></div>
       <div class="stat"><div class="n num">6<small>flows</small></div><p class="l">Chromium 端到端流程</p></div>
       <div class="stat"><div class="n num">5<small>res</small></div><p class="l">覆盖分辨率，窄屏无横向溢出</p></div>
       <div class="stat"><div class="n num">0<small>error</small></div><p class="l">typecheck + ESLint（0 warning）</p></div>
@@ -996,12 +996,13 @@ ul,ol{padding:0;list-style:none}
           <p class="note mt-s">不只用颜色表达状态；分级色阶在四个场景复用同一套语义，避免同一颜色在不同处含义不同。</p>
         </div>
         <div class="panel plain rv" style="--d:3">
-          <div class="blk-t">响应式两档：桌面三栏常驻</div>
+          <div class="blk-t">响应式三档</div>
           <table class="tbl">
             <thead><tr><th>宽度</th><th>布局</th></tr></thead>
             <tbody>
-              <tr><td class="mono">≥ 1280 px</td><td>三栏常驻：对话流 / 工作区 / 登记表同屏，派车不用切视图</td></tr>
-              <tr><td class="mono">&lt; 1280 px</td><td>单视图 + 三个标签页；派车与结束通话固定在底部操作条</td></tr>
+              <tr><td class="mono">≥ 1280 px</td><td>通话 / 工作区 / 任务卡 三栏</td></tr>
+              <tr><td class="mono">960 – 1279 px</td><td>任务卡按需展开</td></tr>
+              <tr><td class="mono">&lt; 960 px</td><td>三个标签页；线路墙折叠为顶部横条</td></tr>
             </tbody>
           </table>
         </div>

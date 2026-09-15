@@ -96,9 +96,9 @@ export function ShiftScreen({ onNavigate }: Props) {
         done: () => (world?.dialogueLog.length ?? 0) > 3,
       },
       {
-        target: '.next-step',
-        title: '四项齐了，就在这里派车',
-        body: '地点、意识、呼吸、判定码都确认后，这里会出现「规划救援路线」。',
+        target: '.drawer-actions',
+        title: '问完问答，左侧抽屉会自己拉开',
+        body: '六步协议问完，地图抽屉自动展开并给出「规划救援路线」；想提前看也可以点中左的把手。',
         done: () => Boolean(world?.dispatchSent),
       },
       {

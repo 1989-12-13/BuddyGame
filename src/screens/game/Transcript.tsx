@@ -3,7 +3,7 @@ import { ArrowDown, Headphones, RotateCcw, VolumeX } from 'lucide-react'
 import type { WorldState } from '../../game/types'
 import { STRESS_INFO } from '../../game/types'
 import { getCaller } from '../../game/npc/personas'
-import { NextStepChecks } from './NextStepDock'
+import { NextStepChecks } from './DispatchAction'
 
 /**
  * 通话实录 — 对话流是这局游戏的核心内容，因此它占据通话台的主体高度。

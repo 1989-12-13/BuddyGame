@@ -4,8 +4,8 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { useAudio } from '../audio/AudioContext'
-import { ALL_CARDS } from '../game/events/cards'
-import { CATEGORY_ORDER, MENU_META, TAGS } from '../game/events/categories'
+import { LEVEL_CATALOG, type LevelEntry } from '../game/events/levelCatalog'
+import { CATEGORY_ORDER, TAGS } from '../game/events/categories'
 import { styles } from './LevelSelectScreen.styles'
 
 interface Props {
@@ -13,29 +13,9 @@ interface Props {
   onBack: () => void
 }
 
-interface ScenarioEntry {
-  id: string
-  num: number
-  title: string
-  desc: string
-  category: string
-  tag: string        // mini-game type indicator
-}
-
-/** 菜单条目由卡片派生：编号取协议号、标题取卡片标题，呈现信息来自 menu 覆盖或类别默认值 */
-const ALL_SCENARIOS: ScenarioEntry[] = ALL_CARDS
-  .filter(card => !card.isPrank && !card.variantOf)
-  .map(card => {
-    const meta = card.menu ?? MENU_META[card.id]
-    return {
-      id: card.id,
-      num: card.mpdsCard.number,
-      title: card.title,
-      desc: meta?.desc ?? '',
-      category: meta?.category ?? '其他',
-      tag: meta?.tag ?? '📞',
-    }
-  })
+/** 选关条目统一由 game/events/levelCatalog 派生，本文件不再自己拼列表 */
+type ScenarioEntry = LevelEntry
+const ALL_SCENARIOS: ScenarioEntry[] = LEVEL_CATALOG
 
 export function LevelSelectScreen({ onStart, onBack }: Props) {
   const [search, setSearch] = useState('')

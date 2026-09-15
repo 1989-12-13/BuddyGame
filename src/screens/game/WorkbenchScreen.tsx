@@ -7,7 +7,7 @@ import { worldReducer } from '../../game/core/worldReducer'
 import { createInitialState } from '../../game/core/worldState'
 import { handleStartShift } from '../../game/core/reducers/miscHandlers'
 import { isWorldPaused } from '../../game/core/session'
-import { buildDispatchPlan, type DispatchPlan } from '../../game/core/dispatchPlanning'
+import { buildDispatchPlan, shouldAutoPlan, type DispatchPlan } from '../../game/core/dispatchPlanning'
 import { nextProtocolId } from '../../game/core/dialogueTurn'
 import { loadCheckpoint, saveCheckpoint } from '../../game/core/checkpoint'
 import { readStorage, writeStorage } from '../../utils/storage'
@@ -140,6 +140,19 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
     audio.tts.stop(); void audio.tts.enqueue(`replay-${state.callInstanceId}`, { text: last.text, kind: 'caller' }).catch(() => setAudioFailed(true))
   }
   const openRoute = () => { const next = buildDispatchPlan(state); if (next) { setPlan(next); setMapOpen(true) } }
+  /**
+   * 条件一满足就直接把路线选择摆出来 —— 不再要求玩家先点「规划救援路线」。
+   * 每通电话只自动开一次：玩家主动取消（onCancel → setPlan(null)）之后，
+   * 抽屉里会把这个按钮还给他，而不是反复弹回来。
+   */
+  const autoPlannedCall = useRef<number | null>(null)
+  useEffect(() => {
+    if (!shouldAutoPlan(state, Boolean(plan), autoPlannedCall.current)) return
+    // 无论成没成，本通只尝试一次：路线种子含派车时刻，逐秒重算会给出不断变化的方案
+    autoPlannedCall.current = state.callInstanceId
+    const next = buildDispatchPlan(state)
+    if (next) { setPlan(next); setMapOpen(true) }
+  }, [plan, state, setMapOpen])
   const goToTaskCard = () => {
     setTaskOpen(true); setTaskPulse(true)
     window.setTimeout(() => setTaskPulse(false), 1400)
@@ -199,9 +212,11 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
           <Map size={15} /><span>地图</span>
         </button>
         <div className="drawer-body">
-        {/* 派车主入口跟着地图一起收在抽屉里，「下一步」那一整块已移除 */}
-        {call && <div className="drawer-actions"><DispatchAction state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} /></div>}
-        {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
+        {/* 抽屉只装「一通电话进行中」会用到的东西：派车入口 + 地图 / 指导 / 交接。
+            没有来电时不往这里放东西 —— 接听入口在中间的通话台上，不然它会被关在抽屉里。 */}
+        {/* 路线选择已经摆出来时不再重复给按钮；玩家取消后才还回来 */}
+        {call && !plan && <div className="drawer-actions"><DispatchAction state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} /></div>}
+        {call && <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
             {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
               <CityMap state={state} />
@@ -214,10 +229,14 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       </section>
       {/* 中间：通话台。对话流是核心内容，左右抽屉都收起时它居中占满 */}
       <aside className="desk-panel transcript-panel">
-        <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} streamIdx={streamIdx} streamPos={streamPos} pendingSet={pendingSet.current} />
-        {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
-        <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
-        <QuestionDock state={state} dispatch={dispatch} />
+        {!call
+          ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div>
+          : <>
+              <Transcript state={state} onReplay={replay} onStop={() => audio.tts.stop()} streamIdx={streamIdx} streamPos={streamPos} pendingSet={pendingSet.current} />
+              {/* 判断卡是随手要处理的事，不参与限高；只有选项抽屉封顶 1/3 */}
+              <JudgmentFloat judgments={state.pendingJudgments} dispatch={dispatch} />
+              <QuestionDock state={state} dispatch={dispatch} />
+            </>}
       </aside>
       {/* 右抽屉：调度登记表。与左侧地图对称，中右的梯形把手拉开 */}
       <aside className="desk-panel task-panel">

@@ -372,6 +372,15 @@
 .task-expand .is-flipped { transform:rotate(180deg); }
 
 
+/* 派车动作：按钮 + 「还差什么」清单。
+   清单与按钮共用 dispatchEligibility，不能再出现「按钮能点但点了没反应」。 */
+.dispatch-action { display:grid; gap:var(--space-8); }
+.dispatch-blockers { display:grid; gap:var(--space-6); }
+.dispatch-blockers ul { list-style:none; margin:0; padding:0; display:grid; gap:var(--space-2); }
+.dispatch-blockers li { display:flex; align-items:center; gap:var(--space-4); font-size:var(--fs-micro); line-height:1.4; color:var(--warning); }
+.dispatch-blockers li svg { flex:none; }
+.dispatch-blockers .text-button { justify-self:start; }
+
 /* 抽屉结构件：与宽度无关，三栏 / 单视图下都要撑满面板高度 */
 .drawer-body { flex:1; min-height:0; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
 .drawer-actions { flex:none; padding:var(--space-12) var(--space-16); border-bottom:1px solid var(--line); background:var(--bg-raised); }

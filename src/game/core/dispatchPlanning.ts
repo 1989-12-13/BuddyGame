@@ -44,6 +44,21 @@ export function buildRouteOptionsForCall(state: WorldState): RoutePlan[] {
 }
 
 /**
+ * 是否应该自动把路线选择摆给玩家（不再让他先点一次按钮）。
+ *
+ * 规则：
+ *   · 已经有一份方案在展示（`planActive`）→ 不重复推
+ *   · 这一通电话已经自动尝试过（`autoPlannedFor === callInstanceId`）→ 不再反复弹，
+ *     玩家取消后由抽屉里的按钮把主动权还给他
+ *   · 判定条件复用 `dispatchEligibility`，与真正派车完全一致
+ */
+export function shouldAutoPlan(state: WorldState, planActive: boolean, autoPlannedFor: number | null): boolean {
+  if (!state.currentCall || planActive || state.dispatchSent) return false
+  if (autoPlannedFor === state.callInstanceId) return false
+  return dispatchEligibility(state).allowed
+}
+
+/**
  * 系统配车：使用唯一救护车生成路线方案。
  * 返回的路线作为一次不可变的调度方案交给路线选择界面。
  */

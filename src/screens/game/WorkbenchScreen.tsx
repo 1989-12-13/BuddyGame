@@ -61,8 +61,18 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   // 不再有视图标签：中间是通话，左侧地图抽屉、右侧登记表抽屉
   // 桌面端：地图（左）与登记表（右）都是抽屉，平时收起，靠边缘的梯形把手拉开
   const [mapOpen, setMapOpen] = useState(false)
-  const [taskOpen, setTaskOpen] = useState(false)
+  const [taskOpen, setTaskOpen] = useState(true)
+  const [mobileTab, setMobileTab] = useState<'map' | 'call' | 'task'>('call')
   const [modal, setModal] = useState<Modal>(null)
+  // 窄屏（<960px）不渲染抽屉拉杆：拉杆在窄屏下会被标签页切换取代，
+  // 即便 CSS 已 display:none，它的 border / radius 仍可能留下视觉残留。
+  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width:959px)').matches)
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width:959px)')
+    const onChange = () => setIsCompact(mql.matches)
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
   const [plan, setPlan] = useState<DispatchPlan | null>(null)
   const [saveFailed, setSaveFailed] = useState(false)
   const [audioFailed, setAudioFailed] = useState(false)
@@ -193,16 +203,23 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       {call && <PatientVitals state={state} />}
     </div>
     {state.rescueNotifications.length > 0 && <section className="rescue-notices" aria-label="后台救援结果">{state.rescueNotifications.map(notification => <div key={notification.id} className={notification.kind}><Ambulance size={18} /><span>{notification.text}</span><button className="icon-button" aria-label="关闭救援结果" onClick={() => dispatch({ type: 'DISMISS_RESCUE_NOTIFICATION', notificationId: notification.id })}><X size={16} /></button></div>)}</section>}
-    {/* chip 行：线路 chips 居左、结束通话居右。视图切换按钮已移除 ——
-        中间是通话，地图与登记表由左右抽屉的梯形把手开合，不需要再切视图 */}
+    {/* chip 行：线路 chips 居左、结束通话居右。
+        桌面端（≥960px）地图与登记表由左右抽屉的梯形把手开合；
+        窄屏（<960px）由 mobile-tabs 切换三栏显示。 */}
     <nav className="view-tabs" aria-label="线路与通话操作">
       {controlled?.slots?.lineBoard}
       {call && !state.rescue.outcome && !state.patientStatus?.died && <button className="end-call-tab text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}
     </nav>
-    <main className={`desk-grid ${taskPulse ? 'task-pulse' : ''} ${mapOpen ? 'map-open' : ''} ${taskOpen ? 'task-open' : ''}`} inert={paused}>
+    {/* 窄屏标签页：地图 / 通话 / 登记表 三选一显示 */}
+    <nav className="mobile-tabs" aria-label="面板切换">
+      <button aria-pressed={mobileTab === 'map'} onClick={() => setMobileTab('map')}><Map size={16} /> 地图</button>
+      <button aria-pressed={mobileTab === 'call'} onClick={() => setMobileTab('call')}><Phone size={16} /> 通话</button>
+      <button aria-pressed={mobileTab === 'task'} onClick={() => setMobileTab('task')}><ClipboardList size={16} /> 登记</button>
+    </nav>
+    <main className={`desk-grid ${taskPulse ? 'task-pulse' : ''} ${mapOpen ? 'map-open' : ''} ${taskOpen ? 'task-open' : ''}`} data-tab={mobileTab} inert={paused}>
       {/* 左抽屉：地图 / 派车 / 急救指导 / 交接。平时收起，中左的梯形把手拉开 */}
       <section className="desk-panel workspace-panel">
-        <button
+        {!isCompact && <button
           type="button"
           className="drawer-handle handle-left"
           aria-expanded={mapOpen}
@@ -210,7 +227,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
           onClick={() => setMapOpen(value => !value)}
         >
           <Map size={15} /><span>地图</span>
-        </button>
+        </button>}
         <div className="drawer-body">
         {/* 抽屉只装「一通电话进行中」会用到的东西：派车入口 + 地图 / 指导 / 交接。
             没有来电时不往这里放东西 —— 接听入口在中间的通话台上，不然它会被关在抽屉里。 */}
@@ -240,7 +257,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
       </aside>
       {/* 右抽屉：调度登记表。与左侧地图对称，中右的梯形把手拉开 */}
       <aside className="desk-panel task-panel">
-        <button
+        {!isCompact && <button
           type="button"
           className="drawer-handle handle-right"
           aria-expanded={taskOpen}
@@ -248,9 +265,9 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
           onClick={() => setTaskOpen(value => !value)}
         >
           <ClipboardList size={15} /><span>登记表</span>
-        </button>
+        </button>}
         <div className="drawer-body">
-          {call ? <TaskCard state={state} dispatch={dispatch} /> : <div className="task-idle" inert><TaskCard state={state} dispatch={dispatch} /></div>}
+          <TaskCard state={state} dispatch={dispatch} />
         </div>
       </aside>
     </main>

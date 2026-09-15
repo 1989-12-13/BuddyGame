@@ -21,6 +21,11 @@ export const styles: Record<string, React.CSSProperties> = {
   backBtn: {
     padding: 'var(--space-6) var(--space-14)',
     fontSize: 'var(--fs-body-sm)',
+    color: 'var(--text-2)',
+    backgroundColor: 'var(--bg-raised)',
+    border: '1px solid var(--line)',
+    borderRadius: 'var(--radius-md)',
+    cursor: 'pointer',
   },
   title: {
     fontSize: 'var(--fs-title)',

@@ -15,15 +15,16 @@ function withVehicleOut(base: ShiftState): ShiftState {
 }
 
 describe('ShiftStatusBar · 班次状态条', () => {
-  it('显示时钟、已完成电话进度与可用车辆', () => {
+  it('只显示时钟与可用车辆，不暴露班次的通数上限', () => {
     const base = createShiftState(DEFAULT_SHIFT_CONFIG)
     render(<ShiftStatusBar shift={{ ...base, clock: 125, heat: 88, moment: 'peak' }} />)
 
     const bar = screen.getByLabelText('班次状态')
     expect(bar.textContent).toContain('02:05')
-    expect(bar.textContent).toContain('已完成')
-    expect(bar.textContent).toContain('/ 6')
     expect(bar.textContent).toContain('可用车辆 2')
+    // 「已完成 X / N 通」会把班次的硬上限暴露给玩家，让他们盯着计数器打
+    expect(bar.textContent).not.toContain('已完成')
+    expect(bar.textContent).not.toContain('/ 6')
   })
 
   it('玩法内部数值（热度 / 段落 / 来电计数）一律不出现在界面上', () => {

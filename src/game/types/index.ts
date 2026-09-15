@@ -56,7 +56,6 @@ export type {
   RescueState,
   BackgroundRescue,
   RescueNotification,
-  ReroutePrompt,
   HandoffState,
   GameScreen,
   WorldState,

@@ -5,9 +5,11 @@
 
 import { spawn } from 'node:child_process'
 
+// vite 走 node_modules 里的入口，而不是全局 bin：
+// 直接 spawn 'vite' 在没把 npm bin 加进 PATH 的环境里会「不是内部或外部命令」。
 const PROCS = [
   { name: 'server', cmd: 'node', args: ['server/tts-server.mjs'], color: 36 },
-  { name: 'vite',   cmd: 'vite',  args: [],                          color: 33 },
+  { name: 'vite',   cmd: 'node', args: ['node_modules/vite/bin/vite.js'], color: 33 },
 ]
 
 const COLOR = {

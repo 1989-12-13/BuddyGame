@@ -1,0 +1,39 @@
+/* ============================================================
+   首次值班引导 —— 聚光圈 + 说明卡
+   遮罩只压暗，不拦点击：响铃了照样能接，引导不打断值班。
+   ============================================================ */
+.coach-layer { position:fixed; inset:0; z-index:60; pointer-events:none; }
+
+.coach-ring {
+  position:fixed;
+  border:2px solid var(--accent);
+  border-radius:var(--radius-lg);
+  box-shadow:0 0 0 9999px color-mix(in srgb, var(--bg-deep) 55%, transparent);
+  transition:top .2s var(--ease-out), left .2s var(--ease-out), width .2s var(--ease-out), height .2s var(--ease-out);
+}
+
+.coach-card {
+  position:fixed;
+  pointer-events:auto;
+  display:grid;
+  gap:var(--space-6);
+  padding:var(--space-14) var(--space-16);
+  border:1px solid var(--accent-line);
+  border-radius:var(--radius-lg);
+  background:var(--bg-surface);
+  box-shadow:var(--shadow-lg, 0 12px 32px rgba(0,0,0,.28));
+}
+.coach-step {
+  font-family:var(--font-mono, monospace);
+  font-size:var(--fs-caption);
+  color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.coach-card h3 { font-size:var(--fs-body-lg); font-weight:600; color:var(--text); }
+.coach-card p { font-size:var(--fs-body-sm); line-height:1.65; color:var(--text-2); }
+.coach-actions { display:flex; align-items:center; justify-content:space-between; gap:var(--space-8); margin-top:var(--space-4); }
+.coach-actions button { min-height:40px; padding:var(--space-6) var(--space-12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-ring { transition:none; }
+}

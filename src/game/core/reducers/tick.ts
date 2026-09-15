@@ -22,7 +22,6 @@ export function handleTick(state: WorldState): WorldState {
   let newPatientStatus = state.patientStatus
   let newRescue = state.rescue
   let newRescueNotifications = state.rescueNotifications
-  let newPendingReroute = state.pendingReroute
   let newCallEvaluations = state.callEvaluations
 
   // 救护车到达判定：基于 fleet 状态机 en_route→on_scene 转移
@@ -67,21 +66,7 @@ export function handleTick(state: WorldState): WorldState {
       ...newRescue,
       etaTotal: Math.max(1, newRescue.etaTotal + trafficUpdate.deltaSeconds),
     }
-    // 在途事件对所有已派车事件生效（原先只对脑卒中场景生效）
-    if (!state.rerouteUsed && afterRescueVehicle.mission?.route) {
-      const currentRoute = afterRescueVehicle.mission.route
-      const alternative = [...state.rerouteOptions]
-        .filter(route => route.id !== currentRoute.id)
-        .sort((a, b) => a.totalEta - b.totalEta)[0]
-      if (alternative) {
-        newPendingReroute = {
-          callInstanceId: state.callInstanceId,
-          message: trafficUpdate.message,
-          currentRouteId: currentRoute.id,
-          options: [currentRoute, alternative],
-        }
-      }
-    }
+    // 路况只影响 ETA：玩家派车时已经选过路，途中不再打断他做二次决策
   }
 
   // 患者生命体征每秒衰减
@@ -221,7 +206,6 @@ export function handleTick(state: WorldState): WorldState {
     backgroundRescues: newBackgroundRescues,
     rescueNotifications: newRescueNotifications,
     callEvaluations: newCallEvaluations,
-    pendingReroute: newPendingReroute,
     fleet: afterFleet,
     dialogueLog: state.dialogueLog.length > 0 || newDialogue.length > 0
       ? [...state.dialogueLog, ...newDialogue]

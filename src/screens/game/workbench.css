@@ -71,7 +71,6 @@
 .task-idle{flex:1;min-height:0;display:flex;flex-direction:column;opacity:.62}
 
 .embedded-guidance{padding:var(--space-20);overflow:auto}.embedded-guidance>div{max-width:100%;width:100%;background:transparent}.embedded-guidance button{white-space:normal;line-height:1.65;text-align:left}.handoff{height:100%;padding:var(--space-32);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:var(--space-24)}.handoff>svg{color:var(--accent)}.handoff h2{font-size:var(--fs-heading);font-weight:500;line-height:1.6}.handoff p{color:var(--text-2);line-height:1.8}
-.reroute-panel{padding:var(--space-24);display:grid;gap:var(--space-18);line-height:1.8}.reroute-panel header{display:flex;gap:var(--space-12);align-items:center}.reroute-panel header>svg{color:var(--warning)}.reroute-panel h2{font-size:var(--fs-heading);margin-top:var(--space-4)}.reroute-panel>p{color:var(--text-2)}.reroute-options{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-12)}.reroute-options button{padding:var(--space-16);justify-content:flex-start!important;text-align:left}.reroute-options button>span{display:grid;gap:var(--space-4)}.reroute-options small{font-size:var(--fs-body);font-weight:400;line-height:1.55}
 .handoff-form{justify-content:flex-start;overflow-y:auto;text-align:left;align-items:stretch;padding:var(--space-24)}.handoff-form>svg{align-self:center}.handoff-form>div:first-of-type{text-align:center}.handoff-facts{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8);width:100%}.handoff-facts button{justify-content:flex-start!important;text-align:left;padding:var(--space-12);background:var(--bg-raised);border:1px solid var(--line);line-height:1.55}.handoff-facts button[aria-pressed='true']{border-color:var(--accent);color:var(--accent)}.handoff-facts button>span{width:18px;flex-shrink:0}.handoff-feedback{padding:var(--space-12) var(--space-14);border-radius:var(--radius-lg);border:1px solid var(--line);font-size:var(--fs-body)}.handoff-feedback.good{border-color:var(--accent);color:var(--accent)}.handoff-feedback.caution{border-color:var(--warning);color:var(--warning)}
 .desk-dialog{margin:auto;max-width:min(620px,calc(100vw - 32px));width:620px;max-height:calc(100dvh - 48px);border:1px solid var(--line);background:var(--bg-surface);border-radius:var(--radius-3xl);box-shadow:var(--shadow-lg);padding:0;color:var(--text)}.desk-dialog::backdrop{background:var(--scrim-strong);backdrop-filter:blur(5px)}.desk-dialog>header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-16) var(--space-24);border-bottom:1px solid var(--line)}.desk-dialog h2{font-size:var(--fs-heading);font-weight:500}.dialog-content{padding:var(--space-24);display:grid;gap:var(--space-20);line-height:1.8}.dialog-content p{color:var(--text-2)}.dialog-content ol,.dialog-content ul{padding-left:var(--space-24)}.dialog-actions{display:flex;gap:var(--space-12);justify-content:flex-end}.danger-button{padding:var(--space-10) var(--space-18);background:var(--danger);color:var(--on-danger)}.setting-row{display:flex;align-items:center;gap:var(--space-16)}.setting-label{display:flex;align-items:center;gap:var(--space-8);min-width:118px;color:var(--text-2)}.setting-row input[type='range']{flex:1;accent-color:var(--accent)}.debrief-score{display:flex;align-items:baseline;gap:var(--space-12)}.debrief-score strong{font-size:64px;font-weight:500;color:var(--accent)}.debrief-score span{color:var(--text-2);font-size:var(--fs-body)}.score-chips{display:flex;gap:var(--space-8);flex-wrap:wrap}.score-chips span{background:var(--bg-raised);padding:var(--space-6) var(--space-12);border-radius:var(--radius-md);font-size:var(--fs-body)}.knowledge-note{display:flex;align-items:flex-start;gap:var(--space-12);background:var(--bg-raised);padding:var(--space-18);border-radius:var(--radius-lg)}.knowledge-note svg{flex-shrink:0;color:var(--accent);margin-top:var(--space-4)}.perk-option{padding:var(--space-18);text-align:left;background:var(--bg-raised);border:1px solid var(--line);flex-direction:column;align-items:flex-start!important}.perk-option span{color:var(--text-2);font-size:var(--fs-body)}.perk-option:hover{border-color:var(--accent)}
 .mobile-tabs{display:none!important}
@@ -83,7 +82,7 @@
 .offline-map{height:100%;position:relative;background:var(--bg-deep);overflow:hidden}.offline-map>svg{width:100%;height:100%;object-fit:cover}.offline-map-note{position:absolute;top:12px;left:12px;right:12px;background:var(--glass-bg);color:var(--text-2);display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-12);font-size:var(--fs-caption)}.offline-map-note>span{display:flex;align-items:center;gap:var(--space-6)}.offline-map-address{position:absolute;bottom:16px;left:16px;right:16px;display:flex;align-items:center;gap:var(--space-8);background:var(--glass-bg);color:var(--text);padding:var(--space-10) var(--space-14);border-radius:var(--radius-lg);font-size:var(--fs-body)}
 .guidance-feedback{display:grid;gap:var(--space-20);padding:var(--space-8);line-height:1.85}.guidance-feedback>strong{display:flex;gap:var(--space-10);align-items:center}.guidance-feedback blockquote{padding:var(--space-14) var(--space-18);border-left:3px solid var(--accent);background:var(--bg-raised);border-radius:var(--radius-md)}.guidance-feedback .primary{margin-top:var(--space-14);justify-self:start}
 .order-game,.breath-game,.waiting-care{display:grid;gap:var(--space-16);line-height:1.8}.order-game ol{list-style:none;padding:0;display:grid;gap:var(--space-8)}.order-game li{display:flex;gap:var(--space-12);background:var(--bg-raised);padding:var(--space-10);border-radius:var(--radius-lg)}.order-game li>span{color:var(--accent)}.order-options,.practice-choices{display:grid;gap:var(--space-8)}.order-options button{justify-content:flex-start;text-align:left}.breath-game svg{max-height:140px;width:100%}.breath-meter{height:14px;background:linear-gradient(90deg,var(--bg-raised) 44%,var(--accent-dim) 44%,var(--accent-dim) 67%,var(--bg-raised) 67%);border-radius:var(--radius-md);overflow:hidden}.breath-meter>span{display:block;background:var(--accent);height:100%}.breath-control{touch-action:none;user-select:none;min-height:64px!important}.waiting-care h3,.waiting-care summary{display:flex;gap:var(--space-10);align-items:center}.waiting-care summary{cursor:pointer;min-height:44px}.care-check{padding:var(--space-16);background:var(--bg-raised);border:1px solid var(--line);border-radius:var(--radius-xl);display:grid;gap:var(--space-10)}.care-check button{white-space:normal;text-align:left}.patient-vitals{--vital-color:var(--accent);flex-shrink:0;padding:var(--space-14) var(--space-18);border-bottom:1px solid var(--line);display:grid;gap:var(--space-8)}.patient-vitals.caution{--vital-color:var(--warning)}.patient-vitals.urgent{--vital-color:var(--danger)}.patient-vitals header{display:flex;justify-content:space-between;gap:var(--space-8);align-items:center}.patient-vitals strong,.vital-observations span,.vehicle-readout span{display:flex;align-items:center;gap:var(--space-6)}.patient-vitals strong{font-size:var(--fs-body-lg)}.patient-vitals header>span{font-size:var(--fs-body);color:var(--vital-color)}.vital-observations{display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-12);font-size:var(--fs-body);color:var(--text-2)}.vital-meter{height:8px;overflow:hidden;border-radius:var(--radius-sm);background:var(--bg)}.vital-meter>span{display:block;height:100%;background:var(--vital-color);transition:width .2s}.vital-caption{font-size:var(--fs-body);color:var(--text-2);line-height:1.6;display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-12);justify-content:space-between}.vital-caption>span:last-child{display:inline-flex;align-items:center;gap:var(--space-4);color:var(--vital-color);white-space:nowrap}.vehicle-readout{display:grid;gap:var(--space-6);font-size:var(--fs-body)}.vehicle-readout progress{width:100%;height:6px;accent-color:var(--accent)}.vital-event{font-size:var(--fs-body);max-height:48px;overflow:auto;line-height:1.6;color:var(--text-2)}.task-panel .task-fields{min-height:100px}.main-workspace.has-activity{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-@media(max-width:959px){.reroute-options,.handoff-facts{grid-template-columns:1fr}.reroute-panel,.handoff-form{padding:var(--space-20)}}
+@media(max-width:959px){.handoff-facts{grid-template-columns:1fr}.handoff-form{padding:var(--space-20)}}
 
 /* ============ 常驻患者体征条 ============ */
 .vitals-strip { --vital-color:var(--accent); flex-shrink:0; display:flex; align-items:center; gap:var(--space-16); padding:var(--space-8) var(--space-20); border-bottom:1px solid var(--line); background:var(--bg-surface); font-size:var(--fs-body-sm); color:var(--text-2); }
@@ -138,13 +137,15 @@
 .message.is-queued .queued-dots i:nth-child(3) { animation-delay:.36s; }
 @keyframes queued-dot { 0%,60%,100% { transform:translateY(0); opacity:.4 } 30% { transform:translateY(-4px); opacity:1 } }
 
-.task-footer { flex-shrink:0; }
-/* 桌面端登记表内不承载任何操作按钮（派车入口在左栏「下一步」） */
-@media(min-width:960px){ .task-footer { display:none; } }
-.workspace-actions { display:flex; align-items:center; gap:var(--space-8); flex-shrink:0; }
+/* ============ 工作区底部常驻操作条 ============
+   派车 / 结束通话固定在这一条里，主区怎么滚动它都在。 */
+.action-bar { flex-shrink:0; display:flex; align-items:flex-end; gap:var(--space-12); padding:var(--space-12) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
+.action-bar:empty { display:none; }
+.action-bar .next-step { flex:1; min-width:0; padding:0; border-top:0; background:transparent; }
+.action-bar .text-button { flex:none; min-height:44px; white-space:nowrap; }
 
-/* ============ 左栏「下一步」操作区 ============ */
-.next-step { flex-shrink:0; display:grid; gap:var(--space-10); padding:var(--space-14) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
+/* ============ 下一步（派车主入口） ============ */
+.next-step { flex:1; min-width:0; display:grid; gap:var(--space-10); padding:var(--space-14) var(--space-16); border-top:1px solid var(--line); background:var(--bg-raised); }
 .next-step-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-8); }
 .next-step-count { font-size:var(--fs-caption); color:var(--text-3); font-variant-numeric:tabular-nums; }
 .next-step-checks { list-style:none; display:flex; flex-wrap:wrap; gap:var(--space-6) var(--space-12); }
@@ -153,9 +154,17 @@
 .next-dot { width:8px; height:8px; border-radius:50%; border:1px solid var(--line-strong); }
 .next-step .primary { min-height:44px; }
 
-/* 登记表内的派车入口仅在移动端显示；桌面端由左栏「下一步」承担 */
-.task-dispatch-mobile { display:none; }
-@media(max-width:959px){ .task-dispatch-mobile { display:inline-flex; } }
+/* ============ 登记表：只读摘要 + 按需展开 ============ */
+.task-done-count { margin-left:auto; font-size:var(--fs-caption); color:var(--text-3); font-variant-numeric:tabular-nums; }
+.task-summary { flex-shrink:0; display:grid; gap:var(--space-12); padding:var(--space-14) var(--space-16); }
+.task-summary-list { margin:0; display:grid; grid-template-columns:1fr 1fr; gap:var(--space-10) var(--space-12); }
+.task-summary-list > div { min-width:0; }
+.task-summary-list dt { font-size:var(--fs-caption); color:var(--text-3); }
+.task-summary-list dd { margin:2px 0 0; font-size:var(--fs-body-sm); font-weight:600; color:var(--text); overflow-wrap:anywhere; }
+.task-summary-list dd.is-pending { font-weight:400; color:var(--text-3); }
+.task-expand { justify-self:start; gap:var(--space-6); }
+.task-expand .is-flipped { transform:rotate(180deg); }
+.task-fields { overflow-y:auto; min-height:0; }
 
 /* 由「下一步」跳到登记表时的定位脉冲 */
 .desk-grid.task-pulse .task-panel { animation:task-pulse 1.2s var(--ease-out); }
@@ -194,12 +203,24 @@
 .view-tabs button:hover { border-color:var(--accent); color:var(--text); }
 .view-tabs button[aria-pressed='true'] { color:var(--accent); border-color:var(--accent); background:var(--accent-bg); }
 
-/* ---------- 三栏 → 单视图 ---------- */
-.desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
-.desk-grid .desk-panel { display:none; }
-.desk-grid.tab-call .transcript-panel,
-.desk-grid.tab-map .workspace-panel,
-.desk-grid.tab-task .task-panel { display:flex; }
+/* ---------- 三栏 → 单视图 ----------
+   桌面（≥1280px）三栏常驻：对话流 / 工作区 / 登记表同时在场，
+   派车与指导都在同一屏内完成，不需要切标签或上下滚动。
+   只有窄屏才退回单视图 + 标签切换。 */
+@media (max-width:1279px) {
+  .desk-grid { display:grid; grid-template-columns:minmax(0,1fr); }
+  .desk-grid .desk-panel { display:none; }
+  .desk-grid.tab-call .transcript-panel,
+  .desk-grid.tab-map .workspace-panel,
+  .desk-grid.tab-task .task-panel { display:flex; }
+}
+@media (min-width:1280px) {
+  /* 三栏常驻后不再需要视图切换条：它只会导致「按钮在别的视图里」 */
+  .view-tabs { display:none; }
+  .desk-grid .desk-panel { display:flex; }
+  .main-workspace { min-height:240px; }
+  .main-workspace.has-activity { min-height:300px; }
+}
 
 /* ---------- 状态带：班次时钟 / 车辆 + 患者体征合成一条 ---------- */
 .status-strip { flex-shrink:0; display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-6) var(--space-20); padding:var(--space-6) var(--space-20); border-bottom:1px solid var(--line); background:var(--bg-deep); }

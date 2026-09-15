@@ -18,7 +18,6 @@ import { handleCompleteMinigame } from './reducers/completeMinigame'
 import { handleTick } from './reducers/tick'
 import { isGuidanceActive } from './reducers/helpers'
 import { handleCareCheck } from './waitingCare'
-import { handleReroute } from './reducers/reroute'
 import { handleSubmitHandoff } from './handoff'
 import {
   handleStartShift,
@@ -86,12 +85,9 @@ export function worldReducer(state: WorldState, action: GameAction): WorldState 
       return handleSetTriage(state, action.level)
 
     case 'DISPATCH': {
-      const next = handleDispatch(state, action.vehicleId, action.route, action.routeOptions)
+      const next = handleDispatch(state, action.vehicleId, action.route)
       return next === state ? state : applyCallEvents(next, 'after_dispatch')
     }
-
-    case 'REROUTE_AMBULANCE':
-      return handleReroute(state, action.routeId)
 
     case 'SUBMIT_HANDOFF':
       return handleSubmitHandoff(state, action.factIds)

@@ -205,7 +205,7 @@ export function maxRingingFor(heat: number): number {
 export const ENDING_NARRATIVE: Record<ShiftEnding, string> = {
   complete: '六通电话处理完了。下一班调度员已经接上线路。你摘下耳机，屏幕开始整理这段时间留下的记录。',
   perfect: '最忙的那一段你顶住了。组长拍拍你的肩：接下来的交给下一班。',
-  collapse: '组长把手按在你的肩膀上：「先下来，喝口水。」耳机被摘下的那一刻，线路还在响。',
+  collapse: '组长把手按在你的肩膀上：「先下来，喝口水。」',
   fade: '后半夜的线路安静下来。你把登记表收好，等下一次响铃。',
 }
 
@@ -279,7 +279,8 @@ export function isShiftPaused(shift: ShiftState): boolean {
  * 这一条会在后台悄悄堆积，线路墙需要把它标出来。
  */
 export function lineNeedsDecision(line: ShiftLine): boolean {
-  return line.phase === 'active' && Boolean(line.world.pendingReroute)
+  // 途中改道已移除；目前唯一需要玩家回头处置的是「第二位来电者的信息冲突」
+  return line.phase === 'active' && Boolean(line.verification && !line.verification.resolution)
 }
 
 /** 有多少条线路在等你决策 */

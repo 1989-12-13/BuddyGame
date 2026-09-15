@@ -27,7 +27,6 @@ export function QuestionDock({ state, dispatch }: { state: WorldState; dispatch:
     <section className={`question-dock${open ? '' : ' is-collapsed'}`} aria-label="对话回合">
       <header>
         <MessageCircle size={17} />
-        <h3>下一句，你说什么？</h3>
         <span>{busy ? `通话中 · ${state.actionEndsAt - state.shiftElapsed} 秒` : '顺序交给协议，你只管怎么说'}</span>
         <button
           type="button"

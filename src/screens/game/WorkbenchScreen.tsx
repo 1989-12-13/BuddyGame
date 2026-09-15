@@ -25,7 +25,6 @@ import { NextStepDock } from './NextStepDock'
 import { TaskCard } from './TaskCard'
 import { Transcript } from './Transcript'
 import { QuestionDock } from './QuestionDock'
-import { ReroutePanel } from './ReroutePanel'
 import { HandoffPanel } from './HandoffPanel'
 import { Dialog } from '../../components/ui/Dialog'
 import { ROGUE_PERKS } from '../../game/core/perks'
@@ -76,7 +75,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
   const call = state.currentCall
   const dispatchReady = Boolean(state.terminal.address.trim() && state.terminal.conscious !== null && state.terminal.breathing !== null && state.terminal.determinant && state.terminal.triage)
   const step = state.rescue.outcome || state.patientStatus?.died ? 4 : state.dispatchSent ? 3 : dispatchReady ? 2 : call ? 1 : 0
-  const centerBusy = Boolean(plan || state.pendingReroute)
+  const centerBusy = Boolean(plan)
   const showGuidanceWindow = Boolean(call?.guidance && state.guidanceActive && state.guidanceStepIndex < (call.guidance?.steps.length ?? 0))
   const lastSpoken = useRef(0)
   const deferredMiniGame = useRef<{ callInstanceId: number; stepIndex: number; score: number; passed: boolean } | null>(null)
@@ -119,7 +118,7 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
    * 默认单视图之后，指导窗口 / 改道 / 交接都住在工作区里，
    * 不这样带一下它们就变成了「藏起来的东西」。
    */
-  const workspaceDemand = Boolean(plan || state.pendingReroute || showGuidanceWindow || state.rescue.outcome || state.patientStatus?.died)
+  const workspaceDemand = Boolean(plan || showGuidanceWindow || state.rescue.outcome || state.patientStatus?.died)
   const hadWorkspaceDemand = useRef(false)
   useEffect(() => {
     if (workspaceDemand) setTab('map')
@@ -186,20 +185,25 @@ export function GameScreen({ onNavigate, scenarioId, controlled }: Props) {
         <QuestionDock state={state} dispatch={dispatch} />
       </aside>
       <section className="desk-panel workspace-panel">
-        <div className="workspace-heading"><div><span className="eyebrow">当前 {PHASES[step]}</span><h1>{call?.title ?? '城市正在等待你的声音'}</h1></div><div className="workspace-actions">{call && !state.rescue.outcome && !state.patientStatus?.died && <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>}</div></div>
-        {/* 「下一步」原本占着通话栏，现在挪到工作区：它的按钮本来就把你送进这里规划路线 */}
-        <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
+        <div className="workspace-heading"><div><span className="eyebrow">当前 {PHASES[step]}</span><h1>{call?.title ?? '城市正在等待你的声音'}</h1></div></div>
         {!call ? <div className="shift-welcome"><div className="welcome-emblem"><Headphones size={52} /></div><span className="eyebrow">{embedded ? '值班待命' : `准备接听 · 第 ${state.callIndex + 1} 通`}</span><h2>让帮助抵达需要的地方</h2><p>这一次，留意电话里的细节，做出你的判断。</p>{!tutorialSeen && <button className="secondary" onClick={() => openModal('help')}><BookOpen size={17} /> 第一次值班？先熟悉工作台</button>}{controlled?.awaitingLine ? <p className="awaiting-hint">线路响铃时，在「电话线路」里点击即可接听。</p> : state.fleet.vehicles[0]?.status !== 'available' ? <div className="turnaround-note"><p>救护车正在完成上一项任务。当前没有患者等待。</p></div> : <button className="primary answer-button" onClick={() => { dispatch({ type: 'ANSWER_CALL' }); setTab('call'); audio.play('connect') }}><Phone size={20} /> 接听来电<ArrowRight size={18} /></button>}</div> : <>
           <div className={`main-workspace ${centerBusy ? 'has-activity' : ''}`}>
-            {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, routeOptions: plan.routes, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.pendingReroute ? <ReroutePanel state={state} dispatch={dispatch} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
+            {plan ? <RoutePlanner embedded routes={plan.routes} onCancel={() => setPlan(null)} onConfirm={route => { dispatch({ type: 'DISPATCH', vehicleId: 'ambulance', route, callInstanceId: plan.callInstanceId }); setPlan(null) }} /> : state.rescue.outcome || state.patientStatus?.died ? <HandoffPanel state={state} dispatch={dispatch} onComplete={endCall} /> : state.guidanceActive && call.guidance && state.guidanceStepIndex >= call.guidance.steps.length ? <div className="embedded-guidance"><WaitingCarePanel key={state.callInstanceId} state={state} dispatch={dispatch} onStopSpeech={() => audio.tts.stop()} /></div> : <>
               <CityMap state={state} />
               {showGuidanceWindow && call.guidance && <div className="guidance-window" role="dialog" aria-label="急救指导"><GuidancePanel key={`${state.callInstanceId}-${state.guidanceStepIndex}`} guidance={call.guidance} stepIndex={state.guidanceStepIndex} results={state.guidanceResults} onContinue={() => { audio.tts.stop(); dispatch({ type: 'CONTINUE_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex: state.guidanceStepIndex }) }} paused={paused} disabled={paused} onAnswer={(stepIndex, selectedIndex) => dispatch({ type: 'ANSWER_GUIDANCE', callInstanceId: state.callInstanceId, stepIndex, selectedIndex })} onCompleteMiniGame={onFinishMiniGame} onEndGuidance={() => openModal('end')} /></div>}
             </>}
           </div>
         </>}
+        {/* 常驻操作条：派车 / 结束通话固定在底部，不随主区滚动，也不需要上下滑动去找 */}
+        <div className="action-bar">
+          <NextStepDock state={state} onGoToTask={goToTaskCard} onPlanRoute={openRoute} />
+          {call && !state.rescue.outcome && !state.patientStatus?.died && (
+            <button className="text-button danger-text" onClick={() => openModal('end')}>结束当前通话</button>
+          )}
+        </div>
         {(audioFailed || saveFailed) && <div className="workspace-footnote"><ShieldCheck size={14} /><span>{audioFailed ? '语音暂不可用，可继续阅读字幕。' : '当前浏览器无法保存进度，本次仍可正常游玩。'}</span></div>}
       </section>
-      <aside className="desk-panel task-panel">{call ? <TaskCard state={state} dispatch={dispatch} onRoute={openRoute} /> : <div className="task-idle" inert><TaskCard state={state} dispatch={dispatch} onRoute={openRoute} idle /></div>}</aside>
+      <aside className="desk-panel task-panel"><TaskCard state={state} dispatch={dispatch} /></aside>
     </main>
     {overlay}
   </div>

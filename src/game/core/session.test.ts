@@ -141,20 +141,16 @@ describe('workbench state boundaries', () => {
     for (let i = 0; i < 10; i++) state = worldReducer(state, { type: 'TICK' })
     expect(state.rescueNotifications).toHaveLength(1)
   })
-  it('offers one stroke reroute and rejects a second or stale choice', () => {
+  it('applies mid-route traffic to the ETA without asking the player to reroute', () => {
     let state: WorldState = ready(begin('stroke'))
     const plan = buildDispatchPlan(state)!
-    state = worldReducer(state, { type: 'DISPATCH', vehicleId: 'ambulance', route: plan.routes[0], routeOptions: plan.routes, callInstanceId: state.callInstanceId })
-    for (let i = 0; i < 300 && !state.pendingReroute; i++) state = worldReducer(state, { type: 'TICK' })
-    expect(state.pendingReroute).not.toBeNull()
-    expect(state.pendingReroute!.options).toHaveLength(2)
-    const alternate = state.pendingReroute!.options.find(route => route.id !== state.pendingReroute!.currentRouteId)!
-    const rerouted = worldReducer(state, { type: 'REROUTE_AMBULANCE', callInstanceId: state.callInstanceId, routeId: alternate.id })
-    expect(rerouted.rerouteUsed).toBe(true)
-    expect(rerouted.pendingReroute).toBeNull()
-    expect(rerouted.dispatchRecord!.routeId).toBe(alternate.id)
-    expect(worldReducer(rerouted, { type: 'REROUTE_AMBULANCE', callInstanceId: rerouted.callInstanceId, routeId: plan.routes[0].id })).toBe(rerouted)
-    expect(worldReducer(state, { type: 'REROUTE_AMBULANCE', callInstanceId: state.callInstanceId - 1, routeId: alternate.id })).toBe(state)
+    state = worldReducer(state, { type: 'DISPATCH', vehicleId: 'ambulance', route: plan.routes[0], callInstanceId: state.callInstanceId })
+    const routeIdBefore = state.dispatchRecord!.routeId
+    for (let i = 0; i < 300 && !state.dialogueLog.some(line => line.text.includes('路况更新')); i++) state = worldReducer(state, { type: 'TICK' })
+    expect(state.dialogueLog.some(line => line.text.includes('路况更新'))).toBe(true)
+    // 改道已移除：路线保持不变，玩家不会被中途打断
+    expect(state.dispatchRecord!.routeId).toBe(routeIdBefore)
+    expect('pendingReroute' in state).toBe(false)
   })
   it('requires fact-based handoff and allows one correction', () => {
     let state = dispatch(ready(begin('falls_elderly')))

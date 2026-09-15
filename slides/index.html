@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>120 调度台 · 投稿汇报</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   120 调度台 · 投稿汇报  单文件网页 PPT
+   定调：工业实用 / 调度台（Industrial · utilitarian）
+   —— 与产品 light 主题「日间调度台」同源，投影与打印友好
+   色彩 60/30/10：浅灰绿底 60 / 纸面与文字 30 / 青绿强调 10
+   字体：Noto Sans SC（中文）+ JetBrains Mono（数字·代号，与项目 --font-mono 同源）
+        + Barlow Condensed（英文小标）
+   ============================================================ */
+
+/* ---- 1. 令牌层 ---- */
+:root{
+  /* 表面 */
+  --bg:#e8eeeb; --surface:#fbfbf6; --raised:#eef3ef; --sunk:#dfe7e2;
+  /* 文字 */
+  --text:#1e332e; --text-2:#4d655f; --text-3:#6d847e; --dim:#97a8a3;
+  /* 线 */
+  --line:#c9d6d0; --line-soft:#dde6e1; --line-strong:#a9bdb5;
+  /* 强调（青绿 = 可执行） */
+  --accent:#247b65; --accent-strong:#175847; --accent-dim:#4f9d87;
+  --accent-bg:rgba(36,123,101,.10); --accent-line:rgba(36,123,101,.28);
+  /* 语义 */
+  --warn:#9a6a1e; --warn-bg:rgba(154,106,30,.10); --warn-line:rgba(154,106,30,.28);
+  --danger:#b0413a; --danger-bg:rgba(176,65,58,.09); --danger-line:rgba(176,65,58,.28);
+  --info:#2a6f8f; --info-bg:rgba(42,111,143,.10); --info-line:rgba(42,111,143,.28);
+  /* 分级色阶 sev-1…5（最佳 → 最重） */
+  --sev1:#1a8a52; --sev2:#247b65; --sev3:#9a6a1e; --sev4:#b5621c; --sev5:#b0413a;
+  /* 字族 */
+  --font-cn:'Noto Sans SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --font-mono:'JetBrains Mono','SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  --font-cond:'Barlow Condensed','Oswald','Noto Sans SC',sans-serif;
+  /* 字阶（1.25 模块化，正文 16px 基准） */
+  --fs-11:11px; --fs-12:12px; --fs-13:13px; --fs-14:14px; --fs-16:16px;
+  --fs-18:18px; --fs-22:22px; --fs-28:28px; --fs-34:34px; --fs-46:46px; --fs-64:64px;
+  /* 间距（4pt 栅格） */
+  --sp-4:4px; --sp-8:8px; --sp-12:12px; --sp-16:16px; --sp-20:20px;
+  --sp-24:24px; --sp-32:32px; --sp-40:40px; --sp-48:48px; --sp-60:60px;
+  /* 动效 */
+  --dur-fast:150ms; --dur-base:320ms; --dur-slow:640ms;
+  --ease-out:cubic-bezier(0.16,1,0.3,1); --ease-in-out:cubic-bezier(0.4,0,0.2,1);
+  /* 阴影（三级，Y 偏移 2/8/24，带环境色） */
+  --sh-1:0 2px 4px rgba(28,58,52,.06);
+  --sh-2:0 8px 20px rgba(28,58,52,.10);
+  --sh-3:0 24px 48px rgba(28,58,52,.14);
+}
+
+/* ---- 2. 基础层 ---- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--font-cn); font-size:var(--fs-16); line-height:1.6;
+  color:var(--text); background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p,ul,ol,figure{margin:0}
+ul,ol{padding:0;list-style:none}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.en{font-family:var(--font-cond);letter-spacing:.08em;text-transform:uppercase}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+/* ---- 3. 舞台与缩放 ---- */
+.stage{
+  position:fixed; inset:0; display:grid; place-items:center; overflow:hidden;
+  background:
+    radial-gradient(90rem 50rem at 15% -20%, rgba(36,123,101,.10), transparent 60%),
+    radial-gradient(70rem 45rem at 105% 110%, rgba(42,111,143,.10), transparent 55%),
+    var(--bg);
+}
+.deck{
+  position:relative; width:1280px; height:720px; flex:none;
+  background:var(--surface); border:1px solid var(--line);
+  box-shadow:var(--sh-3); transform-origin:center center; overflow:hidden;
+}
+/* 氛围层：发丝网格 + 纸感颗粒（禁止纯色平铺） */
+.deck::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(to right, rgba(30,51,46,.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30,51,46,.05) 1px, transparent 1px);
+  background-size:32px 32px;
+  -webkit-mask-image:radial-gradient(120% 90% at 20% 0%, #000 30%, transparent 78%);
+          mask-image:radial-gradient(120% 90% at 20% 0%, #000 30%, transparent 78%);
+}
+.deck::after{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:6; opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- 4. 幻灯片骨架 ---- */
+.slide{
+  position:absolute; inset:0; z-index:1; display:flex; flex-direction:column;
+  background:var(--surface); opacity:0; visibility:hidden;
+  transition:opacity var(--dur-base) var(--ease-in-out), transform var(--dur-base) var(--ease-in-out);
+  transform:translateX(24px);
+}
+.slide.is-active{opacity:1; visibility:visible; transform:none}
+.slide.is-prev{transform:translateX(-24px)}
+
+/* 页眉：调度台 HUD */
+.s-head{
+  position:relative; z-index:2; flex:none; height:56px; padding:0 var(--sp-60);
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-24);
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(to bottom, var(--raised), var(--surface));
+}
+.h-l{display:flex; align-items:baseline; gap:var(--sp-12)}
+.h-no{
+  font-family:var(--font-mono); font-size:var(--fs-12); font-weight:700; color:var(--accent);
+  border:1px solid var(--accent-line); background:var(--accent-bg);
+  padding:2px 7px; border-radius:3px; letter-spacing:.04em;
+}
+.h-name{font-size:var(--fs-16); font-weight:700; letter-spacing:-.01em}
+.h-sub{font-size:var(--fs-12); color:var(--text-3); letter-spacing:.02em}
+.h-r{display:flex; align-items:center; gap:var(--sp-8)}
+.chip{
+  font-family:var(--font-mono); font-size:var(--fs-11); color:var(--text-2);
+  border:1px solid var(--line); border-radius:3px; padding:3px 8px; background:var(--raised);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.chip.on{color:var(--accent-strong); border-color:var(--accent-line); background:var(--accent-bg)}
+.chip.warn{color:var(--warn); border-color:var(--warn-line); background:var(--warn-bg)}
+.chip.danger{color:var(--danger); border-color:var(--danger-line); background:var(--danger-bg)}
+
+/* 主体（overflow 兜底 + JS 自动适配，保证任何字体环境下都不裁切） */
+.s-body{position:relative; z-index:2; flex:1; min-height:0; padding:26px var(--sp-60) 20px; overflow:hidden}
+
+/* 页脚：口播提示 + 页码 */
+.s-foot{
+  position:relative; z-index:2; flex:none; height:48px; padding:0 var(--sp-60);
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-24);
+  border-top:1px solid var(--line-soft);
+}
+.cue{
+  display:flex; align-items:center; gap:var(--sp-8); min-width:0;
+  font-size:var(--fs-12); color:var(--text-3); line-height:1.4;
+}
+.cue::before{content:""; flex:none; width:2px; height:22px; background:var(--accent-line)}
+.pg{font-family:var(--font-mono); font-size:var(--fs-12); color:var(--text-3); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+/* ---- 5. 排版组件 ---- */
+.title{font-size:var(--fs-30); font-weight:900; letter-spacing:-.02em; line-height:1.12}
+.lede{margin-top:10px; font-size:15px; line-height:1.7; color:var(--text-2); max-width:64ch}
+.blk-t{
+  display:flex; align-items:center; gap:var(--sp-8); margin-bottom:var(--sp-8);
+  font-size:var(--fs-13); font-weight:700; letter-spacing:.02em; color:var(--text);
+}
+.blk-t::before{content:""; width:3px; height:14px; background:var(--accent); border-radius:1px}
+.note{font-size:var(--fs-12); line-height:1.55; color:var(--text-3)}
+.muted{color:var(--text-2)}
+
+/* 列表：对齐的要点行 */
+.rows{display:flex; flex-direction:column; gap:10px}
+.row{display:grid; grid-template-columns:26px 1fr; gap:var(--sp-12); align-items:start}
+.row .k{
+  font-family:var(--font-mono); font-size:var(--fs-12); font-weight:700; color:var(--accent);
+  padding-top:2px; font-variant-numeric:tabular-nums;
+}
+.row .v{font-size:var(--fs-14); line-height:1.6; color:var(--text-2)}
+.row .v b{color:var(--text); font-weight:700}
+
+/* 数据表：等宽数字、发丝线、表头左对齐 */
+.tbl{width:100%; border-collapse:collapse; font-size:var(--fs-13)}
+.tbl th{
+  text-align:left; font-size:var(--fs-11); font-weight:700; letter-spacing:.06em;
+  color:var(--text-3); padding:0 var(--sp-12) 6px 0; border-bottom:1px solid var(--line-strong);
+  white-space:nowrap;
+}
+.tbl td{padding:5px var(--sp-12) 5px 0; border-bottom:1px solid var(--line-soft); vertical-align:middle; line-height:1.5}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.n,.tbl th.n{text-align:right; padding-right:0}
+.tbl .mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--text-2)}
+.tbl tbody tr:hover{background:var(--raised)}
+
+/* 标签 */
+.tag{
+  display:inline-block; font-family:var(--font-mono); font-size:var(--fs-11); font-weight:700;
+  padding:2px 7px; border-radius:3px; border:1px solid var(--line); background:var(--raised);
+  color:var(--text-2); white-space:nowrap;
+}
+.tag.g{color:var(--sev1); border-color:rgba(26,138,82,.3); background:rgba(26,138,82,.09)}
+.tag.y{color:var(--sev3); border-color:var(--warn-line); background:var(--warn-bg)}
+.tag.r{color:var(--sev5); border-color:var(--danger-line); background:var(--danger-bg)}
+.tag.a{color:var(--accent-strong); border-color:var(--accent-line); background:var(--accent-bg)}
+.tag.b{color:var(--info); border-color:var(--info-line); background:var(--info-bg)}
+
+/* 卡片：统一内边距与基线，不做圆角阴影堆砌 */
+.panel{border:1px solid var(--line); background:var(--raised); padding:var(--sp-16)}
+.panel.plain{background:transparent}
+.panel.accent{border-color:var(--accent-line); background:var(--accent-bg)}
+
+/* 数据条 */
+.bars{display:flex; flex-direction:column; gap:10px}
+.bar{display:grid; grid-template-columns:88px 1fr 34px; gap:var(--sp-12); align-items:center}
+.bar .lb{font-size:var(--fs-13); color:var(--text-2); white-space:nowrap}
+.bar .track{height:8px; background:var(--sunk); border-radius:2px; overflow:hidden}
+.bar .fill{height:100%; background:var(--accent); width:0; transition:width var(--dur-slow) var(--ease-out)}
+.bar .vl{font-family:var(--font-mono); font-size:var(--fs-12); text-align:right; color:var(--text-2); font-variant-numeric:tabular-nums}
+
+/* 数字墙 */
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:18px var(--sp-32)}
+.stat{border-top:2px solid var(--accent); padding-top:10px}
+.stat .n{font-family:var(--font-mono); font-size:var(--fs-28); font-weight:700; line-height:1; color:var(--accent-strong); font-variant-numeric:tabular-nums}
+.stat .n small{font-size:var(--fs-14); font-weight:500; color:var(--text-3); margin-left:4px}
+.stat .l{margin-top:var(--sp-8); font-size:var(--fs-12); color:var(--text-2); line-height:1.5}
+
+/* 通用栅格 */
+.g2{display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-32)}
+.g3{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-24)}
+.g12{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:var(--sp-40)}
+.g21{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:var(--sp-40)}
+.stack{display:flex; flex-direction:column; gap:var(--sp-16)}
+.mt{margin-top:14px}
+.mt-s{margin-top:var(--sp-8)}
+
+/* 四角括号（装饰边框，工业感） */
+.bracket{position:relative}
+.bracket::before,.bracket::after{
+  content:""; position:absolute; width:14px; height:14px; pointer-events:none;
+}
+.bracket::before{top:-1px; left:-1px; border-top:2px solid var(--accent); border-left:2px solid var(--accent)}
+.bracket::after{bottom:-1px; right:-1px; border-bottom:2px solid var(--accent); border-right:2px solid var(--accent)}
+
+/* ---- 6. 封面与尾页 ---- */
+.cover{
+  justify-content:center; padding:0 var(--sp-60);
+  background:linear-gradient(160deg, var(--surface) 0%, var(--raised) 62%, var(--sunk) 100%);
+}
+.cover .eyebrow{
+  display:inline-flex; align-items:center; gap:var(--sp-8);
+  font-family:var(--font-cond); font-size:var(--fs-13); letter-spacing:.18em;
+  text-transform:uppercase; color:var(--accent-strong);
+}
+.cover .eyebrow::before{content:""; width:28px; height:1px; background:var(--accent)}
+.cover h1{
+  margin-top:var(--sp-20); font-size:var(--fs-64); font-weight:900;
+  letter-spacing:-.035em; line-height:1; color:var(--text);
+}
+.cover h1 .mono{font-family:var(--font-mono); font-weight:700; letter-spacing:-.04em}
+.cover .sub{margin-top:var(--sp-20); font-size:var(--fs-22); font-weight:500; color:var(--text-2); letter-spacing:-.01em}
+.cover .rule{margin-top:var(--sp-32); height:1px; background:var(--line-strong)}
+.cover .meta{margin-top:var(--sp-20); display:flex; gap:var(--sp-48); align-items:flex-start}
+.cover .meta dl{margin:0}
+.cover .meta dt{font-size:var(--fs-11); color:var(--text-3); letter-spacing:.08em}
+.cover .meta dd{margin-top:var(--sp-4); font-size:var(--fs-14); color:var(--text)}
+.cover .metrics{margin-top:var(--sp-32); display:flex; gap:var(--sp-40)}
+.cover .metrics div{font-size:var(--fs-12); color:var(--text-3)}
+.cover .metrics b{display:block; font-family:var(--font-mono); font-size:var(--fs-28); font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+.disclaimer{
+  margin-top:var(--sp-32); display:inline-flex; align-items:center; gap:var(--sp-8);
+  font-size:var(--fs-12); color:var(--text-2);
+  border:1px solid var(--warn-line); background:var(--warn-bg);
+  padding:var(--sp-8) var(--sp-12); border-radius:3px;
+}
+.disclaimer::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--warn); flex:none}
+.cover-art{position:absolute; right:var(--sp-60); top:80px; width:420px; height:420px; opacity:.5; pointer-events:none}
+
+.ender{justify-content:center; align-items:flex-start; padding:0 var(--sp-60)}
+.ender h2{font-size:var(--fs-46); font-weight:900; letter-spacing:-.03em; line-height:1.1}
+.ender .last{margin-top:var(--sp-24); font-size:var(--fs-18); line-height:1.8; color:var(--text-2); max-width:56ch}
+
+/* ---- 7. 组件：线路墙 / 循环流 / 层级 ---- */
+.lines{display:flex; flex-direction:column; gap:var(--sp-8)}
+.line{
+  display:grid; grid-template-columns:22px 1fr auto; gap:var(--sp-12); align-items:center;
+  padding:10px var(--sp-12); border:1px solid var(--line); background:var(--surface);
+}
+.line.ring{border-color:var(--danger-line); background:var(--danger-bg)}
+.line.act{border-color:var(--accent-line); background:var(--accent-bg)}
+.line .ic{width:22px; height:22px; color:var(--text-3)}
+.line.ring .ic{color:var(--danger)}
+.line.act .ic{color:var(--accent)}
+.line .nm{font-size:var(--fs-13); color:var(--text); line-height:1.4}
+.line .nm span{display:block; font-size:var(--fs-11); color:var(--text-3)}
+.line .tm{font-family:var(--font-mono); font-size:var(--fs-13); font-weight:700; font-variant-numeric:tabular-nums}
+.line.ring .tm{color:var(--danger)} .line.act .tm{color:var(--accent-strong)}
+.pulse{animation:pulse 1.6s var(--ease-in-out) infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.flow{display:flex; align-items:stretch; gap:0; position:relative}
+.flow .st{flex:1; min-width:0; padding:var(--sp-12) var(--sp-8); text-align:left; border-top:2px solid var(--line)}
+.flow .st i{display:block; font-family:var(--font-mono); font-style:normal; font-size:var(--fs-11); color:var(--accent); font-variant-numeric:tabular-nums}
+.flow .st b{display:block; margin-top:var(--sp-4); font-size:var(--fs-13); font-weight:700; line-height:1.3}
+.flow .st span{display:block; margin-top:var(--sp-4); font-size:var(--fs-11); color:var(--text-3); line-height:1.45}
+.flow .st.hi{border-top-color:var(--accent); background:var(--accent-bg)}
+
+.layers{display:flex; flex-direction:column; gap:var(--sp-12)}
+.layer{display:grid; grid-template-columns:56px 1fr; gap:var(--sp-12); align-items:stretch}
+.layer .cnt{
+  font-family:var(--font-mono); font-size:var(--fs-12); font-weight:700; color:var(--accent-strong);
+  display:flex; align-items:center; justify-content:center;
+  border:1px dashed var(--accent-line); background:var(--accent-bg); border-radius:3px;
+}
+.layer .box{border:1px solid var(--line); background:var(--surface); padding:var(--sp-12) var(--sp-16)}
+.layer .box b{font-size:var(--fs-13)}
+.layer .box p{margin-top:var(--sp-4); font-size:var(--fs-12); color:var(--text-3); line-height:1.5}
+
+/* ---- 8. 入场序列（一次编排，错峰 90ms） ---- */
+.rv{opacity:0; transform:translateY(14px)}
+.is-active .rv{
+  opacity:1; transform:none;
+  transition:opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+  transition-delay:calc(var(--d,0) * 90ms);
+}
+/* 路线虚线流动（氛围动效，降级时关闭） */
+.dash{stroke-dasharray:6 6; animation:flow 1.4s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+
+/* ---- 9. 控件 ---- */
+.nav{position:fixed; right:20px; bottom:18px; display:flex; gap:var(--sp-8); z-index:20}
+.nav button{
+  min-width:44px; height:44px; padding:0 var(--sp-12); cursor:pointer;
+  font-family:var(--font-mono); font-size:var(--fs-13); color:var(--text-2);
+  background:var(--surface); border:1px solid var(--line); border-radius:3px;
+  transition:color var(--dur-fast) ease-out, border-color var(--dur-fast) ease-out, background var(--dur-fast) ease-out;
+}
+.nav button:hover{color:var(--accent-strong); border-color:var(--accent-line); background:var(--accent-bg)}
+.nav button:disabled{opacity:.4; cursor:not-allowed}
+.progress{position:fixed; left:0; top:0; height:2px; background:var(--accent); z-index:30; transition:width var(--dur-base) var(--ease-out); width:0}
+.hint{position:fixed; left:20px; bottom:18px; font-family:var(--font-mono); font-size:var(--fs-11); color:var(--text-3); z-index:20}
+.hint kbd{font-family:var(--font-mono); border:1px solid var(--line); border-radius:2px; padding:1px 5px; background:var(--surface)}
+
+/* ---- 10. 降级：尊重 prefers-reduced-motion ---- */
+@media (prefers-reduced-motion: reduce){
+  .rv{opacity:1 !important; transform:none !important; transition:none !important}
+  .slide{transition:none !important; transform:none !important}
+  .pulse,.dash{animation:none !important}
+  .bar .fill{transition:none !important}
+}
+
+/* ---- 11. 打印：一页一张，A4 横向 ---- */
+@page{size:A4 landscape; margin:0}
+@media print{
+  .stage{position:static; display:block; background:none}
+  .deck{transform:none !important; width:100%; height:100%; box-shadow:none; border:none}
+  .slide{position:relative; opacity:1 !important; visibility:visible !important; transform:none !important;
+    page-break-after:always; break-after:page; height:720px}
+  .nav,.hint,.progress{display:none !important}
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="stage">
+<main class="deck" id="deck" aria-label="120 调度台投稿汇报">
+
+<!-- ============ 01 · 封面 ============ -->
+<section class="slide cover" data-sec="封面" aria-label="封面">
+  <!-- 封面装饰：三条线路波形 + 节点，纯 SVG 原创 -->
+  <svg class="cover-art" viewBox="0 0 420 420" fill="none" aria-hidden="true">
+    <g stroke="var(--line-strong)" stroke-width="1">
+      <path d="M0 140 H420" /><path d="M0 210 H420" /><path d="M0 280 H420" />
+    </g>
+    <g stroke="var(--accent)" stroke-width="2" fill="none">
+      <path d="M0 140 C 40 140, 50 96, 90 96 S 140 140, 180 140 S 230 108, 270 108 S 330 140, 420 140" opacity=".85" />
+      <path d="M0 210 C 60 210, 70 176, 120 176 S 170 210, 220 210 S 280 190, 330 190 S 380 210, 420 210" opacity=".5" />
+      <path d="M0 280 C 50 280, 70 250, 110 250 S 160 286, 210 280 S 300 258, 350 262 S 390 280, 420 280" opacity=".3" />
+    </g>
+    <g fill="var(--accent)">
+      <circle cx="180" cy="140" r="4" /><circle cx="220" cy="210" r="4" /><circle cx="210" cy="280" r="4" />
+    </g>
+    <g stroke="var(--line)" stroke-width="1" stroke-dasharray="3 5">
+      <path d="M180 140 V 210" /><path d="M220 210 V 280" />
+    </g>
+    <g font-family="JetBrains Mono, monospace" font-size="11" fill="var(--text-3)">
+      <text x="0" y="130">LINE 01</text><text x="0" y="200">LINE 02</text><text x="0" y="270">LINE 03</text>
+    </g>
+  </svg>
+
+  <span class="eyebrow rv" style="--d:0">Public First-aid Simulation · Submission Review</span>
+  <h1 class="rv" style="--d:1"><span class="mono">120</span> 调度台</h1>
+  <p class="sub rv" style="--d:2">让人亲手走一遍「接起电话之后的那 60 秒」</p>
+  <div class="rule rv" style="--d:3"></div>
+  <div class="meta rv" style="--d:3">
+    <dl><dt>汇报人</dt><dd>＿＿＿＿＿＿</dd></dl>
+    <dl><dt>汇报日期</dt><dd>2026-09-15</dd></dl>
+    <dl><dt>交付形态</dt><dd>可运行 Web Demo · 并发值班</dd></dl>
+    <dl><dt>内容规模</dt><dd>33 类主诉 · 3 线 2 车</dd></dl>
+  </div>
+  <div class="metrics rv" style="--d:4">
+    <div><b>33</b>MPDS 协议主诉</div>
+    <div><b>3 / 2</b>并发线路 / 救护车</div>
+    <div><b>1192</b>单元测试通过</div>
+    <div><b>0</b>生产依赖漏洞</div>
+  </div>
+  <p class="disclaimer rv" style="--d:5">游戏内容用于公益科普，不能替代专业急救培训；现实紧急情况请拨打 120，并听从专业调度指导。</p>
+</section>
+
+<!-- ============ 02 · 问题 ============ -->
+<section class="slide" data-sec="问题" aria-label="我要解决的问题">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">01</span><span class="h-name">我要解决的问题</span><span class="h-sub">Why this project</span></div>
+    <div class="h-r"><span class="chip">公益科普</span><span class="chip">流程训练</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">不是再讲一遍知识，<br />而是让人亲手走一遍流程</h2>
+    <div class="g12 mt">
+      <div class="stack">
+        <p class="lede rv" style="--d:1">公众大多只知道「出事打 120」，却不知道电话接通之后，调度员要在几十秒里问出地址、意识、呼吸，并据此派车。这段流程有标准（MPDS 五步），但普通人没有可以练习的地方——真调度台不能拿来练手。</p>
+        <div class="rows rv" style="--d:2">
+          <div class="row"><span class="k num">01</span><span class="v"><b>常识缺口。</b>大部分人不知道「接起电话后要回答什么」，更不知道先说地址、再说情况。</span></div>
+          <div class="row"><span class="k num">02</span><span class="v"><b>练习缺口。</b>标准流程写在规范里，却缺少一个能安全犯错、错了有反馈的模拟器。</span></div>
+          <div class="row"><span class="k num">03</span><span class="v"><b>形式缺口。</b>科普多为视频与图文，看完就忘；缺少「做一次」带来的记忆。</span></div>
+        </div>
+        <div class="panel accent rv bracket" style="--d:3">
+          <div class="blk-t">我们的做法</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">把 MPDS 五步（地址 / 情况 / 联系人 / 目的）做成<b>系统骨架</b>，自动推进顺序；把措辞、时机与取舍留给玩家。玩家不需要背流程，但每个选择都有后果。</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="panel rv" style="--d:2">
+          <div class="blk-t">真实流程的四个硬性要求</div>
+          <table class="tbl">
+            <thead><tr><th>环节</th><th>要求</th><th class="n">时限</th></tr></thead>
+            <tbody>
+              <tr><td>接听</td><td>响铃两声内接起</td><td class="n mono">—</td></tr>
+              <tr><td>问询</td><td>性别 / 年龄 / 地址 / 病情 / 接车地点</td><td class="n mono">60 s</td></tr>
+              <tr><td>派车</td><td>就近、就急；派车单不再更改</td><td class="n mono">60 s</td></tr>
+              <tr><td>出车</td><td>急救站收到命令单后出车</td><td class="n mono">180 s</td></tr>
+            </tbody>
+          </table>
+          <p class="note mt-s">依据：项目内 <span class="mono">docs/接警工作流程.md</span>，时限直接映射为游戏内的派车评分分档。</p>
+        </div>
+        <div class="panel plain rv" style="--d:3">
+          <div class="blk-t">明确不做的三件事</div>
+          <ul class="rows">
+            <li class="row"><span class="k num">—</span><span class="v">不做急救认证教材，任何内容不宣称「已获医学认证」。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v">不做拟真到令人不适的画面，全部以文字与示意图呈现。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v">不做排行榜与付费，公益科普定位不变。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：先讲清缺口，再讲我们的切入——标准流程我来兜底，决策交还给玩家。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 03 · 核心循环 ============ -->
+<section class="slide" data-sec="产品" aria-label="核心循环">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">02</span><span class="h-name">一通电话的完整循环</span><span class="h-sub">Core loop</span></div>
+    <div class="h-r"><span class="chip on">8 步</span><span class="chip">单通可完成</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">从响铃到复盘，八步走完一通</h2>
+    <p class="lede rv" style="--d:1">每一步都有明确的玩家产出与系统反馈，不出现「点了没反应」的环节。</p>
+
+    <div class="flow mt rv" style="--d:2">
+      <div class="st"><i class="num">01</i><b>接听来电</b><span>线路响铃，超时转留言</span></div>
+      <div class="st"><i class="num">02</i><b>确认地点与情况</b><span>五步协议自动推进</span></div>
+      <div class="st"><i class="num">03</i><b>判断响应优先级</b><span>协议判定 + 分诊颜色</span></div>
+      <div class="st hi"><i class="num">04</i><b>逐节点规划路线</b><span>逐段路况 + ETA</span></div>
+      <div class="st"><i class="num">05</i><b>派车</b><span>校验通过才可派出</span></div>
+      <div class="st"><i class="num">06</i><b>电话指导</b><span>锁定线路，实时反馈</span></div>
+      <div class="st"><i class="num">07</i><b>现场交接</b><span>确认到达与交接清单</span></div>
+      <div class="st"><i class="num">08</i><b>行动复盘</b><span>五维评级 + 知识卡</span></div>
+    </div>
+
+    <div class="g2 mt rv" style="--d:3">
+      <div class="panel">
+        <div class="blk-t">玩家在这一版里真正要做的判断</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">A</span><span class="v"><b>先接哪一通。</b>三条线同时响，注意力是稀缺资源。</span></li>
+          <li class="row"><span class="k num">B</span><span class="v"><b>话怎么说。</b>推进 / 安抚 / 确认 / 捷径四类措辞，各有代价。</span></li>
+          <li class="row"><span class="k num">C</span><span class="v"><b>车派给谁。</b>两辆车全局共享，不是每通一辆。</span></li>
+          <li class="row"><span class="k num">D</span><span class="v"><b>走哪条路。</b>只看路况文字与 ETA，不再有「推荐路线」。</span></li>
+        </ul>
+      </div>
+      <div class="panel plain">
+        <div class="blk-t">系统替玩家兜住的部分</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">—</span><span class="v"><b>顺序。</b>五步协议顺序由系统推进，玩家不需要背。</span></li>
+          <li class="row"><span class="k num">—</span><span class="v"><b>记录。</b>已知事实自动进任务卡，未确认项显示「待确认」。</span></li>
+          <li class="row"><span class="k num">—</span><span class="v"><b>时限。</b>统一世界时钟，暂停 / 设置 / 后台切换共用一套计时规则。</span></li>
+          <li class="row"><span class="k num">—</span><span class="v"><b>容错。</b>刷新或退出后从当前来电开头重试，已完成通话保留。</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：这一页是全局地图，后面几页按 03–08 逐个拆开讲。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 04 · 并发值班 ============ -->
+<section class="slide" data-sec="玩法" aria-label="并发值班">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">03</span><span class="h-name">并发值班：注意力成为资源</span><span class="h-sub">Shift · 3 lines / 2 vehicles</span></div>
+    <div class="h-r"><span class="chip on">LINE 3</span><span class="chip">VEHICLE 2</span><span class="chip">FOCUS 1</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">把「派车后干等」改成「永远有下一通在响」</h2>
+    <p class="lede rv" style="--d:1">旧版是 5 通线性闯关，试玩反馈最集中的一条是：派完车就没事干，想关掉游戏。这一版把游玩单位从「一通电话」改成「一个班次」。</p>
+    <div class="g12 mt">
+      <div class="lines rv" style="--d:2">
+        <div class="line ring">
+          <svg class="ic pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7A2 2 0 0 1 22 16.9z"/></svg>
+          <div class="nm">线路 01 · 响铃中<span>望江路来电 · 未接将转留言并回拨</span></div>
+          <div class="tm">12 s</div>
+        </div>
+        <div class="line act">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="6" rx="1.5"/><rect x="17" y="14" width="5" height="6" rx="1.5"/></svg>
+          <div class="nm">线路 02 · 通话中（聚焦）<span>老人跌倒 · 情绪紧张 · 协议 3/5</span></div>
+          <div class="tm">02:14</div>
+        </div>
+        <div class="line">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div class="nm">线路 03 · 保持中<span>来电者在线等待 · 情绪缓慢上升</span></div>
+          <div class="tm">00:48</div>
+        </div>
+        <div class="line" style="background:var(--sunk)">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="M16 10h4l2 3v3h-6z"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+          <div class="nm">车队 · 2 辆<span>01 在途 4:12 / 02 可用</span></div>
+          <div class="tm">1 / 2</div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="rows rv" style="--d:3">
+          <div class="row"><span class="k num">01</span><span class="v"><b>一次只聚焦一条线。</b>聚焦线显示完整信息，其余线仍在实时推进。</span></div>
+          <div class="row"><span class="k num">02</span><span class="v"><b>非聚焦线不会停。</b>响铃会超时、来电者情绪会上升、车辆会上报在途事件。</span></div>
+          <div class="row"><span class="k num">03</span><span class="v"><b>切换有上下文成本。</b>语音被打断、对话要重读，线路墙用未读标记提示。</span></div>
+          <div class="row"><span class="k num">04</span><span class="v"><b>超时不熔断。</b>转留言并留下模糊信息，稍后回拨，结算时扣响应分。</span></div>
+        </div>
+        <div class="panel accent rv bracket" style="--d:4">
+          <div class="blk-t">玩家的核心问题被换掉了</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">从「下一步点哪里」→ <b>「这 10 秒，我该花在哪条线路上」</b>。<br />接新来电 = 当前来电者被冷落；深挖信息 = 另一条线可能错失；做 CPR 指导 = 该线路被锁定，完全无法分身。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：这是本轮最大的结构性改动，也是「不干等」的解法。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 05 · 情绪与信息质量 ============ -->
+<section class="slide" data-sec="系统" aria-label="情绪与信息质量">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">04</span><span class="h-name">情绪系统：压力决定信息质量</span><span class="h-sub">Stress → fidelity</span></div>
+    <div class="h-r"><span class="chip">STRESS 0–100</span><span class="chip on">4 档</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">安抚不是装饰，是拿信息的唯一办法</h2>
+    <p class="lede rv" style="--d:1">来电者压力越高，回答越失真。想要准确地址，就得先把人稳住——这条因果链必须在数值上成立。</p>
+    <div class="g12 mt">
+      <div class="stack">
+        <table class="tbl rv" style="--d:2">
+          <thead><tr><th>压力区间</th><th>档位</th><th>回答保真度</th><th class="n">可用信息</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0 – 24</td><td><span class="tag g">镇定</span></td><td class="mono">clear</td><td class="n">准确、完整</td></tr>
+            <tr><td class="mono">25 – 49</td><td><span class="tag a">紧张</span></td><td class="mono">partial</td><td class="n">基本可用</td></tr>
+            <tr><td class="mono">50 – 74</td><td><span class="tag y">恐慌</span></td><td class="mono">vague</td><td class="n">模糊、缺关键项</td></tr>
+            <tr><td class="mono">75 – 100</td><td><span class="tag r">失控</span></td><td class="mono">vague</td><td class="n">跑题、自相矛盾</td></tr>
+          </tbody>
+        </table>
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">安抚曲线：修掉了一个数值崩塌</div>
+          <div class="bars mt-s">
+            <div class="bar"><span class="lb">第 1 次</span><span class="track"><span class="fill" data-w="100" style="background:var(--sev1)"></span></span><span class="vl num">20</span></div>
+            <div class="bar"><span class="lb">第 2 次</span><span class="track"><span class="fill" data-w="80" style="background:var(--sev2)"></span></span><span class="vl num">16</span></div>
+            <div class="bar"><span class="lb">第 3 次</span><span class="track"><span class="fill" data-w="60" style="background:var(--sev3)"></span></span><span class="vl num">12</span></div>
+            <div class="bar"><span class="lb">第 4 次起</span><span class="track"><span class="fill" data-w="40" style="background:var(--sev4)"></span></span><span class="vl num">8</span></div>
+          </div>
+          <p class="note mt-s">旧实现是 <span class="mono">20 / (1 + 次数)</span>，第 3 次只剩 6.7，失控档（85）要压 20 次才回到准确区间——「安抚换信息」在数值上根本不成立。现在改为线性递减且保留下限 8。</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="panel plain rv" style="--d:3">
+          <div class="blk-t">同一张卡片，四种不同且信息量真实的回答</div>
+          <table class="tbl">
+            <thead><tr><th>人物 × 情绪</th><th>「地址」的回答</th></tr></thead>
+            <tbody>
+              <tr><td>话痨邻居 · 紧张</td><td class="muted">「望江路 128 号那边……哪一栋我真没看清」</td></tr>
+              <tr><td>沉默路人 · 镇定</td><td class="muted">「望江路 128 号。」</td></tr>
+              <tr><td>情绪化家属 · 恐慌</td><td class="muted">「就那个小区！你们怎么还不来！」<span class="tag r">地址缺失</span></td></tr>
+              <tr><td>医护人员 · 镇定</td><td class="muted">「128 号 3 栋 2 单元，男约 60 岁，无意识、有呼吸。」</td></tr>
+            </tbody>
+          </table>
+          <p class="note mt-s">由「事实槽（clear / vague / distorted）× 人物特质 × 提问类型」规则合成，不接实时生成，输出可控可测。</p>
+        </div>
+        <div class="panel rv" style="--d:4">
+          <div class="blk-t">可感知：信息状态条</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.65">问询面板顶部逐字段显示质量（清晰 / 基本可用 / 模糊 / 未获取）；情绪 ≥ 50 时给出显式因果提示并指向安抚。压力回落到提问时刻以下才出现「复核」选项，重问才能拿到更准的信息。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：这一页最能说明「系统是真的」，建议放慢讲那组对照回答。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 06 · MPDS 协议 ============ -->
+<section class="slide" data-sec="内容" aria-label="MPDS 协议与内容规模">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">05</span><span class="h-name">内容：33 类主诉与协议表</span><span class="h-sub">MPDS protocols</span></div>
+    <div class="h-r"><span class="chip on">33 协议</span><span class="chip">单一事实源</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">协议表是全游戏唯一事实源</h2>
+    <p class="lede rv" style="--d:1">33 个标准 MPDS 协议的编号、判定码、冷热响应与正确分诊集中在一张表里；33 张场景卡片的字段必须与之完全一致，由单元测试校验。</p>
+    <div class="g12 mt">
+      <table class="tbl rv" style="--d:2">
+        <thead><tr><th class="n" style="width:52px">编号</th><th>主诉</th><th>判定码</th><th>响应</th><th class="n">正确分诊</th></tr></thead>
+        <tbody>
+          <tr><td class="mono n">01</td><td>腹痛 / 背痛</td><td class="mono">—</td><td><span class="tag b">COLD</span></td><td class="n"><span class="tag g">green</span></td></tr>
+          <tr><td class="mono n">06</td><td>呼吸困难</td><td class="mono">—</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag y">yellow</span></td></tr>
+          <tr><td class="mono n">09</td><td>心脏 / 呼吸骤停 / 死亡</td><td class="mono">9-E-1</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag r">red</span></td></tr>
+          <tr><td class="mono n">11</td><td>窒息</td><td class="mono">11-D-2</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag r">red</span></td></tr>
+          <tr><td class="mono n">12</td><td>抽搐 / 癫痫</td><td class="mono">12-D-1</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag y">yellow</span></td></tr>
+          <tr><td class="mono n">14</td><td>溺水 / 水域事故</td><td class="mono">14-D-1</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag r">red</span></td></tr>
+          <tr><td class="mono n">15</td><td>触电 / 雷击</td><td class="mono">15-D-1</td><td><span class="tag r">HOT</span></td><td class="n"><span class="tag r">red</span></td></tr>
+          <tr><td class="mono n">17</td><td>坠落 / 跌倒</td><td class="mono">—</td><td><span class="tag b">COLD</span></td><td class="n"><span class="tag y">yellow</span></td></tr>
+        </tbody>
+      </table>
+      <div class="stack">
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">33 张卡片怎么撑起内容量</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">卡片从「关卡」降为<b>病例模板</b>：33 张卡片 × 严重度 × 来电者人物 × 事实槽变体，组合出远超 33 关的内容，且不再需要硬编码通关顺序。</p>
+        </div>
+        <div class="panel plain rv" style="--d:4">
+          <div class="blk-t">新增一个主诉要改哪里</div>
+          <ul class="rows">
+            <li class="row"><span class="k num">1</span><span class="v">协议表（编号 / 判定码 / 冷热 / 分诊）</span></li>
+            <li class="row"><span class="k num">2</span><span class="v">场景卡片（事实槽 + 指导步骤）</span></li>
+            <li class="row"><span class="k num">3</span><span class="v">调度员笔记 / 范例 / 指导详情三份教学数据</span></li>
+            <li class="row"><span class="k num">4</span><span class="v">一致性测试自动校验，不一致直接挂</span></li>
+          </ul>
+        </div>
+        <p class="note rv" style="--d:5">来源：<span class="mono">src/game/content/protocols.ts</span>、<span class="mono">src/game/events/cards/</span>、<span class="mono">cards.consistency.test.ts</span>。版本号以 MPDS v14 为参考。</p>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：强调「一致性由测试守住」，这是内容规模化的前提。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 07 · 电话指导 ============ -->
+<section class="slide" data-sec="玩法" aria-label="电话指导与小游戏">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">06</span><span class="h-name">电话指导：把「等车」变成「救人在继续」</span><span class="h-sub">Guidance &amp; mini-games</span></div>
+    <div class="h-r"><span class="chip on">6 引擎</span><span class="chip warn">线路锁定</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">做指导，等于放弃这段时间对其他线路的响应</h2>
+    <p class="lede rv" style="--d:1">并发带来的硬约束：进入指导后该线路被锁定，无法切走——小游戏因此变成一次资源配置决策。</p>
+    <div class="g2 mt">
+      <div class="stack">
+        <div class="panel rv" style="--d:2">
+          <div class="blk-t">六个交互引擎（按场景分发）</div>
+          <table class="tbl">
+            <thead><tr><th>引擎</th><th>训练动作</th><th class="n">输入</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">RhythmPress</td><td>胸外按压节奏</td><td class="n">节拍</td></tr>
+              <tr><td class="mono">CprGame</td><td>完整两轮 30:2</td><td class="n">节拍 + 计数</td></tr>
+              <tr><td class="mono">RescueBreaths</td><td>人工呼吸（按住 / 松开）</td><td class="n">时长</td></tr>
+              <tr><td class="mono">StepOrder</td><td>急救步骤排序</td><td class="n">排序 + 撤销</td></tr>
+              <tr><td class="mono">QuickChoice</td><td>关键判断的快速选择</td><td class="n">选择</td></tr>
+              <tr><td class="mono">LocationSelect</td><td>在示意图上定位出血点 / 位置</td><td class="n">坐标</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel accent rv bracket" style="--d:3">
+          <div class="blk-t">体征是百分比模型，不是固定加减</div>
+          <table class="tbl">
+            <tbody>
+              <tr><td>指导正确</td><td class="mono">+35%</td><td class="n muted">恢复「已损失」的部分</td></tr>
+              <tr><td>指导错误</td><td class="mono">−10%</td><td class="n muted">扣「当前」的部分，至少 1</td></tr>
+              <tr><td>小游戏 ≥ 0.5</td><td class="mono">+50%</td><td class="n muted">按得分折算恢复</td></tr>
+              <tr><td>濒死（black）</td><td class="mono">上限 100</td><td class="n muted">电话指导是唯一逆转手段</td></tr>
+            </tbody>
+          </table>
+          <p class="note mt-s">越危险挽回越多、越拖越弱但始终有反馈——避免「做不做都一样」。</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="rows rv" style="--d:3">
+          <div class="row"><span class="k num">01</span><span class="v"><b>先说明，玩家主动开始。</b>小游戏不自动弹入，不打断阅读。</span></div>
+          <div class="row"><span class="k num">02</span><span class="v"><b>每一步停在反馈上。</b>显示解释与来电者回应，确认「我已核对」才推进。</span></div>
+          <div class="row"><span class="k num">03</span><span class="v"><b>键盘与指针都能操作。</b>暂停、失焦、指针取消会安全中止通气。</span></div>
+          <div class="row"><span class="k num">04</span><span class="v"><b>连点不加分。</b>过滤不合理连点；超时不能靠少量正确点击拿高分。</span></div>
+          <div class="row"><span class="k num">05</span><span class="v"><b>提交受校验。</b>实例、步骤、选项、0–1 分数；重复或过期不结算。</span></div>
+        </div>
+        <div class="panel plain rv" style="--d:4">
+          <div class="blk-t">语音与字幕解耦</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">默认整句字幕常驻，上一句可重播或停止；TTS 超时、失败、旧来电延迟返回都不阻断下一步。语音不可用时，游戏仍可完整通关。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：这一页把「小游戏」讲成设计决策，而不是功能罗列。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 08 · 路线与派车 ============ -->
+<section class="slide" data-sec="玩法" aria-label="路线与派车">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">07</span><span class="h-name">路线与派车：把决定权还给玩家</span><span class="h-sub">Routing &amp; dispatch</span></div>
+    <div class="h-r"><span class="chip">节点式路网</span><span class="chip on">ETA 可见</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">我们删掉了「推荐路线」标签</h2>
+    <p class="lede rv" style="--d:1">旧版给每条路线一个策略标签和优劣摘要——它替玩家做了决定。现在只保留逐段路况文字、ETA 与风险提示，玩家必须自己读路况判断走哪条。</p>
+    <div class="g12 mt">
+      <div class="panel rv" style="--d:2">
+        <div class="blk-t">节点式路网（路线面板示意坐标）</div>
+        <svg viewBox="0 0 560 210" style="width:100%;height:auto;margin-top:var(--sp-8)" aria-hidden="true">
+          <g stroke="var(--line)" stroke-width="2" fill="none">
+            <path d="M50 105 L175 40 L340 105 L500 105" />
+            <path d="M50 105 L175 170 L340 105" />
+            <path d="M175 40 L175 170" />
+          </g>
+          <path class="dash" d="M50 105 L175 40 L340 105 L500 105" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" />
+          <g fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2">
+            <rect x="18" y="88" width="34" height="34" rx="3" />
+            <circle cx="175" cy="40" r="12" /><circle cx="340" cy="105" r="12" /><circle cx="175" cy="170" r="12" />
+            <circle cx="500" cy="105" r="12" />
+          </g>
+          <g font-family="JetBrains Mono, monospace" font-size="11" fill="var(--text-3)">
+            <text x="10" y="145">急救站</text><text x="150" y="22">北城路口</text><text x="150" y="200">西区路口</text>
+            <text x="322" y="140">望江路口</text><text x="484" y="140">现场</text>
+          </g>
+          <g font-family="JetBrains Mono, monospace" font-size="10" fill="var(--text-2)">
+            <text x="90" y="62">畅通</text><text x="230" y="72">车流较大</text><text x="390" y="96">学校路段</text>
+            <text x="88" y="150">拥堵</text>
+          </g>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">派车校验：UI 与 reducer 共用同一份结果</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">不可派车时逐项说明原因，而不是灰掉按钮了事：</p>
+          <div class="h-r mt-s" style="flex-wrap:wrap">
+            <span class="chip">地址</span><span class="chip">意识</span><span class="chip">呼吸</span><span class="chip">分诊</span><span class="chip">路线</span><span class="chip">车辆状态</span>
+          </div>
+          <p class="note mt-s">执行层还会拒绝：重复派车、无车派遣、陈旧来电实例。</p>
+        </div>
+        <div class="panel plain rv" style="--d:4">
+          <div class="blk-t">在途事件：主动打断，不是等待填充</div>
+          <ul class="rows">
+            <li class="row"><span class="k num">01</span><span class="v">路况更新只改 ETA，<b>不再中途弹面板要求改道</b></span></li>
+            <li class="row"><span class="k num">02</span><span class="v">来电者改口 / 信息冲突 → 信哪一条、是否重新确认</span></li>
+            <li class="row"><span class="k num">03</span><span class="v">同一事故的第二位来电者 → 采纳 / 维持 / 再追问一次</span></li>
+          </ul>
+          <p class="note mt-s">后台发生的事由线路墙的「待决策」计数拉回视野，不会被静默堆积。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：删「推荐路线」是为了让选择真的发生，哪怕玩家会选错。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 09 · 评分与复盘 ============ -->
+<section class="slide" data-sec="评价" aria-label="评分与复盘">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">08</span><span class="h-name">评分与复盘：五维，不只看结果</span><span class="h-sub">Evaluation</span></div>
+    <div class="h-r"><span class="chip on">D C B A S</span><span class="chip">过程可追溯</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">操作评价与患者结局分开算</h2>
+    <p class="lede rv" style="--d:1">做对了所有事但患者仍没救回来，不应该和乱来一通拿同一个结果——所以五维里既有态度与知识，也有时间把控与救援成效，两条线分开呈现。</p>
+    <div class="g12 mt">
+      <div class="panel rv" style="--d:2">
+        <div class="blk-t">五个评价维度</div>
+        <div class="bars mt-s">
+          <div class="bar"><span class="lb">接线态度</span><span class="track"><span class="fill" data-w="82" style="background:var(--sev1)"></span></span><span class="vl num">A</span></div>
+          <div class="bar"><span class="lb">指导技术</span><span class="track"><span class="fill" data-w="68" style="background:var(--sev2)"></span></span><span class="vl num">B</span></div>
+          <div class="bar"><span class="lb">知识储备</span><span class="track"><span class="fill" data-w="90" style="background:var(--sev1)"></span></span><span class="vl num">S</span></div>
+          <div class="bar"><span class="lb">时间把控</span><span class="track"><span class="fill" data-w="54" style="background:var(--sev3)"></span></span><span class="vl num">C</span></div>
+          <div class="bar"><span class="lb">救援成效</span><span class="track"><span class="fill" data-w="42" style="background:var(--sev4)"></span></span><span class="vl num">C</span></div>
+        </div>
+        <p class="note mt-s">示例为一次试玩快照，非固定权重。态度维度记录的是「安抚回合 / 施压回合 / 中立回合」的实际构成。</p>
+      </div>
+      <div class="stack">
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">派车时间分档（直接来自真实规范）</div>
+          <table class="tbl">
+            <thead><tr><th>派车耗时</th><th class="n">评级</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">≤ 35 s</td><td class="n"><span class="tag g">S</span></td></tr>
+              <tr><td class="mono">≤ 60 s</td><td class="n"><span class="tag a">A</span></td></tr>
+              <tr><td class="mono">≤ 90 s</td><td class="n"><span class="tag y">B</span></td></tr>
+              <tr><td class="mono">≤ 120 s</td><td class="n"><span class="tag y">C</span></td></tr>
+              <tr><td class="mono">&gt; 120 s</td><td class="n"><span class="tag r">D</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel plain rv" style="--d:4">
+          <div class="blk-t">复盘只引用真实发生过的事</div>
+          <ul class="rows">
+            <li class="row"><span class="k num">—</span><span class="v">只引用实际发生的问询、派车、指导与事件，不生成套话。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v">逐通卡片带场景名；未接来电单独成组并按 0 分计入。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v">同一事故的核实结论记在事故上，不随线路释放而丢失。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v">班末给出一句话叙事总结：接住几通、漏接几通、采纳几次。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：如果时间紧，这一页只讲「态度与成效分开」这一条。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 10 · 班次与收班 ============ -->
+<section class="slide" data-sec="结构" aria-label="班次与收班">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">09</span><span class="h-name">班次没有固定通数，由热度决定</span><span class="h-sub">Heat model</span></div>
+    <div class="h-r"><span class="chip">HEAT 0–100</span><span class="chip on">PEAK 85</span><span class="chip">FLOOR 12</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">上限 6 通，但没人告诉你「还差几通」</h2>
+    <p class="lede rv" style="--d:1">班次的上限是 6 通（<span class="mono">targetCalls</span>），但热度决定你实际打几通：打得好 → 冲进峰值段撑过 2 通即<b>圆满交班</b>；患者死亡或连续漏接 3 通 → <b>被换下来</b>；热度跌破地板 → <b>平静收班</b>。界面上不显示计数，玩家只会感到「今晚越来越忙」或「夜渐深了」。</p>
+    <div class="g12 mt">
+      <div class="panel rv" style="--d:2">
+        <div class="blk-t">热度曲线与收班点</div>
+        <svg viewBox="0 0 560 200" style="width:100%;height:auto;margin-top:var(--sp-8)" aria-hidden="true">
+          <g stroke="var(--line-soft)" stroke-width="1">
+            <path d="M0 40 H560" /><path d="M0 100 H560" /><path d="M0 160 H560" />
+          </g>
+          <g stroke="var(--danger)" stroke-width="1" stroke-dasharray="4 4" opacity=".7"><path d="M0 32 H560" /></g>
+          <g stroke="var(--info)" stroke-width="1" stroke-dasharray="4 4" opacity=".7"><path d="M0 152 H560" /></g>
+          <path d="M0 164 C 80 158, 110 118, 180 100 S 280 62, 360 34 S 470 46, 560 58"
+                stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round" />
+          <g fill="var(--accent)"><circle cx="180" cy="100" r="4" /><circle cx="360" cy="34" r="5" /></g>
+          <g font-family="JetBrains Mono, monospace" font-size="11" fill="var(--text-2)">
+            <text x="0" y="26">PEAK 85 · 撑过即「圆满收班」</text>
+            <text x="0" y="176">FLOOR 12 · 长期低迷即「平静收班」</text>
+            <text x="196" y="96">接听快 +8</text><text x="330" y="26">高分通话 +16</text>
+          </g>
+          <g font-family="JetBrains Mono, monospace" font-size="10" fill="var(--text-3)">
+            <text x="360" y="76">↓ 漏接 −14 / 患者死亡 −30</text>
+          </g>
+        </svg>
+      </div>
+      <div class="stack">
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">四种收班，全部由表现驱动</div>
+          <table class="tbl">
+            <thead><tr><th>收班</th><th>触发</th><th class="n">含义</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">perfect</td><td>热度冲到峰值段并撑过</td><td class="n">交班</td></tr>
+              <tr><td class="mono">collapse</td><td>患者死亡 / 连续漏接</td><td class="n">被换下来</td></tr>
+              <tr><td class="mono">fade</td><td>热度长期低迷且已处理足够通话</td><td class="n">平静收班</td></tr>
+              <tr><td class="mono">complete</td><td>正常走完本班</td><td class="n">常规交班</td></tr>
+            </tbody>
+          </table>
+          <p class="note mt-s">必须有「圆满收班」：否则打得越好打得越久，还会诱使玩家故意打差一点好早点下班。</p>
+        </div>
+        <div class="panel accent rv bracket" style="--d:4">
+          <div class="blk-t">关于时长的诚实说明</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">目标体验约 <b>5 分钟</b>，是标定出来的结果，不是写死的输入。项目内 <span class="mono">pacing.test.ts</span> 的脚本模拟为 1133 秒——那验证的是连续完成与计时逻辑，<b>不等于真实试玩时长</b>。15 分钟真实体验仍需至少 5 名首次玩家验收。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：主动交代「5 分钟是标定值」，比被问出来好。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 11 · 技术架构 ============ -->
+<section class="slide" data-sec="工程" aria-label="技术架构">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">10</span><span class="h-name">技术架构：三层实体 + 薄调度状态机</span><span class="h-sub">Architecture</span></div>
+    <div class="h-r"><span class="chip">React 19</span><span class="chip">TS 5.8</span><span class="chip on">Vite 6</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">业务逻辑全在 reducer，UI 只负责分发</h2>
+    <p class="lede rv" style="--d:1">并发改造没有推倒重来：每条线路持有一个自包含的 WorldState，由现有 worldReducer 驱动，既有 reducer 与单通测试完全不受影响。</p>
+    <div class="g12 mt">
+      <div class="layers rv" style="--d:2">
+        <div class="layer"><span class="cnt num">×3</span><div class="box"><b>Line · 电话线路</b><p>注意力槽位。idle / ringing / active / done，一次只聚焦一条。</p></div></div>
+        <div class="layer"><span class="cnt num">×1</span><div class="box"><b>Call · 通话实例</b><p>一通电话的全部状态：来电者情绪与配合度、病例事实槽、问询进度、终端字段、指导进度。</p></div></div>
+        <div class="layer"><span class="cnt num">×1</span><div class="box"><b>Incident · 急救事件</b><p>一次真实事故。可含初报与第二位来电者（核实通话），持有车辆与救援闭环。</p></div></div>
+      </div>
+      <div class="stack">
+        <div class="panel rv" style="--d:3">
+          <div class="blk-t">状态机：约 20 种 action，一个文件一件事</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.65"><span class="mono">worldReducer.ts</span> 保持约 100 行的薄调度层，只做 switch 分发；每个 action 一个处理器文件（<span class="mono">answerCall / askQuestion / dispatch / tick …</span>），单文件 ≤ 500 行。</p>
+          <p class="note mt-s">新增一个 action：先扩展联合类型，再加一行 case，然后新建一个处理器文件。</p>
+        </div>
+        <div class="panel plain rv" style="--d:4">
+          <div class="blk-t">技术栈与依赖态度</div>
+          <ul class="rows">
+            <li class="row"><span class="k num">—</span><span class="v"><b>React 19 + TypeScript 5.8 + Vite 6</b>，Vitest 3 + Playwright。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v"><b>纯 CSS，无 UI 框架</b>；唯一色彩来源是 tokens.css 设计令牌。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v"><b>Leaflet 在线底图</b>，失败自动降级为离线示意图，操作不受影响。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v"><b>TTS 走自建代理</b>，带 LRU 缓存；语音不可用时字幕仍能走完全程。</span></li>
+            <li class="row"><span class="k num">—</span><span class="v"><b>生产依赖 6 个</b>；图标 Lucide、动效 motion，其余自研。</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：重点讲「组合而非拆分」，这是并发改造能落地的原因。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 12 · 工程质量 ============ -->
+<section class="slide" data-sec="工程" aria-label="工程质量">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">11</span><span class="h-name">工程质量：能自动验证的，不靠人工承诺</span><span class="h-sub">Quality gates</span></div>
+    <div class="h-r"><span class="chip on">CI 6 道关卡</span><span class="chip">Windows · Node 22</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">类型、Lint、单测、审计、构建、端到端</h2>
+    <p class="lede rv" style="--d:1">六道关卡依次执行；数字取自汇报当日（2026-09-15）在本机 Windows / Node.js 22 环境的一次完整运行。</p>
+    <div class="stats mt rv" style="--d:2">
+      <div class="stat"><div class="n num">38<small>files</small></div><p class="l">单元测试文件，全部通过</p></div>
+      <div class="stat"><div class="n num">1192<small>tests</small></div><p class="l">单元测试用例，0 失败</p></div>
+      <div class="stat"><div class="n num">6<small>flows</small></div><p class="l">Chromium 端到端流程</p></div>
+      <div class="stat"><div class="n num">5<small>res</small></div><p class="l">覆盖分辨率，窄屏无横向溢出</p></div>
+      <div class="stat"><div class="n num">0<small>error</small></div><p class="l">typecheck + ESLint（0 warning）</p></div>
+      <div class="stat"><div class="n num">0<small>vuln</small></div><p class="l">生产依赖安全审计</p></div>
+    </div>
+    <div class="g2 mt rv" style="--d:3">
+      <div class="panel">
+        <div class="blk-t">这一轮修掉的关键缺陷</div>
+        <table class="tbl">
+          <tbody>
+            <tr><td>统一暂停</td><td class="muted">手动 / 设置 / 帮助 / 确认框 / 后台切换共用一套计时规则</td></tr>
+            <tr><td>有效游玩时间</td><td class="muted">问询改为动作时长，不再直接增加班次秒数</td></tr>
+            <tr><td>定时事件</td><td class="muted">阈值跨越触发 + 事件 ID 去重，不再重复触发</td></tr>
+            <tr><td>指导提交</td><td class="muted">校验实例 / 步骤 / 选项 / 分数，重复或过期不结算</td></tr>
+            <tr><td>边界输入</td><td class="muted">连点、陈旧实例、重复派车、无车派遣被执行层拒绝</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel plain">
+        <div class="blk-t">浏览器流程已覆盖</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">01</span><span class="v">暂停冻结与恢复后计时一致</span></li>
+          <li class="row"><span class="k num">02</span><span class="v">取消结束通话不会误结算</span></li>
+          <li class="row"><span class="k num">03</span><span class="v">弱网下地图降级，派车流程仍可完成</span></li>
+          <li class="row"><span class="k num">04</span><span class="v">刷新后从检查点恢复，已完成通话不丢</span></li>
+          <li class="row"><span class="k num">05</span><span class="v">1920×1080 至 390×844 无横向溢出</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：数字是当天跑出来的，可当场复跑；不建议口头加码。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 13 · 关键决策 ============ -->
+<section class="slide" data-sec="工程" aria-label="四个关键工程决策">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">12</span><span class="h-name">四个关键决策，以及为什么</span><span class="h-sub">Trade-offs</span></div>
+    <div class="h-r"><span class="chip on">可复现</span><span class="chip">可测试</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">踩过的坑，比功能的分量更重</h2>
+    <p class="lede rv" style="--d:1">每一条都对应一个曾经真实出错或即将出错的地方。</p>
+    <div class="g2 mt">
+      <div class="panel rv" style="--d:2">
+        <div class="blk-t">01 · 组合，而不是拆分</div>
+        <p class="muted" style="font-size:var(--fs-14); line-height:1.7">并发改造没有把 WorldState 拆散，而是让<b>每条线路持有自包含的 WorldState</b>，由班次层协调共享时钟、来电到达、聚焦与车辆。代价是状态体积更大，收益是既有 reducer 与全部单通测试一行未改。</p>
+      </div>
+      <div class="panel rv" style="--d:3">
+        <div class="blk-t">02 · 成绩必须跨线路快照</div>
+        <p class="muted" style="font-size:var(--fs-14); line-height:1.7">线路会被复用，复用时 <span class="mono">START_SHIFT</span> 会重置该线路的评分与计时。直接读线路会<b>丢掉前面所有成绩</b>。现在在线路 active → done 的瞬间把成绩快照进班次层。</p>
+      </div>
+      <div class="panel rv" style="--d:4">
+        <div class="blk-t">03 · 统一暂停，一套计时规则</div>
+        <p class="muted" style="font-size:var(--fs-14); line-height:1.7">暂停原因有五种（manual / background / settings / help / confirm）。嵌套弹窗下，<b>关闭内层不得提前恢复</b>外层冻结——世界、车辆、动作计时、小游戏与音频必须一起冻住。</p>
+      </div>
+      <div class="panel rv" style="--d:5">
+        <div class="blk-t">04 · 确定性优先</div>
+        <p class="muted" style="font-size:var(--fs-14); line-height:1.7">定时事件按<b>阈值跨越</b>触发并按事件 ID 去重，问询事件使用明确问题 ID；测试用 Mulberry32 确定性 PRNG 复现场景。生产代码仍用 <span class="mono">Math.random()</span>，测试不依赖随机输出。</p>
+      </div>
+    </div>
+    <p class="note mt rv" style="--d:6">对照文件：<span class="mono">src/game/core/shift.ts</span>、<span class="mono">session.ts</span>、<span class="mono">callEvents.ts</span>、<span class="mono">seededRandom.ts</span>。</p>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：这页是给懂技术的人听的，评审追问时用它接。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 14 · 视觉与可访问性 ============ -->
+<section class="slide" data-sec="设计" aria-label="视觉系统与可访问性">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">13</span><span class="h-name">视觉系统与可访问性</span><span class="h-sub">Design system</span></div>
+    <div class="h-r"><span class="chip">双主题</span><span class="chip on">tokens.css</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">唯一色彩来源，是设计令牌</h2>
+    <p class="lede rv" style="--d:1">视觉风格是写实的调度指挥中心：深青绿为主色，双主题（夜间 / 日间调度台）。所有颜色、间距、字号、圆角都取自令牌，代码里不写死。</p>
+    <div class="g12 mt">
+      <div class="stack">
+        <div class="panel rv" style="--d:2">
+          <div class="blk-t">语义色：颜色永远有第二重编码</div>
+          <table class="tbl">
+            <thead><tr><th>令牌</th><th>用途</th><th class="n">附加线索</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">--accent</td><td>青绿 = 可执行操作</td><td class="n muted">文字 + 边框</td></tr>
+              <tr><td class="mono">--warning</td><td>琥珀 = 待确认</td><td class="n muted">文字 + 底色</td></tr>
+              <tr><td class="mono">--danger</td><td>红 = 危险 / 有后果</td><td class="n muted">文字 + 图标</td></tr>
+              <tr><td class="mono">--sev-1…5</td><td>分级色阶（评级 / 情绪 / 稳定度 / 判定级通用）</td><td class="n muted">始终带文字标签</td></tr>
+            </tbody>
+          </table>
+          <p class="note mt-s">不只用颜色表达状态；分级色阶在四个场景复用同一套语义，避免同一颜色在不同处含义不同。</p>
+        </div>
+        <div class="panel plain rv" style="--d:3">
+          <div class="blk-t">响应式两档：桌面三栏常驻</div>
+          <table class="tbl">
+            <thead><tr><th>宽度</th><th>布局</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">≥ 1280 px</td><td>三栏常驻：对话流 / 工作区 / 登记表同屏，派车不用切视图</td></tr>
+              <tr><td class="mono">&lt; 1280 px</td><td>单视图 + 三个标签页；派车与结束通话固定在底部操作条</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="rows rv" style="--d:3">
+          <div class="row"><span class="k num">01</span><span class="v"><b>字号基准 16 px</b>，辅助文字不低于 14 px；主要点击区域不小于 <span class="mono">44 × 44 px</span>。</span></div>
+          <div class="row"><span class="k num">02</span><span class="v"><b>键盘可达</b>：全部功能可键盘操作，焦点圈 2 px 描边 + 3 px 偏移，始终可见。</span></div>
+          <div class="row"><span class="k num">03</span><span class="v"><b>对比度</b>：正文 ≥ 4.5:1，大字与界面控件 ≥ 3:1（本套令牌实测正文约 13:1）。</span></div>
+          <div class="row"><span class="k num">04</span><span class="v"><b>降级动效</b>：尊重 <span class="mono">prefers-reduced-motion</span>，本演示文稿同样遵守。</span></div>
+          <div class="row"><span class="k num">05</span><span class="v"><b>状态覆盖</b>：默认 / 悬停 / 按下 / 聚焦 / 禁用 / 加载 / 错误 / 空态逐项定义。</span></div>
+        </div>
+        <div class="panel accent rv bracket" style="--d:4">
+          <div class="blk-t">这副稿子本身就是同一套规则的产物</div>
+          <p class="muted" style="font-size:var(--fs-14); line-height:1.7">页面用的青绿、琥珀、分级色阶、字阶与间距，全部与产品 <span class="mono">tokens.css</span> 的 light 主题一致；等宽数字沿用项目的 JetBrains Mono。投影可读优先，所以选了「日间调度台」而不是默认深色。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：把「令牌唯一来源」和「颜色不单独承载信息」这两句留在评审记忆里。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 15 · 合规与边界 ============ -->
+<section class="slide" data-sec="合规" aria-label="合规与边界">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">14</span><span class="h-name">合规、素材与还没做完的部分</span><span class="h-sub">Compliance &amp; limits</span></div>
+    <div class="h-r"><span class="chip warn">待专业复核</span><span class="chip">公益科普</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">先说清楚边界，再说做得多好</h2>
+    <p class="lede rv" style="--d:1">医学内容需要专业复核；在签字完成前，任何材料都不会写成「已获医学认证」。这一页按投稿清单逐条对齐。</p>
+    <div class="g2 mt">
+      <div class="panel rv" style="--d:2">
+        <div class="blk-t">素材来源与署名</div>
+        <table class="tbl">
+          <tbody>
+            <tr><td>封面城市夜景 / 调度工作台 / 离线地图</td><td class="n"><span class="tag a">项目内原创 SVG</span></td></tr>
+            <tr><td>在线底图</td><td class="n muted">CARTO / OSM，地图控件内保留署名</td></tr>
+            <tr><td>界面图标</td><td class="n muted">Lucide（许可证随包导出）</td></tr>
+            <tr><td>语音合成</td><td class="n muted">火山引擎 seed-tts-2.0，经自建代理</td></tr>
+          </tbody>
+        </table>
+        <p class="note mt-s">提交前将依赖许可证与素材来源一并导出到投稿包。</p>
+      </div>
+      <div class="panel rv" style="--d:3">
+        <div class="blk-t">重点病例复核表（状态：待签字）</div>
+        <table class="tbl">
+          <thead><tr><th>来电</th><th>玩家学习目标</th><th class="n">复核</th></tr></thead>
+          <tbody>
+            <tr><td>老人跌倒</td><td class="muted">地点包含楼栋、入口与地标</td><td class="n"><span class="tag y">待复核</span></td></tr>
+            <tr><td>胸痛</td><td class="muted">描述观察到的表现，确认意识与呼吸</td><td class="n"><span class="tag y">待复核</span></td></tr>
+            <tr><td>外伤出血</td><td class="muted">把电话指令转为简单明确的操作</td><td class="n"><span class="tag y">待复核</span></td></tr>
+            <tr><td>疑似脑卒中</td><td class="muted">记录症状出现 / 最后正常时间</td><td class="n"><span class="tag y">待复核</span></td></tr>
+            <tr><td>心脏骤停</td><td class="muted">串联问询、派车、指导与交接</td><td class="n"><span class="tag y">待复核</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel plain rv" style="--d:4">
+        <div class="blk-t">还没做完，也不打算藏</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">01</span><span class="v">5 名首次玩家试玩记录尚未收齐（通过线：4/5 独立完成第一通）。</span></li>
+          <li class="row"><span class="k num">02</span><span class="v">两类在途事件待做：现场情况变化、患者病情恶化。</span></li>
+          <li class="row"><span class="k num">03</span><span class="v">卡片事实槽仅完成部分，计划先覆盖 5 张高频卡片。</span></li>
+          <li class="row"><span class="k num">04</span><span class="v">Perks 仍是随机增益，计划重做为三系「调度专长」。</span></li>
+        </ul>
+      </div>
+      <div class="panel accent rv bracket" style="--d:5">
+        <div class="blk-t">免责声明（贯穿全流程）</div>
+        <p class="muted" style="font-size:var(--fs-14); line-height:1.7">游戏内容用于公益科普，<b>不能替代专业急救培训</b>。现实紧急情况请拨打 120，并听从专业调度指导。任务卡上的「模拟照护余量」不表示血氧、心率或存活概率。</p>
+      </div>
+    </div>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：主动列出未完成项，比被追问更稳；也说明我们有验收标准。</span><span class="pg num"></span></footer>
+</section>
+
+<!-- ============ 16 · 下一步 ============ -->
+<section class="slide" data-sec="收尾" aria-label="下一步与结语">
+  <header class="s-head">
+    <div class="h-l"><span class="h-no num">15</span><span class="h-name">下一步</span><span class="h-sub">Next</span></div>
+    <div class="h-r"><span class="chip on">冻结后只修阻断</span></div>
+  </header>
+  <div class="s-body">
+    <h2 class="title rv" style="--d:0">冻结之后，只接受两类改动</h2>
+    <div class="g2 mt">
+      <div class="panel rv" style="--d:1">
+        <div class="blk-t">交付前</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">01</span><span class="v">完成 5 名首次玩家测试，原始记录入包。</span></li>
+          <li class="row"><span class="k num">02</span><span class="v">急救专业人员完成重点病例复核并签字。</span></li>
+          <li class="row"><span class="k num">03</span><span class="v">实机连续值班一轮，记录有效时长与构建版本号。</span></li>
+          <li class="row"><span class="k num">04</span><span class="v">导出 dist、说明 PPT、演示视频、值班脚本与第三方许可证。</span></li>
+        </ul>
+      </div>
+      <div class="panel plain rv" style="--d:2">
+        <div class="blk-t">交付后</div>
+        <ul class="rows">
+          <li class="row"><span class="k num">01</span><span class="v">卡片事实槽分批改造，先覆盖 5 张高频卡片。</span></li>
+          <li class="row"><span class="k num">02</span><span class="v">Perks 重做为「沟通 / 判断 / 统筹」三系调度专长。</span></li>
+          <li class="row"><span class="k num">03</span><span class="v">补齐两类在途事件：现场情况变化、患者病情恶化。</span></li>
+          <li class="row"><span class="k num">04</span><span class="v">按试玩反馈调整热度曲线，而不是直接调时长参数。</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="ender" style="padding:var(--sp-40) 0 0">
+      <p class="last rv" style="--d:3">我们真正想验证的只有一件事：<b>玩过这个班次的人，下次真的拨通 120 时，会不会更快说出地址、意识和呼吸。</b><br />这个结论现在还没有数据支撑——试玩记录收齐后，我们再来回答。</p>
+    </div>
+    <p class="note mt rv" style="--d:4">汇报到此。演示环境：Windows / Node.js 22 / Chromium；全部数字可当场复跑。</p>
+  </div>
+  <footer class="s-foot"><span class="cue">口播：结尾留一个开放问题，比喊口号可信。</span><span class="pg num"></span></footer>
+</section>
+
+</main>
+</div>
+
+<div class="nav" role="group" aria-label="翻页">
+  <button type="button" id="prev" aria-label="上一页">←</button>
+  <button type="button" id="next" aria-label="下一页">→</button>
+</div>
+<p class="hint"><kbd>←</kbd> <kbd>→</kbd> 翻页 · <kbd>F</kbd> 全屏 · <kbd>P</kbd> 打印</p>
+
+<script>
+(function () {
+  var deck = document.getElementById('deck');
+  var slides = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var bar = document.getElementById('progress');
+  var pgs = document.querySelectorAll('.pg');
+  var prevBtn = document.getElementById('prev');
+  var nextBtn = document.getElementById('next');
+  var total = slides.length;
+  var idx = 0;
+
+  // 舞台缩放：固定 1280×720 画布，等比适配窗口
+  function fit() {
+    var pad = 0;
+    var s = Math.min((window.innerWidth - pad) / 1280, (window.innerHeight - pad) / 720);
+    deck.style.transform = 'scale(' + s + ')';
+  }
+
+  // 自动适配：字体加载差异或内容微调导致溢出时，等比缩放到不裁切（下限 0.86）
+  function autofit(slide) {
+    var body = slide.querySelector('.s-body');
+    if (!body) return;
+    body.style.transform = 'none';
+    var over = body.scrollHeight - body.clientHeight;
+    if (over > 2) {
+      var s = Math.max(0.86, body.clientHeight / body.scrollHeight);
+      body.style.transformOrigin = 'top center';
+      body.style.transform = 'scale(' + s.toFixed(3) + ')';
+    } else {
+      body.style.transform = '';
+    }
+  }
+  function autofitAll() { slides.forEach(autofit); }
+
+  function fillBars(slide) {
+    slide.querySelectorAll('.fill[data-w]').forEach(function (el) {
+      el.style.width = el.getAttribute('data-w') + '%';
+    });
+  }
+
+  function render(n) {
+    idx = Math.max(0, Math.min(total - 1, n));
+    slides.forEach(function (s, i) {
+      s.classList.toggle('is-active', i === idx);
+      s.classList.toggle('is-prev', i < idx);
+      if (i === idx) { fillBars(s); autofit(s); }
+    });
+    var txt = String(idx + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    pgs.forEach(function (p) { p.textContent = txt; });
+    bar.style.width = ((idx + 1) / total * 100) + '%';
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === total - 1;
+    if (history.replaceState) history.replaceState(null, '', '#s' + (idx + 1));
+    document.title = '120 调度台 · ' + String(idx + 1).padStart(2, '0') + '/' + total;
+  }
+
+  function go(n) { render(n); }
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ' || k === 'Enter') { e.preventDefault(); go(idx + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); go(idx - 1); }
+    else if (k === 'Home') { go(0); }
+    else if (k === 'End') { go(total - 1); }
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+      else { document.exitFullscreen && document.exitFullscreen(); }
+    } else if (k === 'p' || k === 'P') { window.print(); }
+  });
+
+  deck.addEventListener('click', function (e) {
+    if (e.target.closest('a,button')) return;
+    go(idx + 1);
+  });
+  prevBtn.addEventListener('click', function (e) { e.stopPropagation(); go(idx - 1); });
+  nextBtn.addEventListener('click', function (e) { e.stopPropagation(); go(idx + 1); });
+
+  window.addEventListener('resize', function () { fit(); autofitAll(); });
+
+  var start = parseInt((location.hash || '').replace('#s', ''), 10);
+  fit();
+  render(isNaN(start) ? 0 : start - 1);
+  autofitAll();
+  // 网络字体到位后尺寸会变，重新测量一次
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { autofitAll(); });
+  } else {
+    window.addEventListener('load', autofitAll);
+  }
+})();
+</script>
+</body>
+</html>

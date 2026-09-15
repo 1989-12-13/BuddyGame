@@ -55,21 +55,23 @@ describe('交叉信息 · 来电者改口', () => {
   })
 })
 
-describe('在途事件 · 泛化到所有场景', () => {
-  it('非脑卒中场景派车后同样会出现改道决策', () => {
+describe('在途事件 · 只影响 ETA，不再打断玩家', () => {
+  it('路况更新会写进对话与 ETA，但不再要求玩家二次决策', () => {
     let state = ready(beginCall('falls_elderly'))
     const plan = buildDispatchPlan(state)!
     state = worldReducer(state, {
       type: 'DISPATCH',
       vehicleId: 'ambulance',
       route: plan.routes[0],
-      routeOptions: plan.routes,
       callInstanceId: state.callInstanceId,
     })
 
-    for (let i = 0; i < 300 && !state.pendingReroute; i++) state = worldReducer(state, { type: 'TICK' })
+    state = ticks(state, 300)
 
-    expect(state.pendingReroute).not.toBeNull()
-    expect(state.pendingReroute!.options).toHaveLength(2)
+    // 路况仍然发生：对话里留下路况更新记录
+    expect(state.dialogueLog.some(line => line.text.includes('路况更新'))).toBe(true)
+    // 但改道状态已从状态机移除，玩家不会被中途打断
+    expect('pendingReroute' in state).toBe(false)
+    expect(state.rescue.etaTotal).toBeGreaterThan(0)
   })
 })

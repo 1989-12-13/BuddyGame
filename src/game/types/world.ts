@@ -6,7 +6,7 @@ import type { FleetState } from '../core/fleet'
 import type { TriageLevel } from './mpds'
 import type { EmergencyScenario, CallPhase, JudgmentPrompt } from './scenario'
 import type { CallerState } from './caller'
-import type { RouteStrategy, RoutePlan } from '../core/routing'
+import type { RouteStrategy } from '../core/routing'
 import type { AttitudeEvidence, CallEvaluation } from './evaluation'
 
 // -------------------- 调度记录 --------------------
@@ -85,13 +85,6 @@ export interface RescueNotification {
   text: string
 }
 
-export interface ReroutePrompt {
-  callInstanceId: number
-  message: string
-  currentRouteId: string
-  options: RoutePlan[]
-}
-
 export interface HandoffState {
   attempts: number
   selectedFactIds: string[]
@@ -151,9 +144,6 @@ export interface WorldState {
   rescue: RescueState             // 救护车救援闭环
   backgroundRescues: BackgroundRescue[]
   rescueNotifications: RescueNotification[]
-  rerouteOptions: RoutePlan[]
-  pendingReroute: ReroutePrompt | null
-  rerouteUsed: boolean
   handoff: HandoffState
 
   // 终端（计算机登记）

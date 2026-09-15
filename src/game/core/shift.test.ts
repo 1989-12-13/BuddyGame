@@ -282,16 +282,13 @@ describe('班次协调器 · 线路释放与车辆回收', () => {
   })
 })
 
-describe('班次协调器 · 在途事件可见性', () => {
-  it('有待决策在途事件的线路会被标记出来', () => {
+describe('班次协调器 · 待决策可见性', () => {
+  it('第二位来电者的信息冲突未处置时，该线路会被标记出来', () => {
     const base = createShiftState(config({ deck: [] }))
     const line = {
       ...base.lines[0],
       phase: 'active',
-      world: {
-        ...createInitialState(),
-        pendingReroute: { callInstanceId: 1, message: '前方车流加密', currentRouteId: 'r1', options: [] },
-      },
+      verification: { primaryLineId: base.lines[1].id, report: { conflicts: [], summary: '' }, probed: false, resolution: null },
     } as unknown as ShiftLine
     const shift: ShiftState = { ...base, lines: [line, base.lines[1], base.lines[2]] }
 
